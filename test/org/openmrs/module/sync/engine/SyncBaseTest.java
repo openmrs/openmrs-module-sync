@@ -17,7 +17,8 @@ import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.server.RemoteServer;
-import org.openmrs.test.BaseContextSensitiveTest;
+import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.SkipBaseSetup;
 import org.springframework.test.annotation.NotTransactional;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
  *  since on most EDBMS systems it doesn't do what spec says
  *
  */
-public abstract class SyncBaseTest extends BaseContextSensitiveTest {
+public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 
 	
 	protected final Log log = LogFactory.getLog(getClass());
