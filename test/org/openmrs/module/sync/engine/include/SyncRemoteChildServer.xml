@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <dataset>
-  <synchronization_server server_id="1" nickname="Remote Child Server" address="" server_type="CHILD" username="admin" password="test" last_sync="2008-01-01 15:38:35.0" disabled="false" child_username="admin" guid="46b16ac6-144e-102b-8d9c-e44ed545d86c"/>
+  <synchronization_server server_id="1" nickname="Remote Child Server" address="" server_type="CHILD" username="admin" password="test" last_sync="2008-01-01 15:38:35.0" disabled="false" child_username="admin" uuid="46b16ac6-144e-102b-8d9c-e44ed545d86c"/>
 
   <!-- <synchronization_class class_id="" name="" type="" default_to="1" default_from="1"/> -->
   <synchronization_class class_id="1" name="Patient" type="PATIENT" default_to="1" default_from="1"/>

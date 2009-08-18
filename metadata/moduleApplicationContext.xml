@@ -3,6 +3,13 @@
 
 <!-- Beans to add to the current Application context definition -->
 <beans>
+
+	<bean id="synchronizationInterceptorOverride" parent="sessionFactory">
+		<property name="globalSessionInterceptor" ref="synchronizationInterceptor"/>
+	</bean>
+	       
+	<bean id="synchronizationInterceptor" class="org.openmrs.module.sync.api.db.hibernate.HibernateSynchronizationInterceptor"/>
+
     <bean id="@MODULE_ID@UrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
     	<property name="order"><value>1</value></property>
     	<property name="mappings">
