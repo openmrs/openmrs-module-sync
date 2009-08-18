@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<!-- Beans to add to the current Application context definition -->
+<beans>
+    <bean id="@MODULE_ID@UrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+    	<property name="order"><value>1</value></property>
+    	<property name="mappings">
+            <props>
+            	<prop key="module/@MODULE_ID@/admin/synchronizationStatus.list">synchronizationStatusListController</prop>
+				<prop key="module/@MODULE_ID@/admin/synchronizationImport.list">synchronizationImportListController</prop>
+				<prop key="module/@MODULE_ID@/admin/synchronizationHistory.list">synchronizationHistoryListController</prop>
+				<prop key="module/@MODULE_ID@/admin/synchronizationConfig.list">synchronizationConfigListController</prop>
+				<prop key="module/@MODULE_ID@/admin/synchronizationStats.list">synchronizationStatsListController</prop>
+				<prop key="module/@MODULE_ID@/admin/synchronizationConfigServer.form">synchronizationServerFormController</prop>
+				<prop key="module/@MODULE_ID@/admin/synchronizationHelp.list">synchronizationHelpListController</prop>
+	    	</props>
+		</property>
+    </bean>
+
+    <bean id="synchronizationStatusListController" class="@MODULE_PACKAGE@.web.controller.SynchronizationStatusListController">
+		<property name="commandName"><value>synchronizationStatusList</value></property>
+		<property name="formView"><value>/admin/synchronization/synchronizationStatusList</value></property>
+		<property name="successView"><value>synchronizationStatus.list</value></property>
+	</bean>
+	
+	<bean id="synchronizationImportListController"  class="@MODULE_PACKAGE@.web.controller.SynchronizationImportListController">
+		<property name="commandName"><value>synchronizationImportList</value></property>
+		<property name="formView"><value>/admin/synchronization/synchronizationImportList</value></property>
+		<property name="successView"><value>synchronizationImport.list</value></property>
+	</bean>
+
+	<bean id="synchronizationHistoryListController"  class="@MODULE_PACKAGE@.web.controller.SynchronizationHistoryListController">
+		<property name="commandName"><value>synchronizationHistoryList</value></property>
+		<property name="formView"><value>/admin/synchronization/synchronizationHistoryList</value></property>
+		<property name="successView"><value>synchronizationHistory.list</value></property>
+	</bean>
+
+	<bean id="synchronizationConfigListController"  class="@MODULE_PACKAGE@.web.controller.SynchronizationConfigListController">
+		<property name="commandName"><value>synchronizationConfigList</value></property>
+		<property name="formView"><value>/admin/synchronization/synchronizationConfigList</value></property>
+		<property name="successView"><value>synchronizationConfig.list</value></property>
+	</bean>
+
+	<bean id="synchronizationStatsListController"  class="@MODULE_PACKAGE@.web.controller.SynchronizationStatsListController">
+		<property name="commandName"><value>synchronizationStatsList</value></property>
+		<property name="formView"><value>/admin/synchronization/synchronizationStatsList</value></property>
+		<property name="successView"><value>synchronizationStats.list</value></property>
+	</bean>
+
+	<bean id="synchronizationHelpListController"  class="@MODULE_PACKAGE@.web.controller.SynchronizationHelpListController">
+		<property name="commandName"><value>synchronizationHelpList</value></property>
+		<property name="formView"><value>/admin/synchronization/synchronizationHelpList</value></property>
+		<property name="successView"><value>synchronizationHelp.list</value></property>
+	</bean>
+
+	<bean id="synchronizationServerFormController"  class="@MODULE_PACKAGE@.web.controller.SynchronizationServerFormController">
+		<property name="commandName"><value>server</value></property>
+		<property name="formView"><value>/admin/synchronization/synchronizationServerForm</value></property>
+		<property name="successView"><value>synchronizationConfig.list</value></property>
+	</bean>
+    
+</beans>

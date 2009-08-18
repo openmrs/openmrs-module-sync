@@ -1,0 +1,1325 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <concept_name_tag guid="77397336-e90e-102b-968f-001e378eb67e" concept_name_tag_id="1" tag="default" description="name to use when nothing else is available" creator="1" date_created="2007-05-01 00:00:00.0" voided="false"/>
+  
+  <concept concept_id="1" retired="false" datatype_id="2" class_id="7" is_set="false" creator="1" date_created="2007-05-04 09:59:01.0" version="" changed_by="1" date_changed="2007-05-04 09:59:01.0" guid="27917d10-144e-102b-8d9c-e44ed545d86c"/>
+  <concept concept_id="2" retired="false" datatype_id="4" class_id="11" is_set="false" creator="1" date_created="2007-05-04 09:59:01.0" version="" changed_by="1" date_changed="2007-05-04 09:59:01.0" guid="27918117-144e-102b-8d9c-e44ed545d86c"/>
+  <concept concept_id="3" retired="false" datatype_id="4" class_id="11" is_set="false" creator="1" date_created="2007-05-04 09:59:02.0" version="" changed_by="1" date_changed="2007-05-04 09:59:02.0" guid="279183a5-144e-102b-8d9c-e44ed545d86c"/>
+  <concept concept_id="4" retired="false" datatype_id="2" class_id="7" is_set="false" creator="1" date_created="2007-05-04 09:59:03.0" version="" changed_by="1" date_changed="2007-05-04 09:59:03.0" guid="27918606-144e-102b-8d9c-e44ed545d86c"/>
+  <concept concept_id="5" retired="false" datatype_id="4" class_id="16" is_set="false" creator="1" date_created="2008-01-14 18:02:28.0" version="" guid="27918872-144e-102b-8d9c-e44ed545d86c"/>
+  <concept concept_id="6" retired="false" datatype_id="4" class_id="17" is_set="false" creator="1" date_created="2008-01-14 18:03:22.0" version="" guid="27918ac0-144e-102b-8d9c-e44ed545d86c"/>
+  <concept concept_id="7" retired="false" datatype_id="4" class_id="18" is_set="false" creator="1" date_created="2008-01-14 18:04:00.0" version="" guid="27918cff-144e-102b-8d9c-e44ed545d86c"/>
+  <concept concept_id="8" retired="false" datatype_id="4" class_id="18" is_set="false" creator="1" date_created="2008-01-14 18:04:55.0" version="" guid="27918f41-144e-102b-8d9c-e44ed545d86c"/>
+  <concept concept_id="9" retired="false" datatype_id="4" class_id="3" is_set="false" creator="1" date_created="2008-01-14 18:08:14.0" version="" guid="27919181-144e-102b-8d9c-e44ed545d86c"/>
+  <concept concept_id="10" retired="false" datatype_id="1" class_id="1" is_set="false" creator="1" date_created="2008-01-14 18:08:14.0" version="" guid="9d053f97-159f-102b-8d9c-e44ed545d86c"/>
+  <concept concept_id="11" retired="false" datatype_id="4" class_id="16" is_set="false" creator="1" date_created="2008-01-14 18:02:28.0" version="" guid="fafe83ae-15c5-102b-8d9c-e44ed545d86c"/>
+
+  <concept_answer concept_answer_id="1" concept_id="1" answer_concept="2" creator="1" date_created="2007-05-04 09:59:02.0" guid="27c58de9-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_answer concept_answer_id="2" concept_id="1" answer_concept="3" creator="1" date_created="2007-05-04 09:59:02.0" guid="27c5912d-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_answer concept_answer_id="3" concept_id="4" answer_concept="2" creator="1" date_created="2007-05-04 09:59:03.0" guid="27c59308-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_answer concept_answer_id="4" concept_id="4" answer_concept="3" creator="1" date_created="2007-05-04 09:59:03.0" guid="27c594e0-144e-102b-8d9c-e44ed545d86c"/>
+
+  <concept_class retired="false" concept_class_id="1" name="Test" description="Acq. during patient encounter (vitals, labs, etc.)" creator="1" date_created="2004-02-02 00:00:00.0" guid="27f7230a-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="2" name="Procedure" description="Describes a clinical procedure" creator="1" date_created="2004-03-02 00:00:00.0" guid="27f72d33-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="3" name="Drug" description="Drug" creator="1" date_created="2004-02-02 00:00:00.0" guid="27f72f3b-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="4" name="Diagnosis" description="Conclusion drawn through findings" creator="1" date_created="2004-02-02 00:00:00.0" guid="27f73119-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="5" name="Finding" description="Practitioner observation/finding" creator="1" date_created="2004-03-02 00:00:00.0" guid="27f73301-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="6" name="Anatomy" description="Anatomic sites / descriptors" creator="1" date_created="2004-03-02 00:00:00.0" guid="27f734e2-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="7" name="Question" description="Question (eg, patient history, SF36 items)" creator="1" date_created="2004-03-02 00:00:00.0" guid="27f736c8-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="8" name="LabSet" description="Term to describe laboratory sets" creator="1" date_created="2004-03-02 00:00:00.0" guid="27f738ae-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="9" name="MedSet" description="Term to describe medication sets" creator="1" date_created="2004-02-02 00:00:00.0" guid="27f73a97-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="10" name="ConvSet" description="Term to describe convenience sets" creator="1" date_created="2004-03-02 00:00:00.0" guid="27f73c75-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="11" name="Misc" description="Terms which don&apos;t fit other categories" creator="1" date_created="2004-03-02 00:00:00.0" guid="27f73e4d-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="12" name="Symptom" description="Patient-reported observation" creator="1" date_created="2004-10-04 00:00:00.0" guid="27f7402d-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="13" name="Symptom/Finding" description="Observation that can be reported from patient or found on exam" creator="1" date_created="2004-10-04 00:00:00.0" guid="27f7424e-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="14" name="Specimen" description="Body or fluid specimen" creator="1" date_created="2004-12-02 00:00:00.0" guid="27f7443d-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="15" name="Misc Order" description="Orderable items which aren&apos;t tests or drugs" creator="1" date_created="2005-02-17 00:00:00.0" guid="27f7461a-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="16" name="Program" description="A treatment program or study" creator="1" date_created="2008-01-14 18:01:12.0" guid="27f74806-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="17" name="Workflow" description="A workflow within a program" creator="1" date_created="2008-01-14 18:01:33.0" guid="27f749ef-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_class retired="false" concept_class_id="18" name="State" description="A state within a workflow" creator="1" date_created="2008-01-14 18:01:48.0" guid="27f74beb-144e-102b-8d9c-e44ed545d86c"/>
+
+  <concept_datatype retired="false" concept_datatype_id="1" name="Numeric" hl7_abbreviation="NM" description="Numeric value, including integer or float (e.g., creatinine, weight)" creator="1" date_created="2004-02-02 00:00:00.0" guid="28225b03-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_datatype retired="false" concept_datatype_id="2" name="Coded" hl7_abbreviation="CWE" description="Value determined by term dictionary lookup (i.e., term identifier)" creator="1" date_created="2004-02-02 00:00:00.0" guid="28225eb1-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_datatype retired="false" concept_datatype_id="3" name="Text" hl7_abbreviation="ST" description="Free text" creator="1" date_created="2004-02-02 00:00:00.0" guid="282260c1-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_datatype retired="false" concept_datatype_id="4" name="N/A" hl7_abbreviation="ZZ" description="Not associated with a datatype (e.g., term answers, sets)" creator="1" date_created="2004-02-02 00:00:00.0" guid="282262c0-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_datatype retired="false" concept_datatype_id="5" name="Document" hl7_abbreviation="RP" description="Pointer to a binary or text-based document (e.g., clinical document, RTF, XML, EKG, image, etc.) stored in complex_obs table" creator="1" date_created="2004-04-15 00:00:00.0" guid="282264b4-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_datatype retired="false" concept_datatype_id="6" name="Date" hl7_abbreviation="DT" description="Absolute date" creator="1" date_created="2004-07-22 00:00:00.0" guid="282266ad-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_datatype retired="false" concept_datatype_id="7" name="Time" hl7_abbreviation="TM" description="Absolute time of day" creator="1" date_created="2004-07-22 00:00:00.0" guid="28226891-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_datatype retired="false" concept_datatype_id="8" name="Datetime" hl7_abbreviation="TS" description="Absolute date and time" creator="1" date_created="2004-07-22 00:00:00.0" guid="28226f15-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_datatype retired="false" concept_datatype_id="10" name="Boolean" hl7_abbreviation="BIT" description="Boolean value (yes/no, true/false)" creator="1" date_created="2004-08-26 00:00:00.0" guid="2822710b-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_datatype retired="false" concept_datatype_id="11" name="Rule" hl7_abbreviation="ZZ" description="Value derived from other data" creator="1" date_created="2006-09-11 13:22:00.0" guid="28227302-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_datatype retired="false" concept_datatype_id="12" name="Structured Numeric" hl7_abbreviation="SN" description="Complex numeric values possible (ie, &lt;5, 1-10, etc.)" creator="1" date_created="2005-08-06 00:00:00.0" guid="282274fc-144e-102b-8d9c-e44ed545d86c"/>
+
+  <concept_name concept_name_id="1" concept_id="1" name="CAUSE OF DEATH" locale="en" voided="0" creator="1" date_created="2007-05-04 09:59:01.0" guid="288e609a-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_name concept_name_id="2" concept_id="2" name="OTHER NON-CODED" locale="en" voided="0" creator="1" date_created="2007-05-04 09:59:01.0" guid="288e6474-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_name concept_name_id="3" concept_id="3" name="NONE" locale="en" voided="0" creator="1" date_created="2007-05-04 09:59:02.0" guid="288e66b1-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_name concept_name_id="4" concept_id="4" name="REASON ORDER STOPPED" locale="en" voided="0" creator="1" date_created="2007-05-04 09:59:03.0" guid="288e68da-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_name concept_name_id="5" concept_id="5" name="HIV PROGRAM" locale="en" voided="0" creator="1" date_created="2008-01-14 18:02:28.0" guid="288e6b09-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_name concept_name_id="6" concept_id="6" name="TREATMENT STATUS" locale="en" voided="0" creator="1" date_created="2008-01-14 18:03:22.0" guid="288e6d26-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_name concept_name_id="7" concept_id="7" name="FOLLOWING" locale="en" voided="0" creator="1" date_created="2008-01-14 18:04:00.0" guid="288e6f42-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_name concept_name_id="8" concept_id="8" name="PATIENT CURED" locale="en" voided="0" creator="1" date_created="2008-01-14 18:04:55.0" guid="288e7168-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_name concept_name_id="9" concept_id="9" name="IBUPROFEN" locale="en" voided="0" creator="1" date_created="2008-01-14 18:08:14.0" guid="288e7391-144e-102b-8d9c-e44ed545d86c"/>
+  <concept_name concept_name_id="10" concept_id="10" name="WEIGHT" short_name="WT" locale="en" voided="0" creator="1" date_created="2008-01-14 18:08:14.0" guid="456a3253-15a0-102b-8d9c-e44ed545d86c"/>
+  <concept_name concept_name_id="11" concept_id="11" name="TB PROGRAM" locale="en" voided="0" creator="1" date_created="2008-01-14 18:02:28.0" guid="e449ee63-15c5-102b-8d9c-e44ed545d86c"/>
+
+  <concept_description concept_description_id="1" concept_id="1" description="Describes a cause of death for a patient.  Coded answer." locale="en" creator="1" date_created="2006-04-30" guid="37b7c34c-e897-102b-8dae-001e378eb67e"/>
+  <concept_description concept_description_id="2" concept_id="2" description="Non-coded answer to a coded question - allows other as a coded answer." locale="en" creator="1" date_created="2006-04-30" guid="5ea2df46-e897-102b-8dae-001e378eb67e"/>
+  <concept_description concept_description_id="3" concept_id="3" description="Generic descriptive answer." locale="en" creator="1" date_created="2006-04-30" guid="6523ae4a-e897-102b-8dae-001e378eb67e"/>
+  <concept_description concept_description_id="4" concept_id="4" description="Describes a reason for stopping an order.  Coded answer." locale="en" creator="1" date_created="2006-04-30" guid="69e2e8ec-e897-102b-8dae-001e378eb67e"/>
+  <concept_description concept_description_id="5" concept_id="5" description="Program for finding/treating HIV" locale="en" creator="1" date_created="2006-04-30" guid="6e6823f0-e897-102b-8dae-001e378eb67e"/>
+  <concept_description concept_description_id="6" concept_id="6" description="Workflow within a program, indicating where the patient is in their course of treatment" locale="en" creator="1" date_created="2006-04-30" guid="72a93666-e897-102b-8dae-001e378eb67e"/>
+  <concept_description concept_description_id="7" concept_id="7" description="A treatment status, indicating that the patient is being followed, but is not yet on treatment" locale="en" creator="1" date_created="2006-04-30" guid="77885216-e897-102b-8dae-001e378eb67e"/>
+  <concept_description concept_description_id="8" concept_id="8" description="Indicates that the patient has been cured of the relevant disease" locale="en" creator="1" date_created="2006-04-30" guid="7b98770a-e897-102b-8dae-001e378eb67e"/>
+  <concept_description concept_description_id="9" concept_id="9" description="Used by athletes after sporting events" locale="en" creator="1" date_created="2006-04-30" guid="7f298f9e-e897-102b-8dae-001e378eb67e"/>
+  <concept_description concept_description_id="10" concept_id="10" description="Patient's weight in kilograms" locale="en" creator="1" date_created="2006-04-30" guid="837d2baa-e897-102b-8dae-001e378eb67e"/>
+  <concept_description concept_description_id="11" concept_id="11" description="Program for finding/treating tuberculosis" locale="en" creator="1" date_created="2006-04-30" guid="87c2212a-e897-102b-8dae-001e378eb67e"/>
+
+  <concept_numeric concept_id="10" hi_absolute="250" low_absolute="0" units="kg" precise="1"/>
+
+  <concept_set/>
+
+  <concept_synonym/>
+
+  <drug retired="false" drug_id="1" concept_id="9" name="Advil" combination="false" dose_strength="200.0" maximum_daily_dose="1600.0" minimum_daily_dose="50.0" units="mg" creator="1" date_created="2008-01-14 18:09:57.0" guid="29dde6a3-144e-102b-8d9c-e44ed545d86c"/>
+
+  <drug_order order_id="1" drug_inventory_id="1" dose="3" equivalent_daily_dose="3" units="tabs(s)" frequency="1/day x 3 days/week"	prn="0" complex="0"/>
+
+  <encounter encounter_id="1" patient_id="2" provider_id="1" location_id="2" encounter_datetime="1978-06-11 00:00:00.0" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" guid="5afa93e5-19c2-102b-8d9c-e44ed545d86c"/>
+
+  <encounter_type retired="false" encounter_type_id="1" name="ADULTINITIAL" description="Outpatient Adult Initial Visit" creator="1" date_created="2005-02-24 00:00:00.0" guid="2a5cd0d5-144e-102b-8d9c-e44ed545d86c"/>
+  <encounter_type retired="false" encounter_type_id="2" name="ADULTRETURN" description="Outpatient Adult Return Visit" creator="1" date_created="2005-02-24 00:00:00.0" guid="2a5cd42e-144e-102b-8d9c-e44ed545d86c"/>
+  <encounter_type retired="false" encounter_type_id="3" name="PEDSINITIAL" description="Outpatient Pediatric Initial Visit" creator="1" date_created="2005-02-24 00:00:00.0" guid="2a5cd620-144e-102b-8d9c-e44ed545d86c"/>
+  <encounter_type retired="false" encounter_type_id="4" name="PEDSRETURN" description="Outpatient Pediatric Return Visit" creator="1" date_created="2005-02-24 00:00:00.0" guid="2a5cd7ea-144e-102b-8d9c-e44ed545d86c"/>
+  <encounter_type retired="false" encounter_type_id="5" name="DELETETEST" description="Test Delete" creator="1" date_created="2005-02-24 00:00:00.0" guid="2a5cd7ea-144e-102b-8d9c-e44ed545d86d"/>
+
+  <location retired="false" location_id="1" name="Unknown Location" address1="" address2="" city_village="" state_province="" postal_code="" country="" creator="1" date_created="2005-09-22 00:00:00.0" guid="2d865af4-144e-102b-8d9c-e44ed545d86c"/>
+  <location retired="false" location_id="2" name="Someplace" description="Some random location" address1="" address2="" city_village="" state_province="" postal_code="" country="" latitude="" longitude="" creator="1" date_created="2008-01-14 17:54:35.0" guid="2d865f38-144e-102b-8d9c-e44ed545d86c"/>
+
+  <obs obs_id="1" person_id="2" concept_id="10" encounter_id="1" obs_datetime="1978-04-11 00:00:00.0" location_id="2" value_numeric="12.3" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" guid="d9dfb690-19c1-102b-8d9c-e44ed545d86c"/>
+  <obs obs_id="2" person_id="2" concept_id="10" encounter_id="1" obs_datetime="1978-05-11 00:00:00.0" location_id="2" value_numeric="23.4" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" guid="11ce07ae-19c2-102b-8d9c-e44ed545d86c"/>
+  <obs obs_id="3" person_id="2" concept_id="10" encounter_id="1" obs_datetime="1978-06-11 00:00:00.0" location_id="2" value_numeric="34.5" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" guid="1a9c0d7b-19c2-102b-8d9c-e44ed545d86c"/>
+
+  <order_type retired="false" order_type_id="1" name="Drug" description="A drug order" creator="1" date_created="2008-01-14 17:56:26.0" guid="2ef6da52-144e-102b-8d9c-e44ed545d86c"/>
+  
+  <orders order_id="1" order_type_id="1" concept_id="9" start_date="2006-01-02 00:00:00" discontinued="0" patient_id="2" creator="1" date_created="2006-01-02 00:00:00" voided="0" guid="fc905e87-11ef-102b-a33e-82966c5b8177"/>
+  
+  <patient patient_id="2" creator="1" date_created="2008-01-14 17:56:26.0" voided="0"/>
+  <patient patient_id="3" creator="1" date_created="2008-01-14 17:56:26.0" voided="0"/>
+
+  <patient_identifier patient_identifier_id = "2" patient_id="2" identifier="ID1234" identifier_type="2" preferred="1" location_id="1" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" guid="6b920848-1b90-102b-8082-d8cf852a43d2"/>
+  <patient_identifier patient_identifier_id = "3" patient_id="3" identifier="ID4381924" identifier_type="2" preferred="1" location_id="1" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" guid="75ca462a-1b90-102b-8082-d8cf852a43d2"/>
+  <patient_identifier_type retired="false" patient_identifier_type_id="1" name="OpenMRS Identification Number" description="Unique number used in OpenMRS" format="" check_digit="true" creator="1" date_created="2005-09-22 00:00:00.0" required="false" guid="3010e3ee-144e-102b-8d9c-e44ed545d86c"/>
+  <patient_identifier_type retired="false" patient_identifier_type_id="2" name="Old Identification Number" description="Number given out prior to the OpenMRS system (No check digit)" format="" check_digit="false" creator="1" date_created="2005-09-22 00:00:00.0" required="false" guid="3010e86a-144e-102b-8d9c-e44ed545d86c"/>
+
+  <patient_program patient_program_id="1" patient_id="3" program_id="1" date_enrolled="2006-04-11 00:00:00.0" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" guid="0bb5846a-168d-102b-8d9c-e44ed545d86c"/>
+
+  <patient_state patient_state_id="1" patient_program_id="1" state="1" start_date="2006-04-11 00:00:00.0" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" guid="11d71368-168d-102b-8d9c-e44ed545d86c"/>
+
+  <person person_id="1" gender="M" dead="0" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" guid="31712910-144e-102b-8d9c-e44ed545d86c"/>
+  <person person_id="2" gender="F" dead="0" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" guid="577d58db-15a5-102b-8d9c-e44ed545d86c"/>
+  <person person_id="3" gender="F" dead="0" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" guid="196bef28-168c-102b-8d9c-e44ed545d86c"/>
+
+  <person_address person_address_id="2" person_id="2" preferred="true" address1="1050 Wishard Blvd." address2="RG5" city_village="Indianapolis" state_province="IN" postal_code="46202" country="USA" latitude="" longitude="" creator="1" date_created="2005-09-22 00:00:00.0" voided="false" void_reason="" guid="196bef28-168c-102b-8d9c-e44ed545d111"/>
+  <person_address person_address_id="7" person_id="3" preferred="false" address1="" address2="" city_village="Kapina" state_province="" postal_code="" country="" latitude="" longitude="" creator="1" date_created="2006-01-18 00:00:00.0" voided="false" void_reason="" guid="196bef28-168c-102b-8d9c-e44ed545d222"/>
+
+  <person_attribute/>
+
+  <person_attribute_type retired="false" person_attribute_type_id="1" name="Race" description="Group of persons related by common descent or heredity" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" guid="322aa53b-144e-102b-8d9c-e44ed545d86c"/>
+  <person_attribute_type retired="false" person_attribute_type_id="2" name="Birthplace" description="Location of persons birth" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" guid="322aa923-144e-102b-8d9c-e44ed545d86c"/>
+  <person_attribute_type retired="false" person_attribute_type_id="3" name="Citizenship" description="Country of which this person is a member" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" guid="322aab60-144e-102b-8d9c-e44ed545d86c"/>
+  <person_attribute_type retired="false" person_attribute_type_id="4" name="Mother&apos;s Name" description="First or last name of this person&apos;s mother" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" guid="322aad91-144e-102b-8d9c-e44ed545d86c"/>
+  <person_attribute_type retired="false" person_attribute_type_id="5" name="Civil Status" description="Marriage status of this person" format="org.openmrs.Concept" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" guid="322aafb8-144e-102b-8d9c-e44ed545d86c"/>
+  <person_attribute_type retired="false" person_attribute_type_id="6" name="Health District" description="District/region in which this patient&apos; home health center resides" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" guid="322ab1f4-144e-102b-8d9c-e44ed545d86c"/>
+  <person_attribute_type retired="false" person_attribute_type_id="7" name="Health Center" description="Specific Location of this person&apos;s home health center." format="org.openmrs.Location" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" guid="322ab426-144e-102b-8d9c-e44ed545d86c"/>
+
+  <person_name person_name_id="1" preferred="true" person_id="1" given_name="Super" middle_name="" family_name="User" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" guid="3272ce85-144e-102b-8d9c-e44ed545d86c"/>
+  <person_name person_name_id="2" preferred="true" person_id="2" given_name="Clark" middle_name="" family_name="Kent" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" guid="5446aa86-15a6-102b-8d9c-e44ed545d86c"/>
+  <person_name person_name_id="3" preferred="true" person_id="3" given_name="Lois" middle_name="" family_name="Lane" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" guid="2e1ada24-168c-102b-8d9c-e44ed545d86c"/>
+
+  <privilege privilege="Add Concept Proposal" description="Able to add concept proposals to the system" guid="32afbf65-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Add Concepts" description="Able to add concepts to the dictionary" guid="32afc3a3-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Add Encounters" description="Able to add patient encounters" guid="32afc607-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Add FormEntry Archive" description="Allows the user to add the formentry archive" guid="32afc89d-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Add FormEntry Error" description="Allows a user to add a formentry error item" guid="32afcb15-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Add FormEntry Queue" description="Allows user to add a queue item to database" guid="32afcdee-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Add Forms" description="Able to add forms" guid="32afd084-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Add Observations" description="Able to add patient observations" guid="32afd2f3-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Add Orders" description="Able to add orders" guid="32afd530-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Add Patients" description="Able to add patients" guid="32afd777-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Add People" description="Able to add person objects" guid="32afd9bd-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Add Reports" description="Able to add reports" guid="32afdc04-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Add Users" description="Able to add users to OpenMRS" guid="32afde28-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Delete Concepts" description="Able to delete concepts from the dictionary" guid="32afe05a-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Delete Encounters" description="Able to delete patient encounters" guid="32afe2aa-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Delete FormEntry Archive" description="Allows the user to delete a formentry archive" guid="32afe508-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Delete FormEntry Error" description="Allows a user to delete a formentry error item" guid="32afe771-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Delete FormEntry Queue" description="Allows the user to delete formentry queue items" guid="32afe9f7-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Delete Forms" description="Able to delete forms" guid="32afec9b-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Delete Observations" description="Able to delete patient observations" guid="32afef15-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Delete Orders" description="Able to delete orders" guid="32aff1c7-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Delete Patients" description="Able to delete patients" guid="32b00a95-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Delete People" description="Able to delete objects" guid="32b00d12-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Delete Reports" description="Able to delete reports" guid="32b00f84-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Delete Users" description="Able to delete users in OpenMRS" guid="32b011c0-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Edit Concept Proposal" description="Able to edit concept proposals in the system" guid="32b01400-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Edit Concepts" description="Able to edit concepts in the dictionary" guid="32b0166c-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Edit Encounters" description="Able to edit patient encounters" guid="32b02604-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Edit FormEntry Archive" description="Allows the user to edit a formentry archive" guid="32b02870-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Edit FormEntry Error" description="Allows a user to edit a formentry error item" guid="32b02ae2-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Edit FormEntry Queue" description="Allows the user to edit the formentry queue" guid="32b02d67-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Edit Forms" description="Able to edit forms" guid="32b02fe7-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Edit Observations" description="Able to edit patient observations" guid="32b0321c-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Edit Orders" description="Able to edit orders" guid="32b03477-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Edit Patient Programs" description="Able to edit patient programs" guid="32b036ca-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Edit Patients" description="Able to edit patients" guid="32b0393f-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Edit People" description="Able to edit person objects" guid="32b03b89-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Edit Reports" description="Able to edit reports" guid="32b03e25-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Edit User Passwords" description="Able to change the passwords of users in OpenMRS" guid="32b04089-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Edit Users" description="Able to edit users in OpenMRS" guid="32b04300-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Form Entry" description="Allows user to access Form Entry pages/functions" guid="32b04542-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Alerts" description="Able to add/edit/delete user alerts" guid="32b0477a-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Concept Classes" description="Able to add/edit/delete concept classes" guid="32b049c7-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Concept Datatypes" description="Able to add/edit/delete concept datatypes" guid="32b04c36-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Encounter Types" description="Able to add/edit/delete encounter types" guid="32b06621-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Field Types" description="Able to add/edit/delete field types" guid="32b068b4-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage FormEntry XSN" description="Allows user to upload and edit the xsns stored on the server" guid="32b06b29-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Global Properties" description="Able to add/edit/delete global properties" guid="32b06ceb-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Identifier Types" description="Able to add/edit/delete patient identifier types" guid="32b06e93-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Locations" description="Able to add/edit/delete locations" guid="32b07044-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Mime Types" description="Able to add/edit/delete obs mime types" guid="32b071e7-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Modules" description="Able to add/remove modules to the system" guid="32b07393-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Order Types" description="Able to add/edit/delete order types" guid="32b07536-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Person Attribute Types" description="Able to add/edit/delete person attribute tyeps" guid="32b076e1-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Privileges" description="Able to add/edit/delete privileges" guid="32b078a0-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Programs" description="Able to add/view/delete patient programs" guid="32b07a51-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Relationship Types" description="Able to add/edit/delete relationship types" guid="32b08347-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Relationships" description="Able to add/edit/delete relationships" guid="32b0854c-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Scheduler" description="Able to add/edit/remove scheduled tasks" guid="32b08713-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Manage Tribes" description="Able to add/edit/delete tribes" guid="32b088ca-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Patient Dashboard - View Demographics Section" description="Able to view the &apos;Demographics&apos; tab on the patient dashboard" guid="32b08abb-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Patient Dashboard - View Encounters Section" description="Able to view the &apos;Encounters&apos; tab on the patient dashboard" guid="32b08c9e-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Patient Dashboard - View Forms Section" description="Able to view the &apos;Forms&apos; tab on the patient dashboard" guid="32b08fbd-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Patient Dashboard - View Graphs Section" description="Able to view the &apos;Graphs&apos; tab on the patient dashboard" guid="32b0919b-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Patient Dashboard - View Overview Section" description="Able to view the &apos;Overview&apos; tab on the patient dashboard" guid="32b09368-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Patient Dashboard - View Patient Summary" description="Able to view the &apos;Summary&apos; tab on the patient dashboard" guid="32b09540-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Patient Dashboard - View Regimen Section" description="Able to view the &apos;Regimen&apos; tab on the patient dashboard" guid="32b09742-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="Upload XSN" description="Allows user to upload/overwrite the XSNs defined for forms" guid="32b0b310-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View Administration Functions" description="Able to view the &apos;Administration&apos; link in the navigation bar" guid="32b0b4e0-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View Concepts" description="Able to view concept entries" guid="32b0b699-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View Encounters" description="Able to view patient encounters" guid="32b0b83c-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View FormEntry Archive" description="Allows the user to view the formentry archive" guid="32b0b9eb-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View FormEntry Error" description="Allows a user to view a formentry error" guid="32b0bb99-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View FormEntry Queue" description="Allows user to view the queue items" guid="32b0bd52-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View Forms" description="Able to view forms" guid="32b0bf0e-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View Navigation Menu" description="Able to view the navigation menu (Home, View Patients, Dictionary, Administration, My Profile)" guid="32b0c0b7-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View Observations" description="Able to view patient observations" guid="32b0c26e-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View Orders" description="Able to view orders" guid="32b0c419-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View Patient Cohorts" description="Able to view patient cohorts" guid="32b0c5ca-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View Patients" description="Able to view patients" guid="32b0c783-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View People" description="Able to view person objects" guid="32b0c932-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View Programs" description="Able to view patient programs" guid="32b0cadd-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View Reports" description="Able to view reports" guid="32b0cc8b-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View Unpublished Forms" description="Able to view and fill out unpublished forms" guid="32b0ce3f-144e-102b-8d9c-e44ed545d86c"/>
+  <privilege privilege="View Users" description="Able to view users in OpenMRS" guid="32b0d006-144e-102b-8d9c-e44ed545d86c"/>
+
+  <program program_id="1" retired="false" name="test program" description="test program" concept_id="5" creator="1" date_created="2008-01-14 18:06:04.0" guid="32eb8899-144e-102b-8d9c-e44ed545d86c"/>
+
+  <program_workflow program_workflow_id="1" program_id="1" concept_id="6" creator="1" date_created="2008-01-14 18:06:04.0" retired="false" guid="3342178b-144e-102b-8d9c-e44ed545d86c"/>
+
+  <program_workflow_state program_workflow_state_id="1" program_workflow_id="1" concept_id="7" initial="true" terminal="false" creator="1" date_created="2008-01-14 18:06:27.0" retired="false" guid="33807f36-144e-102b-8d9c-e44ed545d86c"/>
+  <program_workflow_state program_workflow_state_id="2" program_workflow_id="1" concept_id="8" initial="false" terminal="true" creator="1" date_created="2008-01-14 18:06:27.0" retired="false" guid="33808343-144e-102b-8d9c-e44ed545d86c"/>
+
+  <relationship/>
+
+  <relationship_type relationship_type_id="1" a_is_to_b="Doctor" b_is_to_a="Patient" preferred="0" weight="0" description="Relationship from a primary care provider to the patient" creator="1" date_created="2007-05-04 09:59:22.0" guid="33da8d6d-144e-102b-8d9c-e44ed545d86c"/>
+  <relationship_type relationship_type_id="2" a_is_to_b="Sibling" b_is_to_a="Sibling" preferred="0" weight="0" description="Relationship between brother/sister, brother/brother, and sister/sister" creator="1" date_created="2007-05-04 09:59:22.0" guid="33da91ca-144e-102b-8d9c-e44ed545d86c"/>
+  <relationship_type relationship_type_id="3" a_is_to_b="Parent" b_is_to_a="Child" preferred="0" weight="0" description="Relationship from a mother/father to the child" creator="1" date_created="2007-05-04 09:59:22.0" guid="33da93dd-144e-102b-8d9c-e44ed545d86c"/>
+  <relationship_type relationship_type_id="4" a_is_to_b="Aunt/Uncle" b_is_to_a="Niece/Nephew" preferred="0" weight="0" description="" creator="1" date_created="2007-05-04 09:59:22.0" guid="33da95d7-144e-102b-8d9c-e44ed545d86c"/>
+
+  <role role="Anonymous" description="Privileges for non-authenticated users." guid="34b48ab4-144e-102b-8d9c-e44ed545d86c"/>
+  <role role="Authenticated" description="Privileges gained once authentication has been established." guid="34b48e9c-144e-102b-8d9c-e44ed545d86c"/>
+  <role role="Provider" description="All users with the &apos;Provider&apos; role will appear as options in the default Infopath " guid="34b490d6-144e-102b-8d9c-e44ed545d86c"/>
+  <role role="System Developer" description="Developers of the OpenMRS .. have additional access to change fundamental structure of the database model." guid="34b49350-144e-102b-8d9c-e44ed545d86c"/>
+
+  <role_privilege/>
+
+  <role_role/>
+
+  <user_role user_id="1" role="System Developer"/> <!-- guid="35a05ac6-144e-102b-8d9c-e44ed545d86c" -->
+
+  <users user_id="1" system_id="admin" username="" password="4a1750c8607dfa237de36c6305715c223415189" salt="c788c6ad82a157b712392ca695dfcf2eed193d7f" creator="1" date_created="2005-01-01 00:00:00.0" voided="false"/>  
+
+  <field_type field_type_id="1" name="Concept" description="" is_set="false" creator="2" date_created="2005-02-22 12:43:00.0" guid="a4fb1158-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field_type field_type_id="2" name="Database element" description="" is_set="false" creator="2" date_created="2005-02-22 12:43:00.0" guid="a4fb1503-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field_type field_type_id="3" name="Set of Concepts" description="" is_set="true" creator="2" date_created="2005-02-22 12:43:00.0" guid="a4fb171e-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field_type field_type_id="4" name="Miscellaneous Set" description="" is_set="true" creator="2" date_created="2005-02-22 12:43:00.0" guid="a4fb1920-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field_type field_type_id="5" name="Section" description="" is_set="true" creator="4" date_created="2005-02-22 12:43:00.0" guid="a4fb1b25-fb9e-102a-b4cd-d5399a5cfee6"/>
+
+  <form form_id="1" name="BASIC FORM" version="0.1" build="1" published="0" description="This form contains only the common/core elements needed for most forms" encounter_type="1" template="http://schema.pih.org/FormEntry/1" xslt="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+
+
+
+&lt;!--
+
+OpenMRS FormEntry Form HL7 Translation
+
+
+
+This XSLT is used to translate OpenMRS forms from XML into HL7 2.5 format
+
+
+
+@author Burke Mamlin, MD
+
+@author Ben Wolfe
+
+@version 1.9.4
+
+
+
+1.9.4 - add support for message uid (as HL7 control id) and transform of patient.health_center to Discharge to Location (PV1-37)
+
+1.9.3 - fixed rounding error on timestamp (tenths of seconds getting rounded up, causing &quot;60&quot; seconds in some cases) 
+
+1.9.2 - first generally useful version
+
+--&gt;
+
+
+
+&lt;xsl:stylesheet version=&quot;2.0&quot; xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; xmlns:fn=&quot;http://www.w3.org/2005/xpath-functions&quot; xmlns:xdt=&quot;http://www.w3.org/2005/xpath-datatypes&quot;&gt;
+
+	&lt;xsl:output method=&quot;text&quot; version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; indent=&quot;no&quot;/&gt;
+
+
+
+&lt;xsl:variable name=&quot;SENDING-APPLICATION&quot;&gt;FORMENTRY&lt;/xsl:variable&gt;
+
+&lt;xsl:variable name=&quot;SENDING-FACILITY&quot;&gt;AMRS.ELD&lt;/xsl:variable&gt;
+
+&lt;xsl:variable name=&quot;RECEIVING-APPLICATION&quot;&gt;HL7LISTENER&lt;/xsl:variable&gt;
+
+&lt;xsl:variable name=&quot;RECEIVING-FACILITY&quot;&gt;AMRS.ELD&lt;/xsl:variable&gt;
+
+&lt;xsl:variable name=&quot;PATIENT-AUTHORITY&quot;&gt;&lt;/xsl:variable&gt; &lt;!-- leave blank for internal id, max 20 characters --&gt;
+
+                                                       &lt;!-- for now, must match patient_identifier_type.name --&gt;
+
+&lt;xsl:variable name=&quot;FORM-AUTHORITY&quot;&gt;AMRS.ELD.FORMID&lt;/xsl:variable&gt; &lt;!-- max 20 characters --&gt;
+
+
+
+&lt;xsl:template match=&quot;/&quot;&gt;
+
+	&lt;xsl:apply-templates /&gt;
+
+&lt;/xsl:template&gt;
+
+
+
+&lt;!-- Form template --&gt;
+
+&lt;xsl:template match=&quot;form&quot;&gt;
+
+	&lt;!-- MSH Header --&gt;
+
+	&lt;xsl:text&gt;MSH|^~\&amp;amp;&lt;/xsl:text&gt;   &lt;!-- Message header, field separator, and encoding characters --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- MSH-3 Sending application --&gt;
+
+	&lt;xsl:value-of select=&quot;$SENDING-APPLICATION&quot; /&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- MSH-4 Sending facility --&gt;
+
+	&lt;xsl:value-of select=&quot;$SENDING-FACILITY&quot; /&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- MSH-5 Receiving application --&gt;
+
+	&lt;xsl:value-of select=&quot;$RECEIVING-APPLICATION&quot; /&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- MSH-6 Receiving facility --&gt;
+
+	&lt;xsl:value-of select=&quot;$RECEIVING-FACILITY&quot; /&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- MSH-7 Date/time message sent --&gt;
+
+	&lt;xsl:call-template name=&quot;hl7Timestamp&quot;&gt;
+
+		&lt;xsl:with-param name=&quot;date&quot; select=&quot;current-dateTime()&quot; /&gt;
+
+	&lt;/xsl:call-template&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- MSH-8 Security --&gt;
+
+	&lt;xsl:text&gt;|ORU^R01&lt;/xsl:text&gt;       &lt;!-- MSH-9 Message type ^ Event type (observation report unsolicited) --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- MSH-10 Message control ID --&gt;
+
+	&lt;xsl:choose&gt;
+
+		&lt;xsl:when test=&quot;header/uid&quot;&gt;
+
+			&lt;xsl:value-of select=&quot;header/uid&quot; /&gt;
+
+		&lt;/xsl:when&gt;
+
+		&lt;xsl:otherwise&gt;
+
+			&lt;xsl:value-of select=&quot;patient/patient.patient_id&quot; /&gt;
+
+			&lt;xsl:call-template name=&quot;hl7Timestamp&quot;&gt;
+
+				&lt;xsl:with-param name=&quot;date&quot; select=&quot;current-dateTime()&quot; /&gt;
+
+			&lt;/xsl:call-template&gt;
+
+		&lt;/xsl:otherwise&gt;
+
+	&lt;/xsl:choose&gt;
+
+	&lt;xsl:text&gt;|P&lt;/xsl:text&gt;             &lt;!-- MSH-11 Processing ID --&gt;
+
+	&lt;xsl:text&gt;|2.5&lt;/xsl:text&gt;           &lt;!-- MSH-12 HL7 version --&gt;
+
+	&lt;xsl:text&gt;|1&lt;/xsl:text&gt;             &lt;!-- MSH-13 Message sequence number --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- MSH-14 Continuation Pointer --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- MSH-15 Accept Acknowledgement Type --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- MSH-16 Application Acknowledgement Type --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- MSH-17 Country Code --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- MSH-18 Character Set --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- MSH-19 Principal Language of Message --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- MSH-20 Alternate Character Set Handling Scheme --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- MSH-21 Message Profile Identifier --&gt;
+
+	&lt;xsl:value-of select=&quot;@id&quot; /&gt;
+
+	&lt;xsl:text&gt;^&lt;/xsl:text&gt;
+
+	&lt;xsl:value-of select=&quot;$FORM-AUTHORITY&quot; /&gt;
+
+	&lt;xsl:text&gt;&amp;#x000d;&lt;/xsl:text&gt;
+
+
+
+	&lt;!-- PID header --&gt;
+
+	&lt;xsl:text&gt;PID&lt;/xsl:text&gt;            &lt;!-- Message type --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PID-1 Set ID --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PID-2 (deprecated) Patient ID --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PID-3 Patient Identifier List --&gt;
+
+	&lt;xsl:call-template name=&quot;patient_id&quot;&gt;
+
+		&lt;xsl:with-param name=&quot;pid&quot; select=&quot;patient/patient.patient_id&quot; /&gt;
+
+		&lt;xsl:with-param name=&quot;auth&quot; select=&quot;$PATIENT-AUTHORITY&quot; /&gt;
+
+		&lt;xsl:with-param name=&quot;type&quot; select=&quot;L&quot; /&gt;
+
+	&lt;/xsl:call-template&gt;
+
+	&lt;xsl:if test=&quot;patient/patient.previous_mrn and string-length(patient/patient.previous_mrn) &gt; 0&quot;&gt;
+
+		&lt;xsl:text&gt;~&lt;/xsl:text&gt;
+
+		&lt;xsl:call-template name=&quot;patient_id&quot;&gt;
+
+			&lt;xsl:with-param name=&quot;pid&quot; select=&quot;patient/patient.previous_mrn&quot; /&gt;
+
+			&lt;xsl:with-param name=&quot;auth&quot; select=&quot;$PATIENT-AUTHORITY&quot; /&gt;
+
+			&lt;xsl:with-param name=&quot;type&quot; select=&quot;PRIOR&quot; /&gt;
+
+		&lt;/xsl:call-template&gt;
+
+	&lt;/xsl:if&gt;
+
+	&lt;!-- Additional patient identifiers --&gt;
+
+	&lt;!-- This example is for an MTCT-PLUS identifier used in the AMPATH project in Kenya (skipped if not present) --&gt;
+
+	&lt;xsl:if test=&quot;patient/patient.mtctplus_id and string-length(patient/patient.mtctplus_id) &gt; 0&quot;&gt;
+
+		&lt;xsl:text&gt;~&lt;/xsl:text&gt;
+
+		&lt;xsl:call-template name=&quot;patient_id&quot;&gt;
+
+			&lt;xsl:with-param name=&quot;pid&quot; select=&quot;patient/patient.mtctplus_id&quot; /&gt;
+
+			&lt;xsl:with-param name=&quot;auth&quot; select=&quot;$PATIENT-AUTHORITY&quot; /&gt;
+
+			&lt;xsl:with-param name=&quot;type&quot; select=&quot;MTCTPLUS&quot; /&gt;
+
+		&lt;/xsl:call-template&gt;
+
+	&lt;/xsl:if&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PID-4 (deprecated) Alternate patient ID --&gt;
+
+	&lt;!-- PID-5 Patient name --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- Family name --&gt;
+
+	&lt;xsl:value-of select=&quot;patient/patient.family_name&quot; /&gt;
+
+	&lt;xsl:text&gt;^&lt;/xsl:text&gt;              &lt;!-- Given name --&gt;
+
+	&lt;xsl:value-of select=&quot;patient/patient.given_name&quot; /&gt;
+
+	&lt;xsl:text&gt;^&lt;/xsl:text&gt;              &lt;!-- Middle name --&gt;
+
+	&lt;xsl:value-of select=&quot;patient/patient.middle_name&quot; /&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PID-6 Mother&apos;s maiden name --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PID-7 Date/Time of Birth --&gt;
+
+	&lt;xsl:value-of select=&quot;patient/patient.date_of_birth&quot; /&gt;
+
+	&lt;xsl:text&gt;&amp;#x000d;&lt;/xsl:text&gt;       &lt;!-- new line --&gt;
+
+	
+
+	&lt;!-- PV1 header --&gt;
+
+	&lt;xsl:text&gt;PV1&lt;/xsl:text&gt;            &lt;!-- Message type --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-1 Sub ID --&gt;
+
+	&lt;xsl:text&gt;|O&lt;/xsl:text&gt;             &lt;!-- PV1-2 Patient class (O = outpatient) --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-3 Patient location --&gt;
+
+	&lt;xsl:value-of select=&quot;encounter/encounter.location_id&quot; /&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-4 Admission type (2 = return) --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-5 Pre-Admin Number --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-6 Prior Patient Location --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-7 Attending Doctor --&gt;
+
+	&lt;xsl:value-of select=&quot;encounter/encounter.provider_id&quot; /&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-8 Referring Doctor --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-9 Consulting Doctor --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-10 Hospital Service --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-11 Temporary Location --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-12 Preadmin Test Indicator --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-13 Re-adminssion Indicator --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-14 Admit Source --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-15 Ambulatory Status --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-16 VIP Indicator --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-17 Admitting Doctor --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-18 Patient Type --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-19 Visit Number --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-20 Financial Class --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-21 Charge Price Indicator --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-22 Courtesy Code --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-23 Credit Rating --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-24 Contract Code --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-25 Contract Effective Date --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-26 Contract Amount --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-27 Contract Period --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-28 Interest Code --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-29 Transfer to Bad Debt Code --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-30 Transfer to Bad Debt Date --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-31 Bad Debt Agency Code --&gt;
+
+  &lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-31 Bad Debt Transfer Amount --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-33 Bad Debt Recovery Amount --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-34 Delete Account Indicator --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-35 Delete Account Date --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-36 Discharge Disposition --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-37 Discharge To Location --&gt;
+
+	&lt;xsl:if test=&quot;patient/patient.health_center&quot;&gt;
+
+		&lt;xsl:value-of select=&quot;replace(patient/patient.health_center,&apos;\^&apos;,&apos;&amp;amp;&apos;)&quot; /&gt;
+
+	&lt;/xsl:if&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-38 Diet Type --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-39 Servicing Facility --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-40 Bed Status --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-41 Account Status --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-42 Pending Location --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-43 Prior Temporary Location --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-44 Admit Date/Time --&gt;
+
+	&lt;xsl:call-template name=&quot;hl7Date&quot;&gt;
+
+		&lt;xsl:with-param name=&quot;date&quot; select=&quot;encounter/encounter.encounter_datetime&quot; /&gt;
+
+	&lt;/xsl:call-template&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-45 Discharge Date/Time --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-46 Current Patient Balance --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-47 Total Charges --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-48 Total Adjustments --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-49 Total Payments --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- PV1-50 Alternate Visit ID --&gt;
+
+	&lt;xsl:text&gt;|V&lt;/xsl:text&gt;             &lt;!-- PV1-51 Visit Indicator --&gt;
+
+	&lt;xsl:text&gt;&amp;#x000d;&lt;/xsl:text&gt;       &lt;!-- new line --&gt;
+
+
+
+	&lt;!-- We use encounter date as the timestamp for each observation --&gt;
+
+	&lt;xsl:variable name=&quot;encounterTimestamp&quot;&gt;
+
+		&lt;xsl:call-template name=&quot;hl7Date&quot;&gt;
+
+			&lt;xsl:with-param name=&quot;date&quot; select=&quot;encounter/encounter.encounter_datetime&quot; /&gt;
+
+		&lt;/xsl:call-template&gt;
+
+	&lt;/xsl:variable&gt;
+
+	
+
+	&lt;!-- ORC Common Order Segment --&gt;
+
+	&lt;xsl:text&gt;ORC&lt;/xsl:text&gt;            &lt;!-- Message type --&gt;
+
+	&lt;xsl:text&gt;|RE&lt;/xsl:text&gt;            &lt;!-- ORC-1 Order Control (RE = obs to follow) --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- ORC-2 Placer Order Number --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- ORC-3 Filler Order Number --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- ORC-4 Placer Group Number --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- ORC-5 Order Status --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- ORC-6 Response Flag --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- ORC-7 Quantity/Timing --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- ORC-8 Parent --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- ORC-9 Date/Time of Transaction --&gt;
+
+	&lt;xsl:call-template name=&quot;hl7Timestamp&quot;&gt;
+
+		&lt;xsl:with-param name=&quot;date&quot; select=&quot;xs:dateTime(header/date_entered)&quot; /&gt;
+
+	&lt;/xsl:call-template&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- ORC-10 Entered By --&gt;
+
+	&lt;xsl:value-of select=&quot;header/enterer&quot; /&gt;
+
+	&lt;xsl:text&gt;&amp;#x000d;&lt;/xsl:text&gt;       &lt;!-- new line --&gt;
+
+
+
+	&lt;!-- Observation(s) --&gt;
+
+	&lt;xsl:variable name=&quot;obsList&quot; select=&quot;obs/*[(@openmrs_concept and value and value/text() != &apos;&apos;) or *[@openmrs_concept and text()=&apos;true&apos;]]&quot; /&gt;
+
+	&lt;xsl:variable name=&quot;obsListCount&quot; select=&quot;count($obsList)&quot; as=&quot;xs:integer&quot; /&gt;
+
+	&lt;!-- Observation OBR --&gt;
+
+	&lt;xsl:text&gt;OBR&lt;/xsl:text&gt;            &lt;!-- Message type --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-1 Set ID --&gt;
+
+	&lt;xsl:text&gt;1&lt;/xsl:text&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-2 Placer order number --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-3 Filler order number --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-4 OBR concept --&gt;
+
+	&lt;xsl:value-of select=&quot;obs/@openmrs_concept&quot; /&gt;
+
+	&lt;xsl:text&gt;&amp;#x000d;&lt;/xsl:text&gt;       &lt;!-- new line --&gt;
+
+
+
+	&lt;!-- observation OBXs --&gt;
+
+	&lt;xsl:for-each select=&quot;$obsList&quot;&gt;
+
+		&lt;xsl:choose&gt;
+
+			&lt;xsl:when test=&quot;value&quot;&gt;
+
+				&lt;xsl:call-template name=&quot;obsObx&quot;&gt;
+
+					&lt;xsl:with-param name=&quot;setId&quot; select=&quot;position()&quot; /&gt;
+
+					&lt;xsl:with-param name=&quot;datatype&quot; select=&quot;@openmrs_datatype&quot; /&gt;
+
+					&lt;xsl:with-param name=&quot;units&quot; select=&quot;@openmrs_units&quot; /&gt;
+
+					&lt;xsl:with-param name=&quot;concept&quot; select=&quot;@openmrs_concept&quot; /&gt;
+
+					&lt;xsl:with-param name=&quot;date&quot; select=&quot;date/text()&quot; /&gt;
+
+					&lt;xsl:with-param name=&quot;time&quot; select=&quot;time/text()&quot; /&gt;
+
+					&lt;xsl:with-param name=&quot;value&quot; select=&quot;value&quot; /&gt;
+
+					&lt;xsl:with-param name=&quot;encounterTimestamp&quot; select=&quot;$encounterTimestamp&quot; /&gt;
+
+				&lt;/xsl:call-template&gt;
+
+			&lt;/xsl:when&gt;
+
+			&lt;xsl:otherwise&gt;
+
+				&lt;xsl:variable name=&quot;setId&quot; select=&quot;position()&quot; /&gt;
+
+				&lt;xsl:for-each select=&quot;*[@openmrs_concept and text() = &apos;true&apos;]&quot;&gt;
+
+					&lt;xsl:call-template name=&quot;obsObx&quot;&gt;
+
+						&lt;xsl:with-param name=&quot;setId&quot; select=&quot;$setId&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;subId&quot; select=&quot;concat($setId,position())&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;datatype&quot; select=&quot;../@openmrs_datatype&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;units&quot; select=&quot;../@openmrs_units&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;concept&quot; select=&quot;../@openmrs_concept&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;date&quot; select=&quot;../date/text()&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;time&quot; select=&quot;../time/text()&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;value&quot; select=&quot;@openmrs_concept&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;encounterTimestamp&quot; select=&quot;$encounterTimestamp&quot; /&gt;
+
+					&lt;/xsl:call-template&gt;
+
+				&lt;/xsl:for-each&gt;
+
+			&lt;/xsl:otherwise&gt;
+
+		&lt;/xsl:choose&gt;
+
+	&lt;/xsl:for-each&gt;
+
+	
+
+	&lt;!-- Grouped observation(s) --&gt;
+
+	&lt;xsl:variable name=&quot;obsGroupList&quot; select=&quot;obs/*[@openmrs_concept and not(date) and *[(@openmrs_concept and value and value/text() != &apos;&apos;) or *[@openmrs_concept and text()=&apos;true&apos;]]]&quot; /&gt;
+
+	&lt;xsl:variable name=&quot;obsGroupListCount&quot; select=&quot;count($obsGroupList)&quot; as=&quot;xs:integer&quot; /&gt;
+
+	&lt;xsl:for-each select=&quot;$obsGroupList&quot;&gt;
+
+		&lt;!-- Observation OBR --&gt;
+
+		&lt;xsl:text&gt;OBR&lt;/xsl:text&gt;            &lt;!-- Message type --&gt;
+
+		&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-1 Set ID --&gt;
+
+		&lt;xsl:value-of select=&quot;$obsListCount + position()&quot; /&gt;
+
+		&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-2 Placer order number --&gt;
+
+		&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-3 Filler order number --&gt;
+
+		&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-4 OBR concept --&gt;
+
+		&lt;xsl:value-of select=&quot;@openmrs_concept&quot; /&gt;
+
+		&lt;xsl:text&gt;&amp;#x000d;&lt;/xsl:text&gt;       &lt;!-- new line --&gt;
+
+		
+
+		&lt;!-- Generate OBXs --&gt;
+
+		&lt;xsl:for-each select=&quot;*[(@openmrs_concept and value and value/text() != &apos;&apos;) or *[@openmrs_concept and text()=&apos;true&apos;]]&quot;&gt;
+
+			&lt;xsl:choose&gt;
+
+				&lt;xsl:when test=&quot;value&quot;&gt;
+
+					&lt;xsl:call-template name=&quot;obsObx&quot;&gt;
+
+						&lt;xsl:with-param name=&quot;setId&quot; select=&quot;position()&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;subId&quot; select=&quot;1&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;datatype&quot; select=&quot;@openmrs_datatype&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;units&quot; select=&quot;@openmrs_units&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;concept&quot; select=&quot;@openmrs_concept&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;date&quot; select=&quot;date/text()&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;time&quot; select=&quot;time/text()&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;value&quot; select=&quot;value&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;encounterTimestamp&quot; select=&quot;$encounterTimestamp&quot; /&gt;
+
+					&lt;/xsl:call-template&gt;
+
+				&lt;/xsl:when&gt;
+
+				&lt;xsl:otherwise&gt;
+
+					&lt;xsl:variable name=&quot;setId&quot; select=&quot;position()&quot; /&gt;
+
+					&lt;xsl:for-each select=&quot;*[@openmrs_concept and text() = &apos;true&apos;]&quot;&gt;
+
+						&lt;xsl:call-template name=&quot;obsObx&quot;&gt;
+
+							&lt;xsl:with-param name=&quot;setId&quot; select=&quot;$setId&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;subId&quot; select=&quot;concat(&apos;1.&apos;,position())&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;datatype&quot; select=&quot;../@openmrs_datatype&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;units&quot; select=&quot;../@openmrs_units&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;concept&quot; select=&quot;../@openmrs_concept&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;date&quot; select=&quot;../date/text()&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;time&quot; select=&quot;../time/text()&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;value&quot; select=&quot;@openmrs_concept&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;encounterTimestamp&quot; select=&quot;$encounterTimestamp&quot; /&gt;
+
+						&lt;/xsl:call-template&gt;
+
+					&lt;/xsl:for-each&gt;
+
+				&lt;/xsl:otherwise&gt;
+
+			&lt;/xsl:choose&gt;
+
+		&lt;/xsl:for-each&gt;
+
+	&lt;/xsl:for-each&gt;
+
+
+
+	&lt;!-- Problem list(s) --&gt;
+
+	&lt;xsl:variable name=&quot;problemList&quot; select=&quot;problem_list/*[value[text() != &apos;&apos;]]&quot; /&gt;
+
+	&lt;xsl:variable name=&quot;problemListCount&quot; select=&quot;count($problemList)&quot; as=&quot;xs:integer&quot; /&gt;
+
+	&lt;xsl:if test=&quot;$problemList&quot;&gt;
+
+		&lt;!-- Problem list OBR --&gt;
+
+		&lt;xsl:text&gt;OBR&lt;/xsl:text&gt;            &lt;!-- Message type --&gt;
+
+		&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-1 Set ID --&gt;
+
+		&lt;xsl:value-of select=&quot;$obsListCount + $obsGroupListCount + 1&quot; /&gt;
+
+		&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-2 Placer order number --&gt;
+
+		&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-3 Filler order number --&gt;
+
+		&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-4 OBR concept --&gt;
+
+		&lt;xsl:value-of select=&quot;problem_list/@openmrs_concept&quot; /&gt;
+
+		&lt;xsl:text&gt;&amp;#x000d;&lt;/xsl:text&gt;       &lt;!-- new line --&gt;
+
+
+
+		&lt;!-- Problem list OBXs --&gt;
+
+		&lt;xsl:for-each select=&quot;$problemList&quot;&gt;
+
+			&lt;xsl:call-template name=&quot;obsObx&quot;&gt;
+
+				&lt;xsl:with-param name=&quot;setId&quot; select=&quot;position()&quot; /&gt;
+
+				&lt;xsl:with-param name=&quot;datatype&quot; select=&quot;&apos;CWE&apos;&quot; /&gt;
+
+				&lt;xsl:with-param name=&quot;concept&quot; select=&quot;@openmrs_concept&quot; /&gt;
+
+				&lt;xsl:with-param name=&quot;date&quot; select=&quot;date/text()&quot; /&gt;
+
+				&lt;xsl:with-param name=&quot;time&quot; select=&quot;time/text()&quot; /&gt;
+
+				&lt;xsl:with-param name=&quot;value&quot; select=&quot;value&quot; /&gt;
+
+				&lt;xsl:with-param name=&quot;encounterTimestamp&quot; select=&quot;$encounterTimestamp&quot; /&gt;
+
+			&lt;/xsl:call-template&gt;		
+
+		&lt;/xsl:for-each&gt;
+
+	&lt;/xsl:if&gt;
+
+	
+
+	&lt;!-- Orders --&gt;
+
+	&lt;xsl:variable name=&quot;orderList&quot; select=&quot;orders/*[*[@openmrs_concept and ((value and value/text() != &apos;&apos;) or *[@openmrs_concept and text() = &apos;true&apos;])]]&quot; /&gt;
+
+	&lt;xsl:variable name=&quot;orderListCount&quot; select=&quot;count($orderList)&quot; as=&quot;xs:integer&quot; /&gt;
+
+	&lt;xsl:for-each select=&quot;$orderList&quot;&gt;
+
+		&lt;!-- Order section OBR --&gt;
+
+		&lt;xsl:text&gt;OBR&lt;/xsl:text&gt;            &lt;!-- Message type --&gt;
+
+		&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-1 Set ID --&gt;
+
+		&lt;xsl:value-of select=&quot;$obsListCount + $obsGroupListCount + $problemListCount + 1&quot; /&gt;
+
+		&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-2 Placer order number --&gt;
+
+		&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-3 Filler order number --&gt;
+
+		&lt;xsl:text&gt;|&lt;/xsl:text&gt;              &lt;!-- OBR-4 OBR concept --&gt;
+
+		&lt;xsl:value-of select=&quot;@openmrs_concept&quot; /&gt;
+
+		&lt;xsl:text&gt;&amp;#x000d;&lt;/xsl:text&gt;       &lt;!-- new line --&gt;
+
+	
+
+		&lt;!-- Order OBXs --&gt;
+
+		&lt;xsl:for-each select=&quot;*[@openmrs_concept and ((value and value/text() != &apos;&apos;) or *[@openmrs_concept and text() = &apos;true&apos;])]&quot;&gt;
+
+			&lt;xsl:choose&gt;
+
+				&lt;xsl:when test=&quot;value&quot;&gt;
+
+					&lt;xsl:call-template name=&quot;obsObx&quot;&gt;
+
+						&lt;xsl:with-param name=&quot;setId&quot; select=&quot;position()&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;datatype&quot; select=&quot;@openmrs_datatype&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;units&quot; select=&quot;@openmrs_units&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;concept&quot; select=&quot;@openmrs_concept&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;date&quot; select=&quot;date/text()&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;time&quot; select=&quot;time/text()&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;value&quot; select=&quot;value&quot; /&gt;
+
+						&lt;xsl:with-param name=&quot;encounterTimestamp&quot; select=&quot;$encounterTimestamp&quot; /&gt;
+
+					&lt;/xsl:call-template&gt;
+
+				&lt;/xsl:when&gt;
+
+				&lt;xsl:otherwise&gt;
+
+					&lt;xsl:variable name=&quot;setId&quot; select=&quot;position()&quot; /&gt;
+
+					&lt;xsl:for-each select=&quot;*[@openmrs_concept and text() = &apos;true&apos;]&quot;&gt;
+
+						&lt;xsl:call-template name=&quot;obsObx&quot;&gt;
+
+							&lt;xsl:with-param name=&quot;setId&quot; select=&quot;$setId&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;subId&quot; select=&quot;position()&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;datatype&quot; select=&quot;../@openmrs_datatype&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;units&quot; select=&quot;../@openmrs_units&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;concept&quot; select=&quot;../@openmrs_concept&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;date&quot; select=&quot;../date/text()&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;time&quot; select=&quot;../time/text()&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;value&quot; select=&quot;@openmrs_concept&quot; /&gt;
+
+							&lt;xsl:with-param name=&quot;encounterTimestamp&quot; select=&quot;$encounterTimestamp&quot; /&gt;
+
+						&lt;/xsl:call-template&gt;
+
+					&lt;/xsl:for-each&gt;
+
+				&lt;/xsl:otherwise&gt;
+
+			&lt;/xsl:choose&gt;
+
+		&lt;/xsl:for-each&gt;	
+
+	&lt;/xsl:for-each&gt;
+
+	
+
+&lt;/xsl:template&gt;
+
+
+
+&lt;!-- Patient Identifier (CX) generator --&gt;
+
+&lt;xsl:template name=&quot;patient_id&quot;&gt;
+
+	&lt;xsl:param name=&quot;pid&quot; /&gt;
+
+	&lt;xsl:param name=&quot;auth&quot; /&gt;
+
+	&lt;xsl:param name=&quot;type&quot; /&gt;
+
+	&lt;xsl:value-of select=&quot;$pid&quot; /&gt;
+
+	&lt;xsl:text&gt;^&lt;/xsl:text&gt;              &lt;!-- Check digit --&gt;
+
+	&lt;xsl:text&gt;^&lt;/xsl:text&gt;              &lt;!-- Check Digit Scheme --&gt;
+
+	&lt;xsl:text&gt;^&lt;/xsl:text&gt;              &lt;!-- Assigning Authority --&gt;
+
+	&lt;xsl:value-of select=&quot;$auth&quot; /&gt;
+
+	&lt;xsl:text&gt;^&lt;/xsl:text&gt;              &lt;!-- Identifier Type --&gt;
+
+	&lt;xsl:value-of select=&quot;$type&quot; /&gt;
+
+&lt;/xsl:template&gt;
+
+
+
+&lt;!-- OBX Generator --&gt;
+
+&lt;xsl:template name=&quot;obsObx&quot;&gt;
+
+	&lt;xsl:param name=&quot;setId&quot; required=&quot;no&quot;&gt;&lt;/xsl:param&gt;
+
+	&lt;xsl:param name=&quot;subId&quot; required=&quot;no&quot;&gt;&lt;/xsl:param&gt;
+
+	&lt;xsl:param name=&quot;datatype&quot; required=&quot;yes&quot; /&gt;
+
+	&lt;xsl:param name=&quot;concept&quot; required=&quot;yes&quot; /&gt;
+
+	&lt;xsl:param name=&quot;date&quot; required=&quot;no&quot;&gt;&lt;/xsl:param&gt;
+
+	&lt;xsl:param name=&quot;time&quot; required=&quot;no&quot;&gt;&lt;/xsl:param&gt;
+
+	&lt;xsl:param name=&quot;value&quot; required=&quot;no&quot;&gt;&lt;/xsl:param&gt;
+
+	&lt;xsl:param name=&quot;units&quot; required=&quot;no&quot;&gt;&lt;/xsl:param&gt;
+
+	&lt;xsl:param name=&quot;encounterTimestamp&quot; required=&quot;yes&quot; /&gt;
+
+	&lt;xsl:text&gt;OBX&lt;/xsl:text&gt;                     &lt;!-- Message type --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;                       &lt;!-- Set ID --&gt;
+
+	&lt;xsl:value-of select=&quot;$setId&quot; /&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;                       &lt;!-- Observation datatype --&gt;
+
+	&lt;xsl:choose&gt;
+
+		&lt;xsl:when test=&quot;$datatype = &apos;BIT&apos;&quot;&gt;
+
+			&lt;xsl:text&gt;NM&lt;/xsl:text&gt;
+
+		&lt;/xsl:when&gt;
+
+		&lt;xsl:otherwise&gt;
+
+			&lt;xsl:value-of select=&quot;$datatype&quot; /&gt;
+
+		&lt;/xsl:otherwise&gt;
+
+	&lt;/xsl:choose&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;                       &lt;!-- Concept (what was observed --&gt;
+
+	&lt;xsl:value-of select=&quot;$concept&quot; /&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;                       &lt;!-- Sub-ID --&gt;
+
+	&lt;xsl:value-of select=&quot;$subId&quot; /&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;                       &lt;!-- Value --&gt;
+
+	&lt;xsl:choose&gt;
+
+		&lt;xsl:when test=&quot;$datatype = &apos;TS&apos;&quot;&gt;
+
+			&lt;xsl:call-template name=&quot;hl7Timestamp&quot;&gt;
+
+				&lt;xsl:with-param name=&quot;date&quot; select=&quot;$value&quot; /&gt;
+
+			&lt;/xsl:call-template&gt;
+
+		&lt;/xsl:when&gt;
+
+		&lt;xsl:when test=&quot;$datatype = &apos;DT&apos;&quot;&gt;
+
+			&lt;xsl:call-template name=&quot;hl7Date&quot;&gt;
+
+				&lt;xsl:with-param name=&quot;date&quot; select=&quot;$value&quot; /&gt;
+
+			&lt;/xsl:call-template&gt;
+
+		&lt;/xsl:when&gt;
+
+		&lt;xsl:when test=&quot;$datatype = &apos;TM&apos;&quot;&gt;
+
+			&lt;xsl:call-template name=&quot;hl7Time&quot;&gt;
+
+				&lt;xsl:with-param name=&quot;time&quot; select=&quot;$value&quot; /&gt;
+
+			&lt;/xsl:call-template&gt;
+
+		&lt;/xsl:when&gt;
+
+		&lt;xsl:when test=&quot;$datatype = &apos;BIT&apos;&quot;&gt;
+
+			&lt;xsl:choose&gt;
+
+				&lt;xsl:when test=&quot;$value = &apos;0&apos; or upper-case($value) = &apos;FALSE&apos;&quot;&gt;0&lt;/xsl:when&gt;
+
+				&lt;xsl:otherwise&gt;1&lt;/xsl:otherwise&gt;
+
+			&lt;/xsl:choose&gt;
+
+		&lt;/xsl:when&gt;
+
+		&lt;xsl:otherwise&gt;
+
+			&lt;xsl:value-of select=&quot;$value&quot; /&gt;
+
+		&lt;/xsl:otherwise&gt;
+
+	&lt;/xsl:choose&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;                       &lt;!-- Units --&gt;
+
+	&lt;xsl:value-of select=&quot;$units&quot; /&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;                       &lt;!-- Reference range --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;                       &lt;!-- Abnormal flags --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;                       &lt;!-- Probability --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;                       &lt;!-- Nature of abnormal test --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;                       &lt;!-- Observation result status --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;                       &lt;!-- Effective date --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;                       &lt;!-- User defined access checks --&gt;
+
+	&lt;xsl:text&gt;|&lt;/xsl:text&gt;                       &lt;!-- Date time of observation --&gt;
+
+	&lt;xsl:choose&gt;
+
+		&lt;xsl:when test=&quot;$date and $time&quot;&gt;
+
+			&lt;xsl:call-template name=&quot;hl7Timestamp&quot;&gt;
+
+				&lt;xsl:with-param name=&quot;date&quot; select=&quot;dateTime($date,$time)&quot; /&gt;
+
+			&lt;/xsl:call-template&gt;
+
+		&lt;/xsl:when&gt;
+
+		&lt;xsl:when test=&quot;$date&quot;&gt;
+
+			&lt;xsl:call-template name=&quot;hl7Date&quot;&gt;
+
+				&lt;xsl:with-param name=&quot;date&quot; select=&quot;$date&quot; /&gt;
+
+			&lt;/xsl:call-template&gt;
+
+		&lt;/xsl:when&gt;
+
+		&lt;xsl:otherwise&gt;
+
+			&lt;xsl:value-of select=&quot;$encounterTimestamp&quot; /&gt;
+
+		&lt;/xsl:otherwise&gt;
+
+	&lt;/xsl:choose&gt;
+
+	&lt;xsl:text&gt;&amp;#x000d;&lt;/xsl:text&gt;
+
+&lt;/xsl:template&gt;
+
+
+
+&lt;!-- Generate HL7-formatted timestamp --&gt;
+
+&lt;xsl:template name=&quot;hl7Timestamp&quot;&gt;
+
+	&lt;xsl:param name=&quot;date&quot; /&gt;
+
+	&lt;xsl:if test=&quot;string($date) != &apos;&apos;&quot;&gt;
+
+		&lt;xsl:value-of select=&quot;concat(year-from-dateTime($date),format-number(month-from-dateTime($date),&apos;00&apos;),format-number(day-from-dateTime($date),&apos;00&apos;),format-number(hours-from-dateTime($date),&apos;00&apos;),format-number(minutes-from-dateTime($date),&apos;00&apos;),format-number(floor(seconds-from-dateTime($date)),&apos;00&apos;))&quot; /&gt;
+
+	&lt;/xsl:if&gt;
+
+&lt;/xsl:template&gt;
+
+
+
+&lt;!-- Generate HL7-formatted date --&gt;
+
+&lt;xsl:template name=&quot;hl7Date&quot;&gt;
+
+	&lt;xsl:param name=&quot;date&quot; /&gt;
+
+	&lt;xsl:if test=&quot;string($date) != &apos;&apos;&quot;&gt;
+
+		&lt;xsl:choose&gt;
+
+			&lt;xsl:when test=&quot;contains(string($date),&apos;T&apos;)&quot;&gt;
+
+				&lt;xsl:call-template name=&quot;hl7Date&quot;&gt;
+
+					&lt;xsl:with-param name=&quot;date&quot; select=&quot;xs:date(substring-before($date,&apos;T&apos;))&quot; /&gt;
+
+				&lt;/xsl:call-template&gt;
+
+			&lt;/xsl:when&gt;
+
+			&lt;xsl:otherwise&gt;
+
+					&lt;xsl:value-of select=&quot;concat(year-from-date($date),format-number(month-from-date($date),&apos;00&apos;),format-number(day-from-date($date),&apos;00&apos;))&quot; /&gt;
+
+			&lt;/xsl:otherwise&gt;
+
+		&lt;/xsl:choose&gt;				
+
+	&lt;/xsl:if&gt;
+
+&lt;/xsl:template&gt;
+
+
+
+&lt;!-- Generate HL7-formatted time --&gt;
+
+&lt;xsl:template name=&quot;hl7Time&quot;&gt;
+
+	&lt;xsl:param name=&quot;time&quot; /&gt;
+
+	&lt;xsl:if test=&quot;$time != &apos;&apos;&quot;&gt;
+
+		&lt;xsl:value-of select=&quot;concat(format-number(hours-from-time($time),&apos;00&apos;),format-number(minutes-from-time($time),&apos;00&apos;),format-number(floor(seconds-from-time($time)),&apos;00&apos;))&quot; /&gt;
+
+	&lt;/xsl:if&gt;
+
+&lt;/xsl:template&gt;
+
+
+
+&lt;/xsl:stylesheet&gt;" creator="1" date_created="2006-07-18 11:02:38.0" changed_by="1" date_changed="2006-09-07 11:33:17.0" retired="false" retired_reason="" guid="a5ac33ec-fb9e-102a-b4cd-d5399a5cfee6"/>
+
+  <field retired="false" field_id="2" name="PATIENT" description="Patient section of form" field_type="5" table_name="" attribute_name="" default_value="" select_multiple="false" creator="1" date_created="2006-07-18 11:04:36.0" guid="a48e7497-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="3" name="ENCOUNTER" description="Encounter section of form" field_type="5" table_name="" attribute_name="" default_value="" select_multiple="false" creator="1" date_created="2006-07-18 11:06:52.0" guid="a48e77ae-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="5" name="OBS" description="Obs section of form" field_type="1" concept_id="1238" table_name="" attribute_name="" default_value="" select_multiple="false" creator="1" date_created="2006-07-18 11:13:57.0" changed_by="8" date_changed="2006-08-21 22:15:52.0" guid="a490a8f1-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="6" name="PATIENT.BIRTHDATE" description="" field_type="2" table_name="patient" attribute_name="birthdate" default_value="$!{date.format($patient.getBirthdate())}" select_multiple="false" creator="1" date_created="2006-07-18 11:15:18.0" guid="a490ac34-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="7" name="PATIENT.BIRTHDATE_ESTIMATED" description="" field_type="2" table_name="patient" attribute_name="birthdate_estimated" default_value="$!{patient.getBirthDateEstimated()}" select_multiple="false" creator="1" date_created="2006-07-18 11:15:58.0" guid="a490af35-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="8" name="PATIENT.FAMILY_NAME" description="" field_type="2" table_name="patient_name" attribute_name="family_name" default_value="$!{patient.getFamilyName()}" select_multiple="false" creator="1" date_created="2006-07-18 11:16:50.0" guid="a490b22f-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="9" name="PATIENT.GIVEN_NAME" description="" field_type="2" table_name="patient_name" attribute_name="given_name" default_value="$!{patient.getGivenName()}" select_multiple="false" creator="1" date_created="2006-07-18 11:17:27.0" guid="a490c0d7-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="10" name="PATIENT.MIDDLE_NAME" description="" field_type="2" table_name="patient_name" attribute_name="middle_name" default_value="$!{patient.getMiddleName()}" select_multiple="false" creator="1" date_created="2006-07-18 11:18:54.0" guid="a490c3c9-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="11" name="PATIENT.MEDICAL_RECORD_NUMBER" description="" field_type="2" table_name="patient_identifier" attribute_name="identifier" default_value="$!{patient.getPatientIdentifier(1).getIdentifier()}" select_multiple="false" creator="1" date_created="2006-07-18 11:20:00.0" guid="a490c707-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="12" name="PATIENT.PATIENT_ID" description="" field_type="2" table_name="patient" attribute_name="patient_id" default_value="$!{patient.getPatientId()}" select_multiple="false" creator="1" date_created="2006-07-18 11:20:31.0" guid="a490c9ff-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="13" name="PATIENT.SEX" description="" field_type="2" table_name="patient" attribute_name="gender" default_value="$!{patient.getGender()}" select_multiple="false" creator="1" date_created="2006-07-18 11:20:53.0" guid="a490cbfe-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="14" name="PATIENT.TRIBE" description="" field_type="2" table_name="patient" attribute_name="tribe" default_value="$!{patient.getTribe().getTribeId()}^$!{patient.getTribe().getName()}" select_multiple="false" creator="1" date_created="2006-07-18 11:21:43.0" guid="a490cdf5-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="15" name="PATIENT_ADDRESS.ADDRESS1" description="" field_type="2" table_name="patient_address" attribute_name="address1" default_value="$!{patient.getPersonAddress().getAddress1()}" select_multiple="false" creator="1" date_created="2006-07-18 11:22:06.0" guid="a490cfe9-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="16" name="PATIENT_ADDRESS.ADDRESS2" description="" field_type="2" table_name="patient_address" attribute_name="address2" default_value="$!{patient.getPersonAddress().getAddress2()}" select_multiple="true" creator="1" date_created="2006-07-18 11:22:28.0" guid="a490d1d5-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="17" name="ENCOUNTER.ENCOUNTER_DATETIME" description="" field_type="2" table_name="encounter" attribute_name="encounter_datetime" default_value="" select_multiple="false" creator="1" date_created="2006-07-18 11:23:06.0" guid="a490d3c9-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="18" name="ENCOUNTER.LOCATION_ID" description="" field_type="2" table_name="encounter" attribute_name="location_id" default_value="" select_multiple="false" creator="1" date_created="2006-07-18 11:23:49.0" guid="a490d5b2-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="19" name="ENCOUNTER.PROVIDER_ID" description="" field_type="2" table_name="encounter" attribute_name="provider_id" default_value="" select_multiple="false" creator="1" date_created="2006-07-18 11:24:11.0" guid="a490d79e-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="20" name="WEIGHT (KG)" description="Patient&apos;s weight in kilograms." field_type="1" concept_id="5089" table_name="" default_value="" select_multiple="false" creator="1" date_created="2006-07-18 11:25:10.0" guid="a490d981-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="21" name="PROBLEM LIST" description="List of problems for a given patient visit." field_type="1" concept_id="1284" table_name="" attribute_name="" default_value="" select_multiple="false" creator="1" date_created="2006-07-26 05:34:03.0" guid="a490db75-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="22" name="PROBLEM ADDED" description="Diagnosis or problem noted on a patient encounter." field_type="1" concept_id="6042" table_name="" attribute_name="" default_value="" select_multiple="false" creator="1" date_created="2006-07-26 05:34:22.0" guid="a490dd69-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <field retired="false" field_id="23" name="PROBLEM RESOLVED" description="Diagnosis or problem noted on a patient encounter as being resolved." field_type="1" concept_id="6097" table_name="" attribute_name="" default_value="" select_multiple="false" creator="1" date_created="2006-07-26 05:34:25.0" guid="a490df4f-fb9e-102a-b4cd-d5399a5cfee6"/>
+
+  <form_field form_field_id="1002" form_id="1" field_id="2" field_number="1" field_part="" required="false" changed_by="1" date_changed="2006-07-18 11:11:53.0" creator="1" date_created="2006-07-18 11:04:36.0" guid="a6463f57-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1003" form_id="1" field_id="3" field_number="2" field_part="" required="false" changed_by="1" date_changed="2006-07-18 11:12:05.0" creator="1" date_created="2006-07-18 11:06:52.0" guid="a646401b-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1005" form_id="1" field_id="5" field_number="3" field_part="" required="false" changed_by="1" date_changed="2006-07-18 11:13:59.0" creator="1" date_created="2006-07-18 11:13:57.0" guid="a64640de-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1006" form_id="1" field_id="6" field_part="" parent_form_field="1002" required="false" changed_by="1" date_changed="2006-07-18 11:15:18.0" creator="1" date_created="2006-07-18 11:15:18.0" guid="a64641a2-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1007" form_id="1" field_id="7" field_part="" parent_form_field="1002" required="false" changed_by="1" date_changed="2006-07-18 11:15:58.0" creator="1" date_created="2006-07-18 11:15:58.0" guid="a6464268-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1008" form_id="1" field_id="8" field_part="" parent_form_field="1002" required="false" changed_by="1" date_changed="2006-07-18 11:16:50.0" creator="1" date_created="2006-07-18 11:16:50.0" guid="a6464329-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1009" form_id="1" field_id="9" field_part="" parent_form_field="1002" required="false" changed_by="1" date_changed="2006-07-18 11:18:36.0" creator="1" date_created="2006-07-18 11:17:27.0" guid="a64643ea-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1010" form_id="1" field_id="10" field_part="" parent_form_field="1002" required="false" changed_by="1" date_changed="2006-07-18 11:18:54.0" creator="1" date_created="2006-07-18 11:18:54.0" guid="a64644ab-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1011" form_id="1" field_id="11" field_part="" parent_form_field="1002" required="false" changed_by="1" date_changed="2006-07-18 11:20:00.0" creator="1" date_created="2006-07-18 11:20:00.0" guid="a646456b-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1012" form_id="1" field_id="12" field_part="" parent_form_field="1002" required="true" changed_by="1" date_changed="2006-07-18 11:20:31.0" creator="1" date_created="2006-07-18 11:20:31.0" guid="a64646e2-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1013" form_id="1" field_id="13" field_part="" parent_form_field="1002" required="false" changed_by="1" date_changed="2006-07-18 11:20:53.0" creator="1" date_created="2006-07-18 11:20:53.0" guid="a64647b0-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1014" form_id="1" field_id="14" field_part="" parent_form_field="1002" required="false" changed_by="1" date_changed="2006-07-18 11:21:43.0" creator="1" date_created="2006-07-18 11:21:43.0" guid="a6464874-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1015" form_id="1" field_id="15" field_part="" parent_form_field="1002" required="false" changed_by="1" date_changed="2006-07-18 11:22:06.0" creator="1" date_created="2006-07-18 11:22:06.0" guid="a6464938-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1016" form_id="1" field_id="16" field_part="" parent_form_field="1002" required="false" changed_by="1" date_changed="2006-07-18 11:22:28.0" creator="1" date_created="2006-07-18 11:22:28.0" guid="a64649fb-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1017" form_id="1" field_id="17" field_part="" parent_form_field="1003" required="true" changed_by="1" date_changed="2006-07-18 11:24:14.0" creator="1" date_created="2006-07-18 11:23:06.0" guid="a6464ab9-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1018" form_id="1" field_id="18" field_part="" parent_form_field="1003" required="true" changed_by="1" date_changed="2006-07-18 11:23:49.0" creator="1" date_created="2006-07-18 11:23:49.0" guid="a6464b7a-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1019" form_id="1" field_id="19" field_part="" parent_form_field="1003" required="true" changed_by="1" date_changed="2006-07-18 11:24:11.0" creator="1" date_created="2006-07-18 11:24:11.0" guid="a6464c3b-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1020" form_id="1" field_id="20" field_part="" parent_form_field="1005" required="false" changed_by="1" date_changed="2006-07-18 11:25:14.0" creator="1" date_created="2006-07-18 11:25:10.0" guid="a6464cfe-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1021" form_id="1" field_id="21" field_number="4" field_part="" required="false" changed_by="1" date_changed="2006-07-26 05:34:13.0" creator="1" date_created="2006-07-26 05:34:03.0" guid="a6464dc2-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1022" form_id="1" field_id="22" field_part="" parent_form_field="1021" max_occurs="-1" required="false" changed_by="1" date_changed="2006-07-26 05:35:27.0" creator="1" date_created="2006-07-26 05:34:22.0" guid="a6464e85-fb9e-102a-b4cd-d5399a5cfee6"/>
+  <form_field form_field_id="1023" form_id="1" field_id="23" field_part="" parent_form_field="1021" max_occurs="-1" required="false" changed_by="1" date_changed="2006-07-26 05:39:24.0" creator="1" date_created="2006-07-26 05:34:25.0" guid="a6464f4c-fb9e-102a-b4cd-d5399a5cfee6"/>  
+</dataset>
