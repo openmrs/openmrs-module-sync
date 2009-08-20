@@ -57,13 +57,13 @@ public interface SynchronizationDAO {
     
     /**
      * 
-     * @param guid of the SyncRecord to retrieve
+     * @param uuid of the SyncRecord to retrieve
      * @return SyncRecord The SyncRecord or null if not found
      * @throws DAOException
      */
-    public SyncRecord getSyncRecord(String guid) throws DAOException;
+    public SyncRecord getSyncRecord(String uuid) throws DAOException;
 
-    public SyncRecord getSyncRecordByOriginalGuid(String originalGuid) throws DAOException;
+    public SyncRecord getSyncRecordByOriginalUuid(String originalUuid) throws DAOException;
 
     /**
      * 
@@ -95,11 +95,11 @@ public interface SynchronizationDAO {
     
     /**
      * 
-     * @param guid of the SyncImportRecord to retrieve
+     * @param uuid of the SyncImportRecord to retrieve
      * @return SyncImportRecord The SyncImportRecord or null if not found
      * @throws DAOException
      */
-    public SyncImportRecord getSyncImportRecord(String guid) throws DAOException;
+    public SyncImportRecord getSyncImportRecord(String uuid) throws DAOException;
 
     /**
      * Returns the first SyncRecord in either the PENDING SEND or the NEW state
@@ -191,7 +191,7 @@ public interface SynchronizationDAO {
     
     /**
      * 
-     * @param guid of the RemoteServer to retrieve
+     * @param uuid of the RemoteServer to retrieve
      * @return RemoteServer The RemoteServer or null if not found
      * @throws DAOException
      */
@@ -199,11 +199,11 @@ public interface SynchronizationDAO {
 
     /**
      * 
-     * @param guid of the RemoteServer to retrieve
+     * @param uuid of the RemoteServer to retrieve
      * @return RemoteServer The RemoteServer or null if not found
      * @throws DAOException
      */
-    public RemoteServer getRemoteServer(String guid) throws DAOException;
+    public RemoteServer getRemoteServer(String uuid) throws DAOException;
 
     /**
      * 
@@ -215,7 +215,7 @@ public interface SynchronizationDAO {
 
     /**
      * 
-     * @param guid of the RemoteServer to retrieve
+     * @param uuid of the RemoteServer to retrieve
      * @return RemoteServer The RemoteServer or null if not found
      * @throws DAOException
      */
@@ -223,7 +223,7 @@ public interface SynchronizationDAO {
 
     /**
      * 
-     * @param guid of the RemoteServer to retrieve
+     * @param uuid of the RemoteServer to retrieve
      * @return RemoteServer The RemoteServer or null if not found
      * @throws DAOException
      */
@@ -252,7 +252,7 @@ public interface SynchronizationDAO {
     
     /**
      * 
-     * @param guid of the SyncClass to retrieve
+     * @param uuid of the SyncClass to retrieve
      * @return SyncClass The SyncClass or null if not found
      * @throws DAOException
      */
@@ -269,11 +269,11 @@ public interface SynchronizationDAO {
      * Dumps the entire database, much like what you'd get from the mysqldump command, and
      * adds a few lines to set the child's GUID, and delete sync history 
      * 
-     * @param guidForChild if not null, use this as the guid for the child server, otherwise autogenerate one 
+     * @param uuidForChild if not null, use this as the uuid for the child server, otherwise autogenerate one 
      * @param out write the sql here
      * @throws DAOException
      */
-    public void createDatabaseForChild(String guidForChild, OutputStream out) throws DAOException;
+    public void createDatabaseForChild(String uuidForChild, OutputStream out) throws DAOException;
     
     /**
      * Deletes instance of synchronizable from storage.
@@ -319,5 +319,5 @@ public interface SynchronizationDAO {
     public Map<RemoteServer,Set<SyncStatistic>> getSyncStatistics(Date fromDate, Date toDate) throws DAOException;
     
     
-    public boolean checkGuidsForClass(Class clazz) throws DAOException;
+    public boolean checkUuidsForClass(Class clazz) throws DAOException;
 }

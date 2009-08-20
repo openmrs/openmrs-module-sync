@@ -33,7 +33,7 @@
 	<table id="syncChangesTable" cellpadding="7" cellspacing="0">
 		<thead>
 			<tr>
-				<th><spring:message code="SynchronizationStatus.itemTypeAndGuid" /></th>
+				<th><spring:message code="SynchronizationStatus.itemTypeAndUuid" /></th>
 				<%--
 				<th colspan="2" style="text-align: center;"><spring:message code="SynchronizationStatus.timestamp" /></th>
 				<th nowrap style="text-align: center;"><spring:message code="SynchronizationStatus.itemState" /></th>
@@ -61,13 +61,13 @@
 					<%--<c:forEach var="syncItem" items="${syncRecord.items}" varStatus="itemStatus">--%>
 						<tr>
 							<td valign="middle" nowrap style="background-color: #${bgStyle};">
-								<b>${recordTypes[syncRecord.guid]}</b>
-								<c:if test="${not empty recordText[syncRecord.guid]}">
-									(${recordText[syncRecord.guid]})
+								<b>${recordTypes[syncRecord.uuid]}</b>
+								<c:if test="${not empty recordText[syncRecord.uuid]}">
+									(${recordText[syncRecord.uuid]})
 								</c:if>
 								<br>
 								<span style="color: #bbb">
-									<spring:message code="Synchronization.item.state_${recordChangeType[syncRecord.guid]}" /> -
+									<spring:message code="Synchronization.item.state_${recordChangeType[syncRecord.uuid]}" /> -
 									<openmrs:formatDate date="${syncRecord.timestamp}" format="${syncDateDisplayFormat}" />	
 									<%--<c:if test="${not empty itemInfo[syncItem.key.keyValue]}">(${itemInfo[syncItem.key.keyValue]})</c:if></b>--%>
 								</span>

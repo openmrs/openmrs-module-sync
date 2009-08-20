@@ -56,10 +56,10 @@ public class SyncStrategyFile {
         //get changeset for sourceA
         changeset = this.getChangeset(source, lastSyncLocal,lastSyncLocalNew);
         
-        String sourceGuid = source.getSyncSourceGuid();
+        String sourceUuid = source.getSyncSourceUuid();
         
         //pack it into transmission, don't write temp file
-        SyncTransmission syncTx = new SyncTransmission(sourceGuid,changeset);
+        SyncTransmission syncTx = new SyncTransmission(sourceUuid,changeset);
         syncTx.create(false);
         
         //set new SyncPoint
@@ -137,9 +137,9 @@ public class SyncStrategyFile {
             }
             
             //pack it into transmission
-            syncTx = new SyncTransmission(source.getSyncSourceGuid(),filteredChangeset, server.getGuid());
+            syncTx = new SyncTransmission(source.getSyncSourceUuid(),filteredChangeset, server.getUuid());
             syncTx.create(writeFileToo);
-            syncTx.setSyncTargetGuid(server.getGuid());
+            syncTx.setSyncTargetUuid(server.getUuid());
             if (isMaxRetryReached)  {
             	syncTx.setIsMaxRetryReached(true);
             }

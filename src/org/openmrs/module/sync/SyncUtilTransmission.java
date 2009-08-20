@@ -94,9 +94,9 @@ public class SyncUtilTransmission {
         
         try {
             SyncSource source = new SyncSourceJournal();
-            tx = new SyncTransmission(source.getSyncSourceGuid(), true);
-            if ( server.getGuid() != null ) {
-                tx.setSyncTargetGuid(server.getGuid());
+            tx = new SyncTransmission(source.getSyncSourceUuid(), true);
+            if ( server.getUuid() != null ) {
+                tx.setSyncTargetUuid(server.getUuid());
             }
             tx.create(false);
         } catch ( Exception e ) {
@@ -133,7 +133,7 @@ public class SyncUtilTransmission {
             } finally {
                 if ( tx != null ) {
                     if ( server != null ) {
-                        tx.setSyncTargetGuid(server.getGuid());
+                        tx.setSyncTargetUuid(server.getUuid());
                     }
                     // let's update SyncRecords to reflect the fact that we now have tried to sync them, by setting state to SENT or SENT_AGAIN
                     maxRetryCount = Long.parseLong(Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT));
@@ -201,7 +201,7 @@ public class SyncUtilTransmission {
         SyncTransmissionResponse response = new SyncTransmissionResponse();
         response.setErrorMessage(SyncConstants.ERROR_NO_PARENT_DEFINED.toString());
         response.setFileName(SyncConstants.FILENAME_NO_PARENT_DEFINED);
-        response.setGuid(SyncConstants.GUID_UNKNOWN);
+        response.setUuid(SyncConstants.GUID_UNKNOWN);
         response.setState(SyncTransmissionState.NO_PARENT_DEFINED);
         
         RemoteServer parent = Context.getService(SynchronizationService.class).getParentServer();
@@ -217,7 +217,7 @@ public class SyncUtilTransmission {
         SyncTransmissionResponse response = new SyncTransmissionResponse();
         response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
         response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
-        response.setGuid(SyncConstants.GUID_UNKNOWN);
+        response.setUuid(SyncConstants.GUID_UNKNOWN);
         response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
         
         try {
@@ -231,11 +231,11 @@ public class SyncUtilTransmission {
                 if ( tx != null ) {
                     response = SyncUtilTransmission.sendSyncTranssmission(server, tx);
                     if ( response != null ) {
-                        // but let's try to find out the guid of this remote server and make sure we have it stored
-                        String remoteGuid = response.getSyncTargetGuid();
-                        if ( remoteGuid != null && remoteGuid.length() > 0 ) {
-                            if ( !remoteGuid.equals(server.getGuid()) ) {
-                                server.setGuid(remoteGuid);
+                        // but let's try to find out the uuid of this remote server and make sure we have it stored
+                        String remoteUuid = response.getSyncTargetUuid();
+                        if ( remoteUuid != null && remoteUuid.length() > 0 ) {
+                            if ( !remoteUuid.equals(server.getUuid()) ) {
+                                server.setUuid(remoteUuid);
                                 Context.getService(SynchronizationService.class).updateRemoteServer(server);
                             }
                         }
@@ -244,7 +244,7 @@ public class SyncUtilTransmission {
             } else {
                 response.setErrorMessage(SyncConstants.ERROR_INVALID_SERVER.toString());
                 response.setFileName(SyncConstants.FILENAME_INVALID_SERVER);
-                response.setGuid(SyncConstants.GUID_UNKNOWN);
+                response.setUuid(SyncConstants.GUID_UNKNOWN);
                 response.setState(SyncTransmissionState.INVALID_SERVER);                
             }
         } catch ( Exception e ) {
@@ -262,7 +262,7 @@ public class SyncUtilTransmission {
         SyncTransmissionResponse response = new SyncTransmissionResponse();
         response.setErrorMessage(SyncConstants.ERROR_SEND_FAILED.toString());
         response.setFileName(SyncConstants.FILENAME_SEND_FAILED);
-        response.setGuid(SyncConstants.GUID_UNKNOWN);
+        response.setUuid(SyncConstants.GUID_UNKNOWN);
         response.setState(SyncTransmissionState.FAILED);
         
         try {
@@ -290,7 +290,7 @@ public class SyncUtilTransmission {
                         response.setState(SyncTransmissionState.OK_NOTHING_TO_DO);
                         response.setErrorMessage("");
                         response.setFileName(transmission.getFileName() + SyncConstants.RESPONSE_SUFFIX);
-                        response.setGuid(transmission.getGuid());
+                        response.setUuid(transmission.getUuid());
                         response.setTimestamp(transmission.getTimestamp());
                     } else {
                         ConnectionResponse connResponse = null;
@@ -342,19 +342,19 @@ public class SyncUtilTransmission {
                 } else {
                     response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
                     response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
-                    response.setGuid(SyncConstants.GUID_UNKNOWN);
+                    response.setUuid(SyncConstants.GUID_UNKNOWN);
                     response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
                 }
             } else {
                 if ( server == null ) {
                     response.setErrorMessage(SyncConstants.ERROR_INVALID_SERVER.toString());
                     response.setFileName(SyncConstants.FILENAME_INVALID_SERVER);
-                    response.setGuid(SyncConstants.GUID_UNKNOWN);
+                    response.setUuid(SyncConstants.GUID_UNKNOWN);
                     response.setState(SyncTransmissionState.INVALID_SERVER);                
                 } else if ( transmission == null ) {
                     response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
                     response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
-                    response.setGuid(SyncConstants.GUID_UNKNOWN);
+                    response.setUuid(SyncConstants.GUID_UNKNOWN);
                     response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
                 }
             }
@@ -375,7 +375,7 @@ public class SyncUtilTransmission {
         SyncTransmissionResponse response = new SyncTransmissionResponse();
         response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
         response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
-        response.setGuid(SyncConstants.GUID_UNKNOWN);
+        response.setUuid(SyncConstants.GUID_UNKNOWN);
         response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
         
         try {
@@ -389,11 +389,11 @@ public class SyncUtilTransmission {
                 if ( tx != null ) {
                     response = SyncUtilTransmission.sendSyncTranssmission(server, tx);
                     if ( response != null ) {
-                        //  let's try to find out the guid of this remote server and make sure we have it stored
-                        String remoteGuid = response.getSyncTargetGuid();
-                        if ( remoteGuid != null && remoteGuid.length() > 0 ) {
-                            if ( !remoteGuid.equals(server.getGuid()) ) {
-                                server.setGuid(remoteGuid);
+                        //  let's try to find out the uuid of this remote server and make sure we have it stored
+                        String remoteUuid = response.getSyncTargetUuid();
+                        if ( remoteUuid != null && remoteUuid.length() > 0 ) {
+                            if ( !remoteUuid.equals(server.getUuid()) ) {
+                                server.setUuid(remoteUuid);
                                 Context.getService(SynchronizationService.class).updateRemoteServer(server);
                             }
                         }
@@ -402,7 +402,7 @@ public class SyncUtilTransmission {
             } else {
                 response.setErrorMessage(SyncConstants.ERROR_INVALID_SERVER.toString());
                 response.setFileName(SyncConstants.FILENAME_INVALID_SERVER);
-                response.setGuid(SyncConstants.GUID_UNKNOWN);
+                response.setUuid(SyncConstants.GUID_UNKNOWN);
                 response.setState(SyncTransmissionState.INVALID_SERVER);                
             }
         } catch ( Exception e ) {
@@ -424,7 +424,7 @@ public class SyncUtilTransmission {
         SyncTransmissionResponse response = new SyncTransmissionResponse();
         response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
         response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
-        response.setGuid(SyncConstants.GUID_UNKNOWN);
+        response.setUuid(SyncConstants.GUID_UNKNOWN);
         response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
         
         try {
@@ -448,10 +448,10 @@ public class SyncUtilTransmission {
                         SyncTransmissionResponse str = null;
                         if ( initialTxFromParent != null ) {
                             // since we know what server this should be from, 
-                        	//let's check to make sure we've got the guid - we'll need it later
-                            String remoteGuid = initialTxFromParent.getSyncSourceGuid();
-                            if ( parent.getGuid() == null ) {
-                            	parent.setGuid(remoteGuid);
+                        	//let's check to make sure we've got the uuid - we'll need it later
+                            String remoteUuid = initialTxFromParent.getSyncSourceUuid();
+                            if ( parent.getUuid() == null ) {
+                            	parent.setUuid(remoteUuid);
                                 Context.getService(SynchronizationService.class).updateRemoteServer(parent);
                             }
                             
@@ -487,7 +487,7 @@ public class SyncUtilTransmission {
             } else {
                 response.setErrorMessage(SyncConstants.ERROR_INVALID_SERVER.toString());
                 response.setFileName(SyncConstants.FILENAME_INVALID_SERVER);
-                response.setGuid(SyncConstants.GUID_UNKNOWN);
+                response.setUuid(SyncConstants.GUID_UNKNOWN);
                 response.setState(SyncTransmissionState.INVALID_SERVER);                
             }
         } catch ( Exception e ) {
@@ -513,10 +513,10 @@ public class SyncUtilTransmission {
     public static SyncTransmissionResponse processSyncTransmission(SyncTransmission st) {
         SyncTransmissionResponse str = new SyncTransmissionResponse(st);
 
-        //fill-in the server guid for the response AGAIN
-        str.setSyncTargetGuid(Context.getService(SynchronizationService.class).getServerGuid());
-        String sourceGuid = st.getSyncSourceGuid();
-        RemoteServer origin = Context.getService(SynchronizationService.class).getRemoteServer(sourceGuid);
+        //fill-in the server uuid for the response AGAIN
+        str.setSyncTargetUuid(Context.getService(SynchronizationService.class).getServerUuid());
+        String sourceUuid = st.getSyncSourceUuid();
+        RemoteServer origin = Context.getService(SynchronizationService.class).getRemoteServer(sourceUuid);
 
         User authenticatedUser = Context.getAuthenticatedUser();
         if ( origin == null && authenticatedUser != null ) {
@@ -524,12 +524,12 @@ public class SyncUtilTransmission {
             String username = authenticatedUser.getUsername();
             log.warn("CANNOT GET ORIGIN SERVER FOR THIS REQUEST, get by username " + username + " instead");
             origin = Context.getService(SynchronizationService.class).getRemoteServerByUsername(username);
-            if ( origin != null && sourceGuid != null && sourceGuid.length() > 0 ) {
-                // take this opportunity to save the guid, now we've identified which server this is
-                origin.setGuid(sourceGuid);
+            if ( origin != null && sourceUuid != null && sourceUuid.length() > 0 ) {
+                // take this opportunity to save the uuid, now we've identified which server this is
+                origin.setUuid(sourceUuid);
                 Context.getService(SynchronizationService.class).updateRemoteServer(origin);
             } else {
-                log.warn("STILL UNABLE TO GET ORIGIN WITH username " + username + " and sourceguid " + sourceGuid);
+                log.warn("STILL UNABLE TO GET ORIGIN WITH username " + username + " and sourceuuid " + sourceUuid);
             }
         } else {
             if ( origin != null ) log.warn("ORIGIN SERVER IS " + origin.getNickname());
@@ -612,7 +612,7 @@ public class SyncUtilTransmission {
         SyncTransmissionResponse response = new SyncTransmissionResponse();
         response.setErrorMessage(SyncConstants.ERROR_NO_PARENT_DEFINED.toString());
         response.setFileName(SyncConstants.FILENAME_NO_PARENT_DEFINED);
-        response.setGuid(SyncConstants.GUID_UNKNOWN);
+        response.setUuid(SyncConstants.GUID_UNKNOWN);
         response.setState(SyncTransmissionState.NO_PARENT_DEFINED);
         
         RemoteServer parent = Context.getService(SynchronizationService.class).getParentServer();

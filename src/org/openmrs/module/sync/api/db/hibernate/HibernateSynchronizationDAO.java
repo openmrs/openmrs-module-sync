@@ -93,8 +93,8 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
      * @see org.openmrs.module.sync.api.db.SynchronizationDAO#createSyncRecord(org.openmrs.module.sync.engine.SyncRecord)
      */
     public void createSyncRecord(SyncRecord record) throws DAOException {
-        if (record.getGuid() == null) {
-            //TODO: Create Guid if missing?
+        if (record.getUuid() == null) {
+            //TODO: Create Uuid if missing?
             throw new DAOException("SyncRecord must have a GUID");
         }
         
@@ -122,8 +122,8 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
      * @see org.openmrs.module.sync.api.db.SynchronizationDAO#createSyncImportRecord(org.openmrs.module.sync.engine.SyncImportRecord)
      */
     public void createSyncImportRecord(SyncImportRecord record) throws DAOException {
-        if (record.getGuid() == null) {
-            //TODO: Create Guid if missing?
+        if (record.getUuid() == null) {
+            //TODO: Create Uuid if missing?
             throw new DAOException("SyncImportRecord must have a GUID");
         }
         Session session = sessionFactory.getCurrentSession();
@@ -188,27 +188,27 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     /**
      * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getSyncRecord(java.lang.String)
      */
-    public SyncRecord getSyncRecord(String guid) throws DAOException {
+    public SyncRecord getSyncRecord(String uuid) throws DAOException {
         return (SyncRecord) sessionFactory.getCurrentSession()
         		.createCriteria(SyncRecord.class)
-        		.add(Restrictions.eq("guid", guid)) 
+        		.add(Restrictions.eq("uuid", uuid)) 
         		.uniqueResult();
     }
 
-    public SyncRecord getSyncRecordByOriginalGuid(String originalGuid) throws DAOException {
+    public SyncRecord getSyncRecordByOriginalUuid(String originalUuid) throws DAOException {
         return (SyncRecord) sessionFactory.getCurrentSession()
                 .createCriteria(SyncRecord.class)
-                .add(Restrictions.eq("originalGuid", originalGuid)) 
+                .add(Restrictions.eq("originalUuid", originalUuid)) 
                 .uniqueResult();
     }
 
     /**
      * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getSyncImportRecord(java.lang.String)
      */
-    public SyncImportRecord getSyncImportRecord(String guid) throws DAOException {
+    public SyncImportRecord getSyncImportRecord(String uuid) throws DAOException {
         return (SyncImportRecord) sessionFactory.getCurrentSession()
         		.createCriteria(SyncImportRecord.class)
-        		.add(Restrictions.eq("guid", guid))
+        		.add(Restrictions.eq("uuid", uuid))
         		.uniqueResult();
     }
 
@@ -372,7 +372,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
 
         Session session = sessionFactory.getCurrentSession();
         GlobalProperty gp = new GlobalProperty(propertyName,propertyValue);
-        gp.setIsSynchronizable(false); //do *not* record this change for synchronization
+        //gp.setIsSynchronizable(false); //do *not* record this change for synchronization
         session.merge(gp);
     }
 
@@ -412,10 +412,10 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
      * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getGlobalProperty(String propertyName)
      */
     @SuppressWarnings("unchecked")
-    public RemoteServer getRemoteServer(String guid) throws DAOException {        
+    public RemoteServer getRemoteServer(String uuid) throws DAOException {        
         return (RemoteServer)sessionFactory.getCurrentSession()
         .createCriteria(RemoteServer.class)
-        .add(Restrictions.eq("guid", guid))
+        .add(Restrictions.eq("uuid", uuid))
         .uniqueResult();
     }
 
@@ -504,7 +504,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
      * NOTE: THIS IS WORK IN PROGRESS *DO NOT* USE
      */
     @Deprecated
-    public void createDatabaseForChild(String guidForChild, OutputStream os) throws DAOException {
+    public void createDatabaseForChild(String uuidForChild, OutputStream os) throws DAOException {
         PrintStream out = new PrintStream(os);
         Set<String> tablesToSkip = new HashSet<String>();
         {
@@ -535,13 +535,13 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
         }
         log.warn("tables to dump: " + tablesToDump);
         
-        String thisServerGuid = getGlobalProperty(SyncConstants.PROPERTY_SERVER_GUID);
+        String thisServerUuid = getGlobalProperty(SyncConstants.PROPERTY_SERVER_GUID);
        
         { // write a header
             out.println("-- ------------------------------------------------------");
             out.println("-- Database dump to create an openmrs child server");
             out.println("-- Schema: " + schema);
-            out.println("-- Parent GUID: " + thisServerGuid);
+            out.println("-- Parent GUID: " + thisServerUuid);
             out.println("-- Parent version: " + OpenmrsConstants.OPENMRS_VERSION);
             out.println("-- ------------------------------------------------------");
             out.println("");
@@ -679,9 +679,9 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
             
             // Now we mark this as a child
             out.println("-- Now mark this as a child database");
-            if (guidForChild == null)
-                guidForChild = SyncUtil.generateGuid();
-            out.println("update global_property set property_value = '" + guidForChild + "' where property = '" + SyncConstants.PROPERTY_SERVER_GUID + "';");
+            if (uuidForChild == null)
+                uuidForChild = SyncUtil.generateUuid();
+            out.println("update global_property set property_value = '" + uuidForChild + "' where property = '" + SyncConstants.PROPERTY_SERVER_GUID + "';");
             
             {
             	// TODO: Write a footer to undo the following two lines
@@ -772,7 +772,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
 		"group by rs.nickname, ssr.state "+
 		"order by nickname, state";
 		
-		String hqlParent = "select count(*) from SyncRecord where originalGuid = guid and state <> '" + SyncRecordState.COMMITTED.toString() + 
+		String hqlParent = "select count(*) from SyncRecord where originalUuid = uuid and state <> '" + SyncRecordState.COMMITTED.toString() + 
 		"' and state <> '" + SyncRecordState.NOT_SUPPOSED_TO_SYNC.toString() + "'";
 		
 		//for each server configured, get its stats
@@ -803,7 +803,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
 		return map;
 	}	
 	
-	public boolean checkGuidsForClass(Class clazz) {
+	public boolean checkUuidsForClass(Class clazz) {
 		
 		//TODO: work in progres
 
@@ -830,9 +830,9 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
 			}
 			
 			tableName = pc.getTable().getName();
-			org.hibernate.mapping.Property p = pc.getProperty("guid");
+			org.hibernate.mapping.Property p = pc.getProperty("uuid");
 			if (p == null) {
-				log.error("cannot get hibernate guid column mapping for " + clazz.getName());
+				log.error("cannot get hibernate uuid column mapping for " + clazz.getName());
 				return ret;			
 			}
 			
@@ -840,7 +840,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
 			if (columns.hasNext()) {
 				columnName = columns.next().getName();
 			} else {
-				log.info("column mapping not found for property guid.");
+				log.info("column mapping not found for property uuid.");
 				return ret;
 			}
 			
@@ -850,7 +850,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
 			ResultSetMetaData rmd = rs.getMetaData();
 			
 			if (!rs.first()) {
-				log.error("didn't find guid in database!");
+				log.error("didn't find uuid in database!");
 				return ret;
 			}
 			

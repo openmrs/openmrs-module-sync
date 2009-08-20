@@ -356,9 +356,9 @@ public class SyncPatientTest extends SyncBaseTest {
 				Location loc = Context.getEncounterService().getLocationByName("Someplace");
 				PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierType(2);
 				if (pit.getUuid() == null)
-					throw new RuntimeException("pit.guid is null! " + pit);
+					throw new RuntimeException("pit.uuid is null! " + pit);
 				else
-					System.out.println("pit.guid = " + pit.getUuid() + " , pit = " + pit);
+					System.out.println("pit.uuid = " + pit.getUuid() + " , pit = " + pit);
 				Patient p = new Patient();
 				p.addName(new PersonName("Darius", "Graham", "Jazayeri"));
 				p.addIdentifier(new PatientIdentifier("999", pit, loc));

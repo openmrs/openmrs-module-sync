@@ -42,10 +42,10 @@ public class SyncTransmission implements IItem {
     private String fileName = null;
     private Date timestamp = null;
     private List<SyncRecord> syncRecords = null;
-    private String guid = null;
+    private String uuid = null;
     private String fileOutput = "";
-    private String syncSourceGuid = null; //this is GUID of a server where Tx is coming from
-    private String syncTargetGuid = null; //this is GUID of server where Tx is headed TO
+    private String syncSourceUuid = null; //this is GUID of a server where Tx is coming from
+    private String syncTargetUuid = null; //this is GUID of server where Tx is headed TO
     private Boolean isRequestingTransmission = false;
     private Boolean isMaxRetryReached = false; 
 
@@ -56,38 +56,38 @@ public class SyncTransmission implements IItem {
     /* 
      * Create new SyncTransmission as a SyncTxRequest
      */
-    public SyncTransmission(String sourceGuid, boolean isRequestingTransmission) {
+    public SyncTransmission(String sourceUuid, boolean isRequestingTransmission) {
 
-        guid = UUID.randomUUID().toString();        
+        uuid = UUID.randomUUID().toString();        
         fileName = "sync_tx_" + SyncConstants.SYNC_FILENAME_MASK.format(new Date()) + "_request";
-        this.syncSourceGuid  = sourceGuid;
+        this.syncSourceUuid  = sourceUuid;
         this.isRequestingTransmission = isRequestingTransmission;
     }
-    public SyncTransmission(String sourceGuid, boolean isRequestingTransmission, String targetGuid) {
+    public SyncTransmission(String sourceUuid, boolean isRequestingTransmission, String targetUuid) {
 
-        guid = UUID.randomUUID().toString();        
+        uuid = UUID.randomUUID().toString();        
         fileName = "sync_tx_" + SyncConstants.SYNC_FILENAME_MASK.format(new Date()) + "_request";
-        this.syncSourceGuid  = sourceGuid;
-        this.syncSourceGuid  = targetGuid;
+        this.syncSourceUuid  = sourceUuid;
+        this.syncSourceUuid  = targetUuid;
         this.isRequestingTransmission = isRequestingTransmission;
     }
 
     /* 
      * Take passed in records and create a new sync_tx file
      */
-    public SyncTransmission(String sourceGuid, List<SyncRecord> valRecords) {
-    	init(sourceGuid,valRecords, null);
+    public SyncTransmission(String sourceUuid, List<SyncRecord> valRecords) {
+    	init(sourceUuid,valRecords, null);
     }
-    public SyncTransmission(String sourceGuid, List<SyncRecord> valRecords,String targetGuid ) {
-    	init(sourceGuid,valRecords,targetGuid);
+    public SyncTransmission(String sourceUuid, List<SyncRecord> valRecords,String targetUuid ) {
+    	init(sourceUuid,valRecords,targetUuid);
     }
-    private void init(String sourceGuid, List<SyncRecord> valRecords,String targetGuid) {
+    private void init(String sourceUuid, List<SyncRecord> valRecords,String targetUuid) {
 
-        guid = UUID.randomUUID().toString();        
+        uuid = UUID.randomUUID().toString();        
         fileName = "sync_tx_" + SyncConstants.SYNC_FILENAME_MASK.format(new Date());
         this.syncRecords = valRecords;
-        this.syncSourceGuid  = sourceGuid;
-        this.syncTargetGuid  = targetGuid;
+        this.syncSourceUuid  = sourceUuid;
+        this.syncTargetUuid  = targetUuid;
     }
 
     public Boolean getIsMaxRetryReached() {
@@ -106,11 +106,11 @@ public class SyncTransmission implements IItem {
         this.isRequestingTransmission = isRequestingTransmission;
     }
 
-    public String getSyncSourceGuid() {
-        return syncSourceGuid;
+    public String getSyncSourceUuid() {
+        return syncSourceUuid;
     }
-    public void setSyncSourceGuid(String value) {
-        syncSourceGuid = value;
+    public void setSyncSourceUuid(String value) {
+        syncSourceUuid = value;
     }
     public String getFileOutput() {
     	return fileOutput;
@@ -121,11 +121,11 @@ public class SyncTransmission implements IItem {
     public void setFileName(String value) {
         fileName = value;
     }
-    public String getGuid() {
-        return guid;
+    public String getUuid() {
+        return uuid;
     }
-    public void setGuid(String value) {
-        guid = value;
+    public void setUuid(String value) {
+        uuid = value;
     }
     public Date getTimestamp() {
         return timestamp;
@@ -182,15 +182,15 @@ public class SyncTransmission implements IItem {
         //Item me = xml.createItem(parent, this.getClass().getName());
         
         //serialize primitives
-        if (guid != null) xml.setAttribute(me, "guid", guid);
+        if (uuid != null) xml.setAttribute(me, "uuid", uuid);
         if (fileName != null) xml.setAttribute(me, "fileName", fileName);
-        if (syncSourceGuid != null) xml.setAttribute(me, "syncSourceGuid", syncSourceGuid);
+        if (syncSourceUuid != null) xml.setAttribute(me, "syncSourceUuid", syncSourceUuid);
         if (timestamp != null) xml.setAttribute(me, "timestamp", new TimestampNormalizer().toString(timestamp));
         if (this.isRequestingTransmission != null) xml.setAttribute(me, "isRequestingTransmission", this.isRequestingTransmission.toString());
         if (this.isMaxRetryReached != null) xml.setAttribute(me, "isMaxRetryReached", this.isMaxRetryReached.toString());
 
-        if (syncTargetGuid != null) xml.setAttribute(me, "syncTargetGuid", syncTargetGuid);
-        else xml.setAttribute(me, "syncTargetGuid", SyncConstants.GUID_UNKNOWN);
+        if (syncTargetUuid != null) xml.setAttribute(me, "syncTargetUuid", syncTargetUuid);
+        else xml.setAttribute(me, "syncTargetUuid", SyncConstants.GUID_UNKNOWN);
         
         //serialize Records list
         Item itemsCollection = xml.createItem(me, "records");
@@ -211,10 +211,10 @@ public class SyncTransmission implements IItem {
      */
     public void load(Record xml, Item me) throws Exception {
         
-        this.guid = me.getAttribute("guid");
+        this.uuid = me.getAttribute("uuid");
         this.fileName = me.getAttribute("fileName");
-        this.syncSourceGuid = me.getAttribute("syncSourceGuid");
-        this.syncTargetGuid = me.getAttribute("syncTargetGuid");
+        this.syncSourceUuid = me.getAttribute("syncSourceUuid");
+        this.syncTargetUuid = me.getAttribute("syncTargetUuid");
         this.isRequestingTransmission = Boolean.valueOf(me.getAttribute("isRequestingTransmission"));
         this.isMaxRetryReached =  Boolean.valueOf(me.getAttribute("isMaxRetryReached"));
 
@@ -253,21 +253,21 @@ public class SyncTransmission implements IItem {
         
         SyncTransmission oSync = (SyncTransmission) o;
         boolean same = ((oSync.getTimestamp() == null) ? (this.getTimestamp() == null) : oSync.getTimestamp().equals(this.getTimestamp()))
-                && ((oSync.getGuid() == null) ? (this.getGuid() == null) : oSync.getGuid().equals(this.getGuid()))
+                && ((oSync.getUuid() == null) ? (this.getUuid() == null) : oSync.getUuid().equals(this.getUuid()))
                 && ((oSync.getFileName() == null) ? (this.getFileName() == null) : oSync.getFileName().equals(this.getFileName()))
                 && ((oSync.getFileOutput() == null) ? (this.getFileOutput() == null) : oSync.getFileOutput().equals(this.getFileOutput()))
-                && ((oSync.getSyncSourceGuid() == null) ? (this.getSyncSourceGuid() == null) : oSync.getSyncSourceGuid().equals(this.getSyncSourceGuid()))
+                && ((oSync.getSyncSourceUuid() == null) ? (this.getSyncSourceUuid() == null) : oSync.getSyncSourceUuid().equals(this.getSyncSourceUuid()))
                 && ((oSync.getSyncRecords() == null) ? (this.getSyncRecords() == null) : oSync.getSyncRecords().equals(this.getSyncRecords()));
         
         return same;
     }
 
-    public String getSyncTargetGuid() {
-        return syncTargetGuid;
+    public String getSyncTargetUuid() {
+        return syncTargetUuid;
     }
 
-    public void setSyncTargetGuid(String syncTargetGuid) {
-        this.syncTargetGuid = syncTargetGuid;
+    public void setSyncTargetUuid(String syncTargetUuid) {
+        this.syncTargetUuid = syncTargetUuid;
     }
     
 }

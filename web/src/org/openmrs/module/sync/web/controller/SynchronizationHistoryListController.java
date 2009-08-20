@@ -79,7 +79,7 @@ public class SynchronizationHistoryListController extends SimpleFormController {
 		
 		Map<String,String> recordTypes = new HashMap<String,String>();
 		Map<Object,String> itemTypes = new HashMap<Object,String>();
-		Map<Object,String> itemGuids = new HashMap<Object,String>();
+		Map<Object,String> itemUuids = new HashMap<Object,String>();
 		Map<String,String> recordText = new HashMap<String,String>();
         Map<String,String> recordChangeType = new HashMap<String,String>();
 		//Map<String,String> itemInfoKeys = new HashMap<String,String>();
@@ -93,7 +93,7 @@ public class SynchronizationHistoryListController extends SimpleFormController {
         for ( SyncRecord record : recordList ) {
             
             String mainClassName = null;
-            String mainGuid = null;
+            String mainUuid = null;
             String mainState = null;
             
 			for ( SyncItem item : record.getItems() ) {
@@ -112,10 +112,10 @@ public class SynchronizationHistoryListController extends SimpleFormController {
 				for ( int i = 0; i < nodes.getLength(); i++ ) {
 					Node n = nodes.item(i);
 					String propName = n.getNodeName();
-					if ( propName.equalsIgnoreCase("guid") ) {
-                        String guid = n.getTextContent();
-						itemGuids.put(item.getKey().getKeyValue(), guid);
-                        if ( mainGuid == null ) mainGuid = guid;
+					if ( propName.equalsIgnoreCase("uuid") ) {
+                        String uuid = n.getTextContent();
+						itemUuids.put(item.getKey().getKeyValue(), uuid);
+                        if ( mainUuid == null ) mainUuid = uuid;
                     }
 				}
 			}
@@ -123,23 +123,23 @@ public class SynchronizationHistoryListController extends SimpleFormController {
 			// persistent sets should show something other than their mainClassName (persistedSet)
 			if ( mainClassName.indexOf("Persistent") >= 0 ) mainClassName = record.getContainedClasses();
 			
-            recordTypes.put(record.getGuid(), mainClassName);
-            recordChangeType.put(record.getGuid(), mainState);
+            recordTypes.put(record.getUuid(), mainClassName);
+            recordChangeType.put(record.getUuid(), mainState);
 
             // refactored - CA 21 Jan 2008
             String displayName = "";
             try {
-                displayName = SyncUtil.displayName(mainClassName, mainGuid);
+                displayName = SyncUtil.displayName(mainClassName, mainUuid);
             } catch ( Exception e ) {
             	// some methods like Concept.getName() throw Exception s all the time...
             	displayName = "";
             }
-            if ( displayName != null ) if ( displayName.length() > 0 ) recordText.put(record.getGuid(), displayName);
+            if ( displayName != null ) if ( displayName.length() > 0 ) recordText.put(record.getUuid(), displayName);
         }
         
         ret.put("recordTypes", recordTypes);
         ret.put("itemTypes", itemTypes);
-        ret.put("itemGuids", itemGuids);
+        ret.put("itemUuids", itemUuids);
         //ret.put("itemInfo", itemInfo);
         ret.put("recordText", recordText);
         ret.put("recordChangeType", recordChangeType);

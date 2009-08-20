@@ -100,7 +100,7 @@ public class SynchronizationConfigListController extends SimpleFormController {
         	String nickname = ServletRequestUtils.getStringParameter(request, "nickname", "");
         	String username = ServletRequestUtils.getStringParameter(request, "username", "");
         	String password = ServletRequestUtils.getStringParameter(request, "password", "");
-            String guid = ServletRequestUtils.getStringParameter(request, "parentGuid", "");
+            String uuid = ServletRequestUtils.getStringParameter(request, "parentUuid", "");
     		String[] startedParams = request.getParameterValues("started");
     		boolean started = false;
     		if ( startedParams != null ) {
@@ -127,7 +127,7 @@ public class SynchronizationConfigListController extends SimpleFormController {
         		parent.setUsername(username);
         		parent.setPassword(password);
         		parent.setServerType(RemoteServerType.PARENT);
-                if ( guid.length() > 0 ) parent.setGuid(guid);
+                if ( uuid.length() > 0 ) parent.setUuid(uuid);
 
         		if ( parent.getServerId() == null ) {
             		Context.getService(SynchronizationService.class).createRemoteServer(parent);
@@ -186,13 +186,13 @@ public class SynchronizationConfigListController extends SimpleFormController {
         		success = msa.getMessage("SynchronizationConfig.parent.saved");        		
         	}
         } else if ( "saveClasses".equals(action) ) {
-        	// save guid, server name, and admin email first
-        	String serverGuid = ServletRequestUtils.getStringParameter(request, "serverGuid", "");
+        	// save uuid, server name, and admin email first
+        	String serverUuid = ServletRequestUtils.getStringParameter(request, "serverUuid", "");
         	String serverId = ServletRequestUtils.getStringParameter(request, "serverId", "");
         	String serverName = ServletRequestUtils.getStringParameter(request, "serverName", "");
         	String adminEmail = ServletRequestUtils.getStringParameter(request, "serverAdminEmail", "");
         	
-        	if ( serverGuid.length() > 0 ) Context.getService(SynchronizationService.class).setServerGuid(serverGuid);
+        	if ( serverUuid.length() > 0 ) Context.getService(SynchronizationService.class).setServerUuid(serverUuid);
         	if ( serverId.length() > 0 ) Context.getService(SynchronizationService.class).setServerId(serverId);
         	if (serverName.length() > 0 ) Context.getService(SynchronizationService.class).setServerName(serverName);
         	if (adminEmail.length() > 0 ) SyncUtil.setAdminEmail(adminEmail);
@@ -302,7 +302,7 @@ public class SynchronizationConfigListController extends SimpleFormController {
             obj.put("serverList", serverList);
             
             SyncSource source = new SyncSourceJournal();
-            obj.put("localServerGuid",source.getSyncSourceGuid());
+            obj.put("localServerUuid",source.getSyncSourceUuid());
             obj.put("localServerSyncStatus", source.getSyncStatus());           
         }
 
@@ -426,7 +426,7 @@ public class SynchronizationConfigListController extends SimpleFormController {
             ret.put("localServerSyncStatusValue",SyncUtil.getSyncStatus());
 	        ret.put("localServerSyncStatusText", msa.getMessage("SynchronizationConfig.syncStatus.status." + ref.get("localServerSyncStatus").toString()));
             ret.put("localServerSyncStatusMsg", msa.getMessage("SynchronizationConfig.syncStatus.status." + ref.get("localServerSyncStatus").toString() + ".info" , new String[] {SyncConstants.RUNTIMEPROPERTY_SYNC_STATUS}));
-	        ret.put("localServerGuid", ref.get("localServerGuid"));
+	        ret.put("localServerUuid", ref.get("localServerUuid"));
 	        ret.put("localServerId", Context.getService(SynchronizationService.class).getServerId());
 	        ret.put("localServerName", Context.getService(SynchronizationService.class).getServerName());           
 	        ret.put("localServerAdminEmail", SyncUtil.getAdminEmail());           

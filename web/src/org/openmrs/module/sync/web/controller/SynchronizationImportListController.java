@@ -144,9 +144,9 @@ public class SynchronizationImportListController extends SimpleFormController {
 		SyncTransmissionResponse str = new SyncTransmissionResponse();		
     	str.setErrorMessage(SyncConstants.ERROR_TX_NOT_UNDERSTOOD);
     	str.setFileName(SyncConstants.FILENAME_TX_NOT_UNDERSTOOD);
-    	str.setGuid(SyncConstants.GUID_UNKNOWN);
-        str.setSyncSourceGuid(SyncConstants.GUID_UNKNOWN);
-        str.setSyncTargetGuid(SyncConstants.GUID_UNKNOWN);
+    	str.setUuid(SyncConstants.GUID_UNKNOWN);
+        str.setSyncSourceUuid(SyncConstants.GUID_UNKNOWN);
+        str.setSyncTargetUuid(SyncConstants.GUID_UNKNOWN);
     	str.setState(SyncTransmissionState.TRANSMISSION_NOT_UNDERSTOOD);        
         str.setTimestamp(new Date()); //set the timestamp of the response
 
@@ -178,9 +178,9 @@ public class SynchronizationImportListController extends SimpleFormController {
 			return null;
 		}
 		
-        //Fill-in the server guid for the response: since request was authenticated we can start letting callers
+        //Fill-in the server uuid for the response: since request was authenticated we can start letting callers
 		//know about us
-        str.setSyncTargetGuid(Context.getService(SynchronizationService.class).getServerGuid());
+        str.setSyncTargetUuid(Context.getService(SynchronizationService.class).getServerUuid());
 
         //Checksum check before doing anything at all: on unreliable networks we can get seemingly
         //valid HTTP POST but content is messed up, defend against it with custom checksums
@@ -201,7 +201,7 @@ public class SynchronizationImportListController extends SimpleFormController {
         if ( SyncConstants.TEST_MESSAGE.equals(contents) ) {
 			str.setErrorMessage("");
 			str.setState(SyncTransmissionState.OK);
-			str.setGuid("");
+			str.setUuid("");
 	    	str.setFileName(SyncConstants.FILENAME_TEST);
 
 	    	this.sendResponse(str, isUpload, response);
@@ -237,7 +237,7 @@ public class SynchronizationImportListController extends SimpleFormController {
                 
             try {
                 priorResponse = SyncDeserializer.xmlToSyncTransmissionResponse(contents);
-                log.info("This is a response from a previous transmission.  Guid is: " + priorResponse.getGuid());
+                log.info("This is a response from a previous transmission.  Uuid is: " + priorResponse.getUuid());
             } catch ( Exception e ) {
                 log.error("Unable to deserialize the following: " + contents, e);
                 str.setErrorMessage("Unable to deserialize transmission contents into SyncTransmissionResponse.");
@@ -248,17 +248,17 @@ public class SynchronizationImportListController extends SimpleFormController {
                 
             //figure out where this came from:
             //for responses, the target ID contains the server that generated the response
-            String sourceGuid = priorResponse.getSyncTargetGuid();
-            log.info("SyncTransmissionResponse has a sourceGuid of " + sourceGuid);
-            RemoteServer origin = Context.getService(SynchronizationService.class).getRemoteServer(sourceGuid);
+            String sourceUuid = priorResponse.getSyncTargetUuid();
+            log.info("SyncTransmissionResponse has a sourceUuid of " + sourceUuid);
+            RemoteServer origin = Context.getService(SynchronizationService.class).getRemoteServer(sourceUuid);
             if ( origin == null ) {
-            	log.error("Source server not registered locally. Unable to find source server by guid: " + sourceGuid);
-                str.setErrorMessage("Source server not registered locally. Unable to find source server by guid " + sourceGuid);
+            	log.error("Source server not registered locally. Unable to find source server by uuid: " + sourceUuid);
+                str.setErrorMessage("Source server not registered locally. Unable to find source server by uuid " + sourceUuid);
                 str.setState(SyncTransmissionState.INVALID_SERVER);
                 this.sendResponse(str, isUpload, response);            	
             	return null;
             } else {
-            	log.info("Found source server by guid: " + sourceGuid + " = " + origin.getNickname());
+            	log.info("Found source server by uuid: " + sourceUuid + " = " + origin.getNickname());
             	log.info("Source server is " + origin.getNickname());
             }
                                         

@@ -44,12 +44,12 @@ public class SyncTransmissionResponse implements IItem {
     private String fileName = null;
     private Date timestamp = null;
     private List<SyncImportRecord> syncImportRecords = null;
-    private String guid = null;
+    private String uuid = null;
     private String fileOutput = "";
     private SyncTransmissionState state;
     private String errorMessage;
-    private String syncSourceGuid = null; //GUID of the node where the Tx came from
-    private String syncTargetGuid = null; //GUID of the node where Tx is being applied to, and who is now sending a response
+    private String syncSourceUuid = null; //GUID of the node where the Tx came from
+    private String syncTargetUuid = null; //GUID of the node where Tx is being applied to, and who is now sending a response
     private SyncTransmission syncTransmission = null;
 
     // constructor(s)
@@ -72,18 +72,18 @@ public class SyncTransmissionResponse implements IItem {
     public SyncTransmissionResponse(SyncTransmission transmission) {
     	// needs to be null-safe
     	if ( transmission != null ) {
-        	this.guid = transmission.getGuid();
-            this.syncSourceGuid = transmission.getSyncSourceGuid();
-            this.syncTargetGuid = SyncConstants.GUID_UNKNOWN;
+        	this.uuid = transmission.getUuid();
+            this.syncSourceUuid = transmission.getSyncSourceUuid();
+            this.syncTargetUuid = SyncConstants.GUID_UNKNOWN;
         	fileName = transmission.getFileName();
         	int idx = fileName.lastIndexOf(".");
         	if ( idx > -1 ) fileName = fileName.substring(0, idx) + SyncConstants.RESPONSE_SUFFIX + fileName.substring(idx);
         	else fileName = fileName + SyncConstants.RESPONSE_SUFFIX;
         	this.state = SyncTransmissionState.OK;  // even though we really mean "OK so far" - it'll get overwritten later if there's a prob
     	} else {
-    		this.guid = SyncConstants.GUID_UNKNOWN;
-            this.syncSourceGuid = SyncConstants.GUID_UNKNOWN;
-            this.syncTargetGuid = SyncConstants.GUID_UNKNOWN;
+    		this.uuid = SyncConstants.GUID_UNKNOWN;
+            this.syncSourceUuid = SyncConstants.GUID_UNKNOWN;
+            this.syncTargetUuid = SyncConstants.GUID_UNKNOWN;
     		this.errorMessage = SyncConstants.ERROR_TX_NOT_UNDERSTOOD;
     		this.fileName = SyncConstants.FILENAME_TX_NOT_UNDERSTOOD;
     		this.state = SyncTransmissionState.TRANSMISSION_NOT_UNDERSTOOD;
@@ -106,9 +106,9 @@ public class SyncTransmissionResponse implements IItem {
     				SyncTransmissionResponse str = SyncDeserializer.xmlToSyncTransmissionResponse(connResponse.getResponsePayload());
     				this.errorMessage = str.getErrorMessage();
     				this.fileName = str.getFileName();
-    				this.guid = str.getGuid();
-                    this.syncSourceGuid = str.getSyncSourceGuid();
-                    this.syncTargetGuid = str.getSyncTargetGuid();
+    				this.uuid = str.getUuid();
+                    this.syncSourceUuid = str.getSyncSourceUuid();
+                    this.syncTargetUuid = str.getSyncTargetUuid();
     				this.state = str.getState();
     				this.syncImportRecords = str.getSyncImportRecords();
                     this.syncTransmission = str.getSyncTransmission();
@@ -116,17 +116,17 @@ public class SyncTransmissionResponse implements IItem {
     				e.printStackTrace();
     	    		this.errorMessage = SyncConstants.ERROR_RESPONSE_NOT_UNDERSTOOD.toString();
     	        	this.fileName = SyncConstants.FILENAME_RESPONSE_NOT_UNDERSTOOD;
-    	        	this.guid = SyncConstants.GUID_UNKNOWN;
-                    this.syncSourceGuid = SyncConstants.GUID_UNKNOWN;
-                    this.syncTargetGuid = SyncConstants.GUID_UNKNOWN;
+    	        	this.uuid = SyncConstants.GUID_UNKNOWN;
+                    this.syncSourceUuid = SyncConstants.GUID_UNKNOWN;
+                    this.syncTargetUuid = SyncConstants.GUID_UNKNOWN;
     	        	this.state = SyncTransmissionState.RESPONSE_NOT_UNDERSTOOD;
     			} 
     		} else {
         		this.errorMessage = SyncConstants.ERROR_SEND_FAILED.toString();
             	this.fileName = SyncConstants.FILENAME_SEND_FAILED;
-            	this.guid = SyncConstants.GUID_UNKNOWN;
-                this.syncSourceGuid = SyncConstants.GUID_UNKNOWN;
-                this.syncTargetGuid = SyncConstants.GUID_UNKNOWN;
+            	this.uuid = SyncConstants.GUID_UNKNOWN;
+                this.syncSourceUuid = SyncConstants.GUID_UNKNOWN;
+                this.syncTargetUuid = SyncConstants.GUID_UNKNOWN;
             	this.state = SyncTransmissionState.FAILED;
             	if ( connResponse.getState().equals(ServerConnectionState.MALFORMED_URL)) this.state = SyncTransmissionState.MALFORMED_URL;
             	if ( connResponse.getState().equals(ServerConnectionState.CERTIFICATE_FAILED)) this.state = SyncTransmissionState.CERTIFICATE_FAILED;
@@ -134,9 +134,9 @@ public class SyncTransmissionResponse implements IItem {
     	} else {
     		this.errorMessage = SyncConstants.ERROR_SEND_FAILED.toString();
         	this.fileName = SyncConstants.FILENAME_SEND_FAILED;
-        	this.guid = SyncConstants.GUID_UNKNOWN;
-            this.syncSourceGuid = SyncConstants.GUID_UNKNOWN;
-            this.syncTargetGuid = SyncConstants.GUID_UNKNOWN;
+        	this.uuid = SyncConstants.GUID_UNKNOWN;
+            this.syncSourceUuid = SyncConstants.GUID_UNKNOWN;
+            this.syncTargetUuid = SyncConstants.GUID_UNKNOWN;
         	this.state = SyncTransmissionState.FAILED;
     	}
     }
@@ -157,20 +157,20 @@ public class SyncTransmissionResponse implements IItem {
     	this.errorMessage = errorMessage;
     }
 
-    public String getSyncSourceGuid() {
-        return syncSourceGuid;
+    public String getSyncSourceUuid() {
+        return syncSourceUuid;
     }
 
-    public void setSyncSourceGuid(String value) {
-        this.syncSourceGuid = value;
+    public void setSyncSourceUuid(String value) {
+        this.syncSourceUuid = value;
     }
 
-    public String getSyncTargetGuid() {
-        return syncTargetGuid;
+    public String getSyncTargetUuid() {
+        return syncTargetUuid;
     }
 
-    public void setSyncTargetGuid(String value) {
-        this.syncTargetGuid = value;
+    public void setSyncTargetUuid(String value) {
+        this.syncTargetUuid = value;
     }    
     
 	// methods
@@ -184,11 +184,11 @@ public class SyncTransmissionResponse implements IItem {
     public void setFileName(String value) {
         fileName = value;
     }
-    public String getGuid() {
-        return guid;
+    public String getUuid() {
+        return uuid;
     }
-    public void setGuid(String value) {
-        guid = value;
+    public void setUuid(String value) {
+        uuid = value;
     }
     public Date getTimestamp() {
         return timestamp;
@@ -243,12 +243,12 @@ public class SyncTransmissionResponse implements IItem {
         //Item me = xml.createItem(parent, this.getClass().getName());
         
         //serialize primitives
-        if (guid != null) xml.setAttribute(me, "guid", guid);
+        if (uuid != null) xml.setAttribute(me, "uuid", uuid);
         if (fileName != null) xml.setAttribute(me, "fileName", fileName);
         if (state != null) xml.setAttribute(me, "state", state.toString());
         if (errorMessage != null ) xml.setAttribute(me, "errorMessage", errorMessage);
-        if (syncSourceGuid != null)  xml.setAttribute(me, "syncSourceGuid", syncSourceGuid);
-        if (syncTargetGuid != null)  xml.setAttribute(me, "syncTargetGuid", syncTargetGuid);
+        if (syncSourceUuid != null)  xml.setAttribute(me, "syncSourceUuid", syncSourceUuid);
+        if (syncTargetUuid != null)  xml.setAttribute(me, "syncTargetUuid", syncTargetUuid);
         if (timestamp != null) xml.setAttribute(me, "timestamp", new TimestampNormalizer().toString(timestamp));
         
         //serialize Records list
@@ -275,10 +275,10 @@ public class SyncTransmissionResponse implements IItem {
      */
     public void load(Record xml, Item me) throws Exception {
 
-        this.guid = me.getAttribute("guid");
+        this.uuid = me.getAttribute("uuid");
         this.fileName = me.getAttribute("fileName");
-        this.syncSourceGuid = me.getAttribute("syncSourceGuid");
-        this.syncTargetGuid = me.getAttribute("syncTargetGuid");
+        this.syncSourceUuid = me.getAttribute("syncSourceUuid");
+        this.syncTargetUuid = me.getAttribute("syncTargetUuid");
 
         if (me.getAttribute("timestamp") == null)
             this.timestamp = null;

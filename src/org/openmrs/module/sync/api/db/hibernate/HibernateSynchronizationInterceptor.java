@@ -247,15 +247,15 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 					                                 .getGlobalProperty("database_version"));
 
 					// Complete the record
-					record.setGuid(UUID.randomUUID().toString());
-					if (record.getOriginalGuid() == null) {
+					record.setUuid(UUID.randomUUID().toString());
+					if (record.getOriginalUuid() == null) {
 						if (log.isInfoEnabled())
-							log.info("OriginalGuid is null, so assigning a new GUID: " + record.getGuid());
-						record.setOriginalGuid(record.getGuid());
+							log.info("OriginalUuid is null, so assigning a new GUID: " + record.getUuid());
+						record.setOriginalUuid(record.getUuid());
 					} else {
 						if (log.isInfoEnabled())
-							log.info("OriginalGuid is: "
-							        + record.getOriginalGuid());
+							log.info("OriginalUuid is: "
+							        + record.getOriginalUuid());
 					}
 					record.setState(SyncRecordState.NEW);
 					record.setTimestamp(new Date());
@@ -267,7 +267,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 					}
 
 					synchronizationService.createSyncRecord(record,
-					                                        record.getOriginalGuid());
+					                                        record.getOriginalUuid());
 				} else {
 					// note: this will happen all the time with read-only
 					// transactions
@@ -373,11 +373,11 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 		if (log.isDebugEnabled())
 			log.debug("onSave: " + state.toString());
 		
-		boolean isGuidAssigned = assignGUID(entity, state, propertyNames, SyncItemState.NEW);
+		boolean isUuidAssigned = assignGUID(entity, state, propertyNames, SyncItemState.NEW);
 
 		// explicitly bail out if sync is disabled
 		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-			return isGuidAssigned;
+			return isUuidAssigned;
 
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
@@ -402,7 +402,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 					                     SyncItemState.NEW);
 		}
 		
-		return isGuidAssigned;
+		return isUuidAssigned;
 	}
 
 	/**
@@ -425,11 +425,11 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 		if (log.isDebugEnabled())
 			log.debug("onFlushDirty: " + entity.getClass().getName());
 		
-		boolean isGuidAssigned = assignGUID(entity, currentState, propertyNames, SyncItemState.UPDATED);
+		boolean isUuidAssigned = assignGUID(entity, currentState, propertyNames, SyncItemState.UPDATED);
 
 		// explicitly bail out if sync is disabled
 		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-			return isGuidAssigned;
+			return isUuidAssigned;
 
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
@@ -440,7 +440,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			 * NOTE: Accomodate Hibernate auto-flush semantics (as best as we
 			 * understand them): In case of sync ingest: When processing SyncRecord
 			 * with >1 sync item via ProcessSyncRecord() on parent, calls to get
-			 * object/update object by guid may cause auto-flush of pending updates;
+			 * object/update object by uuid may cause auto-flush of pending updates;
 			 * this would result in redundant sync items within a sync record. Use
 			 * threadLocal HashSet to only keep one instance of dirty object for
 			 * single hibernate flush. Note that this is (i.e. incurring
@@ -466,7 +466,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			
 		}
 				
-		return isGuidAssigned;
+		return isUuidAssigned;
 	}
 
 	@Override
@@ -598,7 +598,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	/**
 	 * Populates a Synchronizable Entity with a new GUID if needed
 	 * GUID is assigned under the following circumstances:
-	 * - objectGuid is null or "" 
+	 * - objectUuid is null or "" 
 	 *   and
 	 *     - if SyncItemState is NEW && it is 'local' change (i.e the insert is not coming from 
 	 *       remote server) assign new GUID
@@ -616,7 +616,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	 * wt.addName(new ConceptName("WEIGHT (KG)",...)
 	 * Context.getConceptService().updateConcept(wt, true);
 	 * 
-	 * In order to avoid all client code having to perform guid retrieval in situations like above, we will do this check here.
+	 * In order to avoid all client code having to perform uuid retrieval in situations like above, we will do this check here.
 	 *     
 	 * @param entity The object changed.
 	 * @param currentState Array containing data for each field in the object as they will be saved.
@@ -628,21 +628,21 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	 */
 	protected boolean assignGUID(Object entity, Object[] currentState, String[] propertyNames, SyncItemState state) throws SyncException {
 
-		boolean guidReset = false; //indicate that we are resetting guid
+		boolean uuidReset = false; //indicate that we are resetting uuid
 		//if not synchronizable, don't bother
 		if (entity instanceof Synchronizable) {
 			Synchronizable syncEntity = (Synchronizable) entity;
 						
 			/*
-			 * Clear GUID if it is invalid: if this is save event that is 'local' (i.e. getLastRecordGuid not
+			 * Clear GUID if it is invalid: if this is a save event that is 'local' (i.e. getLastRecordUuid not
 			 * yet assigned) *and* GUID is already assigned, clear it out and get a new one: this can happen 
-			 * is someone does object copy and has incorrect constructor or if object is disconnected from
+			 * if someone does object copy and has incorrect constructor or if object is disconnected from
 			 * session and then saved anew; as in obs edit
 			 */			
-			if (state == SyncItemState.NEW && syncEntity.getGuid() != null && syncEntity.getLastRecordGuid() == null) {
-				log.info("Clearing out guid for sync entity " + entity + ", guid was: " + syncEntity.getGuid());
-				syncEntity.setGuid(null);
-				guidReset = true;
+			if (state == SyncItemState.NEW && syncEntity.getUuid() != null && syncEntity.getLastRecordUuid() == null) {
+				log.info("Clearing out uuid for sync entity " + entity + ", uuid was: " + syncEntity.getUuid());
+				syncEntity.setUuid(null);
+				uuidReset = true;
 			} 
 		} else {
 			return false;
@@ -655,38 +655,38 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 		 */
 		for (int i = 0; i < propertyNames.length; i++) {
 			String propName = propertyNames[i];
-			String guidToAssign = null;
-			// start with what it there, unless we are resetting guid
-			if ("guid".equalsIgnoreCase(propName)) {
-				if (!guidReset) {
-					guidToAssign = (String)currentState[i];
+			String uuidToAssign = null;
+			// start with what it there, unless we are resetting uuid
+			if ("uuid".equalsIgnoreCase(propName)) {
+				if (!uuidReset) {
+					uuidToAssign = (String)currentState[i];
 				}
-				//if this is synchronizable and we are not in confirmed guid reset situation,
+				//if this is synchronizable and we are not in confirmed uuid reset situation,
 				//attempt to fetch first to make sure we are not overriding values
-				if (!guidReset && state != SyncItemState.NEW && entity instanceof Synchronizable) { 
-					guidToAssign = this.fetchGuid((Synchronizable)entity);
-					String temp = ((Synchronizable)entity).getGuid();
-					if (guidToAssign == null & temp != null) {
-						guidToAssign = temp; //db had a value and we didn't, so use the value from DB
-					} else if ( guidToAssign != null && temp != null && !guidToAssign.equalsIgnoreCase(temp)) {
+				if (!uuidReset && state != SyncItemState.NEW && entity instanceof Synchronizable) { 
+					uuidToAssign = this.fetchUuid((Synchronizable)entity);
+					String temp = ((Synchronizable)entity).getUuid();
+					if (uuidToAssign == null & temp != null) {
+						uuidToAssign = temp; //db had a value and we didn't, so use the value from DB
+					} else if ( uuidToAssign != null && temp != null && !uuidToAssign.equalsIgnoreCase(temp)) {
 						if (log.isWarnEnabled()) { 
-							log.warn("Resetting GUID on entity: " + entity + " with assigned GUID: " + temp + ", from database with GUID: " + guidToAssign);
+							log.warn("Resetting GUID on entity: " + entity + " with assigned GUID: " + temp + ", from database with GUID: " + uuidToAssign);
 						}
 					}
 
 				}
-				if (!StringUtils.hasText(guidToAssign)) {
-					guidToAssign = UUID.randomUUID().toString();
-					if (log.isInfoEnabled()) log.info("Assigned newly generated GUID to entity: " + entity + ": " + guidToAssign);
+				if (!StringUtils.hasText(uuidToAssign)) {
+					uuidToAssign = UUID.randomUUID().toString();
+					if (log.isInfoEnabled()) log.info("Assigned newly generated GUID to entity: " + entity + ": " + uuidToAssign);
 				}
 				
-				if (guidToAssign.equals(currentState[i])) {
+				if (uuidToAssign.equals(currentState[i])) {
 					return false;
 				} else {
-					if (log.isDebugEnabled()) log.debug("Assigned GUID to entity: " + entity + ": " + guidToAssign);
-					currentState[i] = guidToAssign; 
+					if (log.isDebugEnabled()) log.debug("Assigned GUID to entity: " + entity + ": " + uuidToAssign);
+					currentState[i] = uuidToAssign; 
 					if (entity instanceof Synchronizable) {
-						((Synchronizable)(entity)).setGuid(guidToAssign);
+						((Synchronizable)(entity)).setUuid(uuidToAssign);
 					}
 					return true;
 				}
@@ -707,7 +707,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	 * Hibernate Identity property. A property designated in Hibernate as
 	 * identity (i.e. primary key) *is* not serialized. This is because sync
 	 * does not enforce global uniqueness of database primary keys. Instead,
-	 * custom guid property is used. This allows us to continue to use native
+	 * custom uuid property is used. This allows us to continue to use native
 	 * types for 'traditional' entity relationships.
 	 * 
 	 * @param entity The object changed.
@@ -724,8 +724,8 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	        Object[] currentState, String[] propertyNames, Type[] types,
 	        Serializable id, SyncItemState state) throws SyncException {
 
-		String objectGuid = null;
-		String originalRecordGuid = null;
+		String objectUuid = null;
+		String originalRecordUuid = null;
 		Set<String> transientProps = null;
 		String infoMsg = null;
 		SessionFactory factory = null;
@@ -741,21 +741,21 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 
 		try {
 			
-			//boolean isGuidAssigned = assignGUID(entity, currentState, propertyNames, state);
-			objectGuid = entity.getGuid();
+			//boolean isUuidAssigned = assignGUID(entity, currentState, propertyNames, state);
+			objectUuid = entity.getUuid();
 
 			// pull-out sync-network wide change id, if one was already assigned
 			// (i.e. this change is coming from some other server)
-			originalRecordGuid = entity.getLastRecordGuid();
+			originalRecordUuid = entity.getLastRecordUuid();
 
 			// build up a starting msg for all logging:
 			StringBuilder sb = new StringBuilder();
 			sb.append("In PackageObject, entity type:");
 			sb.append(entity.getClass().getName());
-			sb.append(", entity guid:");
-			sb.append(objectGuid);
-			sb.append(", originalGuid guid:");
-			sb.append(originalRecordGuid);
+			sb.append(", entity uuid:");
+			sb.append(objectUuid);
+			sb.append(", originalUuid uuid:");
+			sb.append(originalRecordUuid);
 			infoMsg = sb.toString();
 
 			if (log.isInfoEnabled())
@@ -846,9 +846,9 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 							// child objects are not always loaded if not
 							// needed, so let's surround this with try/catch,
 							// package only if need to
-							String childGuid = null;
+							String childUuid = null;
 							try {
-								childGuid = childObject.getGuid();
+								childUuid = childObject.getUuid();
 							} catch (LazyInitializationException e) {
 								if (log.isWarnEnabled())
 									log.warn("Attempted to package/serialize child object, but child object was not yet initialized (and thus was null)");
@@ -857,10 +857,10 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 									// Wait - do we still need to do this, now
 									// that we have sync bidirectional?
 									// If User objects are sync'ing, then why
-									// can't these just be guids?
+									// can't these just be uuids?
 									// IS THIS RELIABLE??!?
 									log.warn("SUBSTITUTED AUTHENTICATED USER FOR ACTUAL USER");
-									childGuid = Context.getAuthenticatedUser()
+									childUuid = Context.getAuthenticatedUser()
 									                   .getUuid();
 								} else {
 									// TODO: abort here also?
@@ -868,13 +868,13 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 								}
 							} catch (Exception e) {
 								log.error(infoMsg
-								        + ", Could not find child object - object is null, therefore guid is null");
+								        + ", Could not find child object - object is null, therefore uuid is null");
 								if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT)
 									throw (e);
 							}
 
 							/*
-							 * child object is Synchronizable but its guid is
+							 * child object is Synchronizable but its uuid is
 							 * null, final attempt: load via PK if PK value
 							 * available common scenario: this can happen when
 							 * people are saving object graphs that are (at
@@ -883,24 +883,24 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 							 * conceptid without first fetching the full concept
 							 * state from DB for perf. reasons
 							 */
-							if (childGuid == null) {
-								childGuid = fetchGuid(childObject);
+							if (childUuid == null) {
+								childUuid = fetchUuid(childObject);
 								if (log.isDebugEnabled()) {
 									log.debug(infoMsg
-									        + "Field was null, attempted to fetch guid with the following results");
+									        + "Field was null, attempted to fetch uuid with the following results");
 									log.debug("Field type:"
 									        + childObject.getClass().getName()
-									        + ",guid:" + childGuid);
+									        + ",uuid:" + childUuid);
 								}
 							}
 
-							if (childGuid != null) {
+							if (childUuid != null) {
 								values.put(propertyNames[i],
 								           new PropertyClassValue(typeName,
-								                                  childGuid));
+								                                  childUuid));
 							} else {
 								String msg = infoMsg
-								        + ", Field value should be synchronized, but guid is null.  Field Type: "
+								        + ", Field value should be synchronized, but uuid is null.  Field Type: "
 								        + typeName + " Field Name: "
 								        + propertyNames[i];
 								log.error(msg);
@@ -941,9 +941,9 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			for (Map.Entry<String, PropertyClassValue> me : values.entrySet()) {
 				String property = me.getKey();
 
-				// if we are processing onDelete event all we need is guid
+				// if we are processing onDelete event all we need is uuid
 				if ((state == SyncItemState.DELETED)
-				        && (!"guid".equals(property))) {
+				        && (!"uuid".equals(property))) {
 					continue;
 				}
 
@@ -970,7 +970,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			 * ThreadLocal.
 			 */
 			SyncItem syncItem = new SyncItem();
-			syncItem.setKey(new SyncItemKey<String>(objectGuid, String.class));
+			syncItem.setKey(new SyncItemKey<String>(objectUuid, String.class));
 			syncItem.setState(state);
 			syncItem.setContent(xml.toStringAsDocumentFragement());
 			syncItem.setContainedType(entity.getClass());
@@ -982,14 +982,14 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			syncRecordHolder.get().addContainedClass(entity.getClass()
 			                                               .getSimpleName());
 
-			// set the originating guid for the record: do this once per Tx;
+			// set the originating uuid for the record: do this once per Tx;
 			// else we may end up with empty
 			// string (i.e. depending on exact sequence of auto-flush, it may be
 			// that onFlushDirty is called last time
-			// before a call to Synchronizable.setLastRecordGuid() is made
-			if (syncRecordHolder.get().getOriginalGuid() == null
-			        || "".equals(syncRecordHolder.get().getOriginalGuid())) {
-				syncRecordHolder.get().setOriginalGuid(originalRecordGuid);
+			// before a call to Synchronizable.setLastRecordUuid() is made
+			if (syncRecordHolder.get().getOriginalUuid() == null
+			        || "".equals(syncRecordHolder.get().getOriginalUuid())) {
+				syncRecordHolder.get().setOriginalUuid(originalRecordUuid);
 			}
 		} catch (SyncException ex) {
 			log.error("Journal error\n", ex);
@@ -1097,15 +1097,15 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	}
 
 	/**
-	 * Retrieves guid of Synchronizable instance from the storage based on
+	 * Retrieves uuid of Synchronizable instance from the storage based on
 	 * indentity value (i.e. PK).
 	 * 
 	 * <p>
 	 * Remarks: It is important for the implementation to
-	 * avoid loading obj into session while trying to determine its guid.
+	 * avoid loading obj into session while trying to determine its uuid.
 	 * As a result, the implementation uses the combination of reflection to determine
 	 * the object's identifier value and Hibernate criteria in order to build
-	 * select statement for getting the guid.
+	 * select statement for getting the uuid.
 	 * 
 	 * The reason to avoid fetching the obj is because doing it causes an error 
 	 * in hibernate when processing disconnected proxies. 
@@ -1116,12 +1116,12 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	 * Finally, implementation suspends any state flushing to avoid any weird
 	 * auto-flush events being triggered while select is being executed.
 	 * 
-	 * @param obj Instance of Synchronizable for which to retrieve guid for.
-	 * @return guid from storage if obj identity value is set, else null.
+	 * @param obj Instance of Synchronizable for which to retrieve uuid for.
+	 * @return uuid from storage if obj identity value is set, else null.
 	 * @see ForeignKeys
 	 */
-	protected String fetchGuid(Synchronizable obj) {
-		String guid = null;
+	protected String fetchUuid(Synchronizable obj) {
+		String uuid = null;
 		String idPropertyName = null;
 		Object idPropertyValue = null;
 		Method m = null;
@@ -1160,30 +1160,30 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			flushMode = factory.getCurrentSession().getFlushMode();
 			factory.getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
 			
-			// finally try to fetch the instance and get its guid
+			// finally try to fetch the instance and get its uuid
 			if (idPropertyValue != null) {
-				//build sql to fetch guid -  avoid loading obj into session
+				//build sql to fetch uuid -  avoid loading obj into session
 				org.hibernate.Criteria criteria = factory.getCurrentSession().createCriteria(objTrueType);
 				criteria.add(Expression.idEq(idPropertyValue));
-				criteria.setProjection(Projections.property("guid"));
-				Object guidVal = criteria.uniqueResult();
+				criteria.setProjection(Projections.property("uuid"));
+				Object uuidVal = criteria.uniqueResult();
 				
-				if (guidVal != null) {
-					guid = (String)guidVal;
+				if (uuidVal != null) {
+					uuid = (String)uuidVal;
 				}
 
 			}
 		} catch (Exception ex) {
 			// something went wrong - no matter just return null
-			guid = null;
-			log.warn("Error in fetchGuid: returning null", ex);
+			uuid = null;
+			log.warn("Error in fetchUuid: returning null", ex);
 		} finally {
 			if (factory != null) {
 				factory.getCurrentSession().setFlushMode(flushMode);
 			}
 		}
 
-		return guid;
+		return uuid;
 	}
 
 	/**
@@ -1195,19 +1195,19 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	 * <p>
 	 * Xml 'schema' for the sync item content for the persisted set follows.
 	 * Note that for persisted sets syncItemKey is a composite of owner object
-	 * guid and the property name that contains the collection.
+	 * uuid and the property name that contains the collection.
 	 * <br/>&lt;persistent-set&gt; element: wrapper element <br/>&lt;owner
-	 * guid='' propertyName='' type='' action='recreate|update' &gt; element:
+	 * uuid='' propertyName='' type='' action='recreate|update' &gt; element:
 	 * this captures the information about the object that holds reference to
-	 * the collection being processed <br/>-guid: owner object guid
+	 * the collection being processed <br/>-uuid: owner object uuid
 	 * <br/>-properyName: names of the property on owner object that holds this
 	 * collection <br/>-type: owner class name <br/>-action: recreate, update --
 	 * these are collection events defined by hibernate interceptor
-	 * <br/>&lt;entry action='update|delete' guid='' type='' &gt; element: this
+	 * <br/>&lt;entry action='update|delete' uuid='' type='' &gt; element: this
 	 * captures info about individual collection entries: <br/>-action: what is
 	 * being done to this item of the collection: delete (item was removed from
-	 * the collection) or update (item was added to the collection) <br/>-guid:
-	 * entry's guid <br/>-type: class name
+	 * the collection) or update (item was added to the collection) <br/>-uuid:
+	 * entry's uuid <br/>-type: class name
 	 * 
 	 * @param set Instance of Hibernate PersistentSet to process.
 	 * @param key key of owner for the set.
@@ -1216,7 +1216,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	protected void processPersistentSet(PersistentSet set, Serializable key,
 	        String action) {
 		Synchronizable owner = null;
-		String originalRecordGuid = null;
+		String originalRecordUuid = null;
 		SessionFactory factory = null;
 		LinkedHashMap<String, Synchronizable> entriesHolder = null;
 
@@ -1228,10 +1228,10 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 				throw new CallbackException("Unexpected 'action' supplied while processing a persistent set.");
 		}
 
-		// retrieve owner and original guid if there is one
+		// retrieve owner and original uuid if there is one
 		if (set.getOwner() instanceof Synchronizable) {
 			owner = (Synchronizable) set.getOwner();
-			originalRecordGuid = owner.getLastRecordGuid();
+			originalRecordUuid = owner.getLastRecordUuid();
 		} else {
 			log.info("Cannot process PersistentSet where owner is not Synchronizable.");
 			return;
@@ -1294,7 +1294,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 		if (ownerPropertyName == null) {
 			log.error("Could not find the property on owner object that corresponds to the set being processed.");
 			log.error("owner info: \ntype: " + owner.getClass().getName()
-			        + ", \nguid: " + owner.getGuid()
+			        + ", \nuuid: " + owner.getUuid()
 			        + ",\n property name for collection: " + ownerPropertyName);
 			if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT)
 				throw new CallbackException("Could not find the property on owner object that corresponds to the set being processed.");
@@ -1310,25 +1310,25 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 				if (entry instanceof Synchronizable) {
 					Synchronizable obj = (Synchronizable) entry;
 
-					// attempt to retrieve entry guid
-					String entryGuid = obj.getGuid();
-					if (entryGuid == null) {
-						entryGuid = fetchGuid(obj);
+					// attempt to retrieve entry uuid
+					String entryUuid = obj.getUuid();
+					if (entryUuid == null) {
+						entryUuid = fetchUuid(obj);
 						if (log.isDebugEnabled()) {
-							log.debug("Entry guid was null, attempted to fetch guid with the following results");
+							log.debug("Entry uuid was null, attempted to fetch uuid with the following results");
 							log.debug("Entry type:" + obj.getClass().getName()
-							        + ",guid:" + entryGuid);
+							        + ",uuid:" + entryUuid);
 						}
 					}
 					// well, this is messed up: have an instance of
-					// Synchronizable but has no guid
-					if (entryGuid == null) {
-						log.error("Cannot handle set entries where guid is null.");
-						throw new CallbackException("Cannot handle set entries where guid is null.");
+					// Synchronizable but has no uuid
+					if (entryUuid == null) {
+						log.error("Cannot handle set entries where uuid is null.");
+						throw new CallbackException("Cannot handle set entries where uuid is null.");
 					}
 					
-					//add it to the holder to avoid possible duplicates: key = guid + action
-					entriesHolder.put(entryGuid + "|update",obj);
+					//add it to the holder to avoid possible duplicates: key = uuid + action
+					entriesHolder.put(entryUuid + "|update",obj);
 				} else {
 					// TODO: more debug info
 					log.error("Cannot handle sets where entries are not Synchronizable!");
@@ -1346,26 +1346,26 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 						Object entryDelete = it.next();
 						if (entryDelete instanceof Synchronizable) {
 							Synchronizable objDelete = (Synchronizable) entryDelete;
-							// attempt to retrieve entry guid
-							String entryDeleteGuid = objDelete.getGuid();
-							if (entryDeleteGuid == null) {
-								entryDeleteGuid = fetchGuid(objDelete);
+							// attempt to retrieve entry uuid
+							String entryDeleteUuid = objDelete.getUuid();
+							if (entryDeleteUuid == null) {
+								entryDeleteUuid = fetchUuid(objDelete);
 								if (log.isDebugEnabled()) {
-									log.debug("Entry guid was null, attempted to fetch guid with the following results");
+									log.debug("Entry uuid was null, attempted to fetch uuid with the following results");
 									log.debug("Entry type:"
-									        + entryDeleteGuid.getClass().getName()
-									        + ",guid:" + entryDeleteGuid);
+									        + entryDeleteUuid.getClass().getName()
+									        + ",uuid:" + entryDeleteUuid);
 								}
 							}
 							// well, this is messed up: have an instance of
-							// Synchronizable but has no guid
-							if (entryDeleteGuid == null) {
-								log.error("Cannot handle set delete entries where guid is null.");
-								throw new CallbackException("Cannot handle set delete entries where guid is null.");
+							// Synchronizable but has no uuid
+							if (entryDeleteUuid == null) {
+								log.error("Cannot handle set delete entries where uuid is null.");
+								throw new CallbackException("Cannot handle set delete entries where uuid is null.");
 							}
 
-							//add it to the holder to avoid possible duplicates: key = guid + action
-							entriesHolder.put(entryDeleteGuid + "|delete",objDelete);
+							//add it to the holder to avoid possible duplicates: key = uuid + action
+							entriesHolder.put(entryDeleteUuid + "|delete",objDelete);
 							
 						} else {
 							// TODO: more debug info
@@ -1380,7 +1380,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			/*
 			 * Create SyncItem and store change in SyncRecord kept in
 			 * ThreadLocal. note: when making SyncItemKey, make it a composite
-			 * string of guid + prop. name to avoid collisions with updates to
+			 * string of uuid + prop. name to avoid collisions with updates to
 			 * parent object or updates to more than one collection on same
 			 * owner
 			 */
@@ -1390,12 +1390,12 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			Item entityItem = xml.getRootItem();
 
 			// serialize owner info: we will need type, prop name where set
-			// goes, and owner guid
+			// goes, and owner uuid
 			Item item = xml.createItem(entityItem, "owner");
 			item.setAttribute("type", this.getType(owner));
 			item.setAttribute("properyName", ownerPropertyName);
 			item.setAttribute("action", action);
-			item.setAttribute("guid", owner.getGuid());
+			item.setAttribute("uuid", owner.getUuid());
 			
 			//build out the xml for the item content
 			for( String entryKey : entriesHolder.keySet()) {
@@ -1404,11 +1404,11 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 				Item temp = xml.createItem(entityItem, "entry");
 				temp.setAttribute("type", this.getType(entryObject));
 				temp.setAttribute("action", entryKey.substring(entryKey.indexOf('|') + 1));
-				temp.setAttribute("guid", entryObject.getGuid());				
+				temp.setAttribute("uuid", entryObject.getUuid());				
 			}
 			
 			SyncItem syncItem = new SyncItem();
-			syncItem.setKey(new SyncItemKey<String>(owner.getGuid() + "|"
+			syncItem.setKey(new SyncItemKey<String>(owner.getUuid() + "|"
 			        + ownerPropertyName, String.class));
 			syncItem.setState(SyncItemState.UPDATED);
 			syncItem.setContainedType(set.getClass());
@@ -1418,10 +1418,10 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			syncRecordHolder.get().addContainedClass(owner.getClass()
 			                                              .getSimpleName());
 
-			// do the original guid dance, same as in packageObject
-			if (syncRecordHolder.get().getOriginalGuid() == null
-			        || "".equals(syncRecordHolder.get().getOriginalGuid())) {
-				syncRecordHolder.get().setOriginalGuid(originalRecordGuid);
+			// do the original uuid dance, same as in packageObject
+			if (syncRecordHolder.get().getOriginalUuid() == null
+			        || "".equals(syncRecordHolder.get().getOriginalUuid())) {
+				syncRecordHolder.get().setOriginalUuid(originalRecordUuid);
 			}
 		} catch (Exception ex) {
 			log.error("Error processing Persistent set, see callstack and inner expection",

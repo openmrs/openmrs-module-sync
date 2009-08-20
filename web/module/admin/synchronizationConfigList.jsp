@@ -64,9 +64,9 @@
 				</tr>
 				<%--
 				<tr>
-					<td><b><spring:message code="SynchronizationConfig.syncStatus.guid" /></b></td>
-					<td>${localServerGuid}</td>
-					<td>${localServerGuidMsg}</td>
+					<td><b><spring:message code="SynchronizationConfig.syncStatus.uuid" /></b></td>
+					<td>${localServerUuid}</td>
+					<td>${localServerUuidMsg}</td>
 				</tr>
 				--%>
 			</tbody>
@@ -251,9 +251,9 @@
 		<div class="box">
 			<table id="syncStatus" cellpadding="8" cellspacing="0">
 				<tr>
-					<td align="right" nowrap><b><spring:message code="SynchronizationConfig.advanced.serverGuid" /></b></td>
-					<td><input type="text" size="50" name="serverGuid" id="serverGuid" value="${localServerGuid}" /></td>
-					<td><spring:message code="SynchronizationConfig.advanced.serverGuid.info" /></td>
+					<td align="right" nowrap><b><spring:message code="SynchronizationConfig.advanced.serverUuid" /></b></td>
+					<td><input type="text" size="50" name="serverUuid" id="serverUuid" value="${localServerUuid}" /></td>
+					<td><spring:message code="SynchronizationConfig.advanced.serverUuid.info" /></td>
 				</tr>
 				<tr>
 					<td align="right" nowrap><b><spring:message code="SynchronizationConfig.advanced.serverName" /></b></td>

@@ -55,9 +55,9 @@
 			var state = "<span class='syncFAILED'><b><spring:message code="Synchronization.record.state_FAILED" /></b></span>";
 			if ( record.state == "COMMITTED" ) state = "<span class='syncCOMMITTED'><b><spring:message code="Synchronization.record.state_COMMITTED" /></b></span>";
 			else if ( record.state !=  "FAILED" ) state = "<span class='syncNEUTRAL'><b>" + getMessage(record.state) + "</b></span>";
-			DWRUtil.setValue("state_" + record.guid, state);
+			DWRUtil.setValue("state_" + record.uuid, state);
 			if ( record.state != "COMMITTED" ) {
-				DWRUtil.setValue("message_" + record.guid, record.errorMessage);
+				DWRUtil.setValue("message_" + record.uuid, record.errorMessage);
 			}
 			
 			/*
@@ -75,7 +75,7 @@
 		}
 		
 		function displaySyncResults(result) {
-			//alert("guid is " + result.guid + ", state is " + result.transmissionState + ", em is " + result.errorMessage);
+			//alert("uuid is " + result.uuid + ", state is " + result.transmissionState + ", em is " + result.errorMessage);
 			var success = "<spring:message code="SynchronizationStatus.transmission.ok.allItems" />";
 			//success += " &nbsp;<a href=\"javascript://\" onclick=\"showHideDiv('syncDetails');\">details</a>";
 			//var details = "<br>";
@@ -86,7 +86,7 @@
 				for ( var i = 0; i < records.length; i++ ) {
 					var record = records[i];
 					processRecord(record);
-					//details += record.guid + " - " + record.state + "<br>";
+					//details += record.uuid + " - " + record.state + "<br>";
 				}
 			} else {
 				//details += "<spring:message code="SynchronizationStatus.transmission.details.noItems" />:";
@@ -189,7 +189,7 @@
 	<table id="syncChangesTable" cellpadding="4" cellspacing="0">
 		<thead>
 			<tr>
-				<th><spring:message code="SynchronizationStatus.itemTypeAndGuid" /></th>
+				<th><spring:message code="SynchronizationStatus.itemTypeAndUuid" /></th>
 				<th nowrap style="text-align: center;"><spring:message code="SynchronizationStatus.recordState" /></th>
 				<th nowrap style="text-align: center;"><spring:message code="SynchronizationStatus.retryCount" /></th>
 				<th></th>
@@ -202,28 +202,28 @@
 					<%--<c:forEach var="syncItem" items="${syncRecord.items}" varStatus="itemStatus">--%>
 						<tr>
 							<td valign="middle" nowrap style="background-color: #${bgStyle};">
-								<b>${recordTypes[syncRecord.guid]}</b>
-								<c:if test="${not empty recordText[syncRecord.guid]}">
-									(${recordText[syncRecord.guid]})
+								<b>${recordTypes[syncRecord.uuid]}</b>
+								<c:if test="${not empty recordText[syncRecord.uuid]}">
+									(${recordText[syncRecord.uuid]})
 								</c:if>
 								<br>
 								<span style="color: #bbb">
-									<spring:message code="Synchronization.item.state_${recordChangeType[syncRecord.guid]}" /> -
+									<spring:message code="Synchronization.item.state_${recordChangeType[syncRecord.uuid]}" /> -
 									<openmrs:formatDate date="${syncRecord.timestamp}" format="${syncDateDisplayFormat}" />	
 									<%--<c:if test="${not empty itemInfo[syncItem.key.keyValue]}">(${itemInfo[syncItem.key.keyValue]})</c:if></b>--%>
 								</span>
 							</td>
-							<td valign="middle" nowrap style="background-color: #${bgStyle};" align="center" id="state_${syncRecord.guid}">
+							<td valign="middle" nowrap style="background-color: #${bgStyle};" align="center" id="state_${syncRecord.uuid}">
 								<span class="sync${syncRecord.state}"><spring:message code="Synchronization.record.state_${syncRecord.state}" /></span>
 							</td>
 							<td valign="middle" nowrap style="background-color: #${bgStyle};" align="center">${syncRecord.retryCount}</td>
-							<td valign="middle" style="background-color: #${bgStyle};"><span id="message_${syncRecord.guid}"></span></td>
+							<td valign="middle" style="background-color: #${bgStyle};"><span id="message_${syncRecord.uuid}"></span></td>
 
 							<%--
 							<td valign="middle" nowrap style="background-color: #${bgStyle};">
 								<b>${itemTypes[syncItem.key.keyValue]}</b>
 								<br>
-								(${itemGuids[syncItem.key.keyValue]})
+								(${itemUuids[syncItem.key.keyValue]})
 							</td>
 							--%>
 

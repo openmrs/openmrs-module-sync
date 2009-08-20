@@ -112,7 +112,7 @@ public class SynchronizationStatsListController extends SimpleFormController {
             obj.put("serverList", serverList);
             
             SyncSource source = new SyncSourceJournal();
-            obj.put("localServerGuid",source.getSyncSourceGuid());
+            obj.put("localServerUuid",source.getSyncSourceUuid());
             obj.put("localServerSyncStatus", source.getSyncStatus());
             
             //now add server stats
@@ -183,7 +183,7 @@ public class SynchronizationStatsListController extends SimpleFormController {
             ret.put("localServerSyncStatusValue",SyncUtil.getSyncStatus());
 	        ret.put("localServerSyncStatusText", msa.getMessage("SynchronizationConfig.syncStatus.status." + ref.get("localServerSyncStatus").toString()));
             ret.put("localServerSyncStatusMsg", msa.getMessage("SynchronizationConfig.syncStatus.status." + ref.get("localServerSyncStatus").toString() + ".info" , new String[] {SyncConstants.RUNTIMEPROPERTY_SYNC_STATUS}));
-	        ret.put("localServerGuid", ref.get("localServerGuid"));
+	        ret.put("localServerUuid", ref.get("localServerUuid"));
 	        ret.put("localServerId", Context.getService(SynchronizationService.class).getServerId());
 	        ret.put("localServerName", Context.getService(SynchronizationService.class).getServerName());           
 	        ret.put("localServerAdminEmail", SyncUtil.getAdminEmail());           

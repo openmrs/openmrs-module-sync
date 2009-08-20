@@ -66,6 +66,7 @@ import org.openmrs.GlobalProperty;
 import org.openmrs.Location;
 import org.openmrs.MimeType;
 import org.openmrs.Obs;
+import org.openmrs.OpenmrsObject;
 import org.openmrs.Order;
 import org.openmrs.OrderType;
 import org.openmrs.Patient;
@@ -229,65 +230,63 @@ public class SyncUtil {
 		return allFields;
 	}
 	
-	public static Object getOpenmrsObj(String className, String guid) {
+	public static Object getOpenmrsObj(String className, String Uuid) {
 		Object o = null;
 		boolean isMethod = true;
 		
 		//o = (Object)(new String("OPENMRS OBJECT " + className));
-		if ( "org.openmrs.Cohort".equals(className) ) o = (Object)(Context.getCohortService().getCohortByGuid(guid));
-		else if ( "org.openmrs.ComplexObs".equals(className) ) o = (Object)(Context.getObsService().getComplexObsByGuid(guid));
-		else if ( "org.openmrs.Concept".equals(className) ) o = (Object)(Context.getConceptService().getConceptByGuid(guid));
-		else if ( "org.openmrs.Concept".equals(className) ) o = (Object)(Context.getConceptService().getConceptByGuid(guid));
-		else if ( "org.openmrs.ConceptAnswer".equals(className) ) o = (Object)(Context.getConceptService().getConceptAnswerByGuid(guid));
-		else if ( "org.openmrs.ConceptClass".equals(className) ) o = (Object)(Context.getConceptService().getConceptClassByGuid(guid));
-		else if ( "org.openmrs.ConceptDatatype".equals(className) ) o = (Object)(Context.getConceptService().getConceptDatatypeByGuid(guid));
-		else if ( "org.openmrs.ConceptDerived".equals(className) ) o = (Object)(Context.getConceptService().getConceptDerivedByGuid(guid));
-		else if ( "org.openmrs.ConceptDescription".equals(className) ) o = (Object)(Context.getConceptService().getConceptDescriptionByGuid(guid));
-		else if ( "org.openmrs.ConceptName".equals(className) ) o = (Object)(Context.getConceptService().getConceptNameByGuid(guid));
-		else if ( "org.openmrs.ConceptNameTag".equals(className) ) o = (Object)(Context.getConceptService().getConceptNameTagByGuid(guid));
-		else if ( "org.openmrs.ConceptNumeric".equals(className) ) o = (Object)(Context.getConceptService().getConceptNumericByGuid(guid));
-		else if ( "org.openmrs.ConceptProposal".equals(className) ) o = (Object)(Context.getConceptService().getConceptProposalByGuid(guid));
-		else if ( "org.openmrs.ConceptSet".equals(className) ) o = (Object)(Context.getConceptService().getConceptSetByGuid(guid));
-		else if ( "org.openmrs.ConceptSetDerived".equals(className) ) o = (Object)(Context.getConceptService().getConceptSetDerivedByGuid(guid));
-		else if ( "org.openmrs.ConceptSource".equals(className) ) o = (Object)(Context.getConceptService().getConceptSourceByGuid(guid));
-		else if ( "org.openmrs.ConceptStateConversion".equals(className) ) o = (Object)(Context.getProgramWorkflowService().getConceptStateConversionByGuid(guid));
-		else if ( "org.openmrs.ConceptWord".equals(className) ) o = (Object)(Context.getConceptService().getConceptWordByGuid(guid));
-		else if ( "org.openmrs.Drug".equals(className) ) o = (Object)(Context.getConceptService().getDrugByGuid(guid));
-		else if ( "org.openmrs.DrugIngredient".equals(className) ) o = (Object)(Context.getConceptService().getDrugIngredientByGuid(guid));
-		else if ( "org.openmrs.DrugOrder".equals(className) ) o = (Object)(Context.getOrderService().getOrderByGuid(guid));
-		else if ( "org.openmrs.Encounter".equals(className) ) o = (Object)(Context.getEncounterService().getEncounterByGuid(guid));
-		else if ( "org.openmrs.EncounterType".equals(className) ) o = (Object)(Context.getEncounterService().getEncounterTypeByGuid(guid));
-		else if ( "org.openmrs.Field".equals(className) ) o = (Object)(Context.getFormService().getFieldByGuid(guid));
-		else if ( "org.openmrs.FieldAnswer".equals(className) ) o = (Object)(Context.getFormService().getFieldAnswerByGuid(guid));
-		else if ( "org.openmrs.FieldType".equals(className) ) o = (Object)(Context.getFormService().getFieldTypeByGuid(guid));
-		else if ( "org.openmrs.Form".equals(className) ) o = (Object)(Context.getFormService().getFormByGuid(guid));
-		else if ( "org.openmrs.FormField".equals(className) ) o = (Object)(Context.getFormService().getFormFieldByGuid(guid));
-		else if ( "org.openmrs.GlobalProperty".equals(className) ) o = (Object)(Context.getAdministrationService().getGlobalPropertyByGuid(guid));
-		else if ( "org.openmrs.Location".equals(className) ) o = (Object)(Context.getEncounterService().getLocationByGuid(guid));
-		else if ( "org.openmrs.LoginCredential".equals(className) ) o = (Object)(Context.getUserService().getLoginCredentialByGuid(guid));
-		else if ( "org.openmrs.MimeType".equals(className) ) o = (Object)(Context.getObsService().getMimeTypeByGuid(guid));
-		else if ( "org.openmrs.Obs".equals(className) ) o = (Object)(Context.getObsService().getObsByGuid(guid));
-		else if ( "org.openmrs.Order".equals(className) ) o = (Object)(Context.getOrderService().getOrderByGuid(guid));
-		else if ( "org.openmrs.OrderType".equals(className) ) o = (Object)(Context.getOrderService().getOrderTypeByGuid(guid));
-		else if ( "org.openmrs.Patient".equals(className) ) o = (Object)(Context.getPatientService().getPatientByGuid(guid));
-		else if ( "org.openmrs.PatientIdentifierType".equals(className) ) o = (Object)(Context.getPatientService().getPatientIdentifierTypeByGuid(guid));
-		else if ( "org.openmrs.PatientIdentifier".equals(className) ) o = (Object)(Context.getPatientService().getPatientIdentifierByGuid(guid));
-		else if ( "org.openmrs.PatientProgram".equals(className) ) o = (Object)(Context.getProgramWorkflowService().getPatientProgramByGuid(guid));
-		else if ( "org.openmrs.PatientState".equals(className) ) o = (Object)(Context.getProgramWorkflowService().getPatientStateByGuid(guid));
-		else if ( "org.openmrs.Person".equals(className) ) o = (Object)(Context.getPersonService().getPersonByGuid(guid));
-		else if ( "org.openmrs.PersonAddress".equals(className) ) o = (Object)(Context.getPersonService().getPersonAddressByGuid(guid));
-		else if ( "org.openmrs.PersonAttribute".equals(className) ) o = (Object)(Context.getPersonService().getPersonAttributeByGuid(guid));
-		else if ( "org.openmrs.PersonAttributeType".equals(className) ) o = (Object)(Context.getPersonService().getPersonAttributeTypeByGuid(guid));
-		else if ( "org.openmrs.PersonName".equals(className) ) o = (Object)(Context.getPersonService().getPersonNameByGuid(guid));
-		else if ( "org.openmrs.Privilege".equals(className) ) o = (Object)(Context.getUserService().getPrivilegeByGuid(guid));
-		else if ( "org.openmrs.Program".equals(className) ) o = (Object)(Context.getProgramWorkflowService().getProgramByGuid(guid));
-		else if ( "org.openmrs.ProgramWorkflow".equals(className) ) o = (Object)(Context.getProgramWorkflowService().getWorkflowByGuid(guid));
-		else if ( "org.openmrs.ProgramWorkflowState".equals(className) ) o = (Object)(Context.getProgramWorkflowService().getStateByGuid(guid));
-		else if ( "org.openmrs.Relationship".equals(className) ) o = (Object)(Context.getPersonService().getRelationshipByGuid(guid));
-		else if ( "org.openmrs.RelationshipType".equals(className) ) o = (Object)(Context.getPersonService().getRelationshipTypeByGuid(guid));
-		else if ( "org.openmrs.Role".equals(className) ) o = (Object)(Context.getUserService().getRoleByGuid(guid));
-		else if ( "org.openmrs.Tribe".equals(className) ) o = (Object)(Context.getPatientService().getTribeByGuid(guid));
-		else if ( "org.openmrs.User".equals(className) ) o = (Object)(Context.getUserService().getUserByGuid(guid));
+		if ( "org.openmrs.Cohort".equals(className) ) o = (Object)(Context.getCohortService().getCohortByUuid(Uuid));
+		else if ( "org.openmrs.Concept".equals(className) ) o = (Object)(Context.getConceptService().getConceptByUuid(Uuid));
+		else if ( "org.openmrs.Concept".equals(className) ) o = (Object)(Context.getConceptService().getConceptByUuid(Uuid));
+		else if ( "org.openmrs.ConceptAnswer".equals(className) ) o = (Object)(Context.getConceptService().getConceptAnswerByUuid(Uuid));
+		else if ( "org.openmrs.ConceptClass".equals(className) ) o = (Object)(Context.getConceptService().getConceptClassByUuid(Uuid));
+		else if ( "org.openmrs.ConceptDatatype".equals(className) ) o = (Object)(Context.getConceptService().getConceptDatatypeByUuid(Uuid));
+		//else if ( "org.openmrs.ConceptDerived".equals(className) ) o = (Object)(Context.getConceptService().getConceptDerivedByUuid(Uuid));
+		else if ( "org.openmrs.ConceptDescription".equals(className) ) o = (Object)(Context.getConceptService().getConceptDescriptionByUuid(Uuid));
+		else if ( "org.openmrs.ConceptName".equals(className) ) o = (Object)(Context.getConceptService().getConceptNameByUuid(Uuid));
+		else if ( "org.openmrs.ConceptNameTag".equals(className) ) o = (Object)(Context.getConceptService().getConceptNameTagByUuid(Uuid));
+		else if ( "org.openmrs.ConceptNumeric".equals(className) ) o = (Object)(Context.getConceptService().getConceptNumericByUuid(Uuid));
+		else if ( "org.openmrs.ConceptProposal".equals(className) ) o = (Object)(Context.getConceptService().getConceptProposalByUuid(Uuid));
+		else if ( "org.openmrs.ConceptSet".equals(className) ) o = (Object)(Context.getConceptService().getConceptSetByUuid(Uuid));
+		//else if ( "org.openmrs.ConceptSetDerived".equals(className) ) o = (Object)(Context.getConceptService().getConceptSetDerivedByUuid(Uuid));
+		else if ( "org.openmrs.ConceptSource".equals(className) ) o = (Object)(Context.getConceptService().getConceptSourceByUuid(Uuid));
+		else if ( "org.openmrs.ConceptStateConversion".equals(className) ) o = (Object)(Context.getProgramWorkflowService().getConceptStateConversionByUuid(Uuid));
+		//else if ( "org.openmrs.ConceptWord".equals(className) ) o = (Object)(Context.getConceptService().getConceptWordByUuid(Uuid));
+		else if ( "org.openmrs.Drug".equals(className) ) o = (Object)(Context.getConceptService().getDrugByUuid(Uuid));
+		//else if ( "org.openmrs.DrugIngredient".equals(className) ) o = (Object)(Context.getConceptService().getDrugIngredientByUuid(Uuid));
+		else if ( "org.openmrs.DrugOrder".equals(className) ) o = (Object)(Context.getOrderService().getOrderByUuid(Uuid));
+		else if ( "org.openmrs.Encounter".equals(className) ) o = (Object)(Context.getEncounterService().getEncounterByUuid(Uuid));
+		else if ( "org.openmrs.EncounterType".equals(className) ) o = (Object)(Context.getEncounterService().getEncounterTypeByUuid(Uuid));
+		else if ( "org.openmrs.Field".equals(className) ) o = (Object)(Context.getFormService().getFieldByUuid(Uuid));
+		else if ( "org.openmrs.FieldAnswer".equals(className) ) o = (Object)(Context.getFormService().getFieldAnswerByUuid(Uuid));
+		else if ( "org.openmrs.FieldType".equals(className) ) o = (Object)(Context.getFormService().getFieldTypeByUuid(Uuid));
+		else if ( "org.openmrs.Form".equals(className) ) o = (Object)(Context.getFormService().getFormByUuid(Uuid));
+		else if ( "org.openmrs.FormField".equals(className) ) o = (Object)(Context.getFormService().getFormFieldByUuid(Uuid));
+		else if ( "org.openmrs.GlobalProperty".equals(className) ) o = (Object)(Context.getAdministrationService().getGlobalPropertyByUuid(Uuid));
+		else if ( "org.openmrs.Location".equals(className) ) o = (Object)(Context.getLocationService().getLocationByUuid(Uuid));
+		//else if ( "org.openmrs.LoginCredential".equals(className) ) o = (Object)(Context.getUserService().getLoginCredentialByUuid(Uuid));
+		else if ( "org.openmrs.Obs".equals(className) ) o = (Object)(Context.getObsService().getObsByUuid(Uuid));
+		else if ( "org.openmrs.Order".equals(className) ) o = (Object)(Context.getOrderService().getOrderByUuid(Uuid));
+		else if ( "org.openmrs.OrderType".equals(className) ) o = (Object)(Context.getOrderService().getOrderTypeByUuid(Uuid));
+		else if ( "org.openmrs.Patient".equals(className) ) o = (Object)(Context.getPatientService().getPatientByUuid(Uuid));
+		else if ( "org.openmrs.PatientIdentifierType".equals(className) ) o = (Object)(Context.getPatientService().getPatientIdentifierTypeByUuid(Uuid));
+		else if ( "org.openmrs.PatientIdentifier".equals(className) ) o = (Object)(Context.getPatientService().getPatientIdentifierByUuid(Uuid));
+		else if ( "org.openmrs.PatientProgram".equals(className) ) o = (Object)(Context.getProgramWorkflowService().getPatientProgramByUuid(Uuid));
+		else if ( "org.openmrs.PatientState".equals(className) ) o = (Object)(Context.getProgramWorkflowService().getPatientStateByUuid(Uuid));
+		else if ( "org.openmrs.Person".equals(className) ) o = (Object)(Context.getPersonService().getPersonByUuid(Uuid));
+		else if ( "org.openmrs.PersonAddress".equals(className) ) o = (Object)(Context.getPersonService().getPersonAddressByUuid(Uuid));
+		else if ( "org.openmrs.PersonAttribute".equals(className) ) o = (Object)(Context.getPersonService().getPersonAttributeByUuid(Uuid));
+		else if ( "org.openmrs.PersonAttributeType".equals(className) ) o = (Object)(Context.getPersonService().getPersonAttributeTypeByUuid(Uuid));
+		else if ( "org.openmrs.PersonName".equals(className) ) o = (Object)(Context.getPersonService().getPersonNameByUuid(Uuid));
+		else if ( "org.openmrs.Privilege".equals(className) ) o = (Object)(Context.getUserService().getPrivilegeByUuid(Uuid));
+		else if ( "org.openmrs.Program".equals(className) ) o = (Object)(Context.getProgramWorkflowService().getProgramByUuid(Uuid));
+		else if ( "org.openmrs.ProgramWorkflow".equals(className) ) o = (Object)(Context.getProgramWorkflowService().getWorkflowByUuid(Uuid));
+		else if ( "org.openmrs.ProgramWorkflowState".equals(className) ) o = (Object)(Context.getProgramWorkflowService().getStateByUuid(Uuid));
+		else if ( "org.openmrs.Relationship".equals(className) ) o = (Object)(Context.getPersonService().getRelationshipByUuid(Uuid));
+		else if ( "org.openmrs.RelationshipType".equals(className) ) o = (Object)(Context.getPersonService().getRelationshipTypeByUuid(Uuid));
+		else if ( "org.openmrs.Role".equals(className) ) o = (Object)(Context.getUserService().getRoleByUuid(Uuid));
+		//else if ( "org.openmrs.Tribe".equals(className) ) o = (Object)(Context.getPatientService().getTribeByUuid(Uuid));
+		else if ( "org.openmrs.User".equals(className) ) o = (Object)(Context.getUserService().getUserByUuid(Uuid));
 		else {
 			isMethod = false;
 		}
@@ -295,14 +294,14 @@ public class SyncUtil {
         if (log.isDebugEnabled()) {
     		if ( o == null ) {
     			if ( isMethod ) 
-                    log.debug("Unable to get an object of type " + className + " with guid " + guid + "; object doesn't exist yet");
+                    log.debug("Unable to get an object of type " + className + " with Uuid " + Uuid + "; object doesn't exist yet");
     			else 
-                    log.debug("NO GUID-GETTING method for type " + className + " found"); 
+                    log.debug("NO Uuid-GETTING method for type " + className + " found"); 
     			// not sure this is ever a good idea.  by default should return null
     			//o = newObject(className);
     		}			
     		else 
-                log.debug("Found " + className + " in db with GUID " + guid);
+                log.debug("Found " + className + " in db with Uuid " + Uuid);
         }
 		return o;
 	}
@@ -483,10 +482,10 @@ public class SyncUtil {
 		return m;
 	}
 
-    private static Synchronizable findByGUID(Collection<? extends Synchronizable> list, Synchronizable toCheck){
+    private static OpenmrsObject findByUuid(Collection<? extends OpenmrsObject> list, OpenmrsObject toCheck){
 
-    	for(Synchronizable element:list){
-    		if(element.getGuid().equals(toCheck.getGuid()))
+    	for(OpenmrsObject element:list){
+    		if(element.getUuid().equals(toCheck.getUuid()))
     			return element;
     	}
     	
@@ -502,31 +501,31 @@ public class SyncUtil {
      *  
      * @param o object to save
      * @param className type
-     * @param guid unique id of the object that is being saved
+     * @param Uuid unique id of the object that is being saved
      * @param preCommitRecordActions actions set to be added to if needed, also SynchronizationIngestServiceImpl.processSynchronizable 
      * 
      * @see SyncUtil#updateOpenmrsObject(Object, String, String, boolean)
      */
-    public static synchronized void updateOpenmrsObject2(Synchronizable o, 
+    public static synchronized void updateOpenmrsObject2(OpenmrsObject o, 
     		String className, 
-    		String guid, 
+    		String Uuid, 
     		List<SyncPreCommitAction> preCommitRecordActions) {
 
     	//first handle weird stuff
     	if ( "org.openmrs.LoginCredential".equals(className) ) {
 			LoginCredential lc = (LoginCredential)o;
 						
-			//The fetch by guid may or may not work since the record may have been created using User object in the
+			//The fetch by Uuid may or may not work since the record may have been created using User object in the
 			// current Tx, if so hibernate will not realize that it has User object in cache pointing to the same row and consequently it
 			// will issue insert, to avoid this we will pre-fetch the corresponding *local* PK for login_credential: user_id
-			//this will force udpate vs. insert: this can be done one of two ways: by fetching lc with guid (for existing records)
-			//or for new users by fetching User by guid (this will be loaded from HB cache)
-			LoginCredential lcTemp = Context.getUserService().getLoginCredentialByGuid(lc.getGuid());
+			//this will force udpate vs. insert: this can be done one of two ways: by fetching lc with Uuid (for existing records)
+			//or for new users by fetching User by Uuid (this will be loaded from HB cache)
+			LoginCredential lcTemp = null; //Context.getUserService().getLoginCredentialByUuid(lc.getUuid());
 			if (lcTemp != null){
 				lc.setUserId(lcTemp.getUserId());
 			}
 			else {
-				User uTemp = Context.getUserService().getUserByGuid(lc.getGuid());
+				User uTemp = Context.getUserService().getUserByUuid(lc.getUuid());
 				if (uTemp != null){
 					lc.setUserId(uTemp.getUserId());
 				}
@@ -572,11 +571,11 @@ public class SyncUtil {
      * o.getClass().getName() however in case of dealing with hibernate proxy objects that does not work and we need
      * explicit openmrs type name 
      *
-     * @param guid unique id of the object
-     * @param knownToExist if true, update method on openmrs API is called using guid, else create method is used
+     * @param Uuid unique id of the object
+     * @param knownToExist if true, update method on openmrs API is called using Uuid, else create method is used
      * @return
      */
-	public static synchronized String updateOpenmrsObject(Object o, String className, String guid) {
+	public static synchronized String updateOpenmrsObject(Object o, String className, String Uuid) {
 		String ret = null;
 		if ( o != null ) {
 			boolean isUpdated = true;
@@ -588,7 +587,7 @@ public class SyncUtil {
 				Context.getConceptService().saveConcept((Concept)o);
 			} else if ( "org.openmrs.ConceptAnswer".equals(className) ) {
 				ConceptAnswer ca = (ConceptAnswer) o;
-				ConceptAnswer toRemove = (ConceptAnswer) findByGUID(ca.getConcept().getAnswers(), ca);
+				ConceptAnswer toRemove = (ConceptAnswer) findByUuid(ca.getConcept().getAnswers(), ca);
 				if(toRemove != null)
 					ca.getConcept().removeAnswer(toRemove);
 				ca.getConcept().addAnswer(ca);
@@ -604,7 +603,7 @@ public class SyncUtil {
 				throw new IllegalArgumentException("Not Yet Implemented. I thought this code would never be called. -DJ");
 			} else if ( "org.openmrs.ConceptName".equals(className) ) {
 				ConceptName cn = (ConceptName) o;
-				ConceptName toRemove = (ConceptName) findByGUID(cn.getConcept().getNames(),cn);
+				ConceptName toRemove = (ConceptName) findByUuid(cn.getConcept().getNames(),cn);
 				if(toRemove != null)
 					cn.getConcept().removeName(toRemove);
 				cn.getConcept().addName(cn);
@@ -625,7 +624,7 @@ public class SyncUtil {
 				Context.getConceptService().saveConceptProposal((ConceptProposal)o);
 			} else if ( "org.openmrs.ConceptSet".equals(className) ) {
 				ConceptSet cs = (ConceptSet) o;
-				ConceptSet toRemove = (ConceptSet) findByGUID(cs.getConcept().getConceptSets(),cs);
+				ConceptSet toRemove = (ConceptSet) findByUuid(cs.getConcept().getConceptSets(),cs);
 				if(toRemove !=null)
 					cs.getConcept().getConceptSets().remove(toRemove);
 				cs.getConcept().getConceptSets().add(cs);
@@ -726,7 +725,7 @@ public class SyncUtil {
 
 			if ( isUpdated ) {
 				//SyncRecord record = Context.getService(SynchronizationService.class).getLatestRecord();
-				//if ( record != null ) ret = record.getGuid();
+				//if ( record != null ) ret = record.getUuid();
 			}
 		} else {
 			log.debug("ERROR updating OpenMRS object - not all parameters are NOT NULL");
@@ -753,69 +752,69 @@ public class SyncUtil {
         return state;
     }    
 	
-    public static String generateGuid() {
+    public static String generateUuid() {
         return UUID.randomUUID().toString();
     }
     
-    public static String displayName(String className, String guid) {
+    public static String displayName(String className, String Uuid) {
 
     	String ret = "";
     	
         // get more identifying info about this object so it's more user-friendly
         if ( className.equals("Person") || className.equals("User") || className.equals("Patient") ) {
-            Person person = Context.getPersonService().getPersonByGuid(guid);
+            Person person = Context.getPersonService().getPersonByUuid(Uuid);
             if ( person != null ) ret = person.getPersonName().toString();
         }
         if ( className.equals("Encounter") ) {
-            Encounter encounter = Context.getEncounterService().getEncounterByGuid(guid);
+            Encounter encounter = Context.getEncounterService().getEncounterByUuid(Uuid);
             if ( encounter != null ) {
                 ret = encounter.getEncounterType().getName() 
                                + (encounter.getForm() == null ? "" : " (" + encounter.getForm().getName() + ")");
             }
         }
         if ( className.equals("Concept") ) {
-            Concept concept = Context.getConceptService().getConceptByGuid(guid);
+            Concept concept = Context.getConceptService().getConceptByUuid(Uuid);
             if ( concept != null ) ret = concept.getName(Context.getLocale()).getName();
         }
         if ( className.equals("Drug") ) {
-            Drug drug = Context.getConceptService().getDrugByGuid(guid);
+            Drug drug = Context.getConceptService().getDrugByUuid(Uuid);
             if ( drug != null ) ret = drug.getName();
         }
         if ( className.equals("Obs") ) {
-            Obs obs = Context.getObsService().getObsByGuid(guid);
+            Obs obs = Context.getObsService().getObsByUuid(Uuid);
             if ( obs != null ) ret = obs.getConcept().getName(Context.getLocale()).getName();
         }
         if ( className.equals("DrugOrder") ) {
-            DrugOrder drugOrder = (DrugOrder)Context.getOrderService().getOrderByGuid(guid);
+            DrugOrder drugOrder = (DrugOrder)Context.getOrderService().getOrderByUuid(Uuid);
             if ( drugOrder != null ) ret = drugOrder.getDrug().getConcept().getName(Context.getLocale()).getName();
         }
         if ( className.equals("Program") ) {
-        	Program program = Context.getProgramWorkflowService().getProgramByGuid(guid);
+        	Program program = Context.getProgramWorkflowService().getProgramByUuid(Uuid);
         	if ( program != null ) ret = program.getConcept().getName(Context.getLocale()).getName();
         }
         if ( className.equals("ProgramWorkflow") ) {
-        	ProgramWorkflow workflow = Context.getProgramWorkflowService().getWorkflowByGuid(guid);
+        	ProgramWorkflow workflow = Context.getProgramWorkflowService().getWorkflowByUuid(Uuid);
         	if ( workflow != null ) ret = workflow.getConcept().getName(Context.getLocale()).getName();
         }
         if ( className.equals("ProgramWorkflowState") ) {
-        	ProgramWorkflowState state = Context.getProgramWorkflowService().getStateByGuid(guid);
+        	ProgramWorkflowState state = Context.getProgramWorkflowService().getStateByUuid(Uuid);
         	if ( state != null ) ret = state.getConcept().getName(Context.getLocale()).getName();
         }
         if ( className.equals("PatientProgram") ) {
-        	PatientProgram patientProgram = Context.getProgramWorkflowService().getPatientProgramByGuid(guid);
+        	PatientProgram patientProgram = Context.getProgramWorkflowService().getPatientProgramByUuid(Uuid);
         	String pat = patientProgram.getPatient().getPersonName().toString();
         	String prog = patientProgram.getProgram().getConcept().getName(Context.getLocale()).getName();
         	if ( pat != null && prog != null ) ret = pat + " - " + prog;
         }
         if ( className.equals("PatientState") ) {
-        	PatientState patientState = Context.getProgramWorkflowService().getPatientStateByGuid(guid);
+        	PatientState patientState = Context.getProgramWorkflowService().getPatientStateByUuid(Uuid);
         	String pat = patientState.getPatientProgram().getPatient().getPersonName().toString();
         	String st = patientState.getState().getConcept().getName(Context.getLocale()).getName();
         	if ( pat != null && st != null ) ret = pat + " - " + st;
         }
 
         if ( className.equals("PersonAddress") ) {
-        	PersonAddress address = Context.getPersonService().getPersonAddressByGuid(guid);
+        	PersonAddress address = Context.getPersonService().getPersonAddressByUuid(Uuid);
         	String name = address.getPerson().getFamilyName() + " " + address.getPerson().getGivenName();
         	name += address.getAddress1() != null && address.getAddress1().length() > 0 ? address.getAddress1() + " " : "";
         	name += address.getAddress2() != null && address.getAddress2().length() > 0 ? address.getAddress2() + " " : "";
@@ -825,40 +824,40 @@ public class SyncUtil {
         }
 
         if ( className.equals("PersonName") ) {
-        	PersonName personName = Context.getPersonService().getPersonNameByGuid(guid);
+        	PersonName personName = Context.getPersonService().getPersonNameByUuid(Uuid);
         	String name = personName.getFamilyName() + " " + personName.getGivenName();
         	if ( name != null ) ret = name;
         }
 
         if ( className.equals("Relationship") ) {
-        	Relationship relationship = Context.getPersonService().getRelationshipByGuid(guid);
+        	Relationship relationship = Context.getPersonService().getRelationshipByUuid(Uuid);
         	String from = relationship.getPersonA().getFamilyName() + " " + relationship.getPersonA().getGivenName();
         	String to = relationship.getPersonB().getFamilyName() + " " + relationship.getPersonB().getGivenName();
         	if ( from != null && to != null ) ret += from + " to " + to;
         }
 
         if ( className.equals("RelationshipType") ) {
-        	RelationshipType type = Context.getPersonService().getRelationshipTypeByGuid(guid);
+        	RelationshipType type = Context.getPersonService().getRelationshipTypeByUuid(Uuid);
         	ret += type.getaIsToB() + " - " + type.getbIsToA();
         }
 
         if ( className.equals("PersonAttributeType") ) {
-        	PersonAttributeType type = Context.getPersonService().getPersonAttributeTypeByGuid(guid);
+        	PersonAttributeType type = Context.getPersonService().getPersonAttributeTypeByUuid(Uuid);
         	ret += type.getName();
         }
 
         if ( className.equals("Location") ) {
-        	Location loc = Context.getEncounterService().getLocationByGuid(guid);
+        	Location loc = Context.getLocationService().getLocationByUuid(Uuid);
         	ret += loc.getName();
         }
 
         if ( className.equals("EncounterType") ) {
-        	EncounterType type = Context.getEncounterService().getEncounterTypeByGuid(guid);
+        	EncounterType type = Context.getEncounterService().getEncounterTypeByUuid(Uuid);
         	ret += type.getName();
         }
 
         if ( className.equals("OrderType") ) {
-        	OrderType type = Context.getOrderService().getOrderTypeByGuid(guid);
+        	OrderType type = Context.getOrderService().getOrderTypeByUuid(Uuid);
         	ret += type.getName();
         }
 
@@ -916,7 +915,7 @@ public class SyncUtil {
 					append("local server (").append(Context.getService(SynchronizationService.class).getServerName()).
 					append(") and remote server ").append(server.getNickname()).append("\n\n").
 					append("Summary of failing record\n").
-					append("Original GUID:          " + syncRecord.getOriginalGuid()).
+					append("Original Uuid:          " + syncRecord.getOriginalUuid()).
 					append("Contained classes:      " + syncRecord.getContainedClassSet()).
 					append("Contents:\n");
 			

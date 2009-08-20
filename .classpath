@@ -3,17 +3,19 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="web/src"/>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-6-sun-1.6.0.14"/>
-	<classpathentry kind="lib" path="lib-common/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="lib" path="dist/"/>
+	<classpathentry kind="lib" path="metadata/log4j.xml"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib-common/jcl-over-slf4j-1.5.6.jar"/>
 	<classpathentry kind="lib" path="lib-common/servlet-api.jar"/>
 	<classpathentry kind="lib" path="lib-common/hibernate325-mod.jar"/>
 	<classpathentry kind="lib" path="lib-common/junit-4.4.jar"/>
-	<classpathentry kind="lib" path="lib-common/openmrs-api-1.5.0.9831-RC2.jar" sourcepath="/openmrs-1.5.x"/>
+	<classpathentry kind="lib" path="lib-common/openmrs-api-1.6.0.9866-dev.jar" sourcepath="/openmrs-trunk"/>
 	<classpathentry kind="lib" path="lib-common/spring-2.5.6.jar"/>
 	<classpathentry kind="lib" path="lib-common/spring-test.jar"/>
 	<classpathentry kind="lib" path="lib-common/spring-webmvc.jar"/>
 	<classpathentry kind="lib" path="lib-common/tests-openmrs-api-1.5.0.9831-RC2.jar"/>
-	<classpathentry kind="lib" path="lib-common/web-openmrs-api-1.5.0.9831-RC2.jar"/>
+	<classpathentry kind="lib" path="lib-common/web-openmrs-api-1.6.0.9866-dev.jar"/>
 	<classpathentry kind="lib" path="lib-common/commons-io-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib-common/dbunit-2.4.4.jar"/>

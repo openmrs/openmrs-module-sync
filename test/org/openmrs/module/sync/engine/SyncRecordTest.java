@@ -50,10 +50,10 @@ public class SyncRecordTest extends BaseContextSensitiveTest  {
     public void shouldSerialization() throws Exception {
 
         // 'normal' state
-        String guid1 = UUID.randomUUID().toString();
+        String uuid1 = UUID.randomUUID().toString();
         SyncRecord syncRecord1 = new SyncRecord();
         syncRecord1.setTimestamp(new Date());
-        syncRecord1.setGuid(guid1);
+        syncRecord1.setUuid(uuid1);
         SyncItem item11 = new SyncItem();
         item11.setContent("<Person><Name>Some Person</Name></Person>");
         item11.setState(SyncItemState.NEW);
@@ -74,7 +74,7 @@ public class SyncRecordTest extends BaseContextSensitiveTest  {
 
         // no timestamp or items
         SyncRecord syncRecord2 = new SyncRecord();
-        syncRecord2.setGuid(UUID.randomUUID().toString());
+        syncRecord2.setUuid(UUID.randomUUID().toString());
 
         // dump out the state
         Package pkg = new FilePackage();
@@ -122,10 +122,10 @@ public class SyncRecordTest extends BaseContextSensitiveTest  {
     public void shouldEquality() throws Exception {
         
         //setup instance 1
-        String guid1 = UUID.randomUUID().toString();
+        String uuid1 = UUID.randomUUID().toString();
         SyncRecord syncRecord1 = new SyncRecord();
         syncRecord1.setTimestamp(new Date());
-        syncRecord1.setGuid(guid1);
+        syncRecord1.setUuid(uuid1);
         SyncItem item11 = new SyncItem();
         item11.setContent("<Person><Name>Some Person</Name></Person>");
         item11.setState(SyncItemState.NEW);
@@ -138,7 +138,7 @@ public class SyncRecordTest extends BaseContextSensitiveTest  {
         //setup instance 2
         SyncRecord syncRecord2 = new SyncRecord();
         syncRecord2.setTimestamp(syncRecord1.getTimestamp());
-        syncRecord2.setGuid(syncRecord1.getGuid());
+        syncRecord2.setUuid(syncRecord1.getUuid());
         SyncItem item21 = new SyncItem();
         item21.setContent("<Person><Name>Some Person</Name></Person>");
         item21.setState(SyncItemState.NEW);

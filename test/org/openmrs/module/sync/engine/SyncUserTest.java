@@ -68,14 +68,14 @@ public class SyncUserTest extends SyncBaseTest {
 		runSyncTest(new SyncTestHelper() {
 			UserService us = Context.getUserService();
 			String newPWD = "NewPassword";
-			String userGuid = null; 
+			String userUuid = null; 
 			public void runOnChild() {
-				userGuid = us.getUser(1).getUuid();
+				userUuid = us.getUser(1).getUuid();
 				us.saveUser(us.getUser(1), newPWD);
-				assertEquals(userGuid,us.getUser(1).getUuid());
+				assertEquals(userUuid,us.getUser(1).getUuid());
 			}
 			public void runOnParent() {
-				assertEquals(userGuid,us.getUser(1).getUuid());
+				assertEquals(userUuid,us.getUser(1).getUuid());
 				Context.authenticate(us.getUser(1).getUsername(), newPWD);
 			}
 		});

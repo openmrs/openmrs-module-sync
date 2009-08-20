@@ -35,7 +35,7 @@ public class RemoteServer {
     private SyncTransmissionState lastSyncState;
     private Set<SyncServerClass> serverClasses;
     private Set<SyncServerRecord> serverRecords;
-    private String guid;
+    private String uuid;
     private Boolean disabled = false;
     private String childUsername = null;
 	
@@ -47,12 +47,12 @@ public class RemoteServer {
         this.disabled = disabled;
     }
 
-    public String getGuid() {
-        return guid;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setGuid(String guid) {
-        this.guid = guid;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public Set<SyncServerClass> getServerClasses() {
@@ -160,7 +160,7 @@ public class RemoteServer {
         final int PRIME = 31;
         int result = 1;
         result = PRIME * result + ((address == null) ? 0 : address.hashCode());
-        result = PRIME * result + ((guid == null) ? 0 : guid.hashCode());
+        result = PRIME * result + ((uuid == null) ? 0 : uuid.hashCode());
         result = PRIME * result + ((lastSync == null) ? 0 : lastSync.hashCode());
         result = PRIME * result + ((nickname == null) ? 0 : nickname.hashCode());
         result = PRIME * result + ((password == null) ? 0 : password.hashCode());
@@ -185,10 +185,10 @@ public class RemoteServer {
                 return false;
         } else if (!address.equals(other.address))
             return false;
-        if (guid == null) {
-            if (other.guid != null)
+        if (uuid == null) {
+            if (other.uuid != null)
                 return false;
-        } else if (!guid.equals(other.guid))
+        } else if (!uuid.equals(other.uuid))
             return false;
         if (lastSync == null) {
             if (other.lastSync != null)

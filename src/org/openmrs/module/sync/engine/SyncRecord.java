@@ -14,11 +14,10 @@
 package org.openmrs.module.sync.engine;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,7 +51,7 @@ public class SyncRecord implements Serializable, IItem {
 
     // Fields
     private Integer recordId;
-    private String guid = null;
+    private String uuid = null;
     private String creator = null;
     private String databaseVersion = null;
     private Date timestamp = null;
@@ -62,14 +61,14 @@ public class SyncRecord implements Serializable, IItem {
     private String containedClasses = "";
     private Set<SyncServerRecord> serverRecords = null;
     private RemoteServer forServer = null;
-    private String originalGuid = null;
+    private String originalUuid = null;
 
-    public String getOriginalGuid() {
-        return originalGuid;
+    public String getOriginalUuid() {
+        return originalUuid;
     }
 
-    public void setOriginalGuid(String originalGuid) {
-        this.originalGuid = originalGuid;
+    public void setOriginalUuid(String originalUuid) {
+        this.originalUuid = originalUuid;
     }
 
     // Constructors
@@ -102,15 +101,15 @@ public class SyncRecord implements Serializable, IItem {
 
 	// Properties
     // globally unique id of the record
-    public String getGuid() {
-        return guid;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setGuid(String guid) {
-        this.guid = guid;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
-    // The guid of the creator of the record
+    // The uuid of the creator of the record
     public String getCreator() {
         return creator;
     }
@@ -174,7 +173,7 @@ public class SyncRecord implements Serializable, IItem {
      * If there is already an item with same key, replace it with passed in value, else add it.
      * It will be added as LAST in insert order.
      * 
-     * Note: internally key for the LinkedHashMap is guid + action + contained type
+     * Note: internally key for the LinkedHashMap is uuid + action + contained type
      * 
      * @param syncItem
      */
@@ -222,7 +221,7 @@ public class SyncRecord implements Serializable, IItem {
         SyncRecord oSync = (SyncRecord) o;
         
         boolean same = ((oSync.getTimestamp() == null) ? (this.getTimestamp() == null) : oSync.getTimestamp().equals(this.getTimestamp()))
-                && ((oSync.getGuid() == null) ? (this.getGuid() == null) : oSync.getGuid().equals(this.getGuid()))
+                && ((oSync.getUuid() == null) ? (this.getUuid() == null) : oSync.getUuid().equals(this.getUuid()))
                 && ((oSync.getState() == null) ? (this.getState() == null) : oSync.getState().equals(this.getState()))
                 && (oSync.getRetryCount() == this.getRetryCount());
         
@@ -243,13 +242,13 @@ public class SyncRecord implements Serializable, IItem {
         Item me = xml.createItem(parent, this.getClass().getSimpleName());
         
         //serialize primitives
-        xml.setAttribute(me, "guid", guid);
+        xml.setAttribute(me, "uuid", uuid);
         xml.setAttribute(me, "retryCount", Integer.toString(retryCount));
         xml.setAttribute(me, "containedClasses", this.containedClasses);
-        if ( this.originalGuid != null ) {
-            xml.setAttribute(me, "originalGuid", originalGuid);
+        if ( this.originalUuid != null ) {
+            xml.setAttribute(me, "originalUuid", originalUuid);
         }
-        xml.setAttribute(me, "guid", guid);
+        xml.setAttribute(me, "uuid", uuid);
 
         if ( this.getForServer() != null ) {
             if ( !this.getForServer().getServerType().equals(RemoteServerType.PARENT)) {
@@ -283,7 +282,7 @@ public class SyncRecord implements Serializable, IItem {
     public void load(Record xml, Item me) throws Exception {
         
         //deserialize primitives
-        this.guid = me.getAttribute("guid");
+        this.uuid = me.getAttribute("uuid");
         this.retryCount = Integer.parseInt(me.getAttribute("retryCount"));
         this.state = SyncRecordState.valueOf(me.getAttribute("state"));
         this.containedClasses = me.getAttribute("containedClasses");
@@ -294,10 +293,10 @@ public class SyncRecord implements Serializable, IItem {
             this.timestamp = (Date)new TimestampNormalizer().fromString(Date.class,me.getAttribute("timestamp"));
         }
 
-        if (me.getAttribute("originalGuid") == null)
-            this.originalGuid = null;
+        if (me.getAttribute("originalUuid") == null)
+            this.originalUuid = null;
         else {
-            this.originalGuid = me.getAttribute("originalGuid");
+            this.originalUuid = me.getAttribute("originalUuid");
         }
 
         //now get items
@@ -401,7 +400,7 @@ public class SyncRecord implements Serializable, IItem {
     }
 
     /**
-     * Internally, sync items are stored as LinkedHashMap, the key into it is: guid + action + contained type
+     * Internally, sync items are stored as LinkedHashMap, the key into it is: uuid + action + contained type
      * 
      * @param item SyncItem for which to derive map key
      * @return string value of the key

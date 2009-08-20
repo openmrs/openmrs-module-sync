@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.OpenmrsObject;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.DAOException;
@@ -58,29 +59,29 @@ public class SynchronizationServiceImpl implements SynchronizationService {
      */
 
     public void createSyncRecord(SyncRecord record) throws APIException {
-        this.createSyncRecord(record, record.getOriginalGuid());
+        this.createSyncRecord(record, record.getOriginalUuid());
     }
     
-    public void createSyncRecord(SyncRecord record, String originalGuidPassed) throws APIException {
+    public void createSyncRecord(SyncRecord record, String originalUuidPassed) throws APIException {
 
         if ( record != null ) {
             // here is a hack to get around the fact that hibernate decides to commit transaction when it feels like it
             // otherwise, we could run this in the ingest methods
             RemoteServer origin = null;
-            int idx = originalGuidPassed.indexOf("|"); 
+            int idx = originalUuidPassed.indexOf("|"); 
             if ( idx > -1 ) {
-                log.warn("originalPassed is " + originalGuidPassed);
-                String originalGuid = originalGuidPassed.substring(0, idx);
-                String serverGuid = originalGuidPassed.substring(idx + 1);
-                log.warn("serverGuid is " + serverGuid + ", and originalGuid is " + originalGuid);
-                record.setOriginalGuid(originalGuid);
-                origin = Context.getService(SynchronizationService.class).getRemoteServer(serverGuid);
+                log.warn("originalPassed is " + originalUuidPassed);
+                String originalUuid = originalUuidPassed.substring(0, idx);
+                String serverUuid = originalUuidPassed.substring(idx + 1);
+                log.warn("serverUuid is " + serverUuid + ", and originalUuid is " + originalUuid);
+                record.setOriginalUuid(originalUuid);
+                origin = Context.getService(SynchronizationService.class).getRemoteServer(serverUuid);
                 if ( origin != null ) {
                     if ( origin.getServerType().equals(RemoteServerType.PARENT) ) {
                         record.setState(SyncRecordState.COMMITTED);
                     }
                 } else {
-                    log.warn("Could not get remote server by guid: " + serverGuid);
+                    log.warn("Could not get remote server by uuid: " + serverUuid);
                 }
             }
             
@@ -128,12 +129,12 @@ public class SynchronizationServiceImpl implements SynchronizationService {
     /**
      * @see org.openmrs.api.SynchronizationService#getSyncRecord(java.lang.String)
      */
-    public SyncRecord getSyncRecord(String guid) throws APIException {
-        return getSynchronizationDAO().getSyncRecord(guid);
+    public SyncRecord getSyncRecord(String uuid) throws APIException {
+        return getSynchronizationDAO().getSyncRecord(uuid);
     }
 
-    public SyncRecord getSyncRecordByOriginalGuid(String originalGuid) throws APIException {
-        return getSynchronizationDAO().getSyncRecordByOriginalGuid(originalGuid);
+    public SyncRecord getSyncRecordByOriginalUuid(String originalUuid) throws APIException {
+        return getSynchronizationDAO().getSyncRecordByOriginalUuid(originalUuid);
     }
 
     /**
@@ -146,8 +147,8 @@ public class SynchronizationServiceImpl implements SynchronizationService {
     /**
      * @see org.openmrs.api.SynchronizationService#getSyncRecord(java.lang.String)
      */
-    public SyncImportRecord getSyncImportRecord(String guid) throws APIException {
-        return getSynchronizationDAO().getSyncImportRecord(guid);
+    public SyncImportRecord getSyncImportRecord(String uuid) throws APIException {
+        return getSynchronizationDAO().getSyncImportRecord(uuid);
     }
 
     /**
@@ -329,8 +330,8 @@ public class SynchronizationServiceImpl implements SynchronizationService {
         return getSynchronizationDAO().getRemoteServer(serverId);
     }
 
-    public RemoteServer getRemoteServer(String guid) throws APIException {
-        return getSynchronizationDAO().getRemoteServer(guid);
+    public RemoteServer getRemoteServer(String uuid) throws APIException {
+        return getSynchronizationDAO().getRemoteServer(uuid);
     }
 
     public RemoteServer getRemoteServerByUsername(String username) throws APIException {
@@ -349,15 +350,15 @@ public class SynchronizationServiceImpl implements SynchronizationService {
      * Returns globally unique identifier of the local server. This value uniquely indentifies server in all
      * data exchanges with other servers.
      */
-    public String getServerGuid() throws APIException{   
+    public String getServerUuid() throws APIException{   
         return Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_SERVER_GUID);
     }
 
     /**
      * Updates globally unique identifier of the local server.
      */
-    public void setServerGuid(String guid) throws APIException{   
-    	Context.getService(SynchronizationService.class).setGlobalProperty(SyncConstants.PROPERTY_SERVER_GUID, guid);
+    public void setServerUuid(String uuid) throws APIException{   
+    	Context.getService(SynchronizationService.class).setGlobalProperty(SyncConstants.PROPERTY_SERVER_GUID, uuid);
     }
 
     /**
@@ -431,8 +432,8 @@ public class SynchronizationServiceImpl implements SynchronizationService {
     /**
      * @see org.openmrs.api.SynchronizationService#createDatabaseForChild(java.lang.String, java.io.Writer)
      */
-    public void createDatabaseForChild(String guidForChild, OutputStream out) throws APIException {
-       getSynchronizationDAO().createDatabaseForChild(guidForChild, out); 
+    public void createDatabaseForChild(String uuidForChild, OutputStream out) throws APIException {
+       getSynchronizationDAO().createDatabaseForChild(uuidForChild, out); 
     }
     
     /**
@@ -480,7 +481,7 @@ public class SynchronizationServiceImpl implements SynchronizationService {
      * @throws APIException
      */
     //@Authorized({"Manage Synchronization Records"})
-    public void saveOrUpdate(Synchronizable object)  throws APIException {
+    public void saveOrUpdate(OpenmrsObject object)  throws APIException {
     	getSynchronizationDAO().saveOrUpdate(object);
     }
 
@@ -527,8 +528,8 @@ public class SynchronizationServiceImpl implements SynchronizationService {
     		
     	return stats;
     }
-    public boolean checkGuidsForClass(Class clazz) throws APIException {
-    	return getSynchronizationDAO().checkGuidsForClass(clazz);
+    public boolean checkUuidsForClass(Class clazz) throws APIException {
+    	return getSynchronizationDAO().checkUuidsForClass(clazz);
     }
 }
 

@@ -34,8 +34,8 @@ public interface SyncSource {
     public SyncPoint<?> moveSyncPoint();
     
     //unique ID of the source
-    public String getSyncSourceGuid();
-    public void setSyncSourceGuid(String guid);
+    public String getSyncSourceUuid();
+    public void setSyncSourceUuid(String uuid);
     
     //sync status: see SyncStatusState for valid states; runtime prop *only* -- thus no setter 
     public SyncStatusState getSyncStatus();

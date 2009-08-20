@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.Authorized;
 import org.openmrs.api.APIException;
 import org.openmrs.api.db.DAOException;
@@ -46,9 +47,9 @@ public interface SynchronizationService {
      * Auto generated method comment
      * 
      * @param record
-     * @param originalGuid
+     * @param originalUuid
      */
-    public void createSyncRecord(SyncRecord record, String originalGuid);
+    public void createSyncRecord(SyncRecord record, String originalUuid);
 
     /**
      * Update a SyncRecord
@@ -68,16 +69,16 @@ public interface SynchronizationService {
 
     /**
      * 
-     * @param guid of the SyncRecord to retrieve
+     * @param uuid of the SyncRecord to retrieve
      * @return SyncRecord The SyncRecord or null if not found
      * @throws APIException
      */
     //@Authorized({"View Synchronization Records"})
     @Transactional(readOnly=true)
-    public SyncRecord getSyncRecord(String guid) throws APIException;
+    public SyncRecord getSyncRecord(String uuid) throws APIException;
 
     @Transactional(readOnly=true)
-    public SyncRecord getSyncRecordByOriginalGuid(String originalGuid) throws APIException;
+    public SyncRecord getSyncRecordByOriginalUuid(String originalUuid) throws APIException;
 
     /**
      * 
@@ -114,13 +115,13 @@ public interface SynchronizationService {
 
     /**
      * 
-     * @param guid of the SyncImportRecord to retrieve
+     * @param uuid of the SyncImportRecord to retrieve
      * @return SyncRecord The SyncImportRecord or null if not found
      * @throws APIException
      */
     //@Authorized({"View Synchronization Records"})
     @Transactional(readOnly=true)
-    public SyncImportRecord getSyncImportRecord(String guid) throws APIException;
+    public SyncImportRecord getSyncImportRecord(String uuid) throws APIException;
     
     /**
      * Returns the first SyncRecord in either the PENDING SEND or the NEW state
@@ -252,7 +253,7 @@ public interface SynchronizationService {
 
     /**
      * 
-     * @param guid of the SyncRecord to retrieve
+     * @param uuid of the SyncRecord to retrieve
      * @return SyncRecord The SyncRecord or null if not found
      * @throws APIException
      */
@@ -262,13 +263,13 @@ public interface SynchronizationService {
 
     /**
      * 
-     * @param guid of the SyncRecord to retrieve
+     * @param uuid of the SyncRecord to retrieve
      * @return SyncRecord The SyncRecord or null if not found
      * @throws APIException
      */
     //@Authorized({"View Synchronization Servers"})
     @Transactional(readOnly=true)
-    public RemoteServer getRemoteServer(String guid) throws APIException;
+    public RemoteServer getRemoteServer(String uuid) throws APIException;
 
     /**
      * 
@@ -282,7 +283,7 @@ public interface SynchronizationService {
 
     /**
      * 
-     * @param guid of the SyncRecord to retrieve
+     * @param uuid of the SyncRecord to retrieve
      * @return SyncRecord The SyncRecord or null if not found
      * @throws APIException
      */
@@ -292,7 +293,7 @@ public interface SynchronizationService {
 
     /**
      * 
-     * @param guid of the SyncRecord to retrieve
+     * @param uuid of the SyncRecord to retrieve
      * @return SyncRecord The SyncRecord or null if not found
      * @throws APIException
      */
@@ -303,11 +304,11 @@ public interface SynchronizationService {
     /**
      *  Retrieves globally unique id of the server.
      *  
-     * @return guid of the server. String representation of java.util.UUID.
+     * @return uuid of the server. String representation of java.util.UUID.
      * @throws APIException
      */
     @Transactional(readOnly=true)
-    public String getServerGuid() throws APIException;
+    public String getServerUuid() throws APIException;
 
     /**
      * Sets globally unique id of the server. WARNING: Use only during initial server setup.
@@ -316,10 +317,10 @@ public interface SynchronizationService {
      * this action. Specifically, changing already assigned GUID for a server will cause
      * it to loose its link to history of changes that may be designated for this server.
      * 
-     * @param guid unique GUID of the server. String representation of java.util.UUID.
+     * @param uuid unique GUID of the server. String representation of java.util.UUID.
      * @throws APIException
      */
-    public void setServerGuid(String guid) throws APIException;
+    public void setServerUuid(String uuid) throws APIException;
     
     /**
      *  Retrieve user friendly nickname for the server that is (by convention) unique for the given sync network of servers.
@@ -333,7 +334,7 @@ public interface SynchronizationService {
      * Sets friendly server name. WARNING: Use only during initial server setup.
      * 
      * WARNING: DO NOT CALL this method unless you fully understand the implication of
-     * this action. Similarly to {@link #setServerGuid(String)} some data loss may occur if called
+     * this action. Similarly to {@link #setServerUuid(String)} some data loss may occur if called
      * while server is functioning as part of the sync network.
      * 
      * @param name new server name
@@ -353,7 +354,7 @@ public interface SynchronizationService {
      * Sets server id for sync network. WARNING: Use only during initial server setup.
      * 
      * WARNING: DO NOT CALL this method unless you fully understand the implication of
-     * this action. Similarly to {@link #setServerGuid(String)} some data loss may occur if called
+     * this action. Similarly to {@link #setServerUuid(String)} some data loss may occur if called
      * while server is functioning as part of the sync network.
      * 
      * @param id new server id for the network of sync servers
@@ -388,7 +389,7 @@ public interface SynchronizationService {
 
     /**
      * 
-     * @param guid of the SyncClass to retrieve
+     * @param uuid of the SyncClass to retrieve
      * @return SyncClass The SyncClass or null if not found
      * @throws APIException
      */
@@ -412,13 +413,13 @@ public interface SynchronizationService {
      * Dumps the entire database, much like what you'd get from the mysqldump command, and
      * adds a few lines to set the child's GUID, and delete sync history 
      * 
-     * @param guidForChild if not null, use this as the guid for the child server, otherwise autogenerate one 
+     * @param uuidForChild if not null, use this as the uuid for the child server, otherwise autogenerate one 
      * @param out write the sql here
      * @throws APIException
      */
     //@Authorized({"Backup Entire Database"})
     @Transactional(readOnly=true)
-    public void createDatabaseForChild(String guidForChild, OutputStream out) throws APIException;
+    public void createDatabaseForChild(String uuidForChild, OutputStream out) throws APIException;
 
     /**
      * Deletes instance of synchronizable from data storage.
@@ -458,7 +459,7 @@ public interface SynchronizationService {
      * @return
      * @throws APIException
      */
-    public void saveOrUpdate(Synchronizable object)  throws APIException;
+    public void saveOrUpdate(OpenmrsObject object)  throws APIException;
     
 
     /**
@@ -471,5 +472,5 @@ public interface SynchronizationService {
      */
     public Map<RemoteServer,Set<SyncStatistic>> getSyncStatistics(Date fromDate, Date toDate) throws DAOException;
     
-    public boolean checkGuidsForClass(Class clazz) throws APIException;
+    public boolean checkUuidsForClass(Class clazz) throws APIException;
 }

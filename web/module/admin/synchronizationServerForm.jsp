@@ -136,10 +136,10 @@
 				<c:if test="${(server.serverType == 'CHILD' || type == 'CHILD') && not empty server.serverId}">
 					<tr>
 						<td align="right" valign="top">
-							<b><spring:message code="SynchronizationConfig.server.guid" /></b>
+							<b><spring:message code="SynchronizationConfig.server.uuid" /></b>
 						</td>
 						<td align="left" valign="top">
-							<input type="text" size="48" maxlength="250" id="guid" name="guid" value="${server.guid}" />
+							<input type="text" size="48" maxlength="250" id="uuid" name="uuid" value="${server.uuid}" />
 						</td>
 					</tr>
 				</c:if>

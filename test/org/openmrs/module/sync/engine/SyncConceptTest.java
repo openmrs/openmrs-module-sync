@@ -127,7 +127,7 @@ public class SyncConceptTest extends SyncBaseTest {
 			private int conceptCodedId=99998;
 			private int conceptSetId=99999;
 			
-			private String guid = "";
+			private String uuid = "";
 			
 			public void runOnChild() {
 				cs = Context.getConceptService();
@@ -179,7 +179,7 @@ public class SyncConceptTest extends SyncBaseTest {
 				set.setConceptSets(cset);
 				cs.saveConcept(set);
 				
-				guid = set.getUuid();
+				uuid = set.getUuid();
 				log.info("GUID:  " + set.getUuid());
 			}
 			public void runOnParent() {

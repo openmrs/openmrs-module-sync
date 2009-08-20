@@ -34,14 +34,13 @@ public class SyncEncounterTest extends SyncBaseTest {
 
 	@Override
     public String getInitialDataset() {
-	    return "org/openmrs/synchronization/engine/include/SyncCreateTest.xml";
+	    return "org/openmrs/module/sync/engine/include/SyncCreateTest.xml";
     }
 
 	@Test
     @NotTransactional
 	public void shouldCreateEncounterType() throws Exception {
 		runSyncTest(new SyncTestHelper() {			
-			AdministrationService adminService = Context.getAdministrationService();
 			EncounterService encounterService = Context.getEncounterService();
 
 			public void runOnChild() {
@@ -49,7 +48,7 @@ public class SyncEncounterTest extends SyncBaseTest {
 				EncounterType encounterType = new EncounterType();
 				encounterType.setName("name");
 				encounterType.setDescription("description");
-				adminService.createEncounterType(encounterType);
+				encounterService.saveEncounterType(encounterType);
 			}
 			public void runOnParent() {
 				EncounterType encounterType = encounterService.getEncounterType("name");

@@ -87,7 +87,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	protected void beforeRunOnChild() throws Exception {
 		Context.openSession();
 		deleteAllData();
-		executeDataSet("org/openmrs/synchronization/engine/include/SyncCreateTest.xml");
+		executeDataSet("org/openmrs/module/sync/engine/include/SyncCreateTest.xml");
 		authenticate();		
 	}
 	
@@ -104,8 +104,8 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		//now reload db from scratch
 		log.info("\n************************************* Reload Database *************************************");
 		deleteAllData();
-		executeDataSet("org/openmrs/synchronization/engine/include/SyncCreateTest.xml");
-		executeDataSet("org/openmrs/synchronization/engine/include/SyncRemoteChildServer.xml");
+		executeDataSet("org/openmrs/module/sync/engine/include/SyncCreateTest.xml");
+		executeDataSet("org/openmrs/module/sync/engine/include/SyncRemoteChildServer.xml");
 		
 		log.info("\n************************************* Sync Record(s) to Process *************************************");
         FilePackage pkg = new FilePackage();
@@ -148,7 +148,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	 */
 	@NotTransactional
 	public void runSyncTest(SyncTestHelper testMethods) throws Exception {
-
+		
 		this.beforeRunOnChild();
 		
 		this.runOnChild(testMethods);

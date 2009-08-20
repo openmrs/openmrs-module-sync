@@ -15,7 +15,7 @@
 			column="name" length="255" not-null="true" />
 
 		<property name="type" not-null="true">
-			<type name="org.openmrs.api.db.hibernate.usertype.GenericEnumUserType">
+			<type name="org.openmrs.module.sync.api.db.hibernate.usertype.GenericEnumUserType">
 				<param name="enumClassName">org.openmrs.module.sync.filter.SyncClassType</param>
 			</type>
 		</property>

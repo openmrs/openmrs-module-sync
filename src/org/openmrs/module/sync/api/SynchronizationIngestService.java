@@ -48,11 +48,11 @@ public interface SynchronizationIngestService {
      * Processes incoming SyncItem against the local server instance.
      * 
      * @param item instance of syncItem to be processed.
-     * @param originalGuid
+     * @param originalUuid
      * @param preCommitRecordActions
      * @return
      * @throws APIException
      */
     //@Authorized({"Manage Synchronization Records"})
-    public SyncImportItem processSyncItem(SyncItem item, String originalGuid,List<SyncPreCommitAction> preCommitRecordActions)  throws APIException;
+    public SyncImportItem processSyncItem(SyncItem item, String originalUuid,List<SyncPreCommitAction> preCommitRecordActions)  throws APIException;
 }

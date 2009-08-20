@@ -45,7 +45,7 @@ public class SyncImportRecord implements Serializable, IItem {
 
     // Fields
     private Integer recordId;
-    private String guid = null;
+    private String uuid = null;
     private String creator = null;
     private String databaseVersion = null;
     private Date timestamp = null;
@@ -61,8 +61,8 @@ public class SyncImportRecord implements Serializable, IItem {
 
     public SyncImportRecord(SyncRecord record) {
     	if ( record != null ) {
-            // the guid should be set to original guid - this way all subsequent attempts to execute this change are matched to this import
-    		this.guid = record.getOriginalGuid();
+            // the uuid should be set to original uuid - this way all subsequent attempts to execute this change are matched to this import
+    		this.uuid = record.getOriginalUuid();
     		this.creator = record.getCreator();
     		this.databaseVersion = record.getDatabaseVersion();
     		this.timestamp = record.getTimestamp();
@@ -81,15 +81,15 @@ public class SyncImportRecord implements Serializable, IItem {
 
 	// Properties
     // globally unique id of the record
-    public String getGuid() {
-        return guid;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setGuid(String guid) {
-        this.guid = guid;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
-    // The guid of the creator of the record
+    // The uuid of the creator of the record
     public String getCreator() {
         return creator;
     }
@@ -141,7 +141,7 @@ public class SyncImportRecord implements Serializable, IItem {
 
         SyncImportRecord oSync = (SyncImportRecord) o;
         boolean same = ((oSync.getTimestamp() == null) ? (this.getTimestamp() == null) : oSync.getTimestamp().equals(this.getTimestamp()))
-                && ((oSync.getGuid() == null) ? (this.getGuid() == null) : oSync.getGuid().equals(this.getGuid()))
+                && ((oSync.getUuid() == null) ? (this.getUuid() == null) : oSync.getUuid().equals(this.getUuid()))
                 && ((oSync.getState() == null) ? (this.getState() == null) : oSync.getState().equals(this.getState()))
                 && (oSync.getRetryCount() == this.getRetryCount());
         return same;
@@ -152,7 +152,7 @@ public class SyncImportRecord implements Serializable, IItem {
         Item me = xml.createItem(parent, this.getClass().getName());
         
         //serialize primitives
-        xml.setAttribute(me, "guid", this.guid);
+        xml.setAttribute(me, "uuid", this.uuid);
         xml.setAttribute(me, "retryCount", Integer.toString(this.retryCount));
         xml.setAttribute(me, "state", this.state.toString());
         if (timestamp != null) {
@@ -174,7 +174,7 @@ public class SyncImportRecord implements Serializable, IItem {
     public void load(Record xml, Item me) throws Exception {
         
         //deserialize primitives
-        this.guid = me.getAttribute("guid");
+        this.uuid = me.getAttribute("uuid");
         this.retryCount = Integer.parseInt(me.getAttribute("retryCount"));
         this.state = SyncRecordState.valueOf(me.getAttribute("state"));
         
@@ -213,7 +213,7 @@ public class SyncImportRecord implements Serializable, IItem {
 	@Override
     public String toString() {
 	    // TODO Auto-generated method stub
-	    return "SyncRecord (guid:" + this.guid + ") - " + this.state;
+	    return "SyncRecord (uuid:" + this.uuid + ") - " + this.state;
     }
 
 	public List<SyncImportItem> getItems() {

@@ -181,7 +181,7 @@ public class SyncAdminTest extends SyncBaseTest {
 				GlobalProperty gp1 = Context.getAdministrationService().saveGlobalProperty(new GlobalProperty("sync.test1", "test1"));
 				assertNotNull(gp1.getUuid());
 				GlobalProperty gp2 = new GlobalProperty("sync.test2","test2");
-				gp2.setIsSynchronizable(true);
+				//gp2.setIsSynchronizable(true);
 				gp2 = Context.getAdministrationService().saveGlobalProperty(gp2);
 				gp2.setPropertyValue("test2 - changed");
 				Context.getAdministrationService().saveGlobalProperty(gp2);

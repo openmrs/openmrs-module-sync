@@ -17,8 +17,8 @@ package org.openmrs.module.sync;
  * Indicates that the implementing type supports data synchronization.
  */
 public interface Synchronizable {
-	String getGuid();
-	void setGuid(String guid);
-    String getLastRecordGuid();
-    void setLastRecordGuid(String guid);
+	String getUuid();
+	void setUuid(String uuid);
+    String getLastRecordUuid();
+    void setLastRecordUuid(String uuid);
 }
