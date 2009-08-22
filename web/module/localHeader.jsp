@@ -4,21 +4,21 @@
 	</li>
 	<openmrs:hasPrivilege privilege="Manage Synchronization">
 		<li <c:if test='<%= request.getRequestURI().contains("synchronizationStats") %>'>class="active"</c:if>>
-			<a href="${pageContext.request.contextPath}/admin/synchronization/synchronizationStats.list">
-				<spring:message code="Synchronization.stats.title"/>
+			<a href="${pageContext.request.contextPath}/module/sync/synchronizationStats.list">
+				<spring:message code="sync.stats.title"/>
 			</a>
 		</li>
 	</openmrs:hasPrivilege>
 	<openmrs:hasPrivilege privilege="Manage Synchronization">
 		<li <c:if test='<%= request.getRequestURI().contains("synchronizationConfig") %>'>class="active"</c:if>>
-			<a href="${pageContext.request.contextPath}/admin/synchronization/synchronizationConfig.list">
-				<spring:message code="Synchronization.config.title"/>
+			<a href="${pageContext.request.contextPath}/module/sync/synchronizationConfig.list">
+				<spring:message code="sync.config.title"/>
 			</a>
 		</li>
 	</openmrs:hasPrivilege>
 	<li <c:if test='<%= request.getRequestURI().contains("synchronizationHelp") %>'>class="active"</c:if>>
-		<a href="${pageContext.request.contextPath}/admin/synchronization/synchronizationHelp.list">
-			<spring:message code="Synchronization.help.title"/>
+		<a href="${pageContext.request.contextPath}/module/sync/synchronizationHelp.list">
+			<spring:message code="sync.help.title"/>
 		</a>
 	</li>
 	<openmrs:extensionPoint pointId="org.openmrs.admin.maintenance.localHeader" type="html">

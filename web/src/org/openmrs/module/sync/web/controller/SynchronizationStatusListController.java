@@ -140,7 +140,7 @@ public class SynchronizationStatusListController extends SimpleFormController {
 	                result = null;
 	            } catch(Exception e) {
 	                e.printStackTrace();
-	                error = msa.getMessage("SynchronizationStatus.createTx.error");  
+	                error = msa.getMessage("sync.status.createTx.error");  
 	            }
 	        } else if ( "uploadResponse".equals(action) && request instanceof MultipartHttpServletRequest) {
 	
@@ -209,18 +209,18 @@ public class SynchronizationStatusListController extends SimpleFormController {
 	        			
 	        			Object[] args = {numCommitted,numFailed,numAlreadyCommitted,numOther};
 	        				
-	        			success = msa.getMessage("SynchronizationStatus.uploadResponse.success", args);
+	        			success = msa.getMessage("sync.status.uploadResponse.success", args);
 	        		} else {
-	        			error = msa.getMessage("SynchronizationStatus.uploadResponse.fileEmpty");
+	        			error = msa.getMessage("sync.status.uploadResponse.fileEmpty");
 	        		}
 	            } catch(Exception e) {
 	                e.printStackTrace();
-	                error = msa.getMessage("SynchronizationStatus.uploadResponse.error");  
+	                error = msa.getMessage("sync.status.uploadResponse.error");  
 	            }
 	        }
         } else {
         	// this means sync isn't enabled - show appropriate message
-            error = msa.getMessage("SynchronizationStatus.sync.disabled");  
+            error = msa.getMessage("sync.status.sync.disabled");  
         }
         
         
@@ -329,26 +329,26 @@ public class SynchronizationStatusListController extends SimpleFormController {
         // syncViaWeb error messages
         MessageSourceAccessor msa = getMessageSourceAccessor();
         Map<String,String> state = new HashMap<String,String>();
-        state.put(SyncTransmissionState.AUTH_FAILED.toString(), msa.getMessage("SynchronizationStatus.transmission.noAuthError"));
-        state.put(SyncTransmissionState.CERTIFICATE_FAILED.toString(), msa.getMessage("SynchronizationStatus.transmission.noCertError"));
-        state.put(SyncTransmissionState.CONNECTION_FAILED.toString(), msa.getMessage("SynchronizationStatus.transmission.noConnectionError"));
-        state.put(SyncTransmissionState.MALFORMED_URL.toString(), msa.getMessage("SynchronizationStatus.transmission.badUrl"));
-        state.put(SyncTransmissionState.NO_PARENT_DEFINED.toString(), msa.getMessage("SynchronizationStatus.transmission.noParentError"));
-        state.put(SyncTransmissionState.RESPONSE_NOT_UNDERSTOOD.toString(), msa.getMessage("SynchronizationStatus.transmission.corruptResponseError"));
-        state.put(SyncTransmissionState.FAILED.toString(), msa.getMessage("SynchronizationStatus.transmission.sendError"));
-        state.put(SyncTransmissionState.TRANSMISSION_CREATION_FAILED.toString(), msa.getMessage("SynchronizationStatus.transmission.createError"));
-        state.put(SyncTransmissionState.TRANSMISSION_NOT_UNDERSTOOD.toString(), msa.getMessage("SynchronizationStatus.transmission.corruptTxError"));
-        state.put(SyncTransmissionState.OK_NOTHING_TO_DO.toString(), msa.getMessage("SynchronizationStatus.transmission.okNoSyncNeeded"));
-        state.put(SyncTransmissionState.MAX_RETRY_REACHED.toString(), msa.getMessage("SynchronizationStatus.transmission.maxRetryReached"));
-        state.put(SyncRecordState.ALREADY_COMMITTED.toString(), msa.getMessage("Synchronization.record.state_ALREADY_COMMITTED"));
-        state.put(SyncRecordState.COMMITTED.toString(), msa.getMessage("Synchronization.record.state_COMMITTED"));
-        state.put(SyncRecordState.FAILED.toString(), msa.getMessage("Synchronization.record.state_FAILED"));
-        state.put(SyncRecordState.FAILED_AND_STOPPED.toString(), msa.getMessage("Synchronization.record.state_FAILED_AND_STOPPED"));
-        state.put(SyncRecordState.NEW.toString(), msa.getMessage("Synchronization.record.state_SENT"));
-        state.put(SyncRecordState.PENDING_SEND.toString(), msa.getMessage("Synchronization.record.state_SENT"));
-        state.put(SyncRecordState.SEND_FAILED.toString(), msa.getMessage("Synchronization.record.state_FAILED"));
-        state.put(SyncRecordState.SENT.toString(), msa.getMessage("Synchronization.record.state_SENT"));
-        state.put(SyncRecordState.SENT_AGAIN.toString(), msa.getMessage("Synchronization.record.state_SENT"));
+        state.put(SyncTransmissionState.AUTH_FAILED.toString(), msa.getMessage("sync.status.transmission.noAuthError"));
+        state.put(SyncTransmissionState.CERTIFICATE_FAILED.toString(), msa.getMessage("sync.status.transmission.noCertError"));
+        state.put(SyncTransmissionState.CONNECTION_FAILED.toString(), msa.getMessage("sync.status.transmission.noConnectionError"));
+        state.put(SyncTransmissionState.MALFORMED_URL.toString(), msa.getMessage("sync.status.transmission.badUrl"));
+        state.put(SyncTransmissionState.NO_PARENT_DEFINED.toString(), msa.getMessage("sync.status.transmission.noParentError"));
+        state.put(SyncTransmissionState.RESPONSE_NOT_UNDERSTOOD.toString(), msa.getMessage("sync.status.transmission.corruptResponseError"));
+        state.put(SyncTransmissionState.FAILED.toString(), msa.getMessage("sync.status.transmission.sendError"));
+        state.put(SyncTransmissionState.TRANSMISSION_CREATION_FAILED.toString(), msa.getMessage("sync.status.transmission.createError"));
+        state.put(SyncTransmissionState.TRANSMISSION_NOT_UNDERSTOOD.toString(), msa.getMessage("sync.status.transmission.corruptTxError"));
+        state.put(SyncTransmissionState.OK_NOTHING_TO_DO.toString(), msa.getMessage("sync.status.transmission.okNoSyncNeeded"));
+        state.put(SyncTransmissionState.MAX_RETRY_REACHED.toString(), msa.getMessage("sync.status.transmission.maxRetryReached"));
+        state.put(SyncRecordState.ALREADY_COMMITTED.toString(), msa.getMessage("sync.record.state_ALREADY_COMMITTED"));
+        state.put(SyncRecordState.COMMITTED.toString(), msa.getMessage("sync.record.state_COMMITTED"));
+        state.put(SyncRecordState.FAILED.toString(), msa.getMessage("sync.record.state_FAILED"));
+        state.put(SyncRecordState.FAILED_AND_STOPPED.toString(), msa.getMessage("sync.record.state_FAILED_AND_STOPPED"));
+        state.put(SyncRecordState.NEW.toString(), msa.getMessage("sync.record.state_SENT"));
+        state.put(SyncRecordState.PENDING_SEND.toString(), msa.getMessage("sync.record.state_SENT"));
+        state.put(SyncRecordState.SEND_FAILED.toString(), msa.getMessage("sync.record.state_FAILED"));
+        state.put(SyncRecordState.SENT.toString(), msa.getMessage("sync.record.state_SENT"));
+        state.put(SyncRecordState.SENT_AGAIN.toString(), msa.getMessage("sync.record.state_SENT"));
         
         ret.put("mode", ServletRequestUtils.getStringParameter(request, "mode", "SEND_FILE"));
         ret.put("transmissionState", state.entrySet());

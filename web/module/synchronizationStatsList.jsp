@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/admin/synchronization/synchronizationStats.list" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/synchronizationStats.list" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -21,23 +21,23 @@
 <table>
 	<tr>
 		<td>
-			<h2><spring:message code="Synchronization.stats.title"/></h2>
+			<h2><spring:message code="sync.stats.title"/></h2>
 		</td>
 	</tr>
 </table>
 
 <div id="general">
 
-	<b class="boxHeader"><spring:message code="SynchronizationConfig.syncStatus"/></b>
+	<b class="boxHeader"><spring:message code="sync.config.syncStatus"/></b>
 	<div class="box">
 		<table id="syncStatus" cellpadding="10" cellspacing="0">
 			<tbody>
 				<tr>
-					<td style="font-weight: bold;"><spring:message code="SynchronizationStats.syncStatus.is" /></td>
+					<td style="font-weight: bold;"><spring:message code="sync.status.is" /></td>
 					<td>${localServerSyncStatusText}</td>
 				</tr>
 				<tr>
-					<td style="font-weight: bold;"><spring:message code="SynchronizationStats.syncStatus.LastSync" /></td>
+					<td style="font-weight: bold;"><spring:message code="sync.status.LastSync" /></td>
 					<td>
 						<c:choose>
 							<c:when test="${not empty parent}"><openmrs:formatDate date="${parent.lastSync}" format="${syncDateDisplayFormat}" /></c:when>
@@ -46,7 +46,7 @@
 					</td>
 				</tr>
 				<tr>
-					<td style="font-weight: bold;"><spring:message code="SynchronizationStats.syncStatus.LastSync.result" /></td>
+					<td style="font-weight: bold;"><spring:message code="sync.status.LastSync.result" /></td>
 					<td>
 						<c:choose>
 						<c:when test="${not empty parent}">
@@ -67,7 +67,7 @@
 	
 	&nbsp;
 	<div id="serverList">
-		<b class="boxHeader"><spring:message code="SynchronizationConfig.servers.remote"/></b>
+		<b class="boxHeader"><spring:message code="sync.config.servers.remote"/></b>
 		<div class="box">
 			<table id="sync" cellpadding="10" cellspacing="0">
 				<c:if test="${not empty synchronizationStatsList.serverList}">
@@ -80,8 +80,8 @@
 							<th align="center" colspan="2" style="text-align: center; background-color: #fee; font-weight: bold;">${localServerName} <-- server</th>
 						</tr>
 						<tr>
-							<th><spring:message code="SynchronizationConfig.server.name" /></th>
-							<th style="text-align: center;"><spring:message code="SynchronizationConfig.server.type" /></th>
+							<th><spring:message code="sync.config.server.name" /></th>
+							<th style="text-align: center;"><spring:message code="sync.config.server.type" /></th>
 							<th style="text-align: center;">date/time</th>
 							<th>status</th>
 							<th style="background-color: #eef; text-align: center;">state</th>
@@ -191,7 +191,7 @@
 					</c:if>
 					<c:if test="${empty synchronizationStatsList.serverList}">
 						<td colspan="3" align="left">
-							<i><spring:message code="SynchronizationConfig.servers.noItems" /></i>
+							<i><spring:message code="sync.config.servers.noItems" /></i>
 						</td>
 					</c:if>
 				</tbody>

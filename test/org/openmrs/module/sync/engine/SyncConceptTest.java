@@ -31,6 +31,7 @@ import org.openmrs.ConceptNumeric;
 import org.openmrs.ConceptSet;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
+import org.openmrs.test.TestUtil;
 import org.springframework.test.annotation.NotTransactional;
 
 /**
@@ -47,29 +48,39 @@ public class SyncConceptTest extends SyncBaseTest {
     @NotTransactional
 	public void shouldSaveConceptCoded() throws Exception {
 		runSyncTest(new SyncTestHelper() {
-			//private int conceptId = 99999; // some large non-existent concept id
 			public void runOnChild() {
+				try {
+	                TestUtil.printOutTableContents(getConnection(), "concept", "concept_numeric", "concept_name");
+                }
+                catch (Exception e) {
+	                // TODO Auto-generated catch block
+	                log.error("Error generated", e);
+                }
 				ConceptService cs = Context.getConceptService();
 				
-				//this doesn't work with in-mem DB
-				//conceptId = cs.getNextAvailableId();
 				Concept coded = new Concept();
-				//coded.setConceptId(conceptId);
 				coded.setDatatype(cs.getConceptDatatypeByName("Coded"));
 				coded.setConceptClass(cs.getConceptClassByName("Question"));
 				coded.setSet(false);
-				coded.addName(new ConceptName("CODED", Context.getLocale()));
+				coded.addName(new ConceptName("CODED", Locale.ENGLISH));
 				coded.addAnswer(new ConceptAnswer(cs.getConceptByName("OTHER NON-CODED")));
 				coded.addAnswer(new ConceptAnswer(cs.getConceptByName("NONE")));
 				cs.saveConcept(coded);
 			}
-			public void runOnParent() {								
+			public void runOnParent() {
+				try {
+	                TestUtil.printOutTableContents(getConnection(), "concept", "concept_numeric", "concept_name");
+                }
+                catch (Exception e) {
+	                // TODO Auto-generated catch block
+	                log.error("Error generated", e);
+                }
 				ConceptService cs = Context.getConceptService();
 
 				Concept c = cs.getConceptByName("CODED");
-				log.info("names: " + c.getNames().size());
-				assertNotNull("Failed to create coded concept", c);
-				assertTrue("Failed to transfer names", c.getNames().size() > 0);
+				assertNotNull("Failed to create CODED concept", c);
+				log.info("names: " + c.getNames(Locale.ENGLISH).size());
+				assertTrue("Failed to transfer names", c.getNames(Locale.ENGLISH).size() > 0);
 				assertEquals(c.getConceptClass().getConceptClassId(), cs.getConceptClassByName("Question").getConceptClassId());
 				assertEquals(c.getDatatype().getConceptDatatypeId(), cs.getConceptDatatypeByName("Coded").getConceptDatatypeId());
 				
@@ -89,9 +100,8 @@ public class SyncConceptTest extends SyncBaseTest {
 			public void runOnChild() {
 				cs = Context.getConceptService();
 				//this doesn't work with in-mem DB
-				//conceptIdNum = cs.getNextAvailableId();
 				ConceptNumeric cn = new ConceptNumeric();
-				cn.addName(new ConceptName("SOMETHING NUMERIC", Context.getLocale()));
+				cn.addName(new ConceptName("SOMETHING NUMERIC", Locale.ENGLISH));
 				cn.setDatatype(cs.getConceptDatatypeByName("Numeric"));
 				cn.setConceptClass(cs.getConceptClassByName("Question"));
 				cn.setSet(false);

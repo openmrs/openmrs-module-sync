@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/admin/synchronization/synchronizationStatus.list" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/synchronizationStatus.list" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -9,7 +9,7 @@
 <openmrs:htmlInclude file="/dwr/util.js" />
 <openmrs:htmlInclude file="/dwr/interface/DWRSynchronizationService.js" />
 
-<h2><spring:message code="Synchronization.status.title"/></h2>
+<h2><spring:message code="sync.status.title"/></h2>
 
 <script language="JavaScript">
 	<!--
@@ -52,8 +52,8 @@
 		}
 		
 		function processRecord(record) {
-			var state = "<span class='syncFAILED'><b><spring:message code="Synchronization.record.state_FAILED" /></b></span>";
-			if ( record.state == "COMMITTED" ) state = "<span class='syncCOMMITTED'><b><spring:message code="Synchronization.record.state_COMMITTED" /></b></span>";
+			var state = "<span class='syncFAILED'><b><spring:message code="sync.record.state_FAILED" /></b></span>";
+			if ( record.state == "COMMITTED" ) state = "<span class='syncCOMMITTED'><b><spring:message code="sync.record.state_COMMITTED" /></b></span>";
 			else if ( record.state !=  "FAILED" ) state = "<span class='syncNEUTRAL'><b>" + getMessage(record.state) + "</b></span>";
 			DWRUtil.setValue("state_" + record.uuid, state);
 			if ( record.state != "COMMITTED" ) {
@@ -76,10 +76,10 @@
 		
 		function displaySyncResults(result) {
 			//alert("uuid is " + result.uuid + ", state is " + result.transmissionState + ", em is " + result.errorMessage);
-			var success = "<spring:message code="SynchronizationStatus.transmission.ok.allItems" />";
+			var success = "<spring:message code="sync.status.transmission.ok.allItems" />";
 			//success += " &nbsp;<a href=\"javascript://\" onclick=\"showHideDiv('syncDetails');\">details</a>";
 			//var details = "<br>";
-			//details += "<spring:message code="SynchronizationStatus.transmission.details" />:";
+			//details += "<spring:message code="sync.status.transmission.details" />:";
 			//details += "<br><br>";
 			var records = result.syncImportRecords;
 			if ( records && records.length > 0 ) {
@@ -89,7 +89,7 @@
 					//details += record.uuid + " - " + record.state + "<br>";
 				}
 			} else {
-				//details += "<spring:message code="SynchronizationStatus.transmission.details.noItems" />:";
+				//details += "<spring:message code="sync.status.transmission.details.noItems" />:";
 			}
 
 			if ( result.transmissionState == "OK" ) {
@@ -103,14 +103,14 @@
 
 		function syncToParent() {
 			document.getElementById("webExportButton").disabled = true;
-			DWRUtil.setValue("syncInfo", "<spring:message code="SynchronizationStatus.export.viaWeb.sending" arguments="${fn:length(synchronizationStatusList)}" />");
+			DWRUtil.setValue("syncInfo", "<spring:message code="sync.status.export.viaWeb.sending" arguments="${fn:length(synchronizationStatusList)}" />");
 			DWRSynchronizationService.syncToParent(displaySyncResults);
 		}
 		
 	-->
 </script>
 
-<b class="boxHeader"><spring:message code="SynchronizationStatus.export.changes"/></b>
+<b class="boxHeader"><spring:message code="sync.status.export.changes"/></b>
 <div class="box">
 	<table cellpadding="4">
 		<c:choose>
@@ -118,7 +118,7 @@
 				<tr>
 					<td colspan="4">
 						<img src="${pageContext.request.contextPath}/images/lookup.gif" border="0" style="margin-bottom: -3px;">
-						<spring:message code="SynchronizationStatus.export.viaWeb" />
+						<spring:message code="sync.status.export.viaWeb" />
 					</td>
 				</tr>
 				<tr>
@@ -127,7 +127,7 @@
 					</td>
 					<td valign="top">
 						<form method="post">
-							<input type="button" onClick="syncToParent();" id="webExportButton" value='<spring:message code="SynchronizationStatus.createWebTx"/>'
+							<input type="button" onClick="syncToParent();" id="webExportButton" value='<spring:message code="sync.status.createWebTx"/>'
 							<c:if test="${empty parent || syncStatus == 'DISABLED_SYNC_DUE_TO_ERROR' || syncStatus == 'DISABLED_SYNC_AND_HISTORY' || syncStatus == 'DISABLED_SYNC'}">disabled</c:if> />
 							<input type="hidden" name="action" value="createWebTx"/>
 						</form>
@@ -135,10 +135,10 @@
 					<td></td>
 					<td valign="top">
 						<c:if test="${empty parent}">
-							<span class="error"><i><spring:message code="SynchronizationStatus.export.viaWeb.enable" /></i></span>
+							<span class="error"><i><spring:message code="sync.status.export.viaWeb.enable" /></i></span>
 						</c:if>
 						<c:if test="${syncStatus == 'DISABLED_SYNC_DUE_TO_ERROR' || syncStatus == 'DISABLED_SYNC_AND_HISTORY' || syncStatus == 'DISABLED_SYNC'}">
-							<span class="error"><i><spring:message code="SynchronizationStatus.export.viaWeb.enableSync" /></i></span>
+							<span class="error"><i><spring:message code="sync.status.export.viaWeb.enableSync" /></i></span>
 						</c:if>
 						<span id="syncInfo"></span><br><span id="syncDetails" style="display:none;"></span>
 					</td>
@@ -148,7 +148,7 @@
 				<tr>
 					<td colspan="4">
 						<img src="${pageContext.request.contextPath}/images/save.gif" border="0" style="margin-bottom: -3px;">
-						<spring:message code="SynchronizationStatus.export.viaFile" />
+						<spring:message code="sync.status.export.viaFile" />
 					</td>
 				</tr>
 				<tr>
@@ -157,7 +157,7 @@
 					</td>
 					<td valign="top">
 						<form method="post" onSubmit="return doSubmitFileExport();">
-							<input type="submit" id="fileExportSubmit" value='<spring:message code="SynchronizationStatus.createTx"/>'
+							<input type="submit" id="fileExportSubmit" value='<spring:message code="sync.status.createTx"/>'
 							<c:if test="${syncStatus == 'DISABLED_SYNC_DUE_TO_ERROR' || syncStatus == 'DISABLED_SYNC_AND_HISTORY' || syncStatus == 'DISABLED_SYNC'}">disabled</c:if> />
 							<input type="hidden" name="action" value="createTx"/>
 						</form>
@@ -167,13 +167,13 @@
 					</td>
 					<td valign="top">
 						<form method="post" enctype="multipart/form-data" onSubmit="return doSubmitUploadResponse();">
-							<spring:message code="SynchronizationStatus.responsePrompt" />
+							<spring:message code="sync.status.responsePrompt" />
 							<input type="file" name="syncResponseFile" value="" />
 							<input type="hidden" name="action" value="uploadResponse" />
-							<input type="submit" id="uploadResponseSubmit" value="<spring:message code="SynchronizationStatus.uploadResponse" />" id="submitButton"
+							<input type="submit" id="uploadResponseSubmit" value="<spring:message code="sync.status.uploadResponse" />" id="submitButton"
 							<c:if test="${syncStatus == 'DISABLED_SYNC_DUE_TO_ERROR' || syncStatus == 'DISABLED_SYNC_AND_HISTORY' || syncStatus == 'DISABLED_SYNC'}">disabled</c:if> />
 							<br>
-							<span style="color: #bbbbbb; position: relative; top: 3px;"><i><spring:message code="SynchronizationStatus.export.viaDisk.instructions" /></i></span>
+							<span style="color: #bbbbbb; position: relative; top: 3px;"><i><spring:message code="sync.status.export.viaDisk.instructions" /></i></span>
 						</form>
 					</td>
 				</tr>
@@ -184,14 +184,14 @@
 
 <br/>
 
-<b class="boxHeader"><spring:message code="Synchronization.changes.recent"/></b>
+<b class="boxHeader"><spring:message code="sync.changes.recent"/></b>
 <div class="box">
 	<table id="syncChangesTable" cellpadding="4" cellspacing="0">
 		<thead>
 			<tr>
-				<th><spring:message code="SynchronizationStatus.itemTypeAndUuid" /></th>
-				<th nowrap style="text-align: center;"><spring:message code="SynchronizationStatus.recordState" /></th>
-				<th nowrap style="text-align: center;"><spring:message code="SynchronizationStatus.retryCount" /></th>
+				<th><spring:message code="sync.status.itemTypeAndUuid" /></th>
+				<th nowrap style="text-align: center;"><spring:message code="sync.status.recordState" /></th>
+				<th nowrap style="text-align: center;"><spring:message code="sync.status.retryCount" /></th>
 				<th></th>
 			</tr>
 		</thead>
@@ -208,13 +208,13 @@
 								</c:if>
 								<br>
 								<span style="color: #bbb">
-									<spring:message code="Synchronization.item.state_${recordChangeType[syncRecord.uuid]}" /> -
+									<spring:message code="sync.item.state_${recordChangeType[syncRecord.uuid]}" /> -
 									<openmrs:formatDate date="${syncRecord.timestamp}" format="${syncDateDisplayFormat}" />	
 									<%--<c:if test="${not empty itemInfo[syncItem.key.keyValue]}">(${itemInfo[syncItem.key.keyValue]})</c:if></b>--%>
 								</span>
 							</td>
 							<td valign="middle" nowrap style="background-color: #${bgStyle};" align="center" id="state_${syncRecord.uuid}">
-								<span class="sync${syncRecord.state}"><spring:message code="Synchronization.record.state_${syncRecord.state}" /></span>
+								<span class="sync${syncRecord.state}"><spring:message code="sync.record.state_${syncRecord.state}" /></span>
 							</td>
 							<td valign="middle" nowrap style="background-color: #${bgStyle};" align="center">${syncRecord.retryCount}</td>
 							<td valign="middle" style="background-color: #${bgStyle};"><span id="message_${syncRecord.uuid}"></span></td>
@@ -237,7 +237,7 @@
 			</c:if>
 			<c:if test="${empty synchronizationStatusList}">
 				<td colspan="5" align="left">
-					<i><spring:message code="SynchronizationStatus.noItems" /></i>
+					<i><spring:message code="sync.status.noItems" /></i>
 				</td>
 			</c:if>
 		</tbody>

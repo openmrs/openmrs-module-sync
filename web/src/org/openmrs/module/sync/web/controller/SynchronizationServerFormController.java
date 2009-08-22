@@ -106,19 +106,19 @@ public class SynchronizationServerFormController extends SimpleFormController {
     		}
         	Integer repeatInterval = ServletRequestUtils.getIntParameter(request, "repeatInterval", 0) * 60;  // interval really is in seconds, to * 60 to convert to minutes 
         	
-            if ( nickname.length() == 0 ) error = msa.getMessage("SynchronizationConfig.server.error.nicknameRequired");
-        	//if ( password.length() == 0 ) error = msa.getMessage("SynchronizationConfig.server.error.passwordRequired");
-        	//if ( username.length() == 0 ) error = msa.getMessage("SynchronizationConfig.server.error.usernameRequired");
-        	if ( address.length() == 0 && !type.equals(RemoteServerType.CHILD.toString())) error = msa.getMessage("SynchronizationConfig.server.error.addressRequired");
-        	if ( started && repeatInterval < 1 ) error = msa.getMessage("SynchronizationConfig.server.error.invalidRepeat");
+            if ( nickname.length() == 0 ) error = msa.getMessage("sync.config.server.error.nicknameRequired");
+        	//if ( password.length() == 0 ) error = msa.getMessage("sync.config.server.error.passwordRequired");
+        	//if ( username.length() == 0 ) error = msa.getMessage("sync.config.server.error.usernameRequired");
+        	if ( address.length() == 0 && !type.equals(RemoteServerType.CHILD.toString())) error = msa.getMessage("sync.config.server.error.addressRequired");
+        	if ( started && repeatInterval < 1 ) error = msa.getMessage("sync.config.server.error.invalidRepeat");
         	if ( type.equals(RemoteServerType.CHILD.toString()) ) {
                 if ( serverId == null ) {
                     String passwordRetype = ServletRequestUtils.getStringParameter(request, "passwordRetype", "");
                     log.warn("username: " + username + ", password: " + password + ", passwordretype is " + passwordRetype);
-                    if ( passwordRetype.length() == 0 ) error = msa.getMessage("SynchronizationConfig.server.error.passwordRetypeRequired");
-                    if ( password.length() == 0 ) error = msa.getMessage("SynchronizationConfig.server.error.passwordRequired");
-                    if ( username.length() == 0 ) error = msa.getMessage("SynchronizationConfig.server.error.usernameRequired");
-                    if ( !passwordRetype.equals(password) ) error = msa.getMessage("SynchronizationConfig.server.error.passwordMismatch");
+                    if ( passwordRetype.length() == 0 ) error = msa.getMessage("sync.config.server.error.passwordRetypeRequired");
+                    if ( password.length() == 0 ) error = msa.getMessage("sync.config.server.error.passwordRequired");
+                    if ( username.length() == 0 ) error = msa.getMessage("sync.config.server.error.usernameRequired");
+                    if ( !passwordRetype.equals(password) ) error = msa.getMessage("sync.config.server.error.passwordMismatch");
                 }
             }
             
@@ -164,7 +164,7 @@ public class SynchronizationServerFormController extends SimpleFormController {
                         } catch ( Exception e ) {
                             log.error("Unable to create new user to associate with child server");
                             e.printStackTrace();
-                            error = msa.getMessage("SynchronizationConfig.child.error.uniqueUsername");
+                            error = msa.getMessage("sync.config.child.error.uniqueUsername");
                         }
                     }
                     
@@ -291,8 +291,8 @@ public class SynchronizationServerFormController extends SimpleFormController {
                                 log.info("Sync scheduled task does not exists, and started is " + started + " and interval is " + repeatInterval);
                             if ( started ) {
                                 serverSchedule = new TaskDefinition();
-                                serverSchedule.setName(server.getNickname() + " " + msa.getMessage("SynchronizationConfig.server.scheduler"));
-                                serverSchedule.setDescription(msa.getMessage("SynchronizationConfig.server.scheduler.description"));
+                                serverSchedule.setName(server.getNickname() + " " + msa.getMessage("sync.config.server.scheduler"));
+                                serverSchedule.setDescription(msa.getMessage("sync.config.server.scheduler.description"));
                                 serverSchedule.setRepeatInterval((long)repeatInterval);
                                 serverSchedule.setStartTime(new Date());
                                 serverSchedule.setTaskClass(SyncConstants.SCHEDULED_TASK_CLASS);
@@ -304,7 +304,7 @@ public class SynchronizationServerFormController extends SimpleFormController {
                             }
                         }
                     }
-                    success = msa.getMessage("SynchronizationConfig.server.saved");             
+                    success = msa.getMessage("sync.config.server.saved");             
                 } else {
                     result = new ModelAndView(this.getFormView(), "server", server);
                 }
@@ -374,12 +374,12 @@ public class SynchronizationServerFormController extends SimpleFormController {
             // testConnection error messages
 	        MessageSourceAccessor msa = getMessageSourceAccessor();
 	        Map<String,String> connectionState = new HashMap<String,String>();
-	        connectionState.put(ServerConnectionState.OK.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.ok"));
-	        connectionState.put(ServerConnectionState.AUTHORIZATION_FAILED.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.noAuth"));
-	        connectionState.put(ServerConnectionState.CONNECTION_FAILED.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.noConnection"));
-	        connectionState.put(ServerConnectionState.CERTIFICATE_FAILED.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.noCertificate"));
-	        connectionState.put(ServerConnectionState.MALFORMED_URL.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.badUrl"));
-	        connectionState.put(ServerConnectionState.NO_ADDRESS.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.noAddress"));
+	        connectionState.put(ServerConnectionState.OK.toString(), msa.getMessage("sync.config.server.connection.status.ok"));
+	        connectionState.put(ServerConnectionState.AUTHORIZATION_FAILED.toString(), msa.getMessage("sync.config.server.connection.status.noAuth"));
+	        connectionState.put(ServerConnectionState.CONNECTION_FAILED.toString(), msa.getMessage("sync.config.server.connection.status.noConnection"));
+	        connectionState.put(ServerConnectionState.CERTIFICATE_FAILED.toString(), msa.getMessage("sync.config.server.connection.status.noCertificate"));
+	        connectionState.put(ServerConnectionState.MALFORMED_URL.toString(), msa.getMessage("sync.config.server.connection.status.badUrl"));
+	        connectionState.put(ServerConnectionState.NO_ADDRESS.toString(), msa.getMessage("sync.config.server.connection.status.noAddress"));
 	        
 	        // taskConfig for automated syncing
 	        TaskDefinition serverSchedule = new TaskDefinition();

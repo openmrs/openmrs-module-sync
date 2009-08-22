@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/admin/synchronization/synchronizationHistory.list" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/synchronizationHistory.list" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -9,7 +9,7 @@
 <openmrs:htmlInclude file="/dwr/util.js" />
 <openmrs:htmlInclude file="/dwr/interface/DWRSynchronizationService.js" />
 
-<h2><spring:message code="Synchronization.history.title"/></h2>
+<h2><spring:message code="sync.history.title"/></h2>
 
 <script language="JavaScript">
 	<!--
@@ -28,17 +28,17 @@
 	-->
 </script>
 
-<b class="boxHeader"><spring:message code="Synchronization.changes.all"/></b>
+<b class="boxHeader"><spring:message code="sync.changes.all"/></b>
 <div class="box">
 	<table id="syncChangesTable" cellpadding="7" cellspacing="0">
 		<thead>
 			<tr>
-				<th><spring:message code="SynchronizationStatus.itemTypeAndUuid" /></th>
+				<th><spring:message code="sync.status.itemTypeAndUuid" /></th>
 				<%--
-				<th colspan="2" style="text-align: center;"><spring:message code="SynchronizationStatus.timestamp" /></th>
-				<th nowrap style="text-align: center;"><spring:message code="SynchronizationStatus.itemState" /></th>
-				<th nowrap style="text-align: center;"><spring:message code="SynchronizationStatus.recordState" /></th>
-				<th nowrap style="text-align: center;"><spring:message code="SynchronizationStatus.retryCount" /></th>
+				<th colspan="2" style="text-align: center;"><spring:message code="sync.status.timestamp" /></th>
+				<th nowrap style="text-align: center;"><spring:message code="sync.status.itemState" /></th>
+				<th nowrap style="text-align: center;"><spring:message code="sync.status.recordState" /></th>
+				<th nowrap style="text-align: center;"><spring:message code="sync.status.retryCount" /></th>
 				--%>
 				<c:if test="${not empty servers}">
 					<c:forEach items="${servers}" var="server">
@@ -49,7 +49,7 @@
 					</c:forEach>
 				</c:if>
 				<c:if test="${empty servers}">
-					<th style="font-weight: normal;"><i><spring:message code="SynchronizationStatus.servers.none" /></i></th>
+					<th style="font-weight: normal;"><i><spring:message code="sync.status.servers.none" /></i></th>
 				</c:if>
 			</tr>
 		</thead>
@@ -67,7 +67,7 @@
 								</c:if>
 								<br>
 								<span style="color: #bbb">
-									<spring:message code="Synchronization.item.state_${recordChangeType[syncRecord.uuid]}" /> -
+									<spring:message code="sync.item.state_${recordChangeType[syncRecord.uuid]}" /> -
 									<openmrs:formatDate date="${syncRecord.timestamp}" format="${syncDateDisplayFormat}" />	
 									<%--<c:if test="${not empty itemInfo[syncItem.key.keyValue]}">(${itemInfo[syncItem.key.keyValue]})</c:if></b>--%>
 								</span>
@@ -77,14 +77,14 @@
 									<td valign="middle" nowrap style="background-color: #<c:if test="${server.serverType == 'PARENT'}">${bgStyleParent}</c:if><c:if test="${server.serverType != 'PARENT'}">${bgStyle}</c:if>;" align="center">
 										<c:choose>
 											<c:when test="${server.serverType == 'PARENT'}">
-												<span class="sync${syncRecord.state}"><spring:message code="Synchronization.record.state_${syncRecord.state}" /></span>
+												<span class="sync${syncRecord.state}"><spring:message code="sync.record.state_${syncRecord.state}" /></span>
 											</c:when>
 											<c:otherwise>
 												<c:if test="${not empty syncRecord.remoteRecords[server]}">
-													<span class="sync${syncRecord.remoteRecords[server].state}"><spring:message code="Synchronization.record.state_${syncRecord.remoteRecords[server].state}" /></span>
+													<span class="sync${syncRecord.remoteRecords[server].state}"><spring:message code="sync.record.state_${syncRecord.remoteRecords[server].state}" /></span>
 												</c:if>
 												<c:if test="${empty syncRecord.remoteRecords[server]}">
-													<span style="color: #bbb"><i><spring:message code="Synchronization.record.server.didNotExist" /></i></span>
+													<span style="color: #bbb"><i><spring:message code="sync.record.server.didNotExist" /></i></span>
 												</c:if>
 											</c:otherwise>
 										</c:choose>

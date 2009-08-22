@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/admin/synchronization/synchronizationConfigServer.form" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/synchronizationConfigServer.form" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -84,7 +84,7 @@
 	
 		function testConnection() {
 			document.getElementById("testConnectionButton").disabled = true;
-			DWRUtil.setValue("testInfo", "<spring:message code="SynchronizationConfig.server.connection.testing" />");
+			DWRUtil.setValue("testInfo", "<spring:message code="sync.config.server.connection.testing" />");
 			var address = DWRUtil.getValue("address");
 			var username = DWRUtil.getValue("username");
 			var password = DWRUtil.getValue("password");
@@ -96,16 +96,16 @@
 
 <c:choose>
 	<c:when test="${server.serverType == 'CHILD' && not empty server.serverId}">
-		<h2><spring:message code="Synchronization.config.child.edit.title"/></h2>
+		<h2><spring:message code="sync.config.child.edit.title"/></h2>
 	</c:when>
 	<c:when test="${server.serverType == 'PARENT' && not empty server.serverId}">
-		<h2><spring:message code="Synchronization.config.parent.edit.title"/></h2>
+		<h2><spring:message code="sync.config.parent.edit.title"/></h2>
 	</c:when>
 	<c:when test="${server.serverType == 'PARENT' && empty server.serverId}">
-		<h2><spring:message code="Synchronization.config.parent.add.title"/></h2>
+		<h2><spring:message code="sync.config.parent.add.title"/></h2>
 	</c:when>
 	<c:otherwise>
-		<h2><spring:message code="Synchronization.config.child.add.title"/></h2>
+		<h2><spring:message code="sync.config.child.add.title"/></h2>
 	</c:otherwise>
 </c:choose>
 
@@ -120,23 +120,23 @@
 			<input type="hidden" name="serverId" value="${server.serverId}" />
 		</c:if>
 	
-		<b class="boxHeader"><spring:message code="SynchronizationConfig.server.configure"/></b>
+		<b class="boxHeader"><spring:message code="sync.config.server.configure"/></b>
 		<div class="box">
 			<table>
 				<tr>
 					<td align="right" valign="top">
-						<b><spring:message code="SynchronizationConfig.server.nickname" /></b>
+						<b><spring:message code="sync.config.server.nickname" /></b>
 					</td>
 					<td align="left" valign="top">
 						<input type="text" size="25" maxlength="250" id="nickname" name="nickname" value="${server.nickname}" />
 						<br>
-						<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="SynchronizationConfig.server.nickname.hint" /></span></i>
+						<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.config.server.nickname.hint" /></span></i>
 					</td>
 				</tr>
 				<c:if test="${(server.serverType == 'CHILD' || type == 'CHILD') && not empty server.serverId}">
 					<tr>
 						<td align="right" valign="top">
-							<b><spring:message code="SynchronizationConfig.server.uuid" /></b>
+							<b><spring:message code="sync.config.server.uuid" /></b>
 						</td>
 						<td align="left" valign="top">
 							<input type="text" size="48" maxlength="250" id="uuid" name="uuid" value="${server.uuid}" />
@@ -148,12 +148,12 @@
 						<td style="border-top: 1px solid #fff;">
 						</td>
 						<td style="border-top: 1px solid #fff;">
-							<spring:message code="SynchronizationConfig.server.option.login" />
+							<spring:message code="sync.config.server.option.login" />
 						</td>
 					</tr>
 					<tr>
 						<td align="right" valign="top">
-							<b><spring:message code="SynchronizationConfig.child.username" /></b>
+							<b><spring:message code="sync.config.child.username" /></b>
 						</td>
 						<td align="left" valign="top">
 							<input type="text" size="25" maxlength="250" id="username" name="username" value="" />
@@ -161,7 +161,7 @@
 					</tr>
 					<tr>
 						<td align="right" valign="top">
-							<b><spring:message code="SynchronizationConfig.child.password" /></b>
+							<b><spring:message code="sync.config.child.password" /></b>
 						</td>
 						<td align="left" valign="top">
 							<input type="password" size="25" maxlength="250" id="password" name="password" value="" />
@@ -169,7 +169,7 @@
 					</tr>
 					<tr>
 						<td align="right" valign="top">
-							<b><spring:message code="SynchronizationConfig.child.password.retype" /></b>
+							<b><spring:message code="sync.config.child.password.retype" /></b>
 						</td>
 						<td align="left" valign="top">
 							<input type="password" size="25" maxlength="250" id="passwordRetype" name="passwordRetype" value="" />
@@ -177,31 +177,31 @@
 					</tr>
 					<tr>
 						<td align="right" valign="top">
-							<b><spring:message code="SynchronizationConfig.server.adminEmail" /></b>
+							<b><spring:message code="sync.config.server.adminEmail" /></b>
 						</td>
 						<td align="left" valign="top">
 							<input type="checkbox" name="shouldEmail" value="true" checked style="margin-top: 0px; margin-bottom: 0px;" />
-							&nbsp;<spring:message code="SynchronizationConfig.server.adminEmail.address" />
+							&nbsp;<spring:message code="sync.config.server.adminEmail.address" />
 							<input type="text" size="25" maxlength="250" id="adminEmail" name="adminEmail" value="" />
 							<br />
-							<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="SynchronizationConfig.server.adminEmail.instructions" /></span></i>
+							<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.config.server.adminEmail.instructions" /></span></i>
 						</td>
 					</tr>
 				</c:if>
 				<c:if test="${not (server.serverType == 'CHILD' || type == 'CHILD')}">
 					<tr>
 						<td align="right" valign="top">
-							<b><spring:message code="SynchronizationConfig.server.address" /></b>
+							<b><spring:message code="sync.config.server.address" /></b>
 						</td>
 						<td align="left" valign="top">
 							<input type="text" size="70" maxlength="250" id="address" name="address" value="${server.address}" />
 							<br>
-							<i><span style="color: #bbbbbb;"><spring:message code="SynchronizationConfig.parent.address.hint" /></span></i>
+							<i><span style="color: #bbbbbb;"><spring:message code="sync.config.parent.address.hint" /></span></i>
 						</td>
 					</tr>
 					<tr>
 						<td align="right" valign="top">
-							<b><spring:message code="SynchronizationConfig.parent.username" /></b>
+							<b><spring:message code="sync.config.parent.username" /></b>
 						</td>
 						<td align="left" valign="top">
 							<input type="text" size="25" maxlength="250" id="username" name="username" value="${server.username}" />
@@ -209,18 +209,18 @@
 					</tr>
 					<tr>
 						<td align="right" valign="top">
-							<b><spring:message code="SynchronizationConfig.parent.password" /></b>
+							<b><spring:message code="sync.config.parent.password" /></b>
 						</td>
 						<td align="left" valign="top">
 							<input type="password" size="25" maxlength="250" id="password" name="password" value="${server.password}" />
 							&nbsp;&nbsp;
-							<input type="button" id="testConnectionButton" onClick="testConnection();" value="<spring:message code="SynchronizationConfig.parent.test" />" />
+							<input type="button" id="testConnectionButton" onClick="testConnection();" value="<spring:message code="sync.config.parent.test" />" />
 							<span id="testInfo"></span>
 						</td>
 					</tr>
 					<tr>
 						<td align="right" valign="middle">
-							<b><spring:message code="SynchronizationConfig.parent.scheduled" /></b>
+							<b><spring:message code="sync.config.parent.scheduled" /></b>
 						</td>
 						<td align="left" valign="top">
 							<table cellpadding="0" cellspacing="0" border="0">
@@ -232,9 +232,9 @@
 									<td>
 										<div id="scheduleInfo" style="margin-bottom: 0px; <c:if test="${empty serverSchedule || serverSchedule.started == false}">display:none;</c:if>">
 											&nbsp;
-											<spring:message code="SynchronizationConfig.parent.scheduled.every" />
+											<spring:message code="sync.config.parent.scheduled.every" />
 											<input type="text" size="3" maxlength="3" id="repeatInterval" name="repeatInterval" value="${repeatInterval}" />
-											<spring:message code="SynchronizationConfig.parent.scheduled.minutes" />
+											<spring:message code="sync.config.parent.scheduled.minutes" />
 										</div>
 									</td>
 								</tr>
@@ -246,7 +246,7 @@
 					<td></td>
 					<td>
 						<input type="submit" value="<spring:message code="general.save" />" />
-						<input type="button" onClick="history.back();" value="<spring:message code="SynchronizationConfig.parent.cancel" />" />					
+						<input type="button" onClick="history.back();" value="<spring:message code="sync.config.parent.cancel" />" />					
 					</td>
 				</tr>
 			</table>
@@ -259,7 +259,7 @@
 	
 		<div id="details" style="display:none;">
 	
-			<b class="boxHeader"><spring:message code="SynchronizationConfig.advanced.objects"/></b>
+			<b class="boxHeader"><spring:message code="sync.config.advanced.objects"/></b>
 			<div class="box">
 				<input type="hidden" name="action" value="saveClasses" />
 				<table>
@@ -268,7 +268,7 @@
 							<table id="syncChangesTable" cellpadding="4" cellspacing="0">
 								<thead>
 									<tr>
-										<th colspan="2" valign="bottom"><spring:message code="SynchronizationConfig.class.item" /></th>
+										<th colspan="2" valign="bottom"><spring:message code="sync.config.class.item" /></th>
 										<th colspan="2" align="center"></th>
 									</tr>
 								</thead>
@@ -282,12 +282,12 @@
 												<td style="padding-right: 20px; border-top: 1px solid #aaa; background-color: whitesmoke;" align="center">
 													<input onclick="toggleChecks('${syncClasses.key}', 'to');" id="to_${syncClasses.key}" style="margin-top: 0px; margin-bottom: 0px;" type="checkbox" name="groupToDefault" value="true" <c:if test="${syncClassGroupTo[syncClasses.key]}">checked</c:if>
 														 <c:if test="${syncClasses.key == 'REQUIRED' && 1 == 0}">disabled</c:if>
-													><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED' && 1 == 0}"> color: #aaa;</c:if>"><b><spring:message code="SynchronizationConfig.class.defaultTo" /></b></span>
+													><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED' && 1 == 0}"> color: #aaa;</c:if>"><b><spring:message code="sync.config.class.defaultTo" /></b></span>
 												</td>
 												<td style="border-top: 1px solid #aaa; background-color: whitesmoke;" align="center">
 													<input onclick="toggleChecks('${syncClasses.key}', 'from');" id="from_${syncClasses.key}" style="margin-top: 0px; margin-bottom: 0px; margin-right: 1px;" type="checkbox" name="groupFromDefault" value="true" <c:if test="${syncClassGroupFrom[syncClasses.key]}">checked</c:if>
 														 <c:if test="${syncClasses.key == 'REQUIRED' && 1 == 0}">disabled</c:if>
-													><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED' && 1 == 0}"> color: #aaa;</c:if>"><b><spring:message code="SynchronizationConfig.class.defaultFrom" /></b></span>
+													><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED' && 1 == 0}"> color: #aaa;</c:if>"><b><spring:message code="sync.config.class.defaultFrom" /></b></span>
 												</td>
 											</tr>
 											<c:if test="${not empty syncClasses.value}">
@@ -300,26 +300,26 @@
 														<td align="center" style="padding-right: 20px;">
 															<input id="to_${syncClass.syncClass.syncClassId}" style="margin-top: 0px; margin-bottom: 0px;" type="checkbox" name="toDefault" value="${syncClass.syncClass.syncClassId}" 
 																<c:if test="${syncClass.sendTo}">checked</c:if> <c:if test="${syncClasses.key == 'REQUIRED' && 1 == 0}">disabled</c:if>
-															><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED' && 1 == 0}"> color: #aaa;</c:if>"><spring:message code="SynchronizationConfig.class.defaultTo" /></span>
+															><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED' && 1 == 0}"> color: #aaa;</c:if>"><spring:message code="sync.config.class.defaultTo" /></span>
 														</td>
 														<td align="center">
 															<input id="from_${syncClass.syncClass.syncClassId}" style="margin-top: 0px; margin-bottom: 0px;" type="checkbox" name="fromDefault" value="${syncClass.syncClass.syncClassId}" 
 																<c:if test="${syncClass.receiveFrom}">checked</c:if> <c:if test="${syncClasses.key == 'REQUIRED' && 1 == 0}">disabled</c:if>
-															><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED' && 1 == 0}"> color: #aaa;</c:if>"><spring:message code="SynchronizationConfig.class.defaultFrom" /></span>
+															><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED' && 1 == 0}"> color: #aaa;</c:if>"><spring:message code="sync.config.class.defaultFrom" /></span>
 														</td>
 													</tr>
 												</c:forEach>
 											</c:if>
 											<c:if test="${empty syncClasses.value}">
 												<td colspan="5" align="left">
-													<i><spring:message code="SynchronizationConfig.classes.none" /></i>
+													<i><spring:message code="sync.config.classes.none" /></i>
 												</td>
 											</c:if>
 										</c:forEach>
 									</c:if>
 									<c:if test="${empty syncClassGroupsLeft}">
 										<td colspan="4" align="left">
-											<i><spring:message code="SynchronizationConfig.classes.none" /></i>
+											<i><spring:message code="sync.config.classes.none" /></i>
 										</td>
 									</c:if>
 								</tbody>
@@ -329,7 +329,7 @@
 							<table id="syncChangesTable" cellpadding="4" cellspacing="0">
 								<thead>
 									<tr>
-										<th colspan="2" valign="bottom"><spring:message code="SynchronizationConfig.class.item" /></th>
+										<th colspan="2" valign="bottom"><spring:message code="sync.config.class.item" /></th>
 										<th colspan="2" align="center"></th>
 									</tr>
 								</thead>
@@ -343,12 +343,12 @@
 												<td style="padding-right: 20px; border-top: 1px solid #aaa; background-color: whitesmoke;" align="center">
 													<input onclick="toggleChecks('${syncClasses.key}', 'to');" id="to_${syncClasses.key}" style="margin-top: 0px; margin-bottom: 0px;" type="checkbox" name="groupToDefault" value="true" <c:if test="${syncClassGroupTo[syncClasses.key]}">checked</c:if>
 														 <c:if test="${syncClasses.key == 'REQUIRED'}">disabled</c:if>
-													><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><b><spring:message code="SynchronizationConfig.class.defaultTo" /></b></span>
+													><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><b><spring:message code="sync.config.class.defaultTo" /></b></span>
 												</td>
 												<td style="border-top: 1px solid #aaa; background-color: whitesmoke;" align="center">
 													<input onclick="toggleChecks('${syncClasses.key}', 'from');" id="from_${syncClasses.key}" style="margin-top: 0px; margin-bottom: 0px; margin-right: 1px;" type="checkbox" name="groupFromDefault" value="true" <c:if test="${syncClassGroupFrom[syncClasses.key]}">checked</c:if>
 														 <c:if test="${syncClasses.key == 'REQUIRED'}">disabled</c:if>
-													><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><b><spring:message code="SynchronizationConfig.class.defaultFrom" /></b></span>
+													><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><b><spring:message code="sync.config.class.defaultFrom" /></b></span>
 												</td>
 											</tr>
 											<c:if test="${not empty syncClasses.value}">
@@ -361,26 +361,26 @@
 														<td align="center" style="padding-right: 20px;">
 															<input id="to_${syncClass.syncClass.syncClassId}" style="margin-top: 0px; margin-bottom: 0px;" type="checkbox" name="toDefault" value="${syncClass.syncClass.syncClassId}" 
 																<c:if test="${syncClass.sendTo}">checked</c:if> <c:if test="${syncClasses.key == 'REQUIRED'}">disabled</c:if>
-															><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><spring:message code="SynchronizationConfig.class.defaultTo" /></span>
+															><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><spring:message code="sync.config.class.defaultTo" /></span>
 														</td>
 														<td align="center">
 															<input id="from_${syncClass.syncClass.syncClassId}" style="margin-top: 0px; margin-bottom: 0px;" type="checkbox" name="fromDefault" value="${syncClass.syncClass.syncClassId}" 
 																<c:if test="${syncClass.receiveFrom}">checked</c:if> <c:if test="${syncClasses.key == 'REQUIRED'}">disabled</c:if>
-															><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><spring:message code="SynchronizationConfig.class.defaultFrom" /></span>
+															><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><spring:message code="sync.config.class.defaultFrom" /></span>
 														</td>
 													</tr>
 												</c:forEach>
 											</c:if>
 											<c:if test="${empty syncClasses.value}">
 												<td colspan="5" align="left">
-													<i><spring:message code="SynchronizationConfig.classes.none" /></i>
+													<i><spring:message code="sync.config.classes.none" /></i>
 												</td>
 											</c:if>
 										</c:forEach>
 									</c:if>
 									<c:if test="${empty syncClassGroupsRight}">
 										<td colspan="4" align="left">
-											<i><spring:message code="SynchronizationConfig.classes.none" /></i>
+											<i><spring:message code="sync.config.classes.none" /></i>
 										</td>
 									</c:if>
 								</tbody>

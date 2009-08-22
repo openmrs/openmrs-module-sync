@@ -145,12 +145,12 @@ public class SynchronizationStatsListController extends SimpleFormController {
 	        // testConnection error messages
 	        MessageSourceAccessor msa = getMessageSourceAccessor();
 	        Map<String,String> connectionState = new HashMap<String,String>();
-	        connectionState.put(ServerConnectionState.OK.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.ok"));
-	        connectionState.put(ServerConnectionState.AUTHORIZATION_FAILED.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.noAuth"));
-	        connectionState.put(ServerConnectionState.CONNECTION_FAILED.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.noConnection"));
-	        connectionState.put(ServerConnectionState.CERTIFICATE_FAILED.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.noCertificate"));
-	        connectionState.put(ServerConnectionState.MALFORMED_URL.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.badUrl"));
-	        connectionState.put(ServerConnectionState.NO_ADDRESS.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.noAddress"));
+	        connectionState.put(ServerConnectionState.OK.toString(), msa.getMessage("sync.config.server.connection.status.ok"));
+	        connectionState.put(ServerConnectionState.AUTHORIZATION_FAILED.toString(), msa.getMessage("sync.config.server.connection.status.noAuth"));
+	        connectionState.put(ServerConnectionState.CONNECTION_FAILED.toString(), msa.getMessage("sync.config.server.connection.status.noConnection"));
+	        connectionState.put(ServerConnectionState.CERTIFICATE_FAILED.toString(), msa.getMessage("sync.config.server.connection.status.noCertificate"));
+	        connectionState.put(ServerConnectionState.MALFORMED_URL.toString(), msa.getMessage("sync.config.server.connection.status.badUrl"));
+	        connectionState.put(ServerConnectionState.NO_ADDRESS.toString(), msa.getMessage("sync.config.server.connection.status.noAddress"));
 	        
 	        // taskConfig for automated syncing
 	        TaskDefinition parentSchedule = new TaskDefinition();
@@ -181,8 +181,8 @@ public class SynchronizationStatsListController extends SimpleFormController {
             
             //sync status staff
             ret.put("localServerSyncStatusValue",SyncUtil.getSyncStatus());
-	        ret.put("localServerSyncStatusText", msa.getMessage("SynchronizationConfig.syncStatus.status." + ref.get("localServerSyncStatus").toString()));
-            ret.put("localServerSyncStatusMsg", msa.getMessage("SynchronizationConfig.syncStatus.status." + ref.get("localServerSyncStatus").toString() + ".info" , new String[] {SyncConstants.RUNTIMEPROPERTY_SYNC_STATUS}));
+	        ret.put("localServerSyncStatusText", msa.getMessage("sync.config.syncStatus.status." + ref.get("localServerSyncStatus").toString()));
+            ret.put("localServerSyncStatusMsg", msa.getMessage("sync.config.syncStatus.status." + ref.get("localServerSyncStatus").toString() + ".info" , new String[] {SyncConstants.RUNTIMEPROPERTY_SYNC_STATUS}));
 	        ret.put("localServerUuid", ref.get("localServerUuid"));
 	        ret.put("localServerId", Context.getService(SynchronizationService.class).getServerId());
 	        ret.put("localServerName", Context.getService(SynchronizationService.class).getServerName());           

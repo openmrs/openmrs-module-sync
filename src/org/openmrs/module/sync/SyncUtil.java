@@ -64,7 +64,6 @@ import org.openmrs.Form;
 import org.openmrs.FormField;
 import org.openmrs.GlobalProperty;
 import org.openmrs.Location;
-import org.openmrs.MimeType;
 import org.openmrs.Obs;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.Order;
@@ -606,8 +605,6 @@ public class SyncUtil {
 			} else if ( "org.openmrs.LoginCredential".equals(className) ) {
 				log.debug("UNABLE TO CREATE/UPDATE LoginCredential in Synchronization process - no service method exists");
 				isUpdated = false;
-			} else if ( "org.openmrs.MimeType".equals(className) ) {
-				Context.getObsService().saveMimeType((MimeType)o);
 			} else if ( "org.openmrs.Obs".equals(className) ) {
 				Context.getObsService().saveObs((Obs)o,((Obs)o).getVoidReason());
 			} else if ( "org.openmrs.Order".equals(className) ){

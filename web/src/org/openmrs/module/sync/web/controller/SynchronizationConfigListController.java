@@ -110,10 +110,10 @@ public class SynchronizationConfigListController extends SimpleFormController {
     		}
         	Integer repeatInterval = ServletRequestUtils.getIntParameter(request, "repeatInterval", 0) * 60;  // interval really is in seconds, to * 60 to convert to minutes 
         	
-        	if ( password.length() == 0 ) error = msa.getMessage("SynchronizationConfig.parent.error.passwordRequired");
-        	if ( username.length() == 0 ) error = msa.getMessage("SynchronizationConfig.parent.error.usernameRequired");
-        	if ( address.length() == 0 ) error = msa.getMessage("SynchronizationConfig.parent.error.addressRequired");
-        	if ( started && repeatInterval == 0 ) error = msa.getMessage("SynchronizationConfig.parent.error.invalidRepeat");
+        	if ( password.length() == 0 ) error = msa.getMessage("sync.config.parent.error.passwordRequired");
+        	if ( username.length() == 0 ) error = msa.getMessage("sync.config.parent.error.usernameRequired");
+        	if ( address.length() == 0 ) error = msa.getMessage("sync.config.parent.error.addressRequired");
+        	if ( started && repeatInterval == 0 ) error = msa.getMessage("sync.config.parent.error.invalidRepeat");
         	
         	if ( error.length() == 0 ) {
             	RemoteServer parent = Context.getService(SynchronizationService.class).getParentServer();
@@ -183,7 +183,7 @@ public class SynchronizationConfigListController extends SimpleFormController {
     	        	}
     	        }
         		
-        		success = msa.getMessage("SynchronizationConfig.parent.saved");        		
+        		success = msa.getMessage("sync.config.parent.saved");        		
         	}
         } else if ( "saveClasses".equals(action) ) {
         	// save uuid, server name, and admin email first
@@ -216,7 +216,7 @@ public class SynchronizationConfigListController extends SimpleFormController {
                 }
             }
 
-            success = msa.getMessage("SynchronizationConfig.classes.saved");             
+            success = msa.getMessage("sync.config.classes.saved");             
         } else if ( "deleteServer".equals(action) ) {
             // check to see if the user is trying to delete a server, react accordingly
             Integer serverId = ServletRequestUtils.getIntParameter(request, "serverId", 0);
@@ -231,13 +231,13 @@ public class SynchronizationConfigListController extends SimpleFormController {
             	try {
             		ss.deleteRemoteServer(deleteServer);
             		Object[] args = {serverName};
-                    success = msa.getMessage("SynchronizationConfig.server.deleted", args);             
+                    success = msa.getMessage("sync.config.server.deleted", args);             
             	} catch (Exception e) {
             		Object[] args = {serverName};
-            		error = msa.getMessage("SynchronizationConfig.server.deleteFailed", args);
+            		error = msa.getMessage("sync.config.server.deleteFailed", args);
             	}
             } else {
-            	error = msa.getMessage("SynchronizationConfig.server.notDeleted");
+            	error = msa.getMessage("sync.config.server.notDeleted");
             }
 
         } else if ( "manualTx".equals(action ) ) {
@@ -267,7 +267,7 @@ public class SynchronizationConfigListController extends SimpleFormController {
                 // don't return a model/view - we'll need to return a file instead.
                 result = null;
             } catch(Exception e) {
-                error = msa.getMessage("SynchronizationStatus.createTx.error");  
+                error = msa.getMessage("sync.status.createTx.error");  
                 e.printStackTrace();
             }
 
@@ -331,12 +331,12 @@ public class SynchronizationConfigListController extends SimpleFormController {
 	        // testConnection error messages
 	        MessageSourceAccessor msa = getMessageSourceAccessor();
 	        Map<String,String> connectionState = new HashMap<String,String>();
-	        connectionState.put(ServerConnectionState.OK.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.ok"));
-	        connectionState.put(ServerConnectionState.AUTHORIZATION_FAILED.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.noAuth"));
-	        connectionState.put(ServerConnectionState.CONNECTION_FAILED.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.noConnection"));
-	        connectionState.put(ServerConnectionState.CERTIFICATE_FAILED.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.noCertificate"));
-	        connectionState.put(ServerConnectionState.MALFORMED_URL.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.badUrl"));
-	        connectionState.put(ServerConnectionState.NO_ADDRESS.toString(), msa.getMessage("SynchronizationConfig.server.connection.status.noAddress"));
+	        connectionState.put(ServerConnectionState.OK.toString(), msa.getMessage("sync.config.server.connection.status.ok"));
+	        connectionState.put(ServerConnectionState.AUTHORIZATION_FAILED.toString(), msa.getMessage("sync.config.server.connection.status.noAuth"));
+	        connectionState.put(ServerConnectionState.CONNECTION_FAILED.toString(), msa.getMessage("sync.config.server.connection.status.noConnection"));
+	        connectionState.put(ServerConnectionState.CERTIFICATE_FAILED.toString(), msa.getMessage("sync.config.server.connection.status.noCertificate"));
+	        connectionState.put(ServerConnectionState.MALFORMED_URL.toString(), msa.getMessage("sync.config.server.connection.status.badUrl"));
+	        connectionState.put(ServerConnectionState.NO_ADDRESS.toString(), msa.getMessage("sync.config.server.connection.status.noAddress"));
 	        
 	        // taskConfig for automated syncing
 	        TaskDefinition parentSchedule = new TaskDefinition();
@@ -424,8 +424,8 @@ public class SynchronizationConfigListController extends SimpleFormController {
             
             //sync status staff
             ret.put("localServerSyncStatusValue",SyncUtil.getSyncStatus());
-	        ret.put("localServerSyncStatusText", msa.getMessage("SynchronizationConfig.syncStatus.status." + ref.get("localServerSyncStatus").toString()));
-            ret.put("localServerSyncStatusMsg", msa.getMessage("SynchronizationConfig.syncStatus.status." + ref.get("localServerSyncStatus").toString() + ".info" , new String[] {SyncConstants.RUNTIMEPROPERTY_SYNC_STATUS}));
+	        ret.put("localServerSyncStatusText", msa.getMessage("sync.config.syncStatus.status." + ref.get("localServerSyncStatus").toString()));
+            ret.put("localServerSyncStatusMsg", msa.getMessage("sync.config.syncStatus.status." + ref.get("localServerSyncStatus").toString() + ".info" , new String[] {SyncConstants.RUNTIMEPROPERTY_SYNC_STATUS}));
 	        ret.put("localServerUuid", ref.get("localServerUuid"));
 	        ret.put("localServerId", Context.getService(SynchronizationService.class).getServerId());
 	        ret.put("localServerName", Context.getService(SynchronizationService.class).getServerName());           

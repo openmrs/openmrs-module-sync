@@ -66,11 +66,6 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
      */
     private SessionFactory sessionFactory;
     
-    private HibernateSynchronizationInterceptor synchronizationInterceptor;
-    
-    private static org.hibernate.cfg.Configuration configuration = null;
-    private Object configurationLock = new Object();
-    
     public HibernateSynchronizationDAO() { }
     
     /**
@@ -82,15 +77,6 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
         this.sessionFactory = sessionFactory;
     }
     
-    /**
-     * Set synchronization interceptor
-     * 
-     * @param sessionFactory
-     */
-    public void setSynchronizationInterceptor(HibernateSynchronizationInterceptor synchronizationInterceptor) { 
-        this.synchronizationInterceptor = synchronizationInterceptor;
-    }
-        
     /**
      * @see org.openmrs.module.sync.api.db.SynchronizationDAO#createSyncRecord(org.openmrs.module.sync.SyncRecord)
      */
@@ -346,7 +332,6 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     /**
      * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getGlobalProperty(String propertyName)
      */
-    @SuppressWarnings("unchecked")
     public String getGlobalProperty(String propertyName) 
         throws DAOException {
         
@@ -365,7 +350,6 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     /**
      * @see org.openmrs.module.sync.api.db.SynchronizationDAO#setGlobalProperty(String propertyName, String propertyValue)
      */
-    @SuppressWarnings("unchecked")
     public void setGlobalProperty(String propertyName, String propertyValue) 
         throws DAOException {
         
@@ -405,7 +389,6 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     /**
      * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getGlobalProperty(String propertyName)
      */
-    @SuppressWarnings("unchecked")
     public RemoteServer getRemoteServer(Integer serverId) throws DAOException {        
         return (RemoteServer)sessionFactory.getCurrentSession().get(RemoteServer.class, serverId);
     }
@@ -413,7 +396,6 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     /**
      * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getGlobalProperty(String propertyName)
      */
-    @SuppressWarnings("unchecked")
     public RemoteServer getRemoteServer(String uuid) throws DAOException {        
         return (RemoteServer)sessionFactory.getCurrentSession()
         .createCriteria(RemoteServer.class)
@@ -424,7 +406,6 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     /**
      * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getGlobalProperty(String propertyName)
      */
-    @SuppressWarnings("unchecked")
     public RemoteServer getRemoteServerByUsername(String username) throws DAOException {        
         return (RemoteServer)sessionFactory.getCurrentSession()
         .createCriteria(RemoteServer.class)
@@ -443,7 +424,6 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     /**
      * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getGlobalProperty(String propertyName)
      */
-    @SuppressWarnings("unchecked")
     public RemoteServer getParentServer() throws DAOException {        
         return (RemoteServer)sessionFactory.getCurrentSession()
         		.createCriteria(RemoteServer.class)
@@ -478,7 +458,6 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     /**
      * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getGlobalProperty(String propertyName)
      */
-    @SuppressWarnings("unchecked")
     public SyncClass getSyncClass(Integer syncClassId) throws DAOException {        
         return (SyncClass)sessionFactory.getCurrentSession().get(SyncClass.class, syncClassId);
     }

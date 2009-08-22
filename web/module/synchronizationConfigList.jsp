@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/admin/synchronization/synchronizationConfig.list" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/synchronizationConfig.list" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -18,7 +18,7 @@
 	}
 
 	function confirmDelete(id) {
-		var isConfirmed = confirm("<spring:message code="Synchronization.config.server.confirmDelete" />");
+		var isConfirmed = confirm("<spring:message code="sync.config.server.confirmDelete" />");
 		if ( isConfirmed ) {
 			document.getElementById("deleteServer" + id).submit();
 		}
@@ -28,15 +28,15 @@
 <table>
 	<tr>
 		<td>
-			<h2><spring:message code="Synchronization.config.title"/></h2>
+			<h2><spring:message code="sync.config.title"/></h2>
 		</td>
 		<td>
 			&nbsp;&nbsp;
-			<a href="javascript://" onclick="hideDiv('advanced');showDiv('general');"><spring:message code="Synchronization.config.menu.general" /></a>
+			<a href="javascript://" onclick="hideDiv('advanced');showDiv('general');"><spring:message code="sync.config.menu.general" /></a>
 
 			<!-- display advanced only if sync is enabled -->
 			<c:if test="${localServerSyncStatusValue == 'ENABLED_STRICT' || localServerSyncStatusValue == 'ENABLED_CONTINUE_ON_ERROR'}">			
-				  | <a href="javascript://" onclick="hideDiv('general');showDiv('advanced');"><spring:message code="Synchronization.config.menu.advanced" /></a>
+				  | <a href="javascript://" onclick="hideDiv('general');showDiv('advanced');"><spring:message code="sync.config.menu.advanced" /></a>
 			</c:if>
 		</td>
 	</tr>
@@ -44,27 +44,27 @@
 
 <div id="general">
 
-	<b class="boxHeader"><spring:message code="SynchronizationConfig.syncStatus"/></b>
+	<b class="boxHeader"><spring:message code="sync.config.syncStatus"/></b>
 	<div class="box">
 		<table id="syncStatus" cellpadding="10" cellspacing="0">
 			<%--
 			<thead>
 				<tr>
-					<th style="background-color: #eef3ff; font-weight: bold;"><spring:message code="SynchronizationConfig.property.name"/></th>
-					<th style="background-color: #eef3ff; font-weight: bold;"><spring:message code="SynchronizationConfig.property.value"/></th>
-					<th style="background-color: #eef3ff; font-weight: bold;"><spring:message code="SynchronizationConfig.property.comments"/></th>
+					<th style="background-color: #eef3ff; font-weight: bold;"><spring:message code="sync.config.property.name"/></th>
+					<th style="background-color: #eef3ff; font-weight: bold;"><spring:message code="sync.config.property.value"/></th>
+					<th style="background-color: #eef3ff; font-weight: bold;"><spring:message code="sync.config.property.comments"/></th>
 				</tr>
 			</thead>
 			--%>
 			<tbody>
 				<tr>
-					<%--<td><b><spring:message code="SynchronizationConfig.syncStatus.status" /></b></td>--%>
-					<td nowrap><spring:message code="SynchronizationConfig.syncStatus.is" />: ${localServerSyncStatusText}</td>
+					<%--<td><b><spring:message code="sync.config.syncStatus.status" /></b></td>--%>
+					<td nowrap><spring:message code="sync.config.syncStatus.is" />: ${localServerSyncStatusText}</td>
 					<td>${localServerSyncStatusMsg}</td>
 				</tr>
 				<%--
 				<tr>
-					<td><b><spring:message code="SynchronizationConfig.syncStatus.uuid" /></b></td>
+					<td><b><spring:message code="sync.config.syncStatus.uuid" /></b></td>
 					<td>${localServerUuid}</td>
 					<td>${localServerUuidMsg}</td>
 				</tr>
@@ -75,7 +75,7 @@
 	
 	&nbsp;
 	<div id="serverList">
-		<b class="boxHeader"><spring:message code="SynchronizationConfig.servers.remote"/></b>
+		<b class="boxHeader"><spring:message code="sync.config.servers.remote"/></b>
 		<div class="box">
 			<table id="syncChangesTable" cellpadding="10" cellspacing="0">
 				<c:if test="${not empty synchronizationConfigList.serverList}">
@@ -84,22 +84,22 @@
 							<th></th>
 							<th></th>
 							<th></th>
-							<th align="center" colspan="2" style="background-color: #eef3ff; text-align: center; font-weight: normal;"><spring:message code="SynchronizationConfig.server.synchronize.manually" /></th>
-							<th align="center" style="text-align: center; background-color: #fee; font-weight: normal;"><spring:message code="SynchronizationConfig.server.synchronize.automatic" /></th>
+							<th align="center" colspan="2" style="background-color: #eef3ff; text-align: center; font-weight: normal;"><spring:message code="sync.config.server.synchronize.manually" /></th>
+							<th align="center" style="text-align: center; background-color: #fee; font-weight: normal;"><spring:message code="sync.config.server.synchronize.automatic" /></th>
 							<th></th>
 						</tr>
 						<tr>
-							<th><spring:message code="SynchronizationConfig.server.name" /></th>
-							<th style="text-align: center;"><spring:message code="SynchronizationConfig.server.type" /></th>
-							<th><spring:message code="SynchronizationConfig.server.lastSync" /></th>
+							<th><spring:message code="sync.config.server.name" /></th>
+							<th style="text-align: center;"><spring:message code="sync.config.server.type" /></th>
+							<th><spring:message code="sync.config.server.lastSync" /></th>
 							<th style="background-color: #eef; text-align: center;"><img src="${pageContext.request.contextPath}/images/save.gif" border="0" style="margin-bottom: -3px;">
-								<spring:message code="SynchronizationConfig.server.syncViaFile" />
+								<spring:message code="sync.config.server.syncViaFile" />
 							<th style="background-color: #efe; text-align: center;"><img src="${pageContext.request.contextPath}/images/lookup.gif" border="0" style="margin-bottom: -3px;">
-								<spring:message code="SynchronizationConfig.server.syncViaWeb" />
+								<spring:message code="sync.config.server.syncViaWeb" />
 							<th style="background-color: #fee; text-align: center;"><img src="${pageContext.request.contextPath}/images/scheduled_send.gif" border="0" style="margin-bottom: -3px;">
-								<spring:message code="SynchronizationConfig.server.syncAutomatic" />
+								<spring:message code="sync.config.server.syncAutomatic" />
 								(<spring:message code="general.scheduled" />)
-							<th style="text-align: center;"><spring:message code="SynchronizationConfig.server.delete" /></th>
+							<th style="text-align: center;"><spring:message code="sync.config.server.delete" /></th>
 						</tr>
 					</thead>
 					<tbody id="globalPropsList">
@@ -137,16 +137,16 @@
 									<c:choose>
 										<c:when test="${server.serverType == 'CHILD'}">
 											<a href="synchronizationImport.list?serverId=${server.serverId}">
-												<spring:message code="SynchronizationConfig.server.uploadAndReply" />
+												<spring:message code="sync.config.server.uploadAndReply" />
 											</a>
 										</c:when>
 										<c:otherwise>
 											<a href="synchronizationStatus.list?mode=SEND_FILE">
-												<spring:message code="SynchronizationConfig.server.sendFile" />
+												<spring:message code="sync.config.server.sendFile" />
 											</a>
 											&nbsp;
 											<a href="synchronizationStatus.list?mode=UPLOAD_REPLY">
-												<spring:message code="SynchronizationConfig.server.uploadResponse" />
+												<spring:message code="sync.config.server.uploadResponse" />
 											</a>
 										</c:otherwise>
 									</c:choose>
@@ -158,7 +158,7 @@
 										</c:when>
 										<c:otherwise>
 											<a href="synchronizationStatus.list?mode=SEND_WEB">
-												<spring:message code="SynchronizationConfig.server.synchronizeNow" />
+												<spring:message code="sync.config.server.synchronizeNow" />
 											</a>
 										</c:otherwise>
 									</c:choose>
@@ -170,15 +170,15 @@
 										</c:when>
 										<c:otherwise>
 											<c:if test="${parentSchedule.started == false}">
-												(<spring:message code="SynchronizationConfig.parent.not.scheduled" />)
+												(<spring:message code="sync.config.parent.not.scheduled" />)
 												<a href="synchronizationConfigServer.form?serverId=${server.serverId}" style="font-size: 0.9em;">
 													<spring:message code="general.configure" />
 												</a>
 											</c:if>
 											<c:if test="${parentSchedule.started == true}">
-												<spring:message code="SynchronizationConfig.parent.scheduled.every" />
+												<spring:message code="sync.config.parent.scheduled.every" />
 												<b>${repeatInterval}</b>
-												<spring:message code="SynchronizationConfig.parent.scheduled.minutes" />
+												<spring:message code="sync.config.parent.scheduled.minutes" />
 												<a href="synchronizationConfigServer.form?serverId=${server.serverId}" style="font-size: 0.9em;">
 													<spring:message code="general.configure" />
 												</a>
@@ -219,7 +219,7 @@
 					</c:if>
 					<c:if test="${empty synchronizationConfigList.serverList}">
 						<td colspan="3" align="left">
-							<i><spring:message code="SynchronizationConfig.servers.noItems" /></i>
+							<i><spring:message code="sync.config.servers.noItems" /></i>
 						</td>
 					</c:if>
 					<tr>
@@ -227,11 +227,11 @@
 							<br>
 							<c:if test="${localServerSyncStatusValue == 'ENABLED_STRICT' || localServerSyncStatusValue == 'ENABLED_CONTINUE_ON_ERROR'}">			
 								<a href="synchronizationConfigServer.form?type=CHILD"><img src="${pageContext.request.contextPath}/images/add.gif" style="margin-bottom: -3px;" border="0" /></a>
-								<a href="synchronizationConfigServer.form?type=CHILD"><spring:message code="SynchronizationConfig.server.config.child" /></a>
+								<a href="synchronizationConfigServer.form?type=CHILD"><spring:message code="sync.config.server.config.child" /></a>
 								<c:if test="${empty parent}">
 									 |
 									<a href="synchronizationConfigServer.form?type=PARENT"><img src="${pageContext.request.contextPath}/images/add.gif" style="margin-bottom: -3px;" border="0" /></a>
-									<a href="synchronizationConfigServer.form?type=PARENT"><spring:message code="SynchronizationConfig.server.config.parent" /></a>
+									<a href="synchronizationConfigServer.form?type=PARENT"><spring:message code="sync.config.server.config.parent" /></a>
 								</c:if>
 							</c:if>
 						</td>
@@ -247,30 +247,30 @@
 	<form action="synchronizationConfig.list" method="post">
 	<input type="hidden" name="action" value="saveClasses" />
 
-		<b class="boxHeader"><spring:message code="SynchronizationConfig.advanced.configOptions"/></b>
+		<b class="boxHeader"><spring:message code="sync.config.advanced.configOptions"/></b>
 		<div class="box">
 			<table id="syncStatus" cellpadding="8" cellspacing="0">
 				<tr>
-					<td align="right" nowrap><b><spring:message code="SynchronizationConfig.advanced.serverUuid" /></b></td>
+					<td align="right" nowrap><b><spring:message code="sync.config.advanced.serverUuid" /></b></td>
 					<td><input type="text" size="50" name="serverUuid" id="serverUuid" value="${localServerUuid}" /></td>
-					<td><spring:message code="SynchronizationConfig.advanced.serverUuid.info" /></td>
+					<td><spring:message code="sync.config.advanced.serverUuid.info" /></td>
 				</tr>
 				<tr>
-					<td align="right" nowrap><b><spring:message code="SynchronizationConfig.advanced.serverName" /></b></td>
+					<td align="right" nowrap><b><spring:message code="sync.config.advanced.serverName" /></b></td>
 					<td><input type="text" size="50" name="serverName" id="serverName" value="${localServerName}" /></td>
-					<td><spring:message code="SynchronizationConfig.advanced.serverName.info" /></td>
+					<td><spring:message code="sync.config.advanced.serverName.info" /></td>
 				</tr>
 				<tr>
-					<td align="right" nowrap><b><spring:message code="SynchronizationConfig.advanced.serverAdminEmail" /></b></td>
+					<td align="right" nowrap><b><spring:message code="sync.config.advanced.serverAdminEmail" /></b></td>
 					<td><input type="text" size="50" name="serverAdminEmail" id="serverAdminEmail" value="${localServerAdminEmail}" /></td>
-					<td><spring:message code="SynchronizationConfig.advanced.serverAdminEmail.info" /></td>
+					<td><spring:message code="sync.config.advanced.serverAdminEmail.info" /></td>
 				</tr>
 			</table>
 		</div>
 	
 		<br />
 	
-		<b class="boxHeader"><spring:message code="SynchronizationConfig.advanced.objects"/></b>
+		<b class="boxHeader"><spring:message code="sync.config.advanced.objects"/></b>
 		<div class="box">
 			<table>
 				<tr>
@@ -278,7 +278,7 @@
 						<table id="syncChangesTable" cellpadding="4" cellspacing="0">
 							<thead>
 								<tr>
-									<th colspan="2" valign="bottom"><spring:message code="SynchronizationConfig.class.item" /></th>
+									<th colspan="2" valign="bottom"><spring:message code="sync.config.class.item" /></th>
 									<th colspan="2" align="center">&nbsp;&nbsp;<spring:message code="general.default.behavior" /></th>
 								</tr>
 							</thead>
@@ -292,12 +292,12 @@
 											<td style="padding-right: 20px; border-top: 1px solid #aaa; background-color: whitesmoke;" align="center">
 												<input onclick="toggleChecks('${syncClasses.key}', 'to');" id="to_${syncClasses.key}" style="margin-top: 0px; margin-bottom: 0px;" type="checkbox" name="groupToDefault" value="true" <c:if test="${syncClassGroupTo[syncClasses.key]}">checked</c:if>
 													 <c:if test="${syncClasses.key == 'REQUIRED'}">disabled</c:if>
-												><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><b><spring:message code="SynchronizationConfig.class.defaultTo" /></b></span>
+												><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><b><spring:message code="sync.config.class.defaultTo" /></b></span>
 											</td>
 											<td style="border-top: 1px solid #aaa; background-color: whitesmoke;" align="center">
 												<input onclick="toggleChecks('${syncClasses.key}', 'from');" id="from_${syncClasses.key}" style="margin-top: 0px; margin-bottom: 0px; margin-right: 1px;" type="checkbox" name="groupFromDefault" value="true" <c:if test="${syncClassGroupFrom[syncClasses.key]}">checked</c:if>
 													 <c:if test="${syncClasses.key == 'REQUIRED'}">disabled</c:if>
-												><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><b><spring:message code="SynchronizationConfig.class.defaultFrom" /></b></span>
+												><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><b><spring:message code="sync.config.class.defaultFrom" /></b></span>
 											</td>
 										</tr>
 										<c:if test="${not empty syncClasses.value}">
@@ -310,26 +310,26 @@
 													<td align="center" style="padding-right: 20px;">
 														<input id="to_${syncClass.syncClassId}" style="margin-top: 0px; margin-bottom: 0px;" type="checkbox" name="toDefault" value="${syncClass.syncClassId}" 
 															<c:if test="${syncClass.defaultTo}">checked</c:if> <c:if test="${syncClasses.key == 'REQUIRED'}">disabled</c:if>
-														><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><spring:message code="SynchronizationConfig.class.defaultTo" /></span>
+														><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><spring:message code="sync.config.class.defaultTo" /></span>
 													</td>
 													<td align="center">
 														<input id="from_${syncClass.syncClassId}" style="margin-top: 0px; margin-bottom: 0px;" type="checkbox" name="fromDefault" value="${syncClass.syncClassId}" 
 															<c:if test="${syncClass.defaultFrom}">checked</c:if> <c:if test="${syncClasses.key == 'REQUIRED'}">disabled</c:if>
-														><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><spring:message code="SynchronizationConfig.class.defaultFrom" /></span>
+														><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><spring:message code="sync.config.class.defaultFrom" /></span>
 													</td>
 												</tr>
 											</c:forEach>
 										</c:if>
 										<c:if test="${empty syncClasses.value}">
 											<td colspan="5" align="left">
-												<i><spring:message code="SynchronizationConfig.classes.none" /></i>
+												<i><spring:message code="sync.config.classes.none" /></i>
 											</td>
 										</c:if>
 									</c:forEach>
 								</c:if>
 								<c:if test="${empty syncClassGroupsLeft}">
 									<td colspan="4" align="left">
-										<i><spring:message code="SynchronizationConfig.classes.none" /></i>
+										<i><spring:message code="sync.config.classes.none" /></i>
 									</td>
 								</c:if>
 							</tbody>
@@ -339,7 +339,7 @@
 						<table id="syncChangesTable" cellpadding="4" cellspacing="0">
 							<thead>
 								<tr>
-									<th colspan="2" valign="bottom"><spring:message code="SynchronizationConfig.class.item" /></th>
+									<th colspan="2" valign="bottom"><spring:message code="sync.config.class.item" /></th>
 									<th colspan="2" align="center">&nbsp;&nbsp;<spring:message code="general.default.behavior" /></th>
 								</tr>
 							</thead>
@@ -353,12 +353,12 @@
 											<td style="padding-right: 20px; border-top: 1px solid #aaa; background-color: whitesmoke;" align="center">
 												<input onclick="toggleChecks('${syncClasses.key}', 'to');" id="to_${syncClasses.key}" style="margin-top: 0px; margin-bottom: 0px;" type="checkbox" name="groupToDefault" value="true" <c:if test="${syncClassGroupTo[syncClasses.key]}">checked</c:if>
 													 <c:if test="${syncClasses.key == 'REQUIRED'}">disabled</c:if>
-												><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><b><spring:message code="SynchronizationConfig.class.defaultTo" /></b></span>
+												><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><b><spring:message code="sync.config.class.defaultTo" /></b></span>
 											</td>
 											<td style="border-top: 1px solid #aaa; background-color: whitesmoke;" align="center">
 												<input onclick="toggleChecks('${syncClasses.key}', 'from');" id="from_${syncClasses.key}" style="margin-top: 0px; margin-bottom: 0px; margin-right: 1px;" type="checkbox" name="groupFromDefault" value="true" <c:if test="${syncClassGroupFrom[syncClasses.key]}">checked</c:if>
 													 <c:if test="${syncClasses.key == 'REQUIRED'}">disabled</c:if>
-												><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><b><spring:message code="SynchronizationConfig.class.defaultFrom" /></b></span>
+												><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><b><spring:message code="sync.config.class.defaultFrom" /></b></span>
 											</td>
 										</tr>
 										<c:if test="${not empty syncClasses.value}">
@@ -371,26 +371,26 @@
 													<td align="center" style="padding-right: 20px;">
 														<input id="to_${syncClass.syncClassId}" style="margin-top: 0px; margin-bottom: 0px;" type="checkbox" name="toDefault" value="${syncClass.syncClassId}" 
 															<c:if test="${syncClass.defaultTo}">checked</c:if> <c:if test="${syncClasses.key == 'REQUIRED'}">disabled</c:if>
-														><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><spring:message code="SynchronizationConfig.class.defaultTo" /></span>
+														><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><spring:message code="sync.config.class.defaultTo" /></span>
 													</td>
 													<td align="center">
 														<input id="from_${syncClass.syncClassId}" style="margin-top: 0px; margin-bottom: 0px;" type="checkbox" name="fromDefault" value="${syncClass.syncClassId}" 
 															<c:if test="${syncClass.defaultFrom}">checked</c:if> <c:if test="${syncClasses.key == 'REQUIRED'}">disabled</c:if>
-														><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><spring:message code="SynchronizationConfig.class.defaultFrom" /></span>
+														><span style="font-size: 0.9em;<c:if test="${syncClasses.key == 'REQUIRED'}"> color: #aaa;</c:if>"><spring:message code="sync.config.class.defaultFrom" /></span>
 													</td>
 												</tr>
 											</c:forEach>
 										</c:if>
 										<c:if test="${empty syncClasses.value}">
 											<td colspan="5" align="left">
-												<i><spring:message code="SynchronizationConfig.classes.none" /></i>
+												<i><spring:message code="sync.config.classes.none" /></i>
 											</td>
 										</c:if>
 									</c:forEach>
 								</c:if>
 								<c:if test="${empty syncClassGroupsRight}">
 									<td colspan="4" align="left">
-										<i><spring:message code="SynchronizationConfig.classes.none" /></i>
+										<i><spring:message code="sync.config.classes.none" /></i>
 									</td>
 								</c:if>
 							</tbody>
