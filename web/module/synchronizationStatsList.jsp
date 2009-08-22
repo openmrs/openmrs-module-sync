@@ -33,10 +33,6 @@
 		<table id="syncStatus" cellpadding="10" cellspacing="0">
 			<tbody>
 				<tr>
-					<td style="font-weight: bold;"><spring:message code="sync.status.is" /></td>
-					<td>${localServerSyncStatusText}</td>
-				</tr>
-				<tr>
 					<td style="font-weight: bold;"><spring:message code="sync.status.LastSync" /></td>
 					<td>
 						<c:choose>
@@ -199,12 +195,5 @@
 		</div>
 	</div>
 </div>
-
-<!-- turn off content based on value of  localServerSyncStatusValue-->
-<c:if test="${localServerSyncStatusValue == 'DISABLED_SYNC_AND_HISTORY'}">			
-	<script language="JavaScript">
-		disableDIVs();
-	</script>
-</c:if>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>

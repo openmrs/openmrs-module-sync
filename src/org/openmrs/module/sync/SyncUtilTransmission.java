@@ -183,9 +183,7 @@ public class SyncUtilTransmission {
             }
         } catch ( Exception e ) {
             e.printStackTrace();
-            if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT) {
-                throw(new SyncException("Error while performing synchronization, see log messages and callstack.", e));
-            }
+            throw(new SyncException("Error while performing synchronization, see log messages and callstack.", e));
         }
 
         return tx;
@@ -487,9 +485,7 @@ public class SyncUtilTransmission {
             }
         } catch ( Exception e ) {
         	log.error("Unexpected Error during full synchronize.", e);
-            if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT) {
-                throw(new SyncException("Error while performing synchronization, see log messages and callstack.", e));
-            }
+        	throw(new SyncException("Error while performing synchronization, see log messages and callstack.", e));
         }
         
         return response;

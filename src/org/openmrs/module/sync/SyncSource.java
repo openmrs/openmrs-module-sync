@@ -35,9 +35,6 @@ public interface SyncSource {
     public String getSyncSourceUuid();
     public void setSyncSourceUuid(String uuid);
     
-    //sync status: see SyncStatusState for valid states; runtime prop *only* -- thus no setter 
-    public SyncStatusState getSyncStatus();
-    
     //change set methods
     public List<SyncRecord> getDeleted(SyncPoint<?> from , SyncPoint<?> to) throws SyncException ;
     public List<SyncRecord> getChanged(SyncPoint<?> from , SyncPoint<?> to) throws SyncException ; //note this has new items also

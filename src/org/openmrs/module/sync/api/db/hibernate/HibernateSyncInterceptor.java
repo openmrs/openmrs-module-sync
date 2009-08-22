@@ -50,7 +50,6 @@ import org.openmrs.module.sync.SyncItemKey;
 import org.openmrs.module.sync.SyncItemState;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
-import org.openmrs.module.sync.SyncStatusState;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.DefaultNormalizer;
@@ -192,10 +191,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			log.debug("afterTransactionBegin: " + tx + " deactivated: "
 			        + deactivated.get());
 
-		// explicitly bail out if sync is disabled
-		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-			return;
-
 		if (syncRecordHolder.get() != null) {
 			log.warn("Replacing existing SyncRecord in SyncRecord holder");
 		}
@@ -218,10 +213,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			        + deactivated.get());
 
 		try {
-			// explicitly bail out if sync is disabled
-			if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-				return;
-
 			// If synchronization is NOT deactivated
 			if (deactivated.get() == null) {
 				SyncRecord record = syncRecordHolder.get();
@@ -276,9 +267,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			}
 		} catch (Exception ex) {
 			log.error("Journal error\n", ex);
-			if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT)
-				throw (new SyncException("Error in interceptor, see log messages and callstack.",
-				                         ex));
+			throw (new SyncException("Error in interceptor, see log messages and callstack.", ex));
 		}
 	}
 
@@ -294,10 +283,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			log.debug("afterTransactionCompletion: " + tx + " committed: "
 			        + tx.wasCommitted() + " rolledback: " + tx.wasRolledBack()
 			        + " deactivated: " + deactivated.get());
-
-		// explicitly bail out if sync is disabled
-		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-			return;
 
 		// clean out SyncRecord in case of rollback:
 		syncRecordHolder.remove();
@@ -319,10 +304,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		if (log.isInfoEnabled()) {
 			log.info("onDelete: " + entity.getClass().getName());
 		}
-
-		// explicitly bail out if sync is disabled
-		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-			return;
 
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
@@ -371,10 +352,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	        String[] propertyNames, Type[] types) {
 		if (log.isDebugEnabled())
 			log.debug("onSave: " + state.toString());
-		
-		// explicitly bail out if sync is disabled
-		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-			return false;
 
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
@@ -422,10 +399,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	        String[] propertyNames, Type[] types) {
 		if (log.isDebugEnabled())
 			log.debug("onFlushDirty: " + entity.getClass().getName());
-		
-		// explicitly bail out if sync is disabled
-		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-			return false;
 
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
@@ -472,10 +445,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		if (log.isDebugEnabled())
 			log.debug("postFlush called.");
 
-		// explicitly bail out if sync is disabled
-		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-			return;
-
 		// clear the holder
 		pendingFlushHolder.remove();
 	}
@@ -501,10 +470,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		if (log.isDebugEnabled())
 			log.debug("onPrepareStatement. sql: " + sql);
 
-		// explicitly bail out if sync is disabled
-		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-			return sql;
-
 		return sql;
 	}
 
@@ -522,10 +487,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		if (log.isDebugEnabled()) {
 			log.debug("COLLECTION remove with key: " + key);
 		}
-
-		// explicitly bail out if sync is disabled
-		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-			return;
 
 		// this.processPersistentSet((PersistentSet)collection,key, "remove");
 	}
@@ -548,10 +509,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		if (log.isDebugEnabled()) {
 			log.debug("COLLECTION recreate with key: " + key);
 		}
-
-		// explicitly bail out if sync is disabled
-		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-			return;
 
 		if (!(collection instanceof org.hibernate.collection.PersistentSet)) {
 			log.info("Cannot process collection that is not instance of PersistentSet, collection type was:"
@@ -578,10 +535,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		if (log.isDebugEnabled()) {
 			log.debug("COLLECTION update with key: " + key);
 		}
-
-		// explicitly bail out if sync is disabled
-		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-			return;
 
 		if (!(collection instanceof org.hibernate.collection.PersistentSet)) {
 			log.info("Cannot process collection that is not instance of PersistentSet, collection type was:"
@@ -766,8 +719,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 							} catch (Exception e) {
 								log.error(infoMsg
 								        + ", Could not find child object - object is null, therefore uuid is null");
-								if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT)
-									throw (e);
+								throw (e);
 							}
 
 							/*
@@ -801,8 +753,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 								        + typeName + " Field Name: "
 								        + propertyNames[i];
 								log.error(msg);
-								if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT)
-									throw (new SyncException(msg));
+								throw (new SyncException(msg));
 							}
 						} else {
 							// state != null but it is not safetype or
@@ -855,8 +806,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 					String msg = "Could not append attribute. Error while processing property: "
 					        + property;
 					log.error(msg, e);
-					if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT)
-						throw (new SyncException(msg));
+					throw (new SyncException(msg));
 				}
 			}
 
@@ -890,13 +840,10 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			}
 		} catch (SyncException ex) {
 			log.error("Journal error\n", ex);
-			if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT)
-				throw (ex);
+			throw (ex);
 		} catch (Exception e) {
 			log.error("Journal error\n", e);
-			if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT)
-				throw (new SyncException("Error in interceptor, see log messages and callstack.",
-				                         e));
+			throw (new SyncException("Error in interceptor, see log messages and callstack.", e));
 		}
 
 		return;
@@ -955,9 +902,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 * @see org.openmrs.synchronization.OpenmrsObjectInstance
 	 */
 	protected boolean shouldSynchronize(Object entity) {
-
-		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-			return false;
 
 		// OpenmrsObject *only*.
 		if (!(entity instanceof OpenmrsObject)) {
@@ -1110,8 +1054,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		if (!"update".equals(action) && !"recreate".equals(action)) {
 			log.error("Unexpected 'action' supplied, valid values: recreate, update. value provided: "
 			        + action);
-			if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT)
-				throw new CallbackException("Unexpected 'action' supplied while processing a persistent set.");
+			throw new CallbackException("Unexpected 'action' supplied while processing a persistent set.");
 		}
 
 		// retrieve owner and original uuid if there is one
@@ -1182,8 +1125,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			log.error("owner info: \ntype: " + owner.getClass().getName()
 			        + ", \nuuid: " + owner.getUuid()
 			        + ",\n property name for collection: " + ownerPropertyName);
-			if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT)
-				throw new CallbackException("Could not find the property on owner object that corresponds to the set being processed.");
+			throw new CallbackException("Could not find the property on owner object that corresponds to the set being processed.");
 		}
 
 		// Setup the serialization data structures to hold the state
@@ -1218,8 +1160,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 				} else {
 					// TODO: more debug info
 					log.error("Cannot handle sets where entries are not OpenmrsObject!");
-					if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT)
-						throw new CallbackException("Cannot handle sets where entries are not OpenmrsObject!");
+					throw new CallbackException("Cannot handle sets where entries are not OpenmrsObject!");
 				}
 			}
 
@@ -1256,8 +1197,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 						} else {
 							// TODO: more debug info
 							log.error("Cannot handle sets where entries are not OpenmrsObject!");
-							if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT)
-								throw new CallbackException("Cannot handle sets where entries are not OpenmrsObject!");
+							throw new CallbackException("Cannot handle sets where entries are not OpenmrsObject!");
 						}
 					}
 				}
@@ -1312,9 +1252,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		} catch (Exception ex) {
 			log.error("Error processing Persistent set, see callstack and inner expection",
 			          ex);
-			if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT)
-				throw new CallbackException("Error processing Persistent set, see callstack and inner expection.",
-				                            ex);
+			throw new CallbackException("Error processing Persistent set, see callstack and inner expection.", ex);
 		}
 	}
 

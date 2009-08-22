@@ -210,7 +210,5 @@ public class SyncSourceJournal implements SyncSource {
         
         return;   
     }
-    public SyncStatusState getSyncStatus() {
-        return SyncUtil.getSyncStatus();
-    }
+
 }

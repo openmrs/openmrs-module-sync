@@ -113,7 +113,6 @@ public class SynchronizationStatsListController extends SimpleFormController {
             
             SyncSource source = new SyncSourceJournal();
             obj.put("localServerUuid",source.getSyncSourceUuid());
-            obj.put("localServerSyncStatus", source.getSyncStatus());
             
             //now add server stats
             Map<RemoteServer,Set<SyncStatistic>> stats = ss.getSyncStatistics(null, null);
@@ -180,9 +179,6 @@ public class SynchronizationStatsListController extends SimpleFormController {
             ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
             
             //sync status staff
-            ret.put("localServerSyncStatusValue",SyncUtil.getSyncStatus());
-	        ret.put("localServerSyncStatusText", msa.getMessage("sync.config.syncStatus.status." + ref.get("localServerSyncStatus").toString()));
-            ret.put("localServerSyncStatusMsg", msa.getMessage("sync.config.syncStatus.status." + ref.get("localServerSyncStatus").toString() + ".info" , new String[] {SyncConstants.RUNTIMEPROPERTY_SYNC_STATUS}));
 	        ret.put("localServerUuid", ref.get("localServerUuid"));
 	        ret.put("localServerId", Context.getService(SyncService.class).getServerId());
 	        ret.put("localServerName", Context.getService(SyncService.class).getServerName());           

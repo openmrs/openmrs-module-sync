@@ -94,9 +94,6 @@ public class SyncConstants {
     public static final String PROPERTY_VERSION = "sync.version";
     public static final String PROPERTY_ORIGINAL_UUID = "synchronization.original_uuid"; //note this value is used internally by sync; see Interceptor.setOriginalUuid()
 
-    //runtime prop
-    public static final String RUNTIMEPROPERTY_SYNC_STATUS = "synchronization.sync_status"; //SyncStatusState enum
-
 	public static final String RESPONSE_SUFFIX = "_response";
 
 	public static final String DIR_IMPORT = "import";

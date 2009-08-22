@@ -42,7 +42,6 @@ import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncSource;
 import org.openmrs.module.sync.SyncSourceJournal;
-import org.openmrs.module.sync.SyncStatusState;
 import org.openmrs.module.sync.SyncTransmission;
 import org.openmrs.module.sync.SyncTransmissionState;
 import org.openmrs.module.sync.SyncUtil;
@@ -107,122 +106,114 @@ public class SynchronizationStatusListController extends SimpleFormController {
         MessageSourceAccessor msa = getMessageSourceAccessor();
         
         String action = ServletRequestUtils.getStringParameter(request, "action", "");
-        SyncStatusState syncStatus = SyncUtil.getSyncStatus();
-        
+       
         // handle transmission generation
-        if ( syncStatus.equals(SyncStatusState.ENABLED_CONTINUE_ON_ERROR) || syncStatus.equals(SyncStatusState.ENABLED_STRICT) ) {
-        	
-	        if ("createTx".equals(action)) {            	
-	            try {
-	                parent = Context.getService(SyncService.class).getParentServer();
-	                if (parent == null) {
-	                	throw new SyncException("Could not retrieve information about the parent server; null returned.");
-	                }
+        if ("createTx".equals(action)) {            	
+            try {
+                parent = Context.getService(SyncService.class).getParentServer();
+                if (parent == null) {
+                	throw new SyncException("Could not retrieve information about the parent server; null returned.");
+                }
 
-	            	// we are creating a sync-transmission, so start by generating a SyncTransmission object
-	            	SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(parent);
-	                String toTransmit = tx.getFileOutput();
-	
-	                // Record last attempt
-	                parent.setLastSync(new Date());
-	                Context.getService(SyncService.class).updateRemoteServer(parent);
-	                
-	                // Write sync transmission to response
-	                InputStream in = new ByteArrayInputStream(toTransmit.getBytes());
-	                response.setContentType("text/xml; charset=utf-8");
-	                response.setHeader("Content-Disposition", "attachment; filename=" + tx.getFileName() + ".xml");
-	                OutputStream out = response.getOutputStream();
-	                IOUtils.copy(in, out);
-	                out.flush();
-	                out.close();
-	
-	                // don't return a model/view - we'll need to return a file instead.
-	                result = null;
-	            } catch(Exception e) {
-	                e.printStackTrace();
-	                error = msa.getMessage("sync.status.createTx.error");  
-	            }
-	        } else if ( "uploadResponse".equals(action) && request instanceof MultipartHttpServletRequest) {
-	
-	        	try {
-	            	String contents = "";
-	                parent = Context.getService(SyncService.class).getParentServer();
-	
-	            	// first, get contents of file that is being uploaded.  it is clear we are uploading a response from parent at this point
-	            	MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
-	    			MultipartFile multipartSyncFile = multipartRequest.getFile("syncResponseFile");
-	    			if (multipartSyncFile != null && !multipartSyncFile.isEmpty()) {
-	    				InputStream inputStream = null;
-	    				StringBuilder sb = new StringBuilder();
-	
-	    				try { 
-	    					inputStream = multipartSyncFile.getInputStream();
-	    					BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, SyncConstants.UTF8));
-	    					String line = "";
-	    					while ((line = in.readLine()) != null) {
-	    						sb.append(line);
-	    					}
-	    					contents = sb.toString();
-	    				} catch (Exception e) {
-	                        e.printStackTrace();
-	    					log.error("Unable to read in sync data file", e);
-	    					error = e.getMessage();
-	    				} finally {
-	    					try {
-	    						if (inputStream != null)
-	    							inputStream.close();
-	    					}
-	    					catch (IOException io) {
-	    						log.error("Unable to close temporary input stream", io);
-	    					}
-	    				}
-	    			}
-	
-	                if ( contents.length() > 0 ) {
-	        			SyncTransmissionResponse str = SyncDeserializer.xmlToSyncTransmissionResponse(contents);
-	        			
-	        			int numCommitted = 0;
-	        			int numAlreadyCommitted = 0;
-	        			int numFailed = 0;
-	        			int numOther = 0;
-	        			
-	        			if ( str.getSyncImportRecords() == null ) log.debug("No records to process in response");
-	        			else {
-	        				// process each incoming syncImportRecord
-	        				for ( SyncImportRecord importRecord : str.getSyncImportRecords() ) {
-	        					Context.getService(SyncIngestService.class).processSyncImportRecord(importRecord, parent);
-	                            // get some numbers to show user the results
-	        					if ( importRecord.getState().equals(SyncRecordState.COMMITTED )) numCommitted++;
-	        					else if ( importRecord.getState().equals(SyncRecordState.ALREADY_COMMITTED )) numAlreadyCommitted++;
-	        					else if ( importRecord.getState().equals(SyncRecordState.FAILED )) numFailed++;
-	        					else numOther++;
-	        				}
-	        			}
-	        			
-	        			try {
-	        				// store this file on filesystem too
-	        				str.createFile(false, SyncConstants.DIR_JOURNAL);
-	        			} catch ( Exception e ) {
-	        				log.error("Unable to create file to store SyncTransmissionResponse: " + str.getFileName());
-	        				e.printStackTrace();
-	        			}
-	        			
-	        			Object[] args = {numCommitted,numFailed,numAlreadyCommitted,numOther};
-	        				
-	        			success = msa.getMessage("sync.status.uploadResponse.success", args);
-	        		} else {
-	        			error = msa.getMessage("sync.status.uploadResponse.fileEmpty");
-	        		}
-	            } catch(Exception e) {
-	                e.printStackTrace();
-	                error = msa.getMessage("sync.status.uploadResponse.error");  
-	            }
-	        }
-        } else {
-        	// this means sync isn't enabled - show appropriate message
-            error = msa.getMessage("sync.status.sync.disabled");  
-        }
-        
+            	// we are creating a sync-transmission, so start by generating a SyncTransmission object
+            	SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(parent);
+                String toTransmit = tx.getFileOutput();
+
+                // Record last attempt
+                parent.setLastSync(new Date());
+                Context.getService(SyncService.class).updateRemoteServer(parent);
+                
+                // Write sync transmission to response
+                InputStream in = new ByteArrayInputStream(toTransmit.getBytes());
+                response.setContentType("text/xml; charset=utf-8");
+                response.setHeader("Content-Disposition", "attachment; filename=" + tx.getFileName() + ".xml");
+                OutputStream out = response.getOutputStream();
+                IOUtils.copy(in, out);
+                out.flush();
+                out.close();
+
+                // don't return a model/view - we'll need to return a file instead.
+                result = null;
+            } catch(Exception e) {
+                e.printStackTrace();
+                error = msa.getMessage("sync.status.createTx.error");  
+            }
+        } else if ( "uploadResponse".equals(action) && request instanceof MultipartHttpServletRequest) {
+
+        	try {
+            	String contents = "";
+                parent = Context.getService(SyncService.class).getParentServer();
+
+            	// first, get contents of file that is being uploaded.  it is clear we are uploading a response from parent at this point
+            	MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
+    			MultipartFile multipartSyncFile = multipartRequest.getFile("syncResponseFile");
+    			if (multipartSyncFile != null && !multipartSyncFile.isEmpty()) {
+    				InputStream inputStream = null;
+    				StringBuilder sb = new StringBuilder();
+
+    				try { 
+    					inputStream = multipartSyncFile.getInputStream();
+    					BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, SyncConstants.UTF8));
+    					String line = "";
+    					while ((line = in.readLine()) != null) {
+    						sb.append(line);
+    					}
+    					contents = sb.toString();
+    				} catch (Exception e) {
+                        e.printStackTrace();
+    					log.error("Unable to read in sync data file", e);
+    					error = e.getMessage();
+    				} finally {
+    					try {
+    						if (inputStream != null)
+    							inputStream.close();
+    					}
+    					catch (IOException io) {
+    						log.error("Unable to close temporary input stream", io);
+    					}
+    				}
+    			}
+
+                if ( contents.length() > 0 ) {
+        			SyncTransmissionResponse str = SyncDeserializer.xmlToSyncTransmissionResponse(contents);
+        			
+        			int numCommitted = 0;
+        			int numAlreadyCommitted = 0;
+        			int numFailed = 0;
+        			int numOther = 0;
+        			
+        			if ( str.getSyncImportRecords() == null ) log.debug("No records to process in response");
+        			else {
+        				// process each incoming syncImportRecord
+        				for ( SyncImportRecord importRecord : str.getSyncImportRecords() ) {
+        					Context.getService(SyncIngestService.class).processSyncImportRecord(importRecord, parent);
+                            // get some numbers to show user the results
+        					if ( importRecord.getState().equals(SyncRecordState.COMMITTED )) numCommitted++;
+        					else if ( importRecord.getState().equals(SyncRecordState.ALREADY_COMMITTED )) numAlreadyCommitted++;
+        					else if ( importRecord.getState().equals(SyncRecordState.FAILED )) numFailed++;
+        					else numOther++;
+        				}
+        			}
+        			
+        			try {
+        				// store this file on filesystem too
+        				str.createFile(false, SyncConstants.DIR_JOURNAL);
+        			} catch ( Exception e ) {
+        				log.error("Unable to create file to store SyncTransmissionResponse: " + str.getFileName());
+        				e.printStackTrace();
+        			}
+        			
+        			Object[] args = {numCommitted,numFailed,numAlreadyCommitted,numOther};
+        				
+        			success = msa.getMessage("sync.status.uploadResponse.success", args);
+        		} else {
+        			error = msa.getMessage("sync.status.uploadResponse.fileEmpty");
+        		}
+            } catch(Exception e) {
+                e.printStackTrace();
+                error = msa.getMessage("sync.status.uploadResponse.error");  
+            }
+        }       
         
         if (!success.equals(""))
             httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, success);
@@ -272,7 +263,6 @@ public class SynchronizationStatusListController extends SimpleFormController {
 		Map<String,String> recordText = new HashMap<String,String>();
         Map<String,String> recordChangeType = new HashMap<String,String>();
         List<SyncRecord> recordList = (ArrayList<SyncRecord>)obj;
-        SyncStatusState syncState = SyncUtil.getSyncStatus();
 
         //itemInfoKeys.put("Patient", "gender,birthdate");
         //itemInfoKeys.put("PersonName", "name");
@@ -362,7 +352,6 @@ public class SynchronizationStatusListController extends SimpleFormController {
         ret.put("recordChangeType", recordChangeType);
         ret.put("parent", Context.getService(SyncService.class).getParentServer());
         ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
-        ret.put("syncState", syncState);
         
 	    return ret;
     }

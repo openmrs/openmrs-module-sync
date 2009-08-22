@@ -668,25 +668,6 @@ public class SyncUtil {
 		return ret;
 	}
     
-    /**
-     * @return  SyncStatusState runtime property defining sync status
-     */
-    public static SyncStatusState getSyncStatus() {
-        
-        SyncStatusState state = SyncStatusState.DISABLED_SYNC; //default to disabled
-        Properties properties = Context.getRuntimeProperties();
-        String prop = properties.getProperty(SyncConstants.RUNTIMEPROPERTY_SYNC_STATUS, null);
-        if (prop != null) {
-            try {
-                state = SyncStatusState.valueOf(prop);
-                
-            } catch(Exception e) {
-                log.warn("Failed to parse RUNTIMEPROPERTY_SYNC_STATUS property, defaulting to disabled. Value read: " + prop,e);
-            }
-        }
-        return state;
-    }    
-	
     public static String generateUuid() {
         return UUID.randomUUID().toString();
     }

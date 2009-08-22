@@ -33,47 +33,14 @@
 		<td>
 			&nbsp;&nbsp;
 			<a href="javascript://" onclick="hideDiv('advanced');showDiv('general');"><spring:message code="sync.config.menu.general" /></a>
-
-			<!-- display advanced only if sync is enabled -->
-			<c:if test="${localServerSyncStatusValue == 'ENABLED_STRICT' || localServerSyncStatusValue == 'ENABLED_CONTINUE_ON_ERROR'}">			
-				  | <a href="javascript://" onclick="hideDiv('general');showDiv('advanced');"><spring:message code="sync.config.menu.advanced" /></a>
-			</c:if>
+			|
+		  	<a href="javascript://" onclick="hideDiv('general');showDiv('advanced');"><spring:message code="sync.config.menu.advanced" /></a>
 		</td>
 	</tr>
 </table>
 
 <div id="general">
-
-	<b class="boxHeader"><spring:message code="sync.config.syncStatus"/></b>
-	<div class="box">
-		<table id="syncStatus" cellpadding="10" cellspacing="0">
-			<%--
-			<thead>
-				<tr>
-					<th style="background-color: #eef3ff; font-weight: bold;"><spring:message code="sync.config.property.name"/></th>
-					<th style="background-color: #eef3ff; font-weight: bold;"><spring:message code="sync.config.property.value"/></th>
-					<th style="background-color: #eef3ff; font-weight: bold;"><spring:message code="sync.config.property.comments"/></th>
-				</tr>
-			</thead>
-			--%>
-			<tbody>
-				<tr>
-					<%--<td><b><spring:message code="sync.config.syncStatus.status" /></b></td>--%>
-					<td nowrap><spring:message code="sync.config.syncStatus.is" />: ${localServerSyncStatusText}</td>
-					<td>${localServerSyncStatusMsg}</td>
-				</tr>
-				<%--
-				<tr>
-					<td><b><spring:message code="sync.config.syncStatus.uuid" /></b></td>
-					<td>${localServerUuid}</td>
-					<td>${localServerUuidMsg}</td>
-				</tr>
-				--%>
-			</tbody>
-		</table>
-	</div>
 	
-	&nbsp;
 	<div id="serverList">
 		<b class="boxHeader"><spring:message code="sync.config.servers.remote"/></b>
 		<div class="box">
@@ -225,14 +192,12 @@
 					<tr>
 						<td colspan="3">
 							<br>
-							<c:if test="${localServerSyncStatusValue == 'ENABLED_STRICT' || localServerSyncStatusValue == 'ENABLED_CONTINUE_ON_ERROR'}">			
-								<a href="synchronizationConfigServer.form?type=CHILD"><img src="${pageContext.request.contextPath}/images/add.gif" style="margin-bottom: -3px;" border="0" /></a>
-								<a href="synchronizationConfigServer.form?type=CHILD"><spring:message code="sync.config.server.config.child" /></a>
-								<c:if test="${empty parent}">
-									 |
-									<a href="synchronizationConfigServer.form?type=PARENT"><img src="${pageContext.request.contextPath}/images/add.gif" style="margin-bottom: -3px;" border="0" /></a>
-									<a href="synchronizationConfigServer.form?type=PARENT"><spring:message code="sync.config.server.config.parent" /></a>
-								</c:if>
+							<a href="synchronizationConfigServer.form?type=CHILD"><img src="${pageContext.request.contextPath}/images/add.gif" style="margin-bottom: -3px;" border="0" /></a>
+							<a href="synchronizationConfigServer.form?type=CHILD"><spring:message code="sync.config.server.config.child" /></a>
+							<c:if test="${empty parent}">
+								 |
+								<a href="synchronizationConfigServer.form?type=PARENT"><img src="${pageContext.request.contextPath}/images/add.gif" style="margin-bottom: -3px;" border="0" /></a>
+								<a href="synchronizationConfigServer.form?type=PARENT"><spring:message code="sync.config.server.config.parent" /></a>
 							</c:if>
 						</td>
 					</tr>
@@ -408,12 +373,5 @@
 
 	</form>
 </div>
-
-<!-- turn off content based on value of  localServerSyncStatusValue-->
-<c:if test="${localServerSyncStatusValue == 'DISABLED_SYNC_AND_HISTORY'}">			
-	<script language="JavaScript">
-		disableDIVs();
-	</script>
-</c:if>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>
