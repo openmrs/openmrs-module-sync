@@ -101,6 +101,7 @@
 			<fileset dir="build">
 				<include name="**/*" />
 				<exclude name="**/*Test*" />
+				<include name="**/SyncConnectionTestItem" />
 			</fileset>
 		</jar>
 	</target>

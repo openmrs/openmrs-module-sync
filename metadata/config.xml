@@ -34,6 +34,21 @@
 		<description>Server role for the synchronization scheduled task login.</description>
 	</globalProperty>
 	
+	<dwr>
+		<allow>
+			<convert converter="bean" match="org.openmrs.module.sync.web.dwr.SyncConnectionTestItem"/>
+			<convert converter="bean" match="org.openmrs.module.sync.web.dwr.SyncTransmissionResponseItem"/>
+			<convert converter="bean" match="org.openmrs.module.sync.web.dwr.SyncImportRecordItem"/>
+			<convert converter="bean" match="org.openmrs.module.sync.web.dwr.SyncImportItemItem"/>
+			
+			<create creator="new" javascript="DWRSynchronizationService">
+				<param name="class" value="org.openmrs.module.sync.web.dwr.DWRSynchronizationService" />
+				<include method="testConnection"/>
+				<include method="syncToParent"/>
+			</create>
+		</allow>
+	</dwr>
+	
 	<messages>
 		<lang>en</lang>
 		<file>messages.properties</file>

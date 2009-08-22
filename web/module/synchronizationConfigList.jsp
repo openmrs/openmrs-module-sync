@@ -96,7 +96,7 @@
 								<spring:message code="sync.config.server.syncViaFile" />
 							<th style="background-color: #efe; text-align: center;"><img src="${pageContext.request.contextPath}/images/lookup.gif" border="0" style="margin-bottom: -3px;">
 								<spring:message code="sync.config.server.syncViaWeb" />
-							<th style="background-color: #fee; text-align: center;"><img src="${pageContext.request.contextPath}/images/scheduled_send.gif" border="0" style="margin-bottom: -3px;">
+							<th style="background-color: #fee; text-align: center;"><img src="${pageContext.request.contextPath}/moduleResources/sync/scheduled_send.gif" border="0" style="margin-bottom: -3px;">
 								<spring:message code="sync.config.server.syncAutomatic" />
 								(<spring:message code="general.scheduled" />)
 							<th style="text-align: center;"><spring:message code="sync.config.server.delete" /></th>

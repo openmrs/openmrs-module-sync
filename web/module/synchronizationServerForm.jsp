@@ -74,7 +74,7 @@
 			//alert("state is " + result.connectionState + ", errorMessage is " + result.errorMessage + ", payload is " + result.responsePayload);
 		
 			var img = '<img src="${pageContext.request.contextPath}/images/error.gif" border="0" style="margin-bottom: -3px;">';
-			if ( result.connectionState == "OK" ) img = '<img src="${pageContext.request.contextPath}/images/accept.gif" border="0" style="margin-bottom: -3px;">';
+			if ( result.connectionState == "OK" ) img = '<img src="${pageContext.request.contextPath}/moduleResources/sync/accept.gif" border="0" style="margin-bottom: -3px;">';
 			
 			
 			var display = getMessage(result.connectionState) + "&nbsp;" + img;
