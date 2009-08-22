@@ -40,21 +40,21 @@ public class SyncConceptTest extends SyncBaseTest {
 
 	@Override
     public String getInitialDataset() {
-	    return "org/openmrs/synchronization/engine/include/SyncCreateTest.xml";
+	    return "org/openmrs/module/sync/engine/include/SyncCreateTest.xml";
     }
 
 	@Test
     @NotTransactional
 	public void shouldSaveConceptCoded() throws Exception {
 		runSyncTest(new SyncTestHelper() {
-			private int conceptId = 99999;
+			//private int conceptId = 99999; // some large non-existent concept id
 			public void runOnChild() {
 				ConceptService cs = Context.getConceptService();
 				
 				//this doesn't work with in-mem DB
 				//conceptId = cs.getNextAvailableId();
 				Concept coded = new Concept();
-				coded.setConceptId(conceptId);
+				//coded.setConceptId(conceptId);
 				coded.setDatatype(cs.getConceptDatatypeByName("Coded"));
 				coded.setConceptClass(cs.getConceptClassByName("Question"));
 				coded.setSet(false);
@@ -66,7 +66,7 @@ public class SyncConceptTest extends SyncBaseTest {
 			public void runOnParent() {								
 				ConceptService cs = Context.getConceptService();
 
-				Concept c = cs.getConcept(conceptId);
+				Concept c = cs.getConceptByName("CODED");
 				log.info("names: " + c.getNames().size());
 				assertNotNull("Failed to create coded concept", c);
 				assertTrue("Failed to transfer names", c.getNames().size() > 0);
@@ -85,13 +85,12 @@ public class SyncConceptTest extends SyncBaseTest {
 	public void shouldSaveConceptNumeric() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			ConceptService cs;
-			private int conceptId=99999;
 			
 			public void runOnChild() {
 				cs = Context.getConceptService();
 				//this doesn't work with in-mem DB
 				//conceptIdNum = cs.getNextAvailableId();
-				ConceptNumeric cn = new ConceptNumeric(conceptId);
+				ConceptNumeric cn = new ConceptNumeric();
 				cn.addName(new ConceptName("SOMETHING NUMERIC", Context.getLocale()));
 				cn.setDatatype(cs.getConceptDatatypeByName("Numeric"));
 				cn.setConceptClass(cs.getConceptClassByName("Question"));
@@ -102,13 +101,13 @@ public class SyncConceptTest extends SyncBaseTest {
 				cs.saveConcept(cn);
 			}
 			public void runOnParent() {
-				//Concept c = cs.getConceptByName("SOMETHING NUMERIC");
-				// assertNotNull("Failed to create numeric", c);
-				System.out.println("1: " + cs.getConcept(conceptId));
-				assertNotNull("No names got transferred", cs.getConcept(conceptId).getNames());
-				assertTrue("No names got transferred", cs.getConcept(conceptId).getNames().size() > 0);
-				assertEquals(cs.getConcept(conceptId).getName().getName(), "SOMETHING NUMERIC");
-				ConceptNumeric cn = cs.getConceptNumeric(conceptId);
+				Concept c = cs.getConceptByName("SOMETHING NUMERIC");
+				assertNotNull("Failed to create numeric", c);
+				System.out.println("1: " + c);
+				assertNotNull("No names got transferred", c.getNames());
+				assertTrue("No names got transferred", c.getNames().size() > 0);
+				assertEquals(c.getName().getName(), "SOMETHING NUMERIC");
+				ConceptNumeric cn = cs.getConceptNumeric(c.getConceptId());
 				assertEquals("Concept numeric absolute low values do not match", (Double)0d, cn.getLowAbsolute());
 				assertEquals("Concept nuermic high critical values do not match", (Double)100d, cn.getHiCritical());
 				assertEquals("Concept numeric datatypes does not match", "Numeric", cn.getDatatype().getName());

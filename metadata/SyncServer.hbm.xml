@@ -45,7 +45,7 @@
 			<key>
 				<column name="server_id" />
 			</key>
-			<one-to-many class="org.openmrs.module.sync.filter.SyncServerClass" />
+			<one-to-many class="org.openmrs.module.sync.SyncServerClass" />
 		</set>
 
 		<set name="serverRecords" lazy="true" inverse="true" cascade="all-delete-orphan">

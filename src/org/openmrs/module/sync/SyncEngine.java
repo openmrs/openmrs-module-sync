@@ -11,10 +11,11 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.module.sync.engine;
+package org.openmrs.module.sync;
 
 import java.util.List;
 import java.util.ArrayList;
+
 
 /*
  * Main entry point to the sync functionality.

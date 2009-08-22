@@ -26,14 +26,14 @@ public class SyncIngestException extends SyncException {
 	SyncImportRecord syncImportRecord;
 
 	public SyncIngestException(Throwable t, String errorMessage, String errorMessageArgs, String syncItemContent, SyncImportRecord sir) {
-		super(t);
+		super(errorMessage, t);
 		this.setItemError(errorMessage);
 		this.setItemErrorArgs(errorMessageArgs);
 		this.setSyncItemContent(syncItemContent);
 		this.setSyncImportRecord(sir);
 	}	
 	public SyncIngestException(String errorMessage, String errorMessageArgs, String syncItemContent, SyncImportRecord sir) {
-		super();
+		super(errorMessage);
 		this.setItemError(errorMessage);
 		this.setItemErrorArgs(errorMessageArgs);
 		this.setSyncItemContent(syncItemContent);

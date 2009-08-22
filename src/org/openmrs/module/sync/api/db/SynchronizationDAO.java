@@ -19,13 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.openmrs.OpenmrsObject;
 import org.openmrs.api.APIException;
 import org.openmrs.api.db.DAOException;
+import org.openmrs.module.sync.SyncClass;
+import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
-import org.openmrs.module.sync.Synchronizable;
-import org.openmrs.module.sync.engine.SyncRecord;
-import org.openmrs.module.sync.filter.SyncClass;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
 
@@ -276,12 +276,12 @@ public interface SynchronizationDAO {
     public void createDatabaseForChild(String uuidForChild, OutputStream out) throws DAOException;
     
     /**
-     * Deletes instance of synchronizable from storage.
+     * Deletes instance of OpenmrsObject from storage.
      * 
      * @param o instance to delete from storage
      * @throws DAOException
      */
-    public void deleteSynchronizable(Synchronizable o) throws DAOException;
+    public void deleteOpenmrsObject(OpenmrsObject o) throws DAOException;
     
     /**
      * Sets session flush mode to manual thus suspending session flush. 

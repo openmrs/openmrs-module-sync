@@ -15,7 +15,7 @@
 			<column name="server_id" />
 		</many-to-one>
 
-		<many-to-one name="syncRecord" class="org.openmrs.module.sync.engine.SyncRecord" not-null="true">
+		<many-to-one name="syncRecord" class="org.openmrs.module.sync.SyncRecord" not-null="true">
 			<column name="record_id" />
 		</many-to-one>
 

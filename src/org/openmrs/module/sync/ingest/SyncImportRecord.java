@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
-import org.openmrs.module.sync.engine.SyncRecord;
 import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;

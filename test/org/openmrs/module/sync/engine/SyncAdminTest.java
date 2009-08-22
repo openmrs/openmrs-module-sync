@@ -45,7 +45,7 @@ public class SyncAdminTest extends SyncBaseTest {
 
 	@Override
     public String getInitialDataset() {
-	    return "org/openmrs/synchronization/engine/include/SyncCreateTest.xml";
+	    return "org/openmrs/module/sync/engine/include/SyncCreateTest.xml";
     }
 
 	@Test
@@ -195,7 +195,7 @@ public class SyncAdminTest extends SyncBaseTest {
 
 	@Test
 	public void shouldGetSyncStatistics() throws Exception {
-		executeDataSet("org/openmrs/synchronization/engine/include/SyncRemoteChildServer.xml");
+		executeDataSet("org/openmrs/module/sync/engine/include/SyncRemoteChildServer.xml");
 		Map<RemoteServer,Set<SyncStatistic>> stats = Context.getService(SynchronizationService.class).getSyncStatistics(null, null);
 		
 		return;

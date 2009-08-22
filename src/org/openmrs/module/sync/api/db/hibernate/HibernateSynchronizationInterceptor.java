@@ -40,20 +40,19 @@ import org.hibernate.engine.ForeignKeys;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.Type;
+import org.openmrs.OpenmrsObject;
 import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.hibernate.NativeIfNotAssignedIdentityGenerator;
 import org.openmrs.module.sync.SyncException;
+import org.openmrs.module.sync.SyncItem;
+import org.openmrs.module.sync.SyncItemKey;
 import org.openmrs.module.sync.SyncItemState;
+import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatusState;
 import org.openmrs.module.sync.SyncUtil;
-import org.openmrs.module.sync.Synchronizable;
-import org.openmrs.module.sync.SynchronizableInstance;
 import org.openmrs.module.sync.api.SynchronizationService;
-import org.openmrs.module.sync.engine.SyncItem;
-import org.openmrs.module.sync.engine.SyncItemKey;
-import org.openmrs.module.sync.engine.SyncRecord;
 import org.openmrs.module.sync.serialization.DefaultNormalizer;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Normalizer;
@@ -63,7 +62,6 @@ import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.util.StringUtils;
 
 /**
  * Implements 'change interception' for data synchronization feature using
@@ -82,7 +80,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	 * Helper container class to store type/value tuple for a given object
 	 * property. Utilized during serializtion of intercepted entity changes.
 	 * 
-	 * @see HibernateSynchronizationInterceptor#packageObject(Synchronizable,
+	 * @see HibernateSynchronizationInterceptor#packageObject(OpenmrsObject,
 	 *      Object[], String[], Type[], SyncItemState)
 	 */
 	protected class PropertyClassValue {
@@ -163,6 +161,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	private ThreadLocal<HashSet<Object>> pendingFlushHolder = new ThreadLocal<HashSet<Object>>();
 
 	public HibernateSynchronizationInterceptor() {
+		log.info("Initializing the synchronization interceptor");
 	}
 
 	/**
@@ -310,7 +309,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	/**
 	 * Packages up deletes and sets the item state to DELETED.
 	 * 
-	 * @see #packageObject(Synchronizable, Object[], String[], Type[],
+	 * @see #packageObject(OpenmrsObject, Object[], String[], Type[],
 	 *      Serializable, SyncItemState)
 	 */
 	@Override
@@ -343,7 +342,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 		}
 		
 		//now package
-		packageObject((Synchronizable) entity,
+		packageObject((OpenmrsObject) entity,
 			              state,
 			              propertyNames,
 			              types,
@@ -373,11 +372,9 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 		if (log.isDebugEnabled())
 			log.debug("onSave: " + state.toString());
 		
-		boolean isUuidAssigned = assignGUID(entity, state, propertyNames, SyncItemState.NEW);
-
 		// explicitly bail out if sync is disabled
 		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-			return isUuidAssigned;
+			return false;
 
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
@@ -394,7 +391,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 				pendingFlushHolder.get().add(entity);
 			}
 		
-			packageObject((Synchronizable) entity,
+			packageObject((OpenmrsObject) entity,
 					                     state,
 					                     propertyNames,
 					                     types,
@@ -402,7 +399,8 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 					                     SyncItemState.NEW);
 		}
 		
-		return isUuidAssigned;
+		// we didn't modify the object, so return false
+		return false;
 	}
 
 	/**
@@ -425,11 +423,9 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 		if (log.isDebugEnabled())
 			log.debug("onFlushDirty: " + entity.getClass().getName());
 		
-		boolean isUuidAssigned = assignGUID(entity, currentState, propertyNames, SyncItemState.UPDATED);
-
 		// explicitly bail out if sync is disabled
 		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
-			return isUuidAssigned;
+			return false;
 
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
@@ -457,7 +453,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 				pendingFlushHolder.get().add(entity);
 			}
 			
-			packageObject((Synchronizable) entity,
+			packageObject((OpenmrsObject) entity,
 		                     currentState,
 		                     propertyNames,
 		                     types,
@@ -465,8 +461,9 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 		                     SyncItemState.UPDATED);
 			
 		}
-				
-		return isUuidAssigned;
+		
+		// we didn't modify anything, so return false
+		return false;
 	}
 
 	@Override
@@ -596,106 +593,6 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	}
 	
 	/**
-	 * Populates a Synchronizable Entity with a new GUID if needed
-	 * GUID is assigned under the following circumstances:
-	 * - objectUuid is null or "" 
-	 *   and
-	 *     - if SyncItemState is NEW && it is 'local' change (i.e the insert is not coming from 
-	 *       remote server) assign new GUID
-	 *     - else if SyncItemState != NEW, verify that the GUID doesn't already exist in the DB for the primary key value; 
-	 *     - if it doesn't, assign new GUID
-	 *      - else fill-in existing GUID
-	 *     
-	 * Note 1: dataChanged is also set to true to let Hibernate know we are changing a record right underneath of it.
-	 *     
-	 * Note 2: verification if GUID already exists for given primary key value is important in preventing inadvertent 
-	 * data corruption when client code does not retrieve GUID value when updating existing domain object. 
-	 * For example this following code would result in overriding the GUID for concept_id of 5089:
-	 * //update existing concept
-	 * Concept wt =  new ConceptNumeric(5089);
-	 * wt.addName(new ConceptName("WEIGHT (KG)",...)
-	 * Context.getConceptService().updateConcept(wt, true);
-	 * 
-	 * In order to avoid all client code having to perform uuid retrieval in situations like above, we will do this check here.
-	 *     
-	 * @param entity The object changed.
-	 * @param currentState Array containing data for each field in the object as they will be saved.
-	 * @param propertyNames Array containing name for each field in the object, corresponding to currentState.
-	 * @param types Array containing Type of the field in the object, corresponding to currentState.
-	 * @param state SyncItemState, e.g. NEW, UPDATED, DELETED
-	 * @param id Value of the identifier for this entity
-	 * @return True if data was altered, false otherwise.
-	 */
-	protected boolean assignGUID(Object entity, Object[] currentState, String[] propertyNames, SyncItemState state) throws SyncException {
-
-		boolean uuidReset = false; //indicate that we are resetting uuid
-		//if not synchronizable, don't bother
-		if (entity instanceof Synchronizable) {
-			Synchronizable syncEntity = (Synchronizable) entity;
-						
-			/*
-			 * Clear GUID if it is invalid: if this is a save event that is 'local' (i.e. getLastRecordUuid not
-			 * yet assigned) *and* GUID is already assigned, clear it out and get a new one: this can happen 
-			 * if someone does object copy and has incorrect constructor or if object is disconnected from
-			 * session and then saved anew; as in obs edit
-			 */			
-			if (state == SyncItemState.NEW && syncEntity.getUuid() != null && syncEntity.getLastRecordUuid() == null) {
-				log.info("Clearing out uuid for sync entity " + entity + ", uuid was: " + syncEntity.getUuid());
-				syncEntity.setUuid(null);
-				uuidReset = true;
-			} 
-		} else {
-			return false;
-		}
-
-		/*
-		 * For all entities, even the ones that do not implement synchronizable
-		 * Iterate over properties and identify GUID, if it exists do the 'right' thing; see method-level
-		 * comments.
-		 */
-		for (int i = 0; i < propertyNames.length; i++) {
-			String propName = propertyNames[i];
-			String uuidToAssign = null;
-			// start with what it there, unless we are resetting uuid
-			if ("uuid".equalsIgnoreCase(propName)) {
-				if (!uuidReset) {
-					uuidToAssign = (String)currentState[i];
-				}
-				//if this is synchronizable and we are not in confirmed uuid reset situation,
-				//attempt to fetch first to make sure we are not overriding values
-				if (!uuidReset && state != SyncItemState.NEW && entity instanceof Synchronizable) { 
-					uuidToAssign = this.fetchUuid((Synchronizable)entity);
-					String temp = ((Synchronizable)entity).getUuid();
-					if (uuidToAssign == null & temp != null) {
-						uuidToAssign = temp; //db had a value and we didn't, so use the value from DB
-					} else if ( uuidToAssign != null && temp != null && !uuidToAssign.equalsIgnoreCase(temp)) {
-						if (log.isWarnEnabled()) { 
-							log.warn("Resetting GUID on entity: " + entity + " with assigned GUID: " + temp + ", from database with GUID: " + uuidToAssign);
-						}
-					}
-
-				}
-				if (!StringUtils.hasText(uuidToAssign)) {
-					uuidToAssign = UUID.randomUUID().toString();
-					if (log.isInfoEnabled()) log.info("Assigned newly generated GUID to entity: " + entity + ": " + uuidToAssign);
-				}
-				
-				if (uuidToAssign.equals(currentState[i])) {
-					return false;
-				} else {
-					if (log.isDebugEnabled()) log.debug("Assigned GUID to entity: " + entity + ": " + uuidToAssign);
-					currentState[i] = uuidToAssign; 
-					if (entity instanceof Synchronizable) {
-						((Synchronizable)(entity)).setUuid(uuidToAssign);
-					}
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	/**
 	 * Serializes and packages an intercepted change in object state.
 	 * <p>
 	 * IMPORTANT serialization notes:
@@ -720,7 +617,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	 * @param state SyncItemState, e.g. NEW, UPDATED, DELETED
 	 * @param id Value of the identifier for this entity
 	 */
-	protected void packageObject(Synchronizable entity,
+	protected void packageObject(OpenmrsObject entity,
 	        Object[] currentState, String[] propertyNames, Type[] types,
 	        Serializable id, SyncItemState state) throws SyncException {
 
@@ -746,7 +643,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 
 			// pull-out sync-network wide change id, if one was already assigned
 			// (i.e. this change is coming from some other server)
-			originalRecordUuid = entity.getLastRecordUuid();
+			//originalRecordUuid = entity.getLastRecordUuid();
 
 			// build up a starting msg for all logging:
 			StringBuilder sb = new StringBuilder();
@@ -754,8 +651,8 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			sb.append(entity.getClass().getName());
 			sb.append(", entity uuid:");
 			sb.append(objectUuid);
-			sb.append(", originalUuid uuid:");
-			sb.append(originalRecordUuid);
+			//sb.append(", originalUuid uuid:");
+			//sb.append(originalRecordUuid);
 			infoMsg = sb.toString();
 
 			if (log.isInfoEnabled())
@@ -775,13 +672,13 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			/*
 			 * Retrieve metadata for this type; we need to determine what is the
 			 * PK field for this type. We need to know this since PK values are
-			 * *not* journaled; values of primary keys are assigned where
+			 * *not* journalled; values of primary keys are assigned where
 			 * physical DB records are created. This is so to avoid issues with
 			 * id collisions.
 			 * 
 			 * In case of <generator class="assigned" />, the Identifier
 			 * property is already assigned value and needs to be journalled.
-			 * Also, the prop wil *not* be part of currentState,thus we need to
+			 * Also, the prop will *not* be part of currentState,thus we need to
 			 * pull it out with reflection/metadata.
 			 */
 			factory = (SessionFactory) this.context.getBean("sessionFactory");
@@ -790,7 +687,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 				idPropertyName = data.getIdentifierPropertyName();
 				idPropertyObj = ((org.hibernate.persister.entity.AbstractEntityPersister) data).getEntityMetamodel()
 				                                                                               .getIdentifierProperty();
-				if (idPropertyObj.getIdentifierGenerator() != null
+				if (id != null && idPropertyObj.getIdentifierGenerator() != null
 				        && ((idPropertyObj.getIdentifierGenerator() instanceof org.hibernate.id.Assigned) ||
 				            (idPropertyObj.getIdentifierGenerator() instanceof NativeIfNotAssignedIdentityGenerator))) {
 					// serialize value as string
@@ -839,10 +736,10 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 						}
 						/*
 						 * Not a safe type, check if the object implements the
-						 * Synchronizable interface
+						 * OpenmrsObject interface
 						 */
-						else if (currentState[i] instanceof Synchronizable) {
-							Synchronizable childObject = (Synchronizable) currentState[i];
+						else if (currentState[i] instanceof OpenmrsObject) {
+							OpenmrsObject childObject = (OpenmrsObject) currentState[i];
 							// child objects are not always loaded if not
 							// needed, so let's surround this with try/catch,
 							// package only if need to
@@ -874,7 +771,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 							}
 
 							/*
-							 * child object is Synchronizable but its uuid is
+							 * child object is OpenmrsObject but its uuid is
 							 * null, final attempt: load via PK if PK value
 							 * available common scenario: this can happen when
 							 * people are saving object graphs that are (at
@@ -909,7 +806,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 							}
 						} else {
 							// state != null but it is not safetype or
-							// implements Synchronizable: do not package and log
+							// implements OpenmrsObject: do not package and log
 							// as info
 							if (log.isInfoEnabled())
 								log.info(infoMsg
@@ -917,7 +814,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 								        + typeName
 								        + " Field Name: "
 								        + propertyNames[i]
-								        + " is not safe or Synchronizable, skipped!");
+								        + " is not safe or OpenmrsObject, skipped!");
 						}
 					}
 				} else {
@@ -986,7 +883,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			// else we may end up with empty
 			// string (i.e. depending on exact sequence of auto-flush, it may be
 			// that onFlushDirty is called last time
-			// before a call to Synchronizable.setLastRecordUuid() is made
+			// before a call to OpenmrsObject.setLastRecordUuid() is made
 			if (syncRecordHolder.get().getOriginalUuid() == null
 			        || "".equals(syncRecordHolder.get().getOriginalUuid())) {
 				syncRecordHolder.get().setOriginalUuid(originalRecordUuid);
@@ -1041,9 +938,9 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	 * <p>
 	 * 1. Sync status is globally set to disabled.
 	 * <p>
-	 * 2. Entity implements Synchronizable interface.
+	 * 2. Entity implements OpenmrsObject interface.
 	 * <p>
-	 * 3. Entity implements SynchronizableInstance and IsSynchronizable is set
+	 * 3. Entity implements OpenmrsObjectInstance and IsOpenmrsObject is set
 	 * to true
 	 * <p>
 	 * 4. Finally, interceptor supports manual override to suspend
@@ -1054,31 +951,20 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	 * 
 	 * @param entity Object to examine.
 	 * @return true if entity should be synchronized, else false.
-	 * @see org.openmrs.synchronization.Synchronizable
-	 * @see org.openmrs.synchronization.SynchronizableInstance
+	 * @see org.openmrs.synchronization.OpenmrsObject
+	 * @see org.openmrs.synchronization.OpenmrsObjectInstance
 	 */
 	protected boolean shouldSynchronize(Object entity) {
 
 		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
 			return false;
 
-		// Synchronizable *only*.
-		if (!(entity instanceof Synchronizable)) {
+		// OpenmrsObject *only*.
+		if (!(entity instanceof OpenmrsObject)) {
 			if (log.isDebugEnabled())
-				log.debug("Do nothing. Flush with type that does not implement Synchronizable, type is:"
+				log.debug("Do nothing. Flush with type that does not implement OpenmrsObject, type is:"
 				        + entity.getClass().getName());
 			return false;
-		}
-
-		// if it implements SynchronizableInstance, make sure it is set to
-		// synchronize
-		if (entity instanceof SynchronizableInstance) {
-			if (!((SynchronizableInstance) entity).getIsSynchronizable()) {
-				if (log.isDebugEnabled())
-					log.debug("Do nothing. Flush with SynchronizableInstance set to false, type is:"
-					        + entity.getClass().getName());
-				return false;
-			}
 		}
 
 		// finally, if 'deactivated' bit was set manually, return accordingly
@@ -1097,7 +983,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	}
 
 	/**
-	 * Retrieves uuid of Synchronizable instance from the storage based on
+	 * Retrieves uuid of OpenmrsObject instance from the storage based on
 	 * indentity value (i.e. PK).
 	 * 
 	 * <p>
@@ -1116,11 +1002,11 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	 * Finally, implementation suspends any state flushing to avoid any weird
 	 * auto-flush events being triggered while select is being executed.
 	 * 
-	 * @param obj Instance of Synchronizable for which to retrieve uuid for.
+	 * @param obj Instance of OpenmrsObject for which to retrieve uuid for.
 	 * @return uuid from storage if obj identity value is set, else null.
 	 * @see ForeignKeys
 	 */
-	protected String fetchUuid(Synchronizable obj) {
+	protected String fetchUuid(OpenmrsObject obj) {
 		String uuid = null;
 		String idPropertyName = null;
 		Object idPropertyValue = null;
@@ -1188,7 +1074,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 
 	/**
 	 * Processes changes to persistent sets that contains instances of
-	 * Synchronizable objects.
+	 * OpenmrsObject objects.
 	 * 
 	 * <p>
 	 * Remarks:
@@ -1215,10 +1101,10 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 	 */
 	protected void processPersistentSet(PersistentSet set, Serializable key,
 	        String action) {
-		Synchronizable owner = null;
+		OpenmrsObject owner = null;
 		String originalRecordUuid = null;
 		SessionFactory factory = null;
-		LinkedHashMap<String, Synchronizable> entriesHolder = null;
+		LinkedHashMap<String, OpenmrsObject> entriesHolder = null;
 
 		// we only process recreate and update
 		if (!"update".equals(action) && !"recreate".equals(action)) {
@@ -1229,11 +1115,11 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 		}
 
 		// retrieve owner and original uuid if there is one
-		if (set.getOwner() instanceof Synchronizable) {
-			owner = (Synchronizable) set.getOwner();
-			originalRecordUuid = owner.getLastRecordUuid();
+		if (set.getOwner() instanceof OpenmrsObject) {
+			owner = (OpenmrsObject) set.getOwner();
+			//originalRecordUuid = owner.getLastRecordUuid();
 		} else {
-			log.info("Cannot process PersistentSet where owner is not Synchronizable.");
+			log.info("Cannot process PersistentSet where owner is not OpenmrsObject.");
 			return;
 		}
 
@@ -1302,13 +1188,13 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 
 		// Setup the serialization data structures to hold the state
 		Package pkg = new Package();
-		entriesHolder = new LinkedHashMap<String,Synchronizable>();
+		entriesHolder = new LinkedHashMap<String,OpenmrsObject>();
 		try {
 
 			// find out what entries need to be serialized
 			for (Object entry : set) {
-				if (entry instanceof Synchronizable) {
-					Synchronizable obj = (Synchronizable) entry;
+				if (entry instanceof OpenmrsObject) {
+					OpenmrsObject obj = (OpenmrsObject) entry;
 
 					// attempt to retrieve entry uuid
 					String entryUuid = obj.getUuid();
@@ -1321,7 +1207,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 						}
 					}
 					// well, this is messed up: have an instance of
-					// Synchronizable but has no uuid
+					// OpenmrsObject but has no uuid
 					if (entryUuid == null) {
 						log.error("Cannot handle set entries where uuid is null.");
 						throw new CallbackException("Cannot handle set entries where uuid is null.");
@@ -1331,9 +1217,9 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 					entriesHolder.put(entryUuid + "|update",obj);
 				} else {
 					// TODO: more debug info
-					log.error("Cannot handle sets where entries are not Synchronizable!");
+					log.error("Cannot handle sets where entries are not OpenmrsObject!");
 					if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT)
-						throw new CallbackException("Cannot handle sets where entries are not Synchronizable!");
+						throw new CallbackException("Cannot handle sets where entries are not OpenmrsObject!");
 				}
 			}
 
@@ -1344,8 +1230,8 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 				if (it != null) {
 					while (it.hasNext()) {
 						Object entryDelete = it.next();
-						if (entryDelete instanceof Synchronizable) {
-							Synchronizable objDelete = (Synchronizable) entryDelete;
+						if (entryDelete instanceof OpenmrsObject) {
+							OpenmrsObject objDelete = (OpenmrsObject) entryDelete;
 							// attempt to retrieve entry uuid
 							String entryDeleteUuid = objDelete.getUuid();
 							if (entryDeleteUuid == null) {
@@ -1358,7 +1244,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 								}
 							}
 							// well, this is messed up: have an instance of
-							// Synchronizable but has no uuid
+							// OpenmrsObject but has no uuid
 							if (entryDeleteUuid == null) {
 								log.error("Cannot handle set delete entries where uuid is null.");
 								throw new CallbackException("Cannot handle set delete entries where uuid is null.");
@@ -1369,9 +1255,9 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 							
 						} else {
 							// TODO: more debug info
-							log.error("Cannot handle sets where entries are not Synchronizable!");
+							log.error("Cannot handle sets where entries are not OpenmrsObject!");
 							if (SyncUtil.getSyncStatus() == SyncStatusState.ENABLED_STRICT)
-								throw new CallbackException("Cannot handle sets where entries are not Synchronizable!");
+								throw new CallbackException("Cannot handle sets where entries are not OpenmrsObject!");
 						}
 					}
 				}
@@ -1399,7 +1285,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			
 			//build out the xml for the item content
 			for( String entryKey : entriesHolder.keySet()) {
-				Synchronizable entryObject = entriesHolder.get(entryKey);
+				OpenmrsObject entryObject = entriesHolder.get(entryKey);
 				
 				Item temp = xml.createItem(entityItem, "entry");
 				temp.setAttribute("type", this.getType(entryObject));

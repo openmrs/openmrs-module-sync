@@ -3,7 +3,7 @@
     "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
     "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
 
-<hibernate-mapping package="org.openmrs.module.sync.filter">
+<hibernate-mapping package="org.openmrs.module.sync">
 
 	<class name="SyncClass" table="synchronization_class">
 
@@ -16,7 +16,7 @@
 
 		<property name="type" not-null="true">
 			<type name="org.openmrs.module.sync.api.db.hibernate.usertype.GenericEnumUserType">
-				<param name="enumClassName">org.openmrs.module.sync.filter.SyncClassType</param>
+				<param name="enumClassName">org.openmrs.module.sync.SyncClassType</param>
 			</type>
 		</property>
 			

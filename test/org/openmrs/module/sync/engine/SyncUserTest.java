@@ -36,7 +36,7 @@ public class SyncUserTest extends SyncBaseTest {
 
 	@Override
     public String getInitialDataset() {
-	    return "org/openmrs/synchronization/engine/include/SyncCreateTest.xml";
+	    return "org/openmrs/module/sync/engine/include/SyncCreateTest.xml";
     }
 	
 	@Test

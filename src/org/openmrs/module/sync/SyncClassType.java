@@ -1,7 +1,7 @@
 /**
  * Auto generated file comment
  */
-package org.openmrs.module.sync.filter;
+package org.openmrs.module.sync;
 
 /**
  *

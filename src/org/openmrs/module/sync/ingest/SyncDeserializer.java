@@ -13,7 +13,7 @@
  */
 package org.openmrs.module.sync.ingest;
 
-import org.openmrs.module.sync.engine.SyncTransmission;
+import org.openmrs.module.sync.SyncTransmission;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 

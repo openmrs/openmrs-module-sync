@@ -23,11 +23,10 @@ import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.Authorized;
 import org.openmrs.api.APIException;
 import org.openmrs.api.db.DAOException;
+import org.openmrs.module.sync.SyncClass;
+import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
-import org.openmrs.module.sync.Synchronizable;
-import org.openmrs.module.sync.engine.SyncRecord;
-import org.openmrs.module.sync.filter.SyncClass;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.springframework.transaction.annotation.Transactional;
@@ -422,14 +421,14 @@ public interface SynchronizationService {
     public void createDatabaseForChild(String uuidForChild, OutputStream out) throws APIException;
 
     /**
-     * Deletes instance of synchronizable from data storage.
+     * Deletes instance of OpenmrsObject from data storage.
      * 
      * @param o instance to delete
      * @throws APIException
      */
     //@Authorized({"Manage Synchronization"})
     @Transactional
-    public void deleteSynchronizable(Synchronizable o) throws APIException;
+    public void deleteOpenmrsObject(OpenmrsObject o) throws APIException;
 
 
     /**
@@ -453,9 +452,9 @@ public interface SynchronizationService {
     public void flushSession() throws APIException;
 
     /**
-     * Processes save/update to instance of Synchronizable by persisting it into local persistance store.
+     * Processes save/update to instance of OpenmrsObject by persisting it into local persistance store.
      * 
-     * @param object instance of Synchronizable to be processed.
+     * @param object instance of OpenmrsObject to be processed.
      * @return
      * @throws APIException
      */

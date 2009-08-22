@@ -13,12 +13,8 @@
  */
 package org.openmrs.module.sync.ingest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openmrs.module.sync.SyncException;
+import org.openmrs.module.sync.SyncItemKey;
 import org.openmrs.module.sync.SyncItemState;
-import org.openmrs.module.sync.engine.SyncItem;
-import org.openmrs.module.sync.engine.SyncItemKey;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 
@@ -27,7 +23,7 @@ import org.openmrs.module.sync.serialization.Record;
  */
 public class SyncImportItem {
 
-    private Log log = LogFactory.getLog(this.getClass());
+    //private Log log = LogFactory.getLog(this.getClass());
 
     // Fields
     private SyncItemKey<?> key = null;

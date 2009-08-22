@@ -27,15 +27,14 @@ import org.openmrs.OpenmrsObject;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
+import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemState;
 import org.openmrs.module.sync.SyncPreCommitAction;
+import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
-import org.openmrs.module.sync.Synchronizable;
 import org.openmrs.module.sync.api.SynchronizationIngestService;
 import org.openmrs.module.sync.api.SynchronizationService;
-import org.openmrs.module.sync.engine.SyncItem;
-import org.openmrs.module.sync.engine.SyncRecord;
 import org.openmrs.module.sync.ingest.SyncImportItem;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.ingest.SyncIngestException;
@@ -252,7 +251,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
     }
     
     /**
-     * Note: preCommitRecordActions collection is provided as a way for the synchronizable instances to 'schedule' action that is necessary
+     * Note: preCommitRecordActions collection is provided as a way for the OpenmrsObject instances to 'schedule' action that is necessary
      * for processing of the object yet it cannot be applied until the end of the processing of the parent sync record. For example, rebuild XSN
      * cannot happen until all form fields held in the sync items are applied first; thus the call to rebuild XSN need to happen after all
      * sync items were processed and before committing the sync record.
@@ -260,7 +259,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
      * HashMap contained in the collection is to capture the action, and the necessary object to resolve that action. The action
      * is understood and applied by {@link org.openmrs.synchronization.SyncUtil#applyPreCommitRecordActions(ArrayList)}
      * 
-     * @see org.openmrs.api.SynchronizationIngestService#processSyncItem(org.openmrs.module.sync.engine.SyncItem, java.lang.String, java.util.ArrayList)
+     * @see org.openmrs.api.SynchronizationIngestService#processSyncItem(org.openmrs.module.sync.SyncItem, java.lang.String, java.util.ArrayList)
      * @see org.openmrs.synchronization.SyncUtil#applyPreCommitRecordActions(ArrayList)
      * 
      */
@@ -286,7 +285,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
             	log.debug("Processing a persistent collection");
             	processHibernateCollection(o.getClass(),itemContent,originalUuid);
             } else {
-            	processSynchronizable((Synchronizable)o,item,originalUuid,preCommitRecordActions);
+            	processOpenmrsObject((OpenmrsObject)o,item,originalUuid,preCommitRecordActions);
             }
             ret.setState(SyncItemState.SYNCHRONIZED);                
         } catch (SyncIngestException e) {
@@ -311,7 +310,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
      * to the existing collection that is associated with the owner.
      * <br/>2. Iterate owner serialized entries and process actions (i.e entry update, delete)
      * <br/>3. Record the original uuid using owner finally, trigger owner update using openmrs api
-     * <br/>For algorhitmic details, see code comments as the implementation is extensively commented.
+     * <br/>For algorithmic details, see code comments as the implementation is extensively commented.
      * 
      * @param type collection type.
      * @param incoming serialized state, interceptor implementation for serialization details
@@ -361,8 +360,8 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
     	}
         owner = (OpenmrsObject)SyncUtil.getOpenmrsObj(ownerClassName, ownerUuid);    	
     	
-        //we didn't get the owner record: throw an execption
-        //TODO: in future, when we have conflict resolution, this maybe handled differently
+        //we didn't get the owner record: throw an exception
+        //TODO: in future, when we have conflict resolution, this may be handled differently
         if (owner == null) {
         	log.error("Cannot retrieve the collection's owner object.");
     		log.error("Owner info: " +
@@ -458,11 +457,11 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
 					if (!entries.remove(entry)) {
 						//couldn't find entry in collection: hmm, bad implementation of equals?
 						//fall back to trying to find the item in entries by uuid
-						Synchronizable toBeRemoved = null;
+						OpenmrsObject toBeRemoved = null;
 						for(Object o : entries) {
-							if (o instanceof Synchronizable) {
-								if( entryUuid.equals(((Synchronizable)o).getUuid())) {
-									toBeRemoved = (Synchronizable)o;
+							if (o instanceof OpenmrsObject) {
+								if( entryUuid.equals(((OpenmrsObject)o).getUuid())) {
+									toBeRemoved = (OpenmrsObject)o;
 									break;
 								}
 							}
@@ -491,10 +490,10 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
     		}
     	}
               
-        //set the original uuid: this will prevent the change from being send back to originating server
-        ((Synchronizable)owner).setLastRecordUuid(originalUuid);
+        //set the original uuid: this will prevent the change from being sent back to originating server
+        //((OpenmrsObject)owner).setLastRecordUuid(originalUuid);
 
-        //assign collection back to the owner if it is recreate
+        //assign collection back to the owner if it is recreated
         if (needsRecreate) {
         	SyncUtil.setProperty(owner,ownerCollectionPropertyName,entries);
         }
@@ -512,7 +511,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
 
     /**
      * Processes serialized SyncItem state by attempting to hydrate the object SyncItem represents and then using OpenMRS service layer to
-     * update the hydrated instance of Synchronizable object.
+     * update the hydrated instance of OpenmrsObject object.
      * <p/>Remarks: This implementation relies on internal knowledge of how SyncItems are serialized: it itterates over direct child nodes of the root xml
      * node in incoming assuming they are serialized public properties of the object that is being hydrated. Consequently, for each child node, 
      * property setter is determined and then called. After setting all properties, OpenMRS service layer API is used to actually save 
@@ -524,7 +523,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
      * existing object by uuid and then deleting it by a call to sync service API. Note, if object is not found in DB by its uuid, we
      * skip the delete and record warning message. 
      * <p/>
-     * preCommitRecordActions collection is provided as a way for the synchronizable instances to 'schedule' action that is necessary
+     * preCommitRecordActions collection is provided as a way for the OpenmrsObject instances to 'schedule' action that is necessary
      * for processing of the object yet it cannot be applied until the end of the processing of the parent sync record. For example, rebuild XSN
      * cannot happen until all form fields held in the sync items are applied first; thus the call to rebuild XSN need to happen after all
      * sync items were processed and before committing the sync record.
@@ -540,7 +539,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
      * @see SyncUtil#getOpenmrsObj(String, String)
      * @see SyncUtil#updateOpenmrsObject(Object, String, String, boolean)
      */
-    private void processSynchronizable(Synchronizable o, SyncItem item, String originalUuid, List<SyncPreCommitAction> preCommitRecordActions) throws Exception {
+    private void processOpenmrsObject(OpenmrsObject o, SyncItem item, String originalUuid, List<SyncPreCommitAction> preCommitRecordActions) throws Exception {
 
     	String itemContent = null;
         String className = null;
@@ -561,7 +560,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
 	    }
 
 	    String uuid = SyncUtil.getAttribute(nodes, "uuid", allFields);
-        Synchronizable objOld = (Synchronizable)SyncUtil.getOpenmrsObj(className, uuid);
+        OpenmrsObject objOld = SyncUtil.getOpenmrsObj(className, uuid);
         if ( objOld != null ) {
             o = objOld;
             alreadyExists = true;
@@ -575,7 +574,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
         //set the original uuid: this will prevent the change from being send back to originating server
         //see SynchronizationServiceImpl.createRecord() which will eventually get called from interceptor when
         //this change in committed
-        ((Synchronizable)o).setLastRecordUuid(originalUuid);
+        //((OpenmrsObject)o).setLastRecordUuid(originalUuid);
         
     	//execute delete if instance was found and operation is delete
         if (alreadyExists && isDelete) {
@@ -595,7 +594,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
 	            } catch ( Exception e ) {
 	            	log.error("Error when trying to set " + nodes.item(i).getNodeName() + ", which is a " + className);
 	            	e.printStackTrace();
-	                throw new SyncIngestException(SyncConstants.ERROR_ITEM_UNSET_PROPERTY, nodes.item(i).getNodeName() + "," + className, itemContent,null);
+	                throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_UNSET_PROPERTY, nodes.item(i).getNodeName() + "," + className, itemContent,null);
 	            }
 	        }
         	        
@@ -607,7 +606,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
 	            Context.getService(SynchronizationService.class).flushSession();
 	        } catch ( Exception e ) {
 	        	e.printStackTrace();
-	            throw new SyncIngestException(SyncConstants.ERROR_ITEM_NOT_COMMITTED, className, itemContent,null);
+	            throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_NOT_COMMITTED, className, itemContent,null);
 	        }
         }
         	                

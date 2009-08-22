@@ -26,6 +26,7 @@ import org.openmrs.api.AdministrationService;
 import org.openmrs.api.EncounterService;
 import org.openmrs.api.context.Context;
 import org.springframework.test.annotation.NotTransactional;
+import org.springframework.test.annotation.Rollback;
 
 /**
  *
@@ -39,18 +40,20 @@ public class SyncEncounterTest extends SyncBaseTest {
 
 	@Test
     @NotTransactional
+    @Rollback(false)
 	public void shouldCreateEncounterType() throws Exception {
 		runSyncTest(new SyncTestHelper() {			
 			EncounterService encounterService = Context.getEncounterService();
 
 			public void runOnChild() {
-				
+				assertNotNull(Context.getAuthenticatedUser());
 				EncounterType encounterType = new EncounterType();
 				encounterType.setName("name");
 				encounterType.setDescription("description");
 				encounterService.saveEncounterType(encounterType);
 			}
 			public void runOnParent() {
+				assertNotNull(Context.getAuthenticatedUser());
 				EncounterType encounterType = encounterService.getEncounterType("name");
 				assertNotNull(encounterType);
 			}

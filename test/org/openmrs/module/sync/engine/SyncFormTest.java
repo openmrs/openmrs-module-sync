@@ -37,7 +37,7 @@ public class SyncFormTest extends SyncBaseTest {
 	 */
 	@Override
     public String getInitialDataset() {
-	    return "org/openmrs/synchronization/engine/include/SyncCreateTest.xml";
+	    return "org/openmrs/module/sync/engine/include/SyncCreateTest.xml";
     }
 
 	@Test
@@ -95,9 +95,10 @@ public class SyncFormTest extends SyncBaseTest {
 		runSyncTest(new SyncTestHelper() {
 			FormService fs = Context.getFormService();
 			int numFieldsBefore;
-			Concept weight = Context.getConceptService().getConceptByName("WEIGHT");
 			String name = "LookAtMe";
 			public void runOnChild() {
+				Concept weight = Context.getConceptService().getConceptByName("WEIGHT");
+				
 				Field field = new Field();
 				field.setConcept(weight);
 				field.setFieldType(fs.getFieldType(1));
@@ -114,6 +115,8 @@ public class SyncFormTest extends SyncBaseTest {
 				fs.updateForm(form);
 			}
 			public void runOnParent() {
+				Concept weight = Context.getConceptService().getConceptByName("WEIGHT");
+				
 				Form form = Context.getFormService().getForm(1);
 				assertEquals("Added new field", form.getFormFields().size(), numFieldsBefore + 1);
 				int numTheSame = 0;

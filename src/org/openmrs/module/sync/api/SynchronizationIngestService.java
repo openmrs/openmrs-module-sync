@@ -16,9 +16,9 @@ package org.openmrs.module.sync.api;
 import java.util.List;
 
 import org.openmrs.api.APIException;
+import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncPreCommitAction;
-import org.openmrs.module.sync.engine.SyncItem;
-import org.openmrs.module.sync.engine.SyncRecord;
+import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.ingest.SyncImportItem;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.ingest.SyncIngestException;

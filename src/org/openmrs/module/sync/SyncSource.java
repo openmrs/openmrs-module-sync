@@ -11,12 +11,10 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.module.sync.engine;
+package org.openmrs.module.sync;
 
 import java.util.List;
 
-import org.openmrs.module.sync.SyncException;
-import org.openmrs.module.sync.SyncStatusState;
 import org.openmrs.module.sync.server.RemoteServer;
 
 

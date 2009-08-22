@@ -24,20 +24,22 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.Test;
+import org.openmrs.module.sync.SyncItem;
+import org.openmrs.module.sync.SyncItemKey;
 import org.openmrs.module.sync.SyncItemState;
+import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.serialization.FilePackage;
 import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Package;
 import org.openmrs.module.sync.serialization.Record;
-import org.openmrs.test.BaseContextSensitiveTest;
 import org.openmrs.test.SkipBaseSetup;
 import org.springframework.test.annotation.NotTransactional;
 
 /**
  * Tests sync record serialization.
  */
-public class SyncRecordTest extends BaseContextSensitiveTest  {
+public class SyncRecordTest {
 
     /**
      * test serialization of syncRecord
@@ -47,7 +49,7 @@ public class SyncRecordTest extends BaseContextSensitiveTest  {
 	@Test
     @NotTransactional
     @SkipBaseSetup
-    public void shouldSerialization() throws Exception {
+    public void shouldSerializeASyncRecord() throws Exception {
 
         // 'normal' state
         String uuid1 = UUID.randomUUID().toString();

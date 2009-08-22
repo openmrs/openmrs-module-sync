@@ -17,8 +17,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.openmrs.module.sync.SyncServerClass;
 import org.openmrs.module.sync.SyncTransmissionState;
-import org.openmrs.module.sync.filter.SyncServerClass;
 
 /**
  *

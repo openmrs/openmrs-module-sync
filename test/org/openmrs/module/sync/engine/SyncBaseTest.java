@@ -10,6 +10,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.api.SynchronizationIngestService;
 import org.openmrs.module.sync.api.SynchronizationService;
 import org.openmrs.module.sync.serialization.FilePackage;
@@ -33,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
  */
 public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 
-	
 	protected final Log log = LogFactory.getLog(getClass());
 	public DateFormat ymd = new SimpleDateFormat("yyyy-MM-dd");
 	
@@ -60,6 +60,8 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	@Transactional
 	@Rollback(false)
 	protected void runOnParent(SyncTestHelper testMethods) throws Exception {
+		authenticate();
+		
         //now run parent
 		log.info("\n************************************* Running on Parent *************************************");		
 		testMethods.runOnParent();		
@@ -68,11 +70,12 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	//this is final step so do rollback and let the test finish
 	@Transactional
 	protected void runOnChild2(SyncTestHelper testMethods) throws Exception {
+		authenticate();
+		
         //now run parent
 		log.info("\n************************************* Running on Child2 *************************************");		
 		testMethods.runOnParent();		
 	}
-	
 	
 	/**
 	 * Sets up initial data set before set of instructions simulating child changes is executed.
@@ -94,6 +97,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	@Transactional
 	@Rollback(false)
 	protected void applySyncChanges() throws Exception {
+		Context.openSession();
 		
 		//get sync records created
 		List<SyncRecord> syncRecords = Context.getService(SynchronizationService.class).getSyncRecords();
@@ -106,6 +110,8 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		deleteAllData();
 		executeDataSet("org/openmrs/module/sync/engine/include/SyncCreateTest.xml");
 		executeDataSet("org/openmrs/module/sync/engine/include/SyncRemoteChildServer.xml");
+		
+		authenticate();
 		
 		log.info("\n************************************* Sync Record(s) to Process *************************************");
         FilePackage pkg = new FilePackage();

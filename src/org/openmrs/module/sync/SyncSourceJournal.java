@@ -11,7 +11,7 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.module.sync.engine;
+package org.openmrs.module.sync;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -22,10 +22,6 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.SyncConstants;
-import org.openmrs.module.sync.SyncException;
-import org.openmrs.module.sync.SyncStatusState;
-import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SynchronizationService;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.module.sync.server.RemoteServer;

@@ -52,7 +52,7 @@ public class SyncPatientTest extends SyncBaseTest {
 	
 	@Override
     public String getInitialDataset() {
-	    return "org/openmrs/synchronization/engine/include/SyncCreateTest.xml";
+	    return "org/openmrs/module/sync/engine/include/SyncCreateTest.xml";
     }
 	
 	@Test
@@ -63,8 +63,8 @@ public class SyncPatientTest extends SyncBaseTest {
 			Date dateEnrolled = new Date(System.currentTimeMillis() - 100000);
 			Date dateCompleted = new Date(System.currentTimeMillis() - 10000);
 			Program hivProgram = null;
-			User creator = Context.getAuthenticatedUser();
 			public void runOnChild() {
+				User creator = Context.getAuthenticatedUser();
 				Patient p = Context.getPatientService().getPatient(2);
 				numberEnrolledBefore = Context.getProgramWorkflowService().getPatientPrograms(p).size();
 				hivProgram = Context.getProgramWorkflowService().getProgram("HIV PROGRAM"); 

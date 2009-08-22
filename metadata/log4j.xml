@@ -10,8 +10,13 @@
 		</layout>
 	</appender>
 	
+	<logger name="org.openmrs.api.db.hibernate">
+		<level value="ERROR" />
+		<appender-ref ref="CONSOLE" />
+ 	</logger>
+ 	
 	<logger name="org.openmrs.module.sync">
-		<level value="TRACE" />
+		<level value="INFO" />
 		<appender-ref ref="CONSOLE" />
  	</logger>
 	
