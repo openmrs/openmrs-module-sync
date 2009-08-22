@@ -11,7 +11,7 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.module.sync.engine;
+package org.openmrs.module.sync;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -36,7 +36,7 @@ public class SyncUserTest extends SyncBaseTest {
 
 	@Override
     public String getInitialDataset() {
-	    return "org/openmrs/module/sync/engine/include/SyncCreateTest.xml";
+	    return "org/openmrs/module/sync/include/SyncCreateTest.xml";
     }
 	
 	@Test
@@ -49,7 +49,7 @@ public class SyncUserTest extends SyncBaseTest {
 				u.setUsername("djazayeri");
 				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
 				u.setGender("M");
-				u.addRole(us.getRole("System Developer"));
+				u.addRole(us.getRole("Administrator"));
 				u.addRole(us.getRole("Provider"));
 				us.saveUser(u, "test");
 			}

@@ -16,7 +16,7 @@
  	</logger>
  	
 	<logger name="org.openmrs.module.sync">
-		<level value="INFO" />
+		<level value="ERROR" />
 		<appender-ref ref="CONSOLE" />
  	</logger>
 	

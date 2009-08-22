@@ -11,7 +11,7 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.module.sync.engine;
+package org.openmrs.module.sync;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -33,7 +33,6 @@ import org.openmrs.ProgramWorkflowState;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.ProgramWorkflowService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.SyncStatistic;
 import org.openmrs.module.sync.api.SynchronizationService;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.springframework.test.annotation.NotTransactional;
@@ -45,7 +44,7 @@ public class SyncAdminTest extends SyncBaseTest {
 
 	@Override
     public String getInitialDataset() {
-	    return "org/openmrs/module/sync/engine/include/SyncCreateTest.xml";
+	    return "org/openmrs/module/sync/include/SyncCreateTest.xml";
     }
 
 	@Test
@@ -140,10 +139,10 @@ public class SyncAdminTest extends SyncBaseTest {
 				Location loc = new Location();
 				loc.setName("Boston");
 				loc.setDescription("A US city");
-				Context.getAdministrationService().createLocation(loc);
+				Context.getLocationService().saveLocation(loc);
 			}
 			public void runOnParent() {
-				assertNotNull("Location not created", Context.getEncounterService().getLocationByName("Boston"));
+				assertNotNull("Location not created", Context.getLocationService().getLocation("Boston"));
 			}
 		});
 	}
@@ -195,7 +194,7 @@ public class SyncAdminTest extends SyncBaseTest {
 
 	@Test
 	public void shouldGetSyncStatistics() throws Exception {
-		executeDataSet("org/openmrs/module/sync/engine/include/SyncRemoteChildServer.xml");
+		executeDataSet("org/openmrs/module/sync/include/SyncRemoteChildServer.xml");
 		Map<RemoteServer,Set<SyncStatistic>> stats = Context.getService(SynchronizationService.class).getSyncStatistics(null, null);
 		
 		return;

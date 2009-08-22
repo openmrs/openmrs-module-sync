@@ -11,7 +11,7 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.module.sync.engine;
+package org.openmrs.module.sync;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -41,7 +41,7 @@ public class SyncConceptTest extends SyncBaseTest {
 
 	@Override
     public String getInitialDataset() {
-	    return "org/openmrs/module/sync/engine/include/SyncCreateTest.xml";
+	    return "org/openmrs/module/sync/include/SyncCreateTest.xml";
     }
 
 	@Test

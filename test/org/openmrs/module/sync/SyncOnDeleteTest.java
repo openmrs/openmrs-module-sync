@@ -11,7 +11,7 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.module.sync.engine;
+package org.openmrs.module.sync;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -36,7 +36,7 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 
 	@Override
     public String getInitialDataset() {
-		return "org/openmrs/module/sync/engine/include/SyncCreateTest.xml";
+		return "org/openmrs/module/sync/include/SyncCreateTest.xml";
     }
 
 	@Test
@@ -49,7 +49,7 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 				assertNotNull("The patient identifier type could not be found in child server!", pit);
 				
 				// do the deleting
-				Context.getAdministrationService().deletePatientIdentifierType(pit);
+				Context.getPatientService().purgePatientIdentifierType(pit);
 				
 				pit = Context.getPatientService().getPatientIdentifierType(1);
 				assertNull("The patient identifier type should have been deleted!", pit);
@@ -72,7 +72,7 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 				assertNotNull("The relationship type could not be found in child server!", rt);
 				
 				// do the deleting
-				Context.getPersonService().deleteRelationshipType(rt);
+				Context.getPersonService().purgeRelationshipType(rt);
 				
 				rt = Context.getPersonService().getRelationshipType(1);
 				assertNull("The relationship type should have been deleted!", rt);
@@ -95,7 +95,7 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 				assertNotNull("The PersonAttributeType could not be found in child server!", pat);
 				
 				// do the deleting
-				Context.getPersonService().deletePersonAttributeType(pat);
+				Context.getPersonService().purgePersonAttributeType(pat);
 				
 				pat = Context.getPersonService().getPersonAttributeType(1);
 				assertNull("The PersonAttributeType should have been deleted!", pat);
@@ -115,12 +115,12 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 			PatientIdentifierType pit;
 			public void runOnChild() {
 				pit = Context.getPatientService().getPatientIdentifierType(2);
-				Location loc = Context.getEncounterService().getLocationByName("Someplace");
+				Location loc = Context.getLocationService().getLocation("Someplace");
 				Patient p = Context.getPatientService().getPatient(2);
 				p.removeName(p.getPersonName());
 				p.addName(new PersonName("Peter", null, "Parker"));
 				p.addIdentifier(new PatientIdentifier("super123", pit, loc));
-				Context.getPatientService().updatePatient(p);
+				Context.getPatientService().savePatient(p);
 			}
 			public void runOnParent() {
 				Patient p = Context.getPatientService().getPatient(2);

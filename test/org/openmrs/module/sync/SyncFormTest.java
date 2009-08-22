@@ -11,13 +11,12 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.module.sync.engine;
+package org.openmrs.module.sync;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openmrs.Concept;
 import org.openmrs.Field;
@@ -33,11 +32,11 @@ import org.springframework.test.annotation.NotTransactional;
 public class SyncFormTest extends SyncBaseTest {
 
 	/**
-	 * @see org.openmrs.module.sync.engine.SyncBaseTest#getInitialDataset()
+	 * @see org.openmrs.module.sync.SyncBaseTest#getInitialDataset()
 	 */
 	@Override
     public String getInitialDataset() {
-	    return "org/openmrs/module/sync/engine/include/SyncCreateTest.xml";
+	    return "org/openmrs/module/sync/include/SyncCreateTest.xml";
     }
 
 	@Test
@@ -48,7 +47,7 @@ public class SyncFormTest extends SyncBaseTest {
 			public void runOnChild() {
 				Form form = Context.getFormService().getForm(1);
 				form.setDescription(newDescription);
-				Context.getFormService().updateForm(form);
+				Context.getFormService().saveForm(form);
 			}
 			public void runOnParent() {
 				Form form = Context.getFormService().getForm(1);
@@ -66,19 +65,19 @@ public class SyncFormTest extends SyncBaseTest {
 			int numFields;
 			int numFormsBefore;
 			public void runOnChild() {
-				numFormsBefore = Context.getFormService().getForms().size();
+				numFormsBefore = Context.getFormService().getAllForms().size();
 				Form form = Context.getFormService().getForm(1);
 				numFields = form.getFormFields().size();
 				assertNotSame("Form should have some fields", numFields, 0);
 				Form dup = Context.getFormService().duplicateForm(form);
 				dup.setName(newName);
 				dup.setDescription(newDescription);
-				Context.getFormService().updateForm(dup);
+				Context.getFormService().saveForm(dup);
 			}
 			public void runOnParent() {
-				assertEquals("Should now have N+1 forms", Context.getFormService().getForms().size(), numFormsBefore + 1);
+				assertEquals("Should now have N+1 forms", Context.getFormService().getAllForms().size(), numFormsBefore + 1);
 				Form form = null;
-				for (Form f : Context.getFormService().getForms())
+				for (Form f : Context.getFormService().getAllForms())
 					if (f.getName().equals(newName))
 						form = f;
 				assertNotNull("Couldn't find form", form);
@@ -103,7 +102,7 @@ public class SyncFormTest extends SyncBaseTest {
 				field.setConcept(weight);
 				field.setFieldType(fs.getFieldType(1));
 				field.setName(name);
-				fs.createField(field);
+				fs.saveField(field);
 				
 				Form form = Context.getFormService().getForm(1);
 				numFieldsBefore = form.getFormFields().size();
@@ -112,7 +111,7 @@ public class SyncFormTest extends SyncBaseTest {
 				ff.setFieldNumber(99);
 				ff.setPageNumber(55);
 				form.addFormField(ff);
-				fs.updateForm(form);
+				fs.saveForm(form);
 			}
 			public void runOnParent() {
 				Concept weight = Context.getConceptService().getConceptByName("WEIGHT");
