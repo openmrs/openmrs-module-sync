@@ -516,7 +516,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
         }
         log.warn("tables to dump: " + tablesToDump);
         
-        String thisServerUuid = getGlobalProperty(SyncConstants.PROPERTY_SERVER_GUID);
+        String thisServerUuid = getGlobalProperty(SyncConstants.PROPERTY_SERVER_UUID);
        
         { // write a header
             out.println("-- ------------------------------------------------------");
@@ -662,7 +662,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
             out.println("-- Now mark this as a child database");
             if (uuidForChild == null)
                 uuidForChild = SyncUtil.generateUuid();
-            out.println("update global_property set property_value = '" + uuidForChild + "' where property = '" + SyncConstants.PROPERTY_SERVER_GUID + "';");
+            out.println("update global_property set property_value = '" + uuidForChild + "' where property = '" + SyncConstants.PROPERTY_SERVER_UUID + "';");
             
             {
             	// TODO: Write a footer to undo the following two lines

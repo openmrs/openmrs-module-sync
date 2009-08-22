@@ -44,6 +44,7 @@ import org.openmrs.OpenmrsObject;
 import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.hibernate.NativeIfNotAssignedIdentityGenerator;
+import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncException;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemKey;
@@ -376,6 +377,9 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
 			return false;
 
+		// Set the originating uuid for the sync record
+		setOriginalUuid(entity);
+		
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
 			if (log.isDebugEnabled()) {
@@ -426,6 +430,9 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 		// explicitly bail out if sync is disabled
 		if (SyncUtil.getSyncStatus() == SyncStatusState.DISABLED_SYNC_AND_HISTORY)
 			return false;
+
+		// Set the originating uuid for the sync record
+		setOriginalUuid(entity);
 
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
@@ -641,9 +648,11 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			//boolean isUuidAssigned = assignGUID(entity, currentState, propertyNames, state);
 			objectUuid = entity.getUuid();
 
-			// pull-out sync-network wide change id, if one was already assigned
+			// pull-out sync-network wide change id for the sync *record* (not the entity itself), if one was already assigned
 			// (i.e. this change is coming from some other server)
-			//originalRecordUuid = entity.getLastRecordUuid();
+			if (this.syncRecordHolder.get() != null) {
+				originalRecordUuid = this.syncRecordHolder.get().getOriginalUuid();
+			}
 
 			// build up a starting msg for all logging:
 			StringBuilder sb = new StringBuilder();
@@ -651,8 +660,8 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			sb.append(entity.getClass().getName());
 			sb.append(", entity uuid:");
 			sb.append(objectUuid);
-			//sb.append(", originalUuid uuid:");
-			//sb.append(originalRecordUuid);
+			sb.append(", originalUuid uuid:");
+			sb.append(originalRecordUuid);
 			infoMsg = sb.toString();
 
 			if (log.isInfoEnabled())
@@ -879,7 +888,7 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 			syncRecordHolder.get().addContainedClass(entity.getClass()
 			                                               .getSimpleName());
 
-			// set the originating uuid for the record: do this once per Tx;
+			// Set the originating uuid for the record: do this once per Tx;
 			// else we may end up with empty
 			// string (i.e. depending on exact sequence of auto-flush, it may be
 			// that onFlushDirty is called last time
@@ -1117,7 +1126,10 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 		// retrieve owner and original uuid if there is one
 		if (set.getOwner() instanceof OpenmrsObject) {
 			owner = (OpenmrsObject) set.getOwner();
-			//originalRecordUuid = owner.getLastRecordUuid();
+			
+			if (this.syncRecordHolder.get() != null) {
+				originalRecordUuid = this.syncRecordHolder.get().getOriginalUuid();
+			}
 		} else {
 			log.info("Cannot process PersistentSet where owner is not OpenmrsObject.");
 			return;
@@ -1337,5 +1349,47 @@ public class HibernateSynchronizationInterceptor extends EmptyInterceptor
 		}
 	
 		return concreteObj.getClass().getName();
+	}
+
+	/**
+	 * Sets the originating uuid for the sync record. This is done once per Tx;
+	 * else we may end up with empty string (i.e. depending on exact sequence of auto-flush, it may be
+	 * that onFlushDirty is called last time before a call to OpenmrsObject.setLastRecordUuid() is made
+	 * 
+	 * NOTE:
+	 * This code is needed because we need for entity to know if it is genuine local change or it is coming from
+	 * the ingest code. This is what original_uuid field in sync_journal is used for.
+	 * 
+	 * The way sync record uuids from ingest code are passed to the interceptor is by convention: the  
+	 * the *1st* thing ingest code will do when processing changes is to issue an update to global property with name
+	 * SyncConstants.PROPERTY_ORIGINAL_UUID and passing the ingest record uuid as a value.
+	 * 
+	 * This is done so that the intercetor can pull out the 'original' record uuid associated with the change to 
+	 * the entity that is being processed. Since ingest and interceptor do not have direct reference to each other, there is no
+	 * simple way to pass this info directly.
+	 * 
+	 * More: read javadoc on SyncRecord to see what SyncRecord.OriginalUuid is and how it is used.
+	 * 
+	 * @param entity
+	 */
+	private void setOriginalUuid(Object entity) {
+
+		String originalRecordGuid = null;
+		if (syncRecordHolder.get() != null) {
+			if (syncRecordHolder.get().getOriginalUuid() != null) {
+			originalRecordGuid = syncRecordHolder.get().getOriginalUuid();
+			
+			} else if (entity instanceof org.openmrs.GlobalProperty) {
+				org.openmrs.GlobalProperty gp = (org.openmrs.GlobalProperty)entity;
+				if (SyncConstants.PROPERTY_ORIGINAL_UUID.equals(gp.getProperty())) {
+					//okay, this is original guid being passed in from ingest
+					originalRecordGuid = gp.getPropertyValue(); 
+					if (this.syncRecordHolder.get().getOriginalUuid() == null || "".equals(syncRecordHolder.get().getOriginalUuid())) {
+						syncRecordHolder.get().setOriginalUuid(originalRecordGuid);
+					}				
+				}
+			}
+		}
+		
 	}
 }

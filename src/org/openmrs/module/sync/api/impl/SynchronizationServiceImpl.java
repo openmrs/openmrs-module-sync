@@ -350,14 +350,14 @@ public class SynchronizationServiceImpl implements SynchronizationService {
      * data exchanges with other servers.
      */
     public String getServerUuid() throws APIException{   
-        return Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_SERVER_GUID);
+        return Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_SERVER_UUID);
     }
 
     /**
      * Updates globally unique identifier of the local server.
      */
     public void setServerUuid(String uuid) throws APIException{   
-    	Context.getService(SynchronizationService.class).setGlobalProperty(SyncConstants.PROPERTY_SERVER_GUID, uuid);
+    	Context.getService(SynchronizationService.class).setGlobalProperty(SyncConstants.PROPERTY_SERVER_UUID, uuid);
     }
 
     /**

@@ -83,7 +83,7 @@ public class SyncConstants {
 	public static final String SYNC_DATA_FILE_PARAM = "syncDataFile";
 	
 	//global props
-    public static final String PROPERTY_SERVER_GUID = "synchronization.server_uuid"; //used internally in sync
+    public static final String PROPERTY_SERVER_UUID = "synchronization.server_uuid"; //used internally in sync
     public static final String PROPERTY_SERVER_ID = "synchronization.server_id"; //numeric value used for scoping any local values (such as user_ids)
     public static final String PROPERTY_SERVER_NAME = "synchronization.server_name"; //used for display purposes, nickname
     public static final String PROPERTY_NAME_MAX_RETRY_COUNT = "synchronization.max_retry_count";
@@ -92,6 +92,7 @@ public class SyncConstants {
     public static final String PROPERTY_NAME_MAX_RECORDS_DEFAULT = "50";
     public static final String PROPERTY_ENABLE_COMPRESSION = "synchronization.enable_compression";
     public static final String PROPERTY_VERSION = "synchronization.version";
+    public static final String PROPERTY_ORIGINAL_UUID = "synchronization.original_uuid"; //note this value is used internally by sync; see Interceptor.setOriginalUuid()
 
     //runtime prop
     public static final String RUNTIMEPROPERTY_SYNC_STATUS = "synchronization.sync_status"; //SyncStatusState enum

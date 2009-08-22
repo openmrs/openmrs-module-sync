@@ -202,11 +202,11 @@ public class SyncSourceJournal implements SyncSource {
     }
     
     public String getSyncSourceUuid() {
-        return Context.getService(SynchronizationService.class).getGlobalProperty(SyncConstants.PROPERTY_SERVER_GUID);        
+        return Context.getService(SynchronizationService.class).getGlobalProperty(SyncConstants.PROPERTY_SERVER_UUID);        
     }
     
     public void setSyncSourceUuid(String uuid) {
-        Context.getService(SynchronizationService.class).setGlobalProperty(SyncConstants.PROPERTY_SERVER_GUID, uuid);
+        Context.getService(SynchronizationService.class).setGlobalProperty(SyncConstants.PROPERTY_SERVER_UUID, uuid);
         
         return;   
     }
