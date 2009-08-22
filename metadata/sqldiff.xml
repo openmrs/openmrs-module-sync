@@ -14,7 +14,7 @@
 			Create sync tables
 		</description>
 		<sql>
-			CREATE TABLE IF NOT EXISTS `synchronization_journal` (
+			CREATE TABLE IF NOT EXISTS `sync_record` (
 			  `record_id` int(11) NOT NULL auto_increment,
 			  `uuid` char(36) NOT NULL,
 			  `creator` char(36) default NULL,
@@ -28,7 +28,7 @@
 			  PRIMARY KEY  (`record_id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 		
-			CREATE TABLE IF NOT EXISTS `synchronization_import` (
+			CREATE TABLE IF NOT EXISTS `sync_import` (
 			  `record_id` int(11) NOT NULL auto_increment,
 			  `uuid` char(36) NOT NULL,
 			  `creator` char(36) default NULL,
@@ -41,7 +41,7 @@
 			  PRIMARY KEY  (`record_id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 		
-			CREATE TABLE IF NOT EXISTS `synchronization_server` (
+			CREATE TABLE IF NOT EXISTS `sync_server` (
 			  `server_id` int(11) NOT NULL auto_increment,
 			  `nickname` varchar(255) default NULL,
 			  `address` varchar(255) NOT NULL,
@@ -56,7 +56,7 @@
 			  PRIMARY KEY  (`server_id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 		
-			CREATE TABLE IF NOT EXISTS `synchronization_class` (
+			CREATE TABLE IF NOT EXISTS `sync_class` (
 			  `class_id` int(11) NOT NULL auto_increment,
 			  `name` varchar(255) NOT NULL,
 			  `type` varchar(255) NOT NULL,
@@ -65,7 +65,7 @@
 			  PRIMARY KEY  (`class_id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8;	
 			
-			CREATE TABLE IF NOT EXISTS `synchronization_server_class` (
+			CREATE TABLE IF NOT EXISTS `sync_server_class` (
 				`server_class_id` int(11) NOT NULL auto_increment,
 				`class_id` int(11) NOT NULL,
 				`server_id` int(11) NOT NULL,
@@ -74,11 +74,11 @@
 				PRIMARY KEY  (`server_class_id`),
 				KEY `server_class_class` (`class_id`),
 				KEY `server_class_server` (`server_id`),
-				CONSTRAINT `server_class_class` FOREIGN KEY (`class_id`) REFERENCES `synchronization_class` (`class_id`),
-				CONSTRAINT `server_class_server` FOREIGN KEY (`server_id`) REFERENCES `synchronization_server` (`server_id`)
+				CONSTRAINT `server_class_class` FOREIGN KEY (`class_id`) REFERENCES `sync_class` (`class_id`),
+				CONSTRAINT `server_class_server` FOREIGN KEY (`server_id`) REFERENCES `sync_server` (`server_id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 		
-			CREATE TABLE IF NOT EXISTS `synchronization_server_record` (
+			CREATE TABLE IF NOT EXISTS `sync_server_record` (
 				`server_record_id` int(11) NOT NULL auto_increment,
 				`server_id` int(11) NOT NULL,
 				`record_id` int(11) NOT NULL,
@@ -87,8 +87,8 @@
 				PRIMARY KEY  (`server_record_id`),
 				KEY `server_record_server` (`server_id`),
 				KEY `server_record_record` (`record_id`),
-				CONSTRAINT `server_record_server` FOREIGN KEY (`server_id`) REFERENCES `synchronization_server` (`server_id`),
-				CONSTRAINT `server_record_record` FOREIGN KEY (`record_id`) REFERENCES `synchronization_journal` (`record_id`)
+				CONSTRAINT `server_record_server` FOREIGN KEY (`server_id`) REFERENCES `sync_server` (`server_id`),
+				CONSTRAINT `server_record_record` FOREIGN KEY (`record_id`) REFERENCES `sync_record` (`record_id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 		</sql>
 	</diff>
@@ -101,7 +101,7 @@
 			Add rows to the sync class table
 		</description>
 		<sql>
-			INSERT INTO `synchronization_class` (`name`,`type`,`default_to`,`default_from`) values
+			INSERT INTO `sync_class` (`name`,`type`,`default_to`,`default_from`) values
 			('Cohort', 'PATIENT', 1, 1),
 			('ComplexObs', 'PATIENT', 1, 1),
 			('Concept', 'DICTIONARY', 1, 1),
@@ -171,7 +171,7 @@
 			DELETE FROM
 				global_property 
 			WHERE
-				property = 'synchronization.server_uuid'
+				property = 'sync.server_uuid'
 				and
 				(
 					property_value is null
@@ -182,7 +182,7 @@
 			INSERT INTO
 				global_property (property, property_value, description, uuid)
 			VALUES (
-				'synchronization.server_uuid',
+				'sync.server_uuid',
 				uuid(),
 				'Universally unique server id used to identify a given data source in synchronization.',
 				uuid());

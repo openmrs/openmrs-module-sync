@@ -32,7 +32,7 @@ import org.openmrs.module.sync.server.RemoteServer;
 /**
  * Synchronization related database functions 
  */
-public interface SynchronizationDAO {
+public interface SyncDAO {
 
     /**
      * Create a new SyncRecord

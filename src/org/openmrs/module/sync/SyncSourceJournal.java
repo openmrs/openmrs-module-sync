@@ -22,7 +22,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.api.SynchronizationService;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.module.sync.server.RemoteServer;
 /**
@@ -48,7 +48,7 @@ public class SyncSourceJournal implements SyncSource {
      */
     public SyncPoint<Date> getLastSyncLocal() {
         Date val = null;
-        String sVal = Context.getService(SynchronizationService.class).getGlobalProperty(
+        String sVal = Context.getService(SyncService.class).getGlobalProperty(
                 SyncConstants.LAST_SYNC_LOCAL);
         try {
             val = (sVal == null || "".equals(sVal)) ? null : new SimpleDateFormat(TimestampNormalizer.DATETIME_MASK)
@@ -66,7 +66,7 @@ public class SyncSourceJournal implements SyncSource {
         sVal = (p.getValue() == null || "".equals(sVal)) ? null : new SimpleDateFormat(TimestampNormalizer.DATETIME_MASK)
                 .format(p.getValue());
         // use getSynchronizationService to avoid logging this changes to the journal
-        Context.getService(SynchronizationService.class).setGlobalProperty(
+        Context.getService(SyncService.class).setGlobalProperty(
                 SyncConstants.LAST_SYNC_LOCAL, sVal);
 
         return;
@@ -78,7 +78,7 @@ public class SyncSourceJournal implements SyncSource {
     public SyncPoint<Date> getLastSyncRemote() {
         Date val = null;
 
-        String sVal = Context.getService(SynchronizationService.class).getGlobalProperty(
+        String sVal = Context.getService(SyncService.class).getGlobalProperty(
                 SyncConstants.LAST_SYNC_REMOTE);
         try {
 
@@ -96,7 +96,7 @@ public class SyncSourceJournal implements SyncSource {
         sVal = (p.getValue() == null || "".equals(sVal)) ? null : new SimpleDateFormat(TimestampNormalizer.DATETIME_MASK)
                 .format(p.getValue());
         // use getSynchronizationService to avoid logging this changes to the journal
-        Context.getService(SynchronizationService.class).setGlobalProperty( 
+        Context.getService(SyncService.class).setGlobalProperty( 
                 SyncConstants.LAST_SYNC_REMOTE, sVal);
 
         return;
@@ -140,7 +140,7 @@ public class SyncSourceJournal implements SyncSource {
             if (fromDate == null) fromDate = new Date(0L);
             if (toDate == null) toDate = new Date(0L);
             
-            SynchronizationService syncService = Context.getService(SynchronizationService.class);           
+            SyncService syncService = Context.getService(SyncService.class);           
             changed = syncService.getSyncRecordsBetween(fromDate, toDate);
 
         } catch (Exception e) {
@@ -158,7 +158,7 @@ public class SyncSourceJournal implements SyncSource {
         List<SyncRecord> changed = new ArrayList<SyncRecord>();
 
         try {
-            SynchronizationService syncService = Context.getService(SynchronizationService.class);           
+            SyncService syncService = Context.getService(SyncService.class);           
             changed = syncService.getSyncRecords(SyncConstants.SYNC_TO_PARENT_STATES);
 
         } catch (Exception e) {
@@ -174,7 +174,7 @@ public class SyncSourceJournal implements SyncSource {
         List<SyncRecord> changed = new ArrayList<SyncRecord>();
 
         try {
-            SynchronizationService syncService = Context.getService(SynchronizationService.class);           
+            SyncService syncService = Context.getService(SyncService.class);           
             changed = syncService.getSyncRecords(SyncConstants.SYNC_TO_PARENT_STATES, server);
 
         } catch (Exception e) {
@@ -202,11 +202,11 @@ public class SyncSourceJournal implements SyncSource {
     }
     
     public String getSyncSourceUuid() {
-        return Context.getService(SynchronizationService.class).getGlobalProperty(SyncConstants.PROPERTY_SERVER_UUID);        
+        return Context.getService(SyncService.class).getGlobalProperty(SyncConstants.PROPERTY_SERVER_UUID);        
     }
     
     public void setSyncSourceUuid(String uuid) {
-        Context.getService(SynchronizationService.class).setGlobalProperty(SyncConstants.PROPERTY_SERVER_UUID, uuid);
+        Context.getService(SyncService.class).setGlobalProperty(SyncConstants.PROPERTY_SERVER_UUID, uuid);
         
         return;   
     }

@@ -20,7 +20,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.api.SynchronizationService;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.SyncServerRecord;
@@ -68,7 +68,7 @@ public class SyncStrategyFile {
     public SyncTransmission createStateBasedSyncTransmission(SyncSource source, boolean writeFileToo) {
 
         SyncTransmission ret =  null;
-        RemoteServer parent = Context.getService(SynchronizationService.class).getParentServer();
+        RemoteServer parent = Context.getService(SyncService.class).getParentServer();
         
         if ( parent != null ) {
             ret = createStateBasedSyncTransmission(source, writeFileToo, parent);
@@ -120,12 +120,12 @@ public class SyncStrategyFile {
                     } else {
                         if ( server.getServerType().equals(RemoteServerType.PARENT)) {
                             record.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
-                            Context.getService(SynchronizationService.class).updateSyncRecord(record);
+                            Context.getService(SyncService.class).updateSyncRecord(record);
                         } else {
                             SyncServerRecord serverRecord = record.getServerRecord(server);
                             if ( serverRecord != null ) {
                                 serverRecord.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
-                                Context.getService(SynchronizationService.class).updateSyncRecord(record);
+                                Context.getService(SyncService.class).updateSyncRecord(record);
                             }
                         }
                         log.warn("NOT ADDING RECORD TO TRANSMISSION, SERVER IS NOT SET TO SEND ALL OF " + containedClasses + " TO SERVER " + server.getNickname());

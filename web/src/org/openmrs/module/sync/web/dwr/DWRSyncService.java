@@ -26,7 +26,7 @@ import org.openmrs.module.sync.server.ServerConnectionState;
 /**
  *
  */
-public class DWRSynchronizationService {
+public class DWRSyncService {
 
 	protected final Log log = LogFactory.getLog(getClass());
 

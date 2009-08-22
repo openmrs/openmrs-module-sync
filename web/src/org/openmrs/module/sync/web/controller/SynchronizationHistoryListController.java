@@ -27,7 +27,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncUtil;
-import org.openmrs.module.sync.api.SynchronizationService;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
@@ -66,7 +66,7 @@ public class SynchronizationHistoryListController extends SimpleFormController {
 
         // only fill the Object if the user has authenticated properly
         if (Context.isAuthenticated()) {
-        	SynchronizationService ss = Context.getService(SynchronizationService.class);
+        	SyncService ss = Context.getService(SyncService.class);
             recordList.addAll(ss.getSyncRecords());
         }
 
@@ -143,8 +143,8 @@ public class SynchronizationHistoryListController extends SimpleFormController {
         //ret.put("itemInfo", itemInfo);
         ret.put("recordText", recordText);
         ret.put("recordChangeType", recordChangeType);
-        ret.put("parent", Context.getService(SynchronizationService.class).getParentServer());
-        ret.put("servers", Context.getService(SynchronizationService.class).getRemoteServers());
+        ret.put("parent", Context.getService(SyncService.class).getParentServer());
+        ret.put("servers", Context.getService(SyncService.class).getRemoteServers());
         ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
         
 	    return ret;

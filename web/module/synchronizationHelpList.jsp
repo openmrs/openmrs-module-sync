@@ -7,7 +7,7 @@
 <%@ include file="localHeader.jsp" %>
 
 <openmrs:htmlInclude file="/dwr/util.js" />
-<openmrs:htmlInclude file="/dwr/interface/DWRSynchronizationService.js" />
+<openmrs:htmlInclude file="/dwr/interface/DWRSyncService.js" />
 
 <h2><spring:message code="sync.help.title"/></h2>
 

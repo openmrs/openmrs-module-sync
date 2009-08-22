@@ -4,7 +4,7 @@
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
-<openmrs:htmlInclude file="/dwr/interface/DWRSynchronizationService.js" />
+<openmrs:htmlInclude file="/dwr/interface/DWRSyncService.js" />
 <openmrs:htmlInclude file="/dwr/util.js" />
 
 <%@ include file="localHeader.jsp" %>
@@ -88,7 +88,7 @@
 			var address = DWRUtil.getValue("address");
 			var username = DWRUtil.getValue("username");
 			var password = DWRUtil.getValue("password");
-			DWRSynchronizationService.testConnection(address, username, password, showTestResult);
+			DWRSyncService.testConnection(address, username, password, showTestResult);
 		}
 
 	-->

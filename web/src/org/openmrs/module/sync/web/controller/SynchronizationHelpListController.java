@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.api.SynchronizationService;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.servlet.mvc.SimpleFormController;
@@ -50,7 +50,7 @@ public class SynchronizationHelpListController extends SimpleFormController {
     protected Object formBackingObject(HttpServletRequest request)
             throws ServletException {
         // default empty Object
-        RemoteServer parent = Context.getService(SynchronizationService.class).getParentServer();
+        RemoteServer parent = Context.getService(SyncService.class).getParentServer();
 
         if ( parent == null ) {
         	parent = new RemoteServer();

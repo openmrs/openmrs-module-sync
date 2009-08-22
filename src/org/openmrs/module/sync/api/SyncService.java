@@ -32,7 +32,7 @@ import org.openmrs.module.sync.server.RemoteServer;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-public interface SynchronizationService {
+public interface SyncService {
 
     /**
      * Create a new SyncRecord
@@ -436,7 +436,7 @@ public interface SynchronizationService {
      * 
      * @throws APIException
      * 
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#setFlushModeManual()
+     * @see org.openmrs.module.sync.api.db.SyncDAO#setFlushModeManual()
      */
     public void setFlushModeManual() throws APIException;
     
@@ -445,7 +445,7 @@ public interface SynchronizationService {
      * 
      * @throws APIException
      * 
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#setFlushModeAutomatic()
+     * @see org.openmrs.module.sync.api.db.SyncDAO#setFlushModeAutomatic()
      */
     public void setFlushModeAutomatic() throws APIException;
     

@@ -44,7 +44,7 @@ import org.openmrs.module.sync.SyncSourceJournal;
 import org.openmrs.module.sync.SyncTransmission;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.SyncUtilTransmission;
-import org.openmrs.module.sync.api.SynchronizationService;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
@@ -116,7 +116,7 @@ public class SynchronizationConfigListController extends SimpleFormController {
         	if ( started && repeatInterval == 0 ) error = msa.getMessage("sync.config.parent.error.invalidRepeat");
         	
         	if ( error.length() == 0 ) {
-            	RemoteServer parent = Context.getService(SynchronizationService.class).getParentServer();
+            	RemoteServer parent = Context.getService(SyncService.class).getParentServer();
 
             	if ( parent == null ) {
             		parent = new RemoteServer();
@@ -130,9 +130,9 @@ public class SynchronizationConfigListController extends SimpleFormController {
                 if ( uuid.length() > 0 ) parent.setUuid(uuid);
 
         		if ( parent.getServerId() == null ) {
-            		Context.getService(SynchronizationService.class).createRemoteServer(parent);
+            		Context.getService(SyncService.class).createRemoteServer(parent);
         		} else {
-            		Context.getService(SynchronizationService.class).updateRemoteServer(parent);
+            		Context.getService(SyncService.class).updateRemoteServer(parent);
         		}
         		
     	        // also set TaskConfig for scheduling
@@ -192,9 +192,9 @@ public class SynchronizationConfigListController extends SimpleFormController {
         	String serverName = ServletRequestUtils.getStringParameter(request, "serverName", "");
         	String adminEmail = ServletRequestUtils.getStringParameter(request, "serverAdminEmail", "");
         	
-        	if ( serverUuid.length() > 0 ) Context.getService(SynchronizationService.class).setServerUuid(serverUuid);
-        	if ( serverId.length() > 0 ) Context.getService(SynchronizationService.class).setServerId(serverId);
-        	if (serverName.length() > 0 ) Context.getService(SynchronizationService.class).setServerName(serverName);
+        	if ( serverUuid.length() > 0 ) Context.getService(SyncService.class).setServerUuid(serverUuid);
+        	if ( serverId.length() > 0 ) Context.getService(SyncService.class).setServerId(serverId);
+        	if (serverName.length() > 0 ) Context.getService(SyncService.class).setServerName(serverName);
         	if (adminEmail.length() > 0 ) SyncUtil.setAdminEmail(adminEmail);
         	
             String[] classIdsTo = ServletRequestUtils.getRequiredStringParameters(request, "toDefault");
@@ -204,7 +204,7 @@ public class SynchronizationConfigListController extends SimpleFormController {
             if ( classIdsTo != null ) idsTo.addAll(Arrays.asList(classIdsTo));
             if ( classIdsFrom != null ) idsFrom.addAll(Arrays.asList(classIdsFrom));
             
-            List<SyncClass> syncClasses = Context.getService(SynchronizationService.class).getSyncClasses();
+            List<SyncClass> syncClasses = Context.getService(SyncService.class).getSyncClasses();
             if ( syncClasses != null ) {
                 //log.warn("SYNCCLASSES IS SIZE: " + syncClasses.size());
                 for ( SyncClass syncClass : syncClasses ) {
@@ -212,7 +212,7 @@ public class SynchronizationConfigListController extends SimpleFormController {
                     else syncClass.setDefaultTo(false);
                     if ( idsFrom.contains(syncClass.getSyncClassId().toString()) ) syncClass.setDefaultFrom(true);
                     else syncClass.setDefaultFrom(false);
-                    Context.getService(SynchronizationService.class).updateSyncClass(syncClass);
+                    Context.getService(SyncService.class).updateSyncClass(syncClass);
                 }
             }
 
@@ -222,7 +222,7 @@ public class SynchronizationConfigListController extends SimpleFormController {
             Integer serverId = ServletRequestUtils.getIntParameter(request, "serverId", 0);
             String serverName = "Server " + serverId.toString();
 
-            SynchronizationService ss = Context.getService(SynchronizationService.class);
+            SyncService ss = Context.getService(SyncService.class);
             
             if ( serverId > 0 ) {
             	RemoteServer deleteServer = ss.getRemoteServer(serverId);
@@ -243,7 +243,7 @@ public class SynchronizationConfigListController extends SimpleFormController {
         } else if ( "manualTx".equals(action ) ) {
             try {
                 Integer serverId = ServletRequestUtils.getIntParameter(request, "serverId", 0);
-                RemoteServer server = Context.getService(SynchronizationService.class).getRemoteServer(serverId);
+                RemoteServer server = Context.getService(SyncService.class).getRemoteServer(serverId);
                 
                 log.warn("IN MANUAL-TX WITH SERVERID: " + serverId);
                 
@@ -253,7 +253,7 @@ public class SynchronizationConfigListController extends SimpleFormController {
 
                 // Record last attempt
                 server.setLastSync(new Date());
-                Context.getService(SynchronizationService.class).updateRemoteServer(server);
+                Context.getService(SyncService.class).updateRemoteServer(server);
                 
                 // Write sync transmission to response
                 InputStream in = new ByteArrayInputStream(toTransmit.getBytes());
@@ -296,7 +296,7 @@ public class SynchronizationConfigListController extends SimpleFormController {
 
         // only fill the Object if the user has authenticated properly
         if (Context.isAuthenticated()) {
-            SynchronizationService ss = Context.getService(SynchronizationService.class);
+            SyncService ss = Context.getService(SyncService.class);
 
             serverList.addAll(ss.getRemoteServers());
             obj.put("serverList", serverList);
@@ -364,7 +364,7 @@ public class SynchronizationConfigListController extends SimpleFormController {
             Map<String,Boolean> syncClassGroupTo = new HashMap<String,Boolean>();
             Map<String,Boolean> syncClassGroupFrom = new HashMap<String,Boolean>();
 
-            List<SyncClass> syncClasses = Context.getService(SynchronizationService.class).getSyncClasses();
+            List<SyncClass> syncClasses = Context.getService(SyncService.class).getSyncClasses();
             if ( syncClasses != null ) {
                 //log.warn("SYNCCLASSES IS SIZE: " + syncClasses.size());
                 for ( SyncClass syncClass : syncClasses ) {
@@ -427,8 +427,8 @@ public class SynchronizationConfigListController extends SimpleFormController {
 	        ret.put("localServerSyncStatusText", msa.getMessage("sync.config.syncStatus.status." + ref.get("localServerSyncStatus").toString()));
             ret.put("localServerSyncStatusMsg", msa.getMessage("sync.config.syncStatus.status." + ref.get("localServerSyncStatus").toString() + ".info" , new String[] {SyncConstants.RUNTIMEPROPERTY_SYNC_STATUS}));
 	        ret.put("localServerUuid", ref.get("localServerUuid"));
-	        ret.put("localServerId", Context.getService(SynchronizationService.class).getServerId());
-	        ret.put("localServerName", Context.getService(SynchronizationService.class).getServerName());           
+	        ret.put("localServerId", Context.getService(SyncService.class).getServerId());
+	        ret.put("localServerName", Context.getService(SyncService.class).getServerName());           
 	        ret.put("localServerAdminEmail", SyncUtil.getAdminEmail());           
 		}
         

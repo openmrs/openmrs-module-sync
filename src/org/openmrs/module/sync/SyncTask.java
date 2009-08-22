@@ -16,7 +16,7 @@ package org.openmrs.module.sync;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.api.SynchronizationService;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.ingest.SyncTransmissionResponse;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.scheduler.TaskDefinition;
@@ -26,10 +26,10 @@ import org.openmrs.scheduler.tasks.AbstractTask;
  * Represents scheduled task to perform full data synchronization with a remote server as identified during the task setup.
  *
  */
-public class SynchronizationTask extends AbstractTask {
+public class SyncTask extends AbstractTask {
 
 	// Logger
-	private static Log log = LogFactory.getLog(SynchronizationTask.class);
+	private static Log log = LogFactory.getLog(SyncTask.class);
 	
 	// Instance of configuration information for task
 	private Integer serverId = 0;
@@ -38,7 +38,7 @@ public class SynchronizationTask extends AbstractTask {
 	 * Default Constructor (Uses SchedulerConstants.username and
 	 * SchedulerConstants.password
 	 */
-	public SynchronizationTask() {
+	public SyncTask() {
 		// do nothing for now
 	}
 
@@ -60,7 +60,7 @@ public class SynchronizationTask extends AbstractTask {
 			
 			if ( syncStatus.equals(SyncStatusState.ENABLED_CONTINUE_ON_ERROR) || syncStatus.equals(SyncStatusState.ENABLED_STRICT) ) {
 			
-				RemoteServer server = Context.getService(SynchronizationService.class).getRemoteServer(serverId);
+				RemoteServer server = Context.getService(SyncService.class).getRemoteServer(serverId);
 				if ( server != null ) {
 					SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(server);
 					try {

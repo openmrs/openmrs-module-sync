@@ -4,7 +4,7 @@
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
-<openmrs:htmlInclude file="/dwr/interface/DWRSynchronizationService.js" />
+<openmrs:htmlInclude file="/dwr/interface/DWRSyncService.js" />
 <openmrs:htmlInclude file="/dwr/util.js" />
 
 <%@ include file="localHeader.jsp" %>

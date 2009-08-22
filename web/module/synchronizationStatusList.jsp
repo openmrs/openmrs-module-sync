@@ -7,7 +7,7 @@
 <%@ include file="localHeader.jsp" %>
 
 <openmrs:htmlInclude file="/dwr/util.js" />
-<openmrs:htmlInclude file="/dwr/interface/DWRSynchronizationService.js" />
+<openmrs:htmlInclude file="/dwr/interface/DWRSyncService.js" />
 
 <h2><spring:message code="sync.status.title"/></h2>
 
@@ -104,7 +104,7 @@
 		function syncToParent() {
 			document.getElementById("webExportButton").disabled = true;
 			DWRUtil.setValue("syncInfo", "<spring:message code="sync.status.export.viaWeb.sending" arguments="${fn:length(synchronizationStatusList)}" />");
-			DWRSynchronizationService.syncToParent(displaySyncResults);
+			DWRSyncService.syncToParent(displaySyncResults);
 		}
 		
 	-->

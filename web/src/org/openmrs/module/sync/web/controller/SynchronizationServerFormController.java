@@ -39,7 +39,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncServerClass;
-import org.openmrs.module.sync.api.SynchronizationService;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
@@ -123,7 +123,7 @@ public class SynchronizationServerFormController extends SimpleFormController {
             }
             
         	if ( error.length() == 0 ) {
-            	server = Context.getService(SynchronizationService.class).getRemoteServer(serverId);
+            	server = Context.getService(SyncService.class).getRemoteServer(serverId);
 
             	if ( server == null ) {
             		server = new RemoteServer();
@@ -132,7 +132,7 @@ public class SynchronizationServerFormController extends SimpleFormController {
 
                     // just in case - we want to make sure there is ONLY ever 1 parent
                     if ( server.getServerType().equals(RemoteServerType.PARENT)) {
-                        RemoteServer parent = Context.getService(SynchronizationService.class).getParentServer();
+                        RemoteServer parent = Context.getService(SyncService.class).getParentServer();
                         if ( parent != null ) {
                             server = parent;
                         }
@@ -190,7 +190,7 @@ public class SynchronizationServerFormController extends SimpleFormController {
 
                     Set<SyncServerClass> serverClasses = server.getServerClasses();
                     if ( serverClasses == null ) {
-                        List<SyncClass> syncClasses = Context.getService(SynchronizationService.class).getSyncClasses();
+                        List<SyncClass> syncClasses = Context.getService(SyncService.class).getSyncClasses();
                         serverClasses = new HashSet<SyncServerClass>();
                         if ( syncClasses != null ) {
                             log.warn("SYNCCLASSES IS SIZE: " + syncClasses.size());
@@ -238,9 +238,9 @@ public class SynchronizationServerFormController extends SimpleFormController {
                     }
 
                     if ( server.getServerId() == null ) {
-                        Context.getService(SynchronizationService.class).createRemoteServer(server);
+                        Context.getService(SyncService.class).createRemoteServer(server);
                     } else {
-                        Context.getService(SynchronizationService.class).updateRemoteServer(server);
+                        Context.getService(SyncService.class).updateRemoteServer(server);
                     }
                     
                     // also set TaskConfig for scheduling
@@ -340,7 +340,7 @@ public class SynchronizationServerFormController extends SimpleFormController {
         // only fill the Object if the user has authenticated properly
         if (Context.isAuthenticated()) {
             Integer serverId = ServletRequestUtils.getIntParameter(request, "serverId", 0);
-            server = Context.getService(SynchronizationService.class).getRemoteServer(serverId);
+            server = Context.getService(SyncService.class).getRemoteServer(serverId);
         }
 
         if ( server == null ) {
@@ -348,7 +348,7 @@ public class SynchronizationServerFormController extends SimpleFormController {
             server.setServerType(RemoteServerType.valueOf(type));
             if (Context.isAuthenticated()) {
                 Set<SyncServerClass> serverClasses = new HashSet<SyncServerClass>();
-                List<SyncClass> classes = Context.getService(SynchronizationService.class).getSyncClasses();
+                List<SyncClass> classes = Context.getService(SyncService.class).getSyncClasses();
                 if ( classes != null ) {
                     for ( SyncClass syncClass : classes ) {
                         SyncServerClass serverClass = new SyncServerClass(server, syncClass);

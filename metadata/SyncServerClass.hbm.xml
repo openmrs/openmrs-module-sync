@@ -5,7 +5,7 @@
 
 <hibernate-mapping package="org.openmrs.module.sync">
 
-	<class name="SyncServerClass" table="synchronization_server_class">
+	<class name="SyncServerClass" table="sync_server_class">
 
 		<id name="serverClassId" type="int" column="server_class_id" unsaved-value="0">
 			<generator class="native" />

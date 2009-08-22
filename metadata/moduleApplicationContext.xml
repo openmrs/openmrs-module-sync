@@ -12,7 +12,7 @@
            http://www.springframework.org/schema/util
            http://www.springframework.org/schema/util/spring-util-2.0.xsd">
 
-	<bean id="synchronizationInterceptor" class="org.openmrs.module.sync.api.db.hibernate.HibernateSynchronizationInterceptor" primary="true"/>
+	<bean id="synchronizationInterceptor" class="org.openmrs.module.sync.api.db.hibernate.HibernateSyncInterceptor" primary="true"/>
 
     <bean id="@MODULE_ID@UrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
     	<property name="order"><value>1</value></property>
@@ -74,13 +74,13 @@
 	<bean parent="serviceContext">
 		<property name="moduleService">
 			<list>
-				<value>@MODULE_PACKAGE@.api.SynchronizationService</value> <!-- service interface name -->
+				<value>@MODULE_PACKAGE@.api.SyncService</value> <!-- service interface name -->
 				<bean class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
 					<property name="transactionManager"><ref bean="transactionManager"/></property>
 					<property name="target">
-						<bean class="@MODULE_PACKAGE@.api.impl.SynchronizationServiceImpl">
-							<property name="synchronizationDAO">
-								<bean class="@MODULE_PACKAGE@.api.db.hibernate.HibernateSynchronizationDAO">
+						<bean class="@MODULE_PACKAGE@.api.impl.SyncServiceImpl">
+							<property name="syncDAO">
+								<bean class="@MODULE_PACKAGE@.api.db.hibernate.HibernateSyncDAO">
 									<property name="sessionFactory"><ref bean="sessionFactory"/></property>	
 								</bean>
 							</property>	
@@ -100,11 +100,11 @@
 	<bean parent="serviceContext">
 		<property name="moduleService">
 			<list>
-				<value>@MODULE_PACKAGE@.api.SynchronizationIngestService</value> <!-- service interface name -->
+				<value>@MODULE_PACKAGE@.api.SyncIngestService</value> <!-- service interface name -->
 				<bean class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
 					<property name="transactionManager"><ref bean="transactionManager"/></property>
 					<property name="target">
-						<bean class="@MODULE_PACKAGE@.api.impl.SynchronizationIngestServiceImpl" />
+						<bean class="@MODULE_PACKAGE@.api.impl.SyncIngestServiceImpl" />
 					</property>
 					<property name="preInterceptors">
 						<ref bean="serviceInterceptors"/>

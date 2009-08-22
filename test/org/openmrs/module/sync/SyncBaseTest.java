@@ -23,9 +23,8 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.SyncRecord;
-import org.openmrs.module.sync.api.SynchronizationIngestService;
-import org.openmrs.module.sync.api.SynchronizationService;
+import org.openmrs.module.sync.api.SyncIngestService;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.FilePackage;
 import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.serialization.Item;
@@ -113,7 +112,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		Context.openSession();
 		
 		//get sync records created
-		List<SyncRecord> syncRecords = Context.getService(SynchronizationService.class).getSyncRecords();
+		List<SyncRecord> syncRecords = Context.getService(SyncService.class).getSyncRecords();
 		if (syncRecords == null || syncRecords.size() == 0) {
 			assertFalse("No changes found (i.e. sync records size is 0)", true);
 		}
@@ -141,9 +140,9 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
         }		
 
         log.info("\n************************************* Processing Sync Record(s) *************************************");
-		RemoteServer origin = Context.getService(SynchronizationService.class).getRemoteServer(1);
+		RemoteServer origin = Context.getService(SyncService.class).getRemoteServer(1);
 		for (SyncRecord syncRecord : syncRecords) {			
-			Context.getService(SynchronizationIngestService.class).processSyncRecord(syncRecord, origin);
+			Context.getService(SyncIngestService.class).processSyncRecord(syncRecord, origin);
 		}
 		
 		return;

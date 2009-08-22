@@ -33,8 +33,8 @@ import org.openmrs.module.sync.SyncPreCommitAction;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
-import org.openmrs.module.sync.api.SynchronizationIngestService;
-import org.openmrs.module.sync.api.SynchronizationService;
+import org.openmrs.module.sync.api.SyncIngestService;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.ingest.SyncImportItem;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.ingest.SyncIngestException;
@@ -45,13 +45,13 @@ import org.openmrs.util.OpenmrsUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-public class SynchronizationIngestServiceImpl implements SynchronizationIngestService {
+public class SyncIngestServiceImpl implements SyncIngestService {
 
     private Log log = LogFactory.getLog(this.getClass());
     
     /**
      * 
-     * @see org.openmrs.api.SynchronizationIngestService#processSyncImportRecord(SyncImportRecord importRecord)
+     * @see org.openmrs.api.SyncIngestService#processSyncImportRecord(SyncImportRecord importRecord)
      * 
      * @param importRecord
      * @throws APIException
@@ -59,7 +59,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
     public void processSyncImportRecord(SyncImportRecord importRecord, RemoteServer server) throws APIException {
         if ( importRecord != null ) {
             if ( importRecord.getUuid() != null && importRecord.getState() != null ) {
-                SyncRecord record = Context.getService(SynchronizationService.class).getSyncRecordByOriginalUuid(importRecord.getUuid());
+                SyncRecord record = Context.getService(SyncService.class).getSyncRecordByOriginalUuid(importRecord.getUuid());
                 if ( server.getServerType().equals(RemoteServerType.PARENT) ) {
                     // with parents, we set the actual state of the record
                     if ( importRecord.getState().equals(SyncRecordState.ALREADY_COMMITTED) ) record.setState(SyncRecordState.COMMITTED);
@@ -73,7 +73,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
                     else serverRecord.setState(importRecord.getState());
                 }
                 
-                Context.getService(SynchronizationService.class).updateSyncRecord(record);
+                Context.getService(SyncService.class).updateSyncRecord(record);
             }
         }        
     }
@@ -108,7 +108,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
                 // second, let's see if this SyncRecord has already been imported
                 // use the original record id to locate import_record copy
                 log.warn("AT THIS POINT, ORIGINALGUID FOR RECORD IS " + record.getOriginalUuid());
-                importRecord = Context.getService(SynchronizationService.class).getSyncImportRecord(record.getOriginalUuid());
+                importRecord = Context.getService(SyncService.class).getSyncImportRecord(record.getOriginalUuid());
                 boolean isUpdateNeeded = false;
                 
                 if ( importRecord == null ) {
@@ -117,7 +117,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
                     importRecord = new SyncImportRecord(record);
                     importRecord.setState(SyncRecordState.FAILED);
                     importRecord.setUuid(record.getOriginalUuid());
-                    Context.getService(SynchronizationService.class).createSyncImportRecord(importRecord);
+                    Context.getService(SyncService.class).createSyncImportRecord(importRecord);
                 } else {
                 	if(log.isWarnEnabled()) {
                 		log.warn("ImportRecord already exists and has retry count: " + importRecord.getRetryCount() + ", state: " + importRecord.getState());
@@ -143,7 +143,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
                     boolean isError = false;
                             
                     //as we start setting properties, suspend session flushing 
-                    Context.getService(SynchronizationService.class).setFlushModeManual();
+                    Context.getService(SyncService.class).setFlushModeManual();
 
                     // for each sync item, process it and insert/update the database; 
                     //put deletes into deletedItems collection -- these will get processed last
@@ -158,8 +158,8 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
                     	}
                     }
                     
-                    Context.getService(SynchronizationService.class).flushSession();
-                    Context.getService(SynchronizationService.class).setFlushModeAutomatic();
+                    Context.getService(SyncService.class).flushSession();
+                    Context.getService(SyncService.class).setFlushModeAutomatic();
                     
                     /* now run through deletes: deletes must be processed after inserts/updates
                      * because of hibernate flushing semantics inside transactions:
@@ -169,23 +169,23 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
                      * default hibernate FlushMode is AUTO. To futher avoid this issue, explicitely susspend flushing for the 
                      * duration of deletes.
                      */
-                	Context.getService(SynchronizationService.class).setFlushModeManual(); 
+                	Context.getService(SyncService.class).setFlushModeManual(); 
                     for ( SyncItem item : deletedItems ) {
                         SyncImportItem importedItem = this.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(),preCommitRecordActions);
                         importedItem.setKey(item.getKey());
                         importRecord.addItem(importedItem);
                         if ( !importedItem.getState().equals(SyncItemState.SYNCHRONIZED)) isError = true;
                     }
-                    Context.getService(SynchronizationService.class).flushSession();
-                    Context.getService(SynchronizationService.class).setFlushModeAutomatic();
+                    Context.getService(SyncService.class).flushSession();
+                    Context.getService(SyncService.class).setFlushModeAutomatic();
                     
                     /* 
                      * finally execute the pending actions that resulted from processing all sync items 
                      */
-                    Context.getService(SynchronizationService.class).setFlushModeManual();
+                    Context.getService(SyncService.class).setFlushModeManual();
                     SyncUtil.applyPreCommitRecordActions(preCommitRecordActions);
-                    Context.getService(SynchronizationService.class).flushSession();
-                    Context.getService(SynchronizationService.class).setFlushModeAutomatic();
+                    Context.getService(SyncService.class).flushSession();
+                    Context.getService(SyncService.class).setFlushModeAutomatic();
                     
                     if ( !isError ) {
                         importRecord.setState(SyncRecordState.COMMITTED);
@@ -194,10 +194,10 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
                         /*
                          * This actually can't be done here, since hibernate may not yet commit the record - 
                          * instead we have to get hacky: in processxxx() methods we set originalUuid and then commit changes.
-                         * Once that is done, the interceptor pulls the original uuid out and calls SynchronizationServiceImpl.createSyncRecord()
+                         * Once that is done, the interceptor pulls the original uuid out and calls SyncServiceImpl.createSyncRecord()
                          * where sync records *are* not written for the originting server
                          * 
-                        SyncRecord newRecord = Context.getService(SynchronizationService.class).getSyncRecord(record.getOriginalUuid());
+                        SyncRecord newRecord = Context.getService(SyncService.class).getSyncRecord(record.getOriginalUuid());
                         if ( newRecord != null ) {
                             if ( server.getServerType().equals(RemoteServerType.PARENT)) {
                                 newRecord.setState(SyncRecordState.COMMITTED);
@@ -210,7 +210,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
                                     log.warn("No server record was created for server " + server.getNickname() + " and record " + record.getOriginalUuid());
                                 }
                             }
-                            Context.getService(SynchronizationService.class).updateSyncRecord(newRecord);
+                            Context.getService(SyncService.class).updateSyncRecord(newRecord);
 
                         } else {
                             log.warn("Can't find newly created record on system by originalUuid" + record.getOriginalUuid());
@@ -224,7 +224,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
                         throw(sie);
                     }
                     
-                    Context.getService(SynchronizationService.class).updateSyncImportRecord(importRecord);
+                    Context.getService(SyncService.class).updateSyncImportRecord(importRecord);
                 }
             }
         } catch (SyncIngestException e) {
@@ -244,7 +244,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
             throw(sie);
         } finally {
         	//reset the flush mode back to automatic, no matter what
-        	Context.getService(SynchronizationService.class).setFlushModeAutomatic();
+        	Context.getService(SyncService.class).setFlushModeAutomatic();
         }
 
         return importRecord;
@@ -259,7 +259,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
      * HashMap contained in the collection is to capture the action, and the necessary object to resolve that action. The action
      * is understood and applied by {@link org.openmrs.synchronization.SyncUtil#applyPreCommitRecordActions(ArrayList)}
      * 
-     * @see org.openmrs.api.SynchronizationIngestService#processSyncItem(org.openmrs.module.sync.SyncItem, java.lang.String, java.util.ArrayList)
+     * @see org.openmrs.api.SyncIngestService#processSyncItem(org.openmrs.module.sync.SyncItem, java.lang.String, java.util.ArrayList)
      * @see org.openmrs.synchronization.SyncUtil#applyPreCommitRecordActions(ArrayList)
      * 
      */
@@ -572,7 +572,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
         }
                 
         //set the original uuid: this will prevent the change from being send back to originating server
-        //see SynchronizationServiceImpl.createRecord() which will eventually get called from interceptor when
+        //see SyncServiceImpl.createRecord() which will eventually get called from interceptor when
         //this change in committed
         //((OpenmrsObject)o).setLastRecordUuid(originalUuid);
         
@@ -603,7 +603,7 @@ public class SynchronizationIngestServiceImpl implements SynchronizationIngestSe
 	        	log.warn("About to update or create a " + className + " object, uuid: " + uuid);
 	        	// TODO bwolfe - this might not be a safe cast -- put here by Ben to get compiling
 	            SyncUtil.updateOpenmrsObject2((OpenmrsObject)o, className, uuid,preCommitRecordActions);
-	            Context.getService(SynchronizationService.class).flushSession();
+	            Context.getService(SyncService.class).flushSession();
 	        } catch ( Exception e ) {
 	        	e.printStackTrace();
 	            throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_NOT_COMMITTED, className, itemContent,null);

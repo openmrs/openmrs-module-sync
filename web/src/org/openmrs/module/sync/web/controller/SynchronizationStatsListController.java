@@ -34,7 +34,7 @@ import org.openmrs.module.sync.SyncSource;
 import org.openmrs.module.sync.SyncSourceJournal;
 import org.openmrs.module.sync.SyncStatistic;
 import org.openmrs.module.sync.SyncUtil;
-import org.openmrs.module.sync.api.SynchronizationService;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
@@ -106,7 +106,7 @@ public class SynchronizationStatsListController extends SimpleFormController {
 
         // only fill the Object if the user has authenticated properly
         if (Context.isAuthenticated()) {
-            SynchronizationService ss = Context.getService(SynchronizationService.class);
+            SyncService ss = Context.getService(SyncService.class);
 
             serverList.addAll(ss.getRemoteServers());
             obj.put("serverList", serverList);
@@ -184,8 +184,8 @@ public class SynchronizationStatsListController extends SimpleFormController {
 	        ret.put("localServerSyncStatusText", msa.getMessage("sync.config.syncStatus.status." + ref.get("localServerSyncStatus").toString()));
             ret.put("localServerSyncStatusMsg", msa.getMessage("sync.config.syncStatus.status." + ref.get("localServerSyncStatus").toString() + ".info" , new String[] {SyncConstants.RUNTIMEPROPERTY_SYNC_STATUS}));
 	        ret.put("localServerUuid", ref.get("localServerUuid"));
-	        ret.put("localServerId", Context.getService(SynchronizationService.class).getServerId());
-	        ret.put("localServerName", Context.getService(SynchronizationService.class).getServerName());           
+	        ret.put("localServerId", Context.getService(SyncService.class).getServerId());
+	        ret.put("localServerName", Context.getService(SyncService.class).getServerName());           
 	        ret.put("localServerAdminEmail", SyncUtil.getAdminEmail());           
 		}
         

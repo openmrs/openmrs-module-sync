@@ -29,8 +29,8 @@ import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncTransmission;
 import org.openmrs.module.sync.SyncTransmissionState;
 import org.openmrs.module.sync.SyncUtilTransmission;
-import org.openmrs.module.sync.api.SynchronizationIngestService;
-import org.openmrs.module.sync.api.SynchronizationService;
+import org.openmrs.module.sync.api.SyncIngestService;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.ingest.SyncDeserializer;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.ingest.SyncTransmissionResponse;
@@ -180,7 +180,7 @@ public class SynchronizationImportListController extends SimpleFormController {
 		
         //Fill-in the server uuid for the response: since request was authenticated we can start letting callers
 		//know about us
-        str.setSyncTargetUuid(Context.getService(SynchronizationService.class).getServerUuid());
+        str.setSyncTargetUuid(Context.getService(SyncService.class).getServerUuid());
 
         //Checksum check before doing anything at all: on unreliable networks we can get seemingly
         //valid HTTP POST but content is messed up, defend against it with custom checksums
@@ -250,7 +250,7 @@ public class SynchronizationImportListController extends SimpleFormController {
             //for responses, the target ID contains the server that generated the response
             String sourceUuid = priorResponse.getSyncTargetUuid();
             log.info("SyncTransmissionResponse has a sourceUuid of " + sourceUuid);
-            RemoteServer origin = Context.getService(SynchronizationService.class).getRemoteServer(sourceUuid);
+            RemoteServer origin = Context.getService(SyncService.class).getRemoteServer(sourceUuid);
             if ( origin == null ) {
             	log.error("Source server not registered locally. Unable to find source server by uuid: " + sourceUuid);
                 str.setErrorMessage("Source server not registered locally. Unable to find source server by uuid " + sourceUuid);
@@ -273,7 +273,7 @@ public class SynchronizationImportListController extends SimpleFormController {
             } else {
                 // now process each incoming syncImportRecord, this is just status update
                 for ( SyncImportRecord importRecord : priorResponse.getSyncImportRecords() ) {
-                    Context.getService(SynchronizationIngestService.class).processSyncImportRecord(importRecord, origin);
+                    Context.getService(SyncIngestService.class).processSyncImportRecord(importRecord, origin);
                 }
             }
             

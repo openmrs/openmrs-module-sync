@@ -88,7 +88,7 @@ import org.openmrs.Role;
 import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.LoginCredential;
-import org.openmrs.module.sync.api.SynchronizationService;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.FilePackage;
 import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.serialization.Item;
@@ -229,7 +229,7 @@ public class SyncUtil {
 	
 	public static OpenmrsObject getOpenmrsObj(String className, String uuid) {
 		try {
-			OpenmrsObject o = Context.getService(SynchronizationService.class).getOpenmrsObjectByUuid((Class<OpenmrsObject>) Context.loadClass(className), uuid);
+			OpenmrsObject o = Context.getService(SyncService.class).getOpenmrsObjectByUuid((Class<OpenmrsObject>) Context.loadClass(className), uuid);
 			
 	        if (log.isDebugEnabled()) {
 	    		if ( o == null ) {
@@ -439,7 +439,7 @@ public class SyncUtil {
      * @param o object to save
      * @param className type
      * @param Uuid unique id of the object that is being saved
-     * @param preCommitRecordActions actions set to be added to if needed, also SynchronizationIngestServiceImpl.processOpenmrsObject 
+     * @param preCommitRecordActions actions set to be added to if needed, also SyncIngestServiceImpl.processOpenmrsObject 
      * 
      * @see SyncUtil#updateOpenmrsObject(Object, String, String, boolean)
      */
@@ -469,13 +469,13 @@ public class SyncUtil {
 			}
 			
 
-			Context.getService(SynchronizationService.class).saveOrUpdate(lc); 
+			Context.getService(SyncService.class).saveOrUpdate(lc); 
     	}
     	else if ("org.openmrs.Concept".equals(className)) { //for concepts, call API: it does extra things like update concept words
 			Context.getConceptService().saveConcept((Concept)o);
     	}
     	else if ( o != null ) {  //now do 	the 'normal' save or update
-			Context.getService(SynchronizationService.class).saveOrUpdate(o);
+			Context.getService(SyncService.class).saveOrUpdate(o);
 		} else {
 			log.warn("Will not update OpenMRS object that is NULL");
 		}
@@ -659,7 +659,7 @@ public class SyncUtil {
 			}
 
 			if ( isUpdated ) {
-				//SyncRecord record = Context.getService(SynchronizationService.class).getLatestRecord();
+				//SyncRecord record = Context.getService(SyncService.class).getLatestRecord();
 				//if ( record != null ) ret = record.getUuid();
 			}
 		} else {
@@ -803,7 +803,7 @@ public class SyncUtil {
      * Deletes instance of OpenmrsObject. Used to process SyncItems with state of deleted.
      */
 	public static synchronized void deleteOpenmrsObject(OpenmrsObject o) {
-		Context.getService(SynchronizationService.class).deleteOpenmrsObject(o);
+		Context.getService(SyncService.class).deleteOpenmrsObject(o);
 		
 		if (o instanceof org.openmrs.Concept || o instanceof org.openmrs.ConceptName) {
 			//delete concept words explicitly
@@ -812,11 +812,11 @@ public class SyncUtil {
 	}
 
     public static String getAdminEmail() {
-        return Context.getService(SynchronizationService.class).getGlobalProperty(SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL);        
+        return Context.getService(SyncService.class).getGlobalProperty(SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL);        
     }
     
     public static void setAdminEmail(String email) {
-        Context.getService(SynchronizationService.class).setGlobalProperty(SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL, email);
+        Context.getService(SyncService.class).setGlobalProperty(SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL, email);
         
         return;   
     }
@@ -847,7 +847,7 @@ public class SyncUtil {
 			
 				content.
 					append("ALERT: Synchronization has stopped between\n").
-					append("local server (").append(Context.getService(SynchronizationService.class).getServerName()).
+					append("local server (").append(Context.getService(SyncService.class).getServerName()).
 					append(") and remote server ").append(server.getNickname()).append("\n\n").
 					append("Summary of failing record\n").
 					append("Original Uuid:          " + syncRecord.getOriginalUuid()).

@@ -19,17 +19,17 @@
 	</extension>
 	
 	<globalProperty>
-		<property>synchronization.server_name</property>
-		<defaultValue></defaultValue>
+		<property>sync.server_name</property>
+		<defaultValue/>
 		<description>Display name for this server, to distinguish it from other servers.</description>
 	</globalProperty>
 	<globalProperty>
-		<property>synchronization.admin_email</property>
-		<defaultValue></defaultValue>
+		<property>sync.admin_email</property>
+		<defaultValue/>
 		<description>Email address for administrator responsible for this server.</description>
 	</globalProperty>
 		<globalProperty>
-		<property>synchronization.default_role</property>
+		<property>sync.default_role</property>
 		<defaultValue>Administrator</defaultValue>
 		<description>Server role for the synchronization scheduled task login.</description>
 	</globalProperty>
@@ -41,8 +41,8 @@
 			<convert converter="bean" match="org.openmrs.module.sync.web.dwr.SyncImportRecordItem"/>
 			<convert converter="bean" match="org.openmrs.module.sync.web.dwr.SyncImportItemItem"/>
 			
-			<create creator="new" javascript="DWRSynchronizationService">
-				<param name="class" value="org.openmrs.module.sync.web.dwr.DWRSynchronizationService" />
+			<create creator="new" javascript="DWRSyncService">
+				<param name="class" value="org.openmrs.module.sync.web.dwr.DWRSyncService"/>
 				<include method="testConnection"/>
 				<include method="syncToParent"/>
 			</create>

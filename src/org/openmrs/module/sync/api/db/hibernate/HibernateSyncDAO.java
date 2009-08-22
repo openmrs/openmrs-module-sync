@@ -51,13 +51,13 @@ import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
 import org.openmrs.module.sync.SyncUtil;
-import org.openmrs.module.sync.api.db.SynchronizationDAO;
+import org.openmrs.module.sync.api.db.SyncDAO;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.util.OpenmrsConstants;
 
-public class HibernateSynchronizationDAO implements SynchronizationDAO {
+public class HibernateSyncDAO implements SyncDAO {
 
     protected final Log log = LogFactory.getLog(getClass());
 
@@ -66,7 +66,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
      */
     private SessionFactory sessionFactory;
     
-    public HibernateSynchronizationDAO() { }
+    public HibernateSyncDAO() { }
     
     /**
      * Set session Factory interceptor
@@ -78,7 +78,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
     
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#createSyncRecord(org.openmrs.module.sync.SyncRecord)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#createSyncRecord(org.openmrs.module.sync.SyncRecord)
      */
     public void createSyncRecord(SyncRecord record) throws DAOException {
         if (record.getUuid() == null) {
@@ -91,7 +91,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#updateSyncRecord(org.openmrs.module.sync.SyncRecord)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#updateSyncRecord(org.openmrs.module.sync.SyncRecord)
      */
     public void updateSyncRecord(SyncRecord record) throws DAOException {
         Session session = sessionFactory.getCurrentSession();
@@ -99,7 +99,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#deleteSyncRecord(org.openmrs.module.sync.SyncRecord)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#deleteSyncRecord(org.openmrs.module.sync.SyncRecord)
      */
     public void deleteSyncRecord(SyncRecord record) throws DAOException {
         Session session = sessionFactory.getCurrentSession();
@@ -107,7 +107,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#createSyncImportRecord(org.openmrs.module.sync.engine.SyncImportRecord)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#createSyncImportRecord(org.openmrs.module.sync.engine.SyncImportRecord)
      */
     public void createSyncImportRecord(SyncImportRecord record) throws DAOException {
         if (record.getUuid() == null) {
@@ -119,7 +119,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#updateSyncImportRecord(org.openmrs.module.sync.engine.SyncImportRecord)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#updateSyncImportRecord(org.openmrs.module.sync.engine.SyncImportRecord)
      */
     public void updateSyncImportRecord(SyncImportRecord record) throws DAOException {
         Session session = sessionFactory.getCurrentSession();
@@ -127,7 +127,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#deleteSyncImportRecord(org.openmrs.module.sync.engine.SyncImportRecord)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#deleteSyncImportRecord(org.openmrs.module.sync.engine.SyncImportRecord)
      */
     public void deleteSyncImportRecord(SyncImportRecord record) throws DAOException {
         Session session = sessionFactory.getCurrentSession();
@@ -135,7 +135,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
     
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getNextSyncRecord()
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getNextSyncRecord()
      */
     @SuppressWarnings("unchecked")
     public SyncRecord getFirstSyncRecordInQueue() throws DAOException {
@@ -155,7 +155,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getNextSyncRecord()
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getNextSyncRecord()
      */
     @SuppressWarnings("unchecked")
     public SyncRecord getLatestRecord() throws DAOException {
@@ -174,7 +174,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getSyncRecord(java.lang.String)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecord(java.lang.String)
      */
     public SyncRecord getSyncRecord(String uuid) throws DAOException {
         return (SyncRecord) sessionFactory.getCurrentSession()
@@ -191,7 +191,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getSyncImportRecord(java.lang.String)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncImportRecord(java.lang.String)
      */
     public SyncImportRecord getSyncImportRecord(String uuid) throws DAOException {
         return (SyncImportRecord) sessionFactory.getCurrentSession()
@@ -201,7 +201,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getSyncRecords()
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecords()
      */
     @SuppressWarnings("unchecked")
     public List<SyncRecord> getSyncRecords() throws DAOException {
@@ -213,7 +213,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getSyncRecords(org.openmrs.module.sync.engine.SyncRecordState)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecords(org.openmrs.module.sync.engine.SyncRecordState)
      */
     @SuppressWarnings("unchecked")
     public List<SyncRecord> getSyncRecords(SyncRecordState state) throws DAOException {
@@ -226,7 +226,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getSyncRecords(org.openmrs.module.sync.engine.SyncRecordState)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecords(org.openmrs.module.sync.engine.SyncRecordState)
      */
     @SuppressWarnings("unchecked")
     public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse) throws DAOException {
@@ -301,7 +301,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getSyncRecordsSince(java.util.Date)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecordsSince(java.util.Date)
      */
     @SuppressWarnings("unchecked")
     public List<SyncRecord> getSyncRecordsSince(Date from) throws DAOException {
@@ -314,7 +314,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getSyncRecordsBetween(java.util.Date, java.util.Date)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecordsBetween(java.util.Date, java.util.Date)
      */
     @SuppressWarnings("unchecked")
     public List<SyncRecord> getSyncRecordsBetween(Date from, Date to)
@@ -330,7 +330,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
 
     
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getGlobalProperty(String propertyName)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getGlobalProperty(String propertyName)
      */
     public String getGlobalProperty(String propertyName) 
         throws DAOException {
@@ -348,7 +348,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
     
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#setGlobalProperty(String propertyName, String propertyValue)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#setGlobalProperty(String propertyName, String propertyValue)
      */
     public void setGlobalProperty(String propertyName, String propertyValue) 
         throws DAOException {
@@ -363,7 +363,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#createRemoteServer(org.openmrs.module.sync.engine.RemoteServer)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#createRemoteServer(org.openmrs.module.sync.engine.RemoteServer)
      */
     public void createRemoteServer(RemoteServer record) throws DAOException {
         Session session = sessionFactory.getCurrentSession();
@@ -371,7 +371,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#updateRemoteServer(org.openmrs.module.sync.engine.RemoteServer)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#updateRemoteServer(org.openmrs.module.sync.engine.RemoteServer)
      */
     public void updateRemoteServer(RemoteServer record) throws DAOException {
         Session session = sessionFactory.getCurrentSession();
@@ -379,7 +379,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#deleteRemoteServer(org.openmrs.module.sync.engine.RemoteServer)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#deleteRemoteServer(org.openmrs.module.sync.engine.RemoteServer)
      */
     public void deleteRemoteServer(RemoteServer record) throws DAOException {
         Session session = sessionFactory.getCurrentSession();
@@ -387,14 +387,14 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getGlobalProperty(String propertyName)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getGlobalProperty(String propertyName)
      */
     public RemoteServer getRemoteServer(Integer serverId) throws DAOException {        
         return (RemoteServer)sessionFactory.getCurrentSession().get(RemoteServer.class, serverId);
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getGlobalProperty(String propertyName)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getGlobalProperty(String propertyName)
      */
     public RemoteServer getRemoteServer(String uuid) throws DAOException {        
         return (RemoteServer)sessionFactory.getCurrentSession()
@@ -404,7 +404,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getGlobalProperty(String propertyName)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getGlobalProperty(String propertyName)
      */
     public RemoteServer getRemoteServerByUsername(String username) throws DAOException {        
         return (RemoteServer)sessionFactory.getCurrentSession()
@@ -414,7 +414,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getGlobalProperty(String propertyName)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getGlobalProperty(String propertyName)
      */
     @SuppressWarnings("unchecked")
     public List<RemoteServer> getRemoteServers() throws DAOException {        
@@ -422,7 +422,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getGlobalProperty(String propertyName)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getGlobalProperty(String propertyName)
      */
     public RemoteServer getParentServer() throws DAOException {        
         return (RemoteServer)sessionFactory.getCurrentSession()
@@ -432,7 +432,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#createSyncClass(org.openmrs.module.sync.SyncClass)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#createSyncClass(org.openmrs.module.sync.SyncClass)
      */
     public void createSyncClass(SyncClass syncClass) throws DAOException {
         Session session = sessionFactory.getCurrentSession();
@@ -440,7 +440,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#updateSyncClass(org.openmrs.module.sync.SyncClass)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#updateSyncClass(org.openmrs.module.sync.SyncClass)
      */
     public void updateSyncClass(SyncClass syncClass) throws DAOException {
         Session session = sessionFactory.getCurrentSession();
@@ -448,7 +448,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#deleteSyncClass(org.openmrs.module.sync.SyncClass)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#deleteSyncClass(org.openmrs.module.sync.SyncClass)
      */
     public void deleteSyncClass(SyncClass syncClass) throws DAOException {
         Session session = sessionFactory.getCurrentSession();
@@ -456,14 +456,14 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getGlobalProperty(String propertyName)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getGlobalProperty(String propertyName)
      */
     public SyncClass getSyncClass(Integer syncClassId) throws DAOException {        
         return (SyncClass)sessionFactory.getCurrentSession().get(SyncClass.class, syncClassId);
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getGlobalProperty(String propertyName)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getGlobalProperty(String propertyName)
      */
     @SuppressWarnings("unchecked")
     public List<SyncClass> getSyncClasses() throws DAOException {        
@@ -481,7 +481,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#createDatabaseForChild(java.lang.String, java.io.Writer)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#createDatabaseForChild(java.lang.String, java.io.Writer)
      * NOTE: THIS IS WORK IN PROGRESS *DO NOT* USE
      */
     @Deprecated
@@ -688,7 +688,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
     }
     
     /**
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#deleteOpenmrsObject(org.openmrs.synchronization.OpenmrsObject)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#deleteOpenmrsObject(org.openmrs.synchronization.OpenmrsObject)
      */
     public void deleteOpenmrsObject(OpenmrsObject o) throws DAOException {
     	sessionFactory.getCurrentSession().delete(o);
@@ -698,7 +698,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
      * Sets hibernate flush mode to org.hibernate.FlushMode.MANUAL.
      * 
      * @see org.hibernate.FlushMode
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#setFlushModeManual()
+     * @see org.openmrs.module.sync.api.db.SyncDAO#setFlushModeManual()
      */
     public void setFlushModeManual() throws DAOException {
     	sessionFactory.getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
@@ -708,7 +708,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
      * Sets hibernate flush mode to org.hibernate.FlushMode.AUTO.
      * 
      * @see org.hibernate.FlushMode
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#setFlushModeAutomatic()
+     * @see org.openmrs.module.sync.api.db.SyncDAO#setFlushModeAutomatic()
      */
     public void setFlushModeAutomatic() throws DAOException {
     	sessionFactory.getCurrentSession().setFlushMode(org.hibernate.FlushMode.AUTO);
@@ -718,7 +718,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
      * Executes hibernate flush.
      * 
      * @see org.hibernate.Session#flush()
-     * @see org.openmrs.module.sync.api.db.SynchronizationDAO#flushSession()
+     * @see org.openmrs.module.sync.api.db.SyncDAO#flushSession()
      */
     public void flushSession() throws DAOException {
     	sessionFactory.getCurrentSession().flush();
@@ -736,7 +736,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
 	
 
 	/**
-	 * @see org.openmrs.module.sync.api.db.SynchronizationDAO#getSyncStatistics(java.util.Date, java.util.Date)
+	 * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncStatistics(java.util.Date, java.util.Date)
 	 */
 	@SuppressWarnings("unchecked")
 	public Map<RemoteServer,Set<SyncStatistic>> getSyncStatistics(Date fromDate, Date toDate) throws DAOException {
@@ -792,9 +792,9 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
 		/*
 		try {
 			//now build the sql based on the hibernate mappings; to do this we need to load (at least once) the config
-			if (HibernateSynchronizationDAO.configuration == null) {
+			if (HibernateSyncDAO.configuration == null) {
 				synchronized (configurationLock) {
-					HibernateSynchronizationDAO.configuration = new org.hibernate.cfg.Configuration().configure();
+					HibernateSyncDAO.configuration = new org.hibernate.cfg.Configuration().configure();
 				}
 			}
 			
@@ -803,7 +803,7 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
 			String tableName = null;
 			String catalogName = null;
 	
-			org.hibernate.mapping.PersistentClass pc = HibernateSynchronizationDAO.configuration.getClassMapping(clazz.getName());
+			org.hibernate.mapping.PersistentClass pc = HibernateSyncDAO.configuration.getClassMapping(clazz.getName());
 			
 			if (pc == null) {
 				log.error("cannot get hibernate class mapping for " + clazz.getName());

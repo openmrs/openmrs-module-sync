@@ -26,7 +26,7 @@ import org.openmrs.module.sync.server.RemoteServer;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-public interface SynchronizationIngestService {
+public interface SyncIngestService {
 
     /**
      * Processes SyncRecord and create corresponding sync import record.

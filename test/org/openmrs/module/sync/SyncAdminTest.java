@@ -33,7 +33,7 @@ import org.openmrs.ProgramWorkflowState;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.ProgramWorkflowService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.api.SynchronizationService;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.springframework.test.annotation.NotTransactional;
 
@@ -195,7 +195,7 @@ public class SyncAdminTest extends SyncBaseTest {
 	@Test
 	public void shouldGetSyncStatistics() throws Exception {
 		executeDataSet("org/openmrs/module/sync/include/SyncRemoteChildServer.xml");
-		Map<RemoteServer,Set<SyncStatistic>> stats = Context.getService(SynchronizationService.class).getSyncStatistics(null, null);
+		Map<RemoteServer,Set<SyncStatistic>> stats = Context.getService(SyncService.class).getSyncStatistics(null, null);
 		
 		return;
 	}	

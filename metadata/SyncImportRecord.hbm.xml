@@ -5,7 +5,7 @@
 
 <hibernate-mapping package="org.openmrs.module.sync.ingest">
 
-	<class name="SyncImportRecord" table="synchronization_import">
+	<class name="SyncImportRecord" table="sync_import">
 
 		<id name="recordId" type="int" column="record_id">
 			<generator class="native" />

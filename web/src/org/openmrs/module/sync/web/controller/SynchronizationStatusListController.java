@@ -47,8 +47,8 @@ import org.openmrs.module.sync.SyncTransmission;
 import org.openmrs.module.sync.SyncTransmissionState;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.SyncUtilTransmission;
-import org.openmrs.module.sync.api.SynchronizationIngestService;
-import org.openmrs.module.sync.api.SynchronizationService;
+import org.openmrs.module.sync.api.SyncIngestService;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.ingest.SyncDeserializer;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.ingest.SyncTransmissionResponse;
@@ -114,7 +114,7 @@ public class SynchronizationStatusListController extends SimpleFormController {
         	
 	        if ("createTx".equals(action)) {            	
 	            try {
-	                parent = Context.getService(SynchronizationService.class).getParentServer();
+	                parent = Context.getService(SyncService.class).getParentServer();
 	                if (parent == null) {
 	                	throw new SyncException("Could not retrieve information about the parent server; null returned.");
 	                }
@@ -125,7 +125,7 @@ public class SynchronizationStatusListController extends SimpleFormController {
 	
 	                // Record last attempt
 	                parent.setLastSync(new Date());
-	                Context.getService(SynchronizationService.class).updateRemoteServer(parent);
+	                Context.getService(SyncService.class).updateRemoteServer(parent);
 	                
 	                // Write sync transmission to response
 	                InputStream in = new ByteArrayInputStream(toTransmit.getBytes());
@@ -146,7 +146,7 @@ public class SynchronizationStatusListController extends SimpleFormController {
 	
 	        	try {
 	            	String contents = "";
-	                parent = Context.getService(SynchronizationService.class).getParentServer();
+	                parent = Context.getService(SyncService.class).getParentServer();
 	
 	            	// first, get contents of file that is being uploaded.  it is clear we are uploading a response from parent at this point
 	            	MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
@@ -190,7 +190,7 @@ public class SynchronizationStatusListController extends SimpleFormController {
 	        			else {
 	        				// process each incoming syncImportRecord
 	        				for ( SyncImportRecord importRecord : str.getSyncImportRecords() ) {
-	        					Context.getService(SynchronizationIngestService.class).processSyncImportRecord(importRecord, parent);
+	        					Context.getService(SyncIngestService.class).processSyncImportRecord(importRecord, parent);
 	                            // get some numbers to show user the results
 	        					if ( importRecord.getState().equals(SyncRecordState.COMMITTED )) numCommitted++;
 	        					else if ( importRecord.getState().equals(SyncRecordState.ALREADY_COMMITTED )) numAlreadyCommitted++;
@@ -247,13 +247,13 @@ public class SynchronizationStatusListController extends SimpleFormController {
 
         // only fill the Object if the user has authenticated properly
         if (Context.isAuthenticated()) {
-            RemoteServer parent = Context.getService(SynchronizationService.class).getParentServer();
+            RemoteServer parent = Context.getService(SyncService.class).getParentServer();
             if ( parent != null ) {
                 SyncSource source = new SyncSourceJournal();
                 recordList = source.getChanged(parent);
             }
         	
-        	//SynchronizationService ss = Context.getService(SynchronizationService.class);
+        	//SyncService ss = Context.getService(SyncService.class);
             //recordList.addAll(ss.getSyncRecords());
         }
 
@@ -360,7 +360,7 @@ public class SynchronizationStatusListController extends SimpleFormController {
         //ret.put("itemInfo", itemInfo);
         ret.put("recordText", recordText);
         ret.put("recordChangeType", recordChangeType);
-        ret.put("parent", Context.getService(SynchronizationService.class).getParentServer());
+        ret.put("parent", Context.getService(SyncService.class).getParentServer());
         ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
         ret.put("syncState", syncState);
         

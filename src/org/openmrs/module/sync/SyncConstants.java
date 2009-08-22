@@ -15,7 +15,7 @@ package org.openmrs.module.sync;
 
 import java.text.SimpleDateFormat;
 
-import org.openmrs.module.sync.SynchronizationTask;
+import org.openmrs.module.sync.SyncTask;
 
 
 /**
@@ -25,8 +25,8 @@ import org.openmrs.module.sync.SynchronizationTask;
 public class SyncConstants {
 
     public static final SimpleDateFormat SYNC_FILENAME_MASK = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_S"); //used to format file names
-	public static final String LAST_SYNC_LOCAL = "synchronization.last_sync_local";
-	public static final String LAST_SYNC_REMOTE = "synchronization.last_sync_remote";
+	public static final String LAST_SYNC_LOCAL = "sync.last_sync_local";
+	public static final String LAST_SYNC_REMOTE = "sync.last_sync_remote";
 	
 	public static final String DATA_IMPORT_SERVLET = "/admin/synchronization/synchronizationImport.list";
 	
@@ -83,15 +83,15 @@ public class SyncConstants {
 	public static final String SYNC_DATA_FILE_PARAM = "syncDataFile";
 	
 	//global props
-    public static final String PROPERTY_SERVER_UUID = "synchronization.server_uuid"; //used internally in sync
-    public static final String PROPERTY_SERVER_ID = "synchronization.server_id"; //numeric value used for scoping any local values (such as user_ids)
-    public static final String PROPERTY_SERVER_NAME = "synchronization.server_name"; //used for display purposes, nickname
-    public static final String PROPERTY_NAME_MAX_RETRY_COUNT = "synchronization.max_retry_count";
-    public static final String PROPERTY_SYNC_ADMIN_EMAIL = "synchronization.admin_email";
-    public static final String PROPERTY_NAME_MAX_RECORDS = "synchronization.max_records";
+    public static final String PROPERTY_SERVER_UUID = "sync.server_uuid"; //used internally in sync
+    public static final String PROPERTY_SERVER_ID = "sync.server_id"; //numeric value used for scoping any local values (such as user_ids)
+    public static final String PROPERTY_SERVER_NAME = "sync.server_name"; //used for display purposes, nickname
+    public static final String PROPERTY_NAME_MAX_RETRY_COUNT = "sync.max_retry_count";
+    public static final String PROPERTY_SYNC_ADMIN_EMAIL = "sync.admin_email";
+    public static final String PROPERTY_NAME_MAX_RECORDS = "sync.max_records";
     public static final String PROPERTY_NAME_MAX_RECORDS_DEFAULT = "50";
-    public static final String PROPERTY_ENABLE_COMPRESSION = "synchronization.enable_compression";
-    public static final String PROPERTY_VERSION = "synchronization.version";
+    public static final String PROPERTY_ENABLE_COMPRESSION = "sync.enable_compression";
+    public static final String PROPERTY_VERSION = "sync.version";
     public static final String PROPERTY_ORIGINAL_UUID = "synchronization.original_uuid"; //note this value is used internally by sync; see Interceptor.setOriginalUuid()
 
     //runtime prop
@@ -102,7 +102,7 @@ public class SyncConstants {
 	public static final String DIR_IMPORT = "import";
 	public static final String DIR_JOURNAL = "journal";
 
-	public static final String SCHEDULED_TASK_CLASS = SynchronizationTask.class.getName();
+	public static final String SCHEDULED_TASK_CLASS = SyncTask.class.getName();
 	public static final String SCHEDULED_TASK_PROPERTY_SERVER_ID = "serverId";
 
 	public static final String DEFAULT_PARENT_SCHEDULE_NAME = "SynchronizationStatus.parent.schedule.default.name";
