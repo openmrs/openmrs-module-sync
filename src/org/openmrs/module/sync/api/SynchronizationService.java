@@ -462,8 +462,7 @@ public interface SynchronizationService {
     
 
     /**
-     * Performs generic save of openmrs object using persistance api.
-     * 
+     *  
      * @param fromDate start date
      * @param toDate end date
      * @return
@@ -472,4 +471,17 @@ public interface SynchronizationService {
     public Map<RemoteServer,Set<SyncStatistic>> getSyncStatistics(Date fromDate, Date toDate) throws DAOException;
     
     public boolean checkUuidsForClass(Class clazz) throws APIException;
+
+    /**
+     * Gets any type of OpenmrsObject given a class and a UUID
+     * 
+     * @param <T> works for any OpenmrsObject subclass
+     * @param clazz
+     * @param uuid
+     * @return
+     * 
+     * @should get any openmrs object by its uuid
+     */
+    public <T extends OpenmrsObject> T getOpenmrsObjectByUuid(Class<T> clazz, String uuid);
+
 }

@@ -34,11 +34,13 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.openmrs.Encounter;
 import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.context.Context;
@@ -865,4 +867,10 @@ public class HibernateSynchronizationDAO implements SynchronizationDAO {
 		return ret;
 
 	}
+
+	public <T extends OpenmrsObject> T getOpenmrsObjectByUuid(Class<T> clazz, String uuid) {
+		Criteria crit = sessionFactory.getCurrentSession().createCriteria(clazz);
+		crit.add(Restrictions.eq("uuid", uuid));
+		return (T) crit.uniqueResult();
+    }
 }

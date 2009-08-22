@@ -320,4 +320,7 @@ public interface SynchronizationDAO {
     
     
     public boolean checkUuidsForClass(Class clazz) throws DAOException;
+    
+    public <T extends OpenmrsObject> T getOpenmrsObjectByUuid(Class<T> clazz, String uuid);
+    
 }

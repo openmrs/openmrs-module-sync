@@ -530,6 +530,10 @@ public class SynchronizationServiceImpl implements SynchronizationService {
     public boolean checkUuidsForClass(Class clazz) throws APIException {
     	return getSynchronizationDAO().checkUuidsForClass(clazz);
     }
+
+	public <T extends OpenmrsObject> T getOpenmrsObjectByUuid(Class<T> clazz, String uuid) {
+	    return dao.getOpenmrsObjectByUuid(clazz, uuid);
+    }
 }
 
 
