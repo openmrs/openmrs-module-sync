@@ -56,7 +56,7 @@ public class SyncTransmissionResponseItem {
     		this.errorMessage = transmissionResponse.getErrorMessage();
     	} else {
     		this.fileName = SyncConstants.FILENAME_NO_CONNECTION;
-    		this.guid = SyncConstants.GUID_UNKNOWN;
+    		this.guid = SyncConstants.UUID_UNKNOWN;
     		this.transmissionState = ServerConnectionState.CONNECTION_FAILED.toString();
     		this.errorMessage = SyncConstants.ERROR_NO_CONNECTION;
     	}

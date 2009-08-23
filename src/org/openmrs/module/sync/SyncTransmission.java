@@ -42,8 +42,8 @@ public class SyncTransmission implements IItem {
     private List<SyncRecord> syncRecords = null;
     private String uuid = null;
     private String fileOutput = "";
-    private String syncSourceUuid = null; //this is GUID of a server where Tx is coming from
-    private String syncTargetUuid = null; //this is GUID of server where Tx is headed TO
+    private String syncSourceUuid = null; //this is UUID of a server where Tx is coming from
+    private String syncTargetUuid = null; //this is UUID of server where Tx is headed TO
     private Boolean isRequestingTransmission = false;
     private Boolean isMaxRetryReached = false; 
 
@@ -188,7 +188,7 @@ public class SyncTransmission implements IItem {
         if (this.isMaxRetryReached != null) xml.setAttribute(me, "isMaxRetryReached", this.isMaxRetryReached.toString());
 
         if (syncTargetUuid != null) xml.setAttribute(me, "syncTargetUuid", syncTargetUuid);
-        else xml.setAttribute(me, "syncTargetUuid", SyncConstants.GUID_UNKNOWN);
+        else xml.setAttribute(me, "syncTargetUuid", SyncConstants.UUID_UNKNOWN);
         
         //serialize Records list
         Item itemsCollection = xml.createItem(me, "records");

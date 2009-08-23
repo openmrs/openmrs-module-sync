@@ -194,7 +194,7 @@ public class SyncUtilTransmission {
         SyncTransmissionResponse response = new SyncTransmissionResponse();
         response.setErrorMessage(SyncConstants.ERROR_NO_PARENT_DEFINED.toString());
         response.setFileName(SyncConstants.FILENAME_NO_PARENT_DEFINED);
-        response.setUuid(SyncConstants.GUID_UNKNOWN);
+        response.setUuid(SyncConstants.UUID_UNKNOWN);
         response.setState(SyncTransmissionState.NO_PARENT_DEFINED);
         
         RemoteServer parent = Context.getService(SyncService.class).getParentServer();
@@ -210,7 +210,7 @@ public class SyncUtilTransmission {
         SyncTransmissionResponse response = new SyncTransmissionResponse();
         response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
         response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
-        response.setUuid(SyncConstants.GUID_UNKNOWN);
+        response.setUuid(SyncConstants.UUID_UNKNOWN);
         response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
         
         try {
@@ -237,7 +237,7 @@ public class SyncUtilTransmission {
             } else {
                 response.setErrorMessage(SyncConstants.ERROR_INVALID_SERVER.toString());
                 response.setFileName(SyncConstants.FILENAME_INVALID_SERVER);
-                response.setUuid(SyncConstants.GUID_UNKNOWN);
+                response.setUuid(SyncConstants.UUID_UNKNOWN);
                 response.setState(SyncTransmissionState.INVALID_SERVER);                
             }
         } catch ( Exception e ) {
@@ -255,7 +255,7 @@ public class SyncUtilTransmission {
         SyncTransmissionResponse response = new SyncTransmissionResponse();
         response.setErrorMessage(SyncConstants.ERROR_SEND_FAILED.toString());
         response.setFileName(SyncConstants.FILENAME_SEND_FAILED);
-        response.setUuid(SyncConstants.GUID_UNKNOWN);
+        response.setUuid(SyncConstants.UUID_UNKNOWN);
         response.setState(SyncTransmissionState.FAILED);
         
         try {
@@ -335,19 +335,19 @@ public class SyncUtilTransmission {
                 } else {
                     response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
                     response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
-                    response.setUuid(SyncConstants.GUID_UNKNOWN);
+                    response.setUuid(SyncConstants.UUID_UNKNOWN);
                     response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
                 }
             } else {
                 if ( server == null ) {
                     response.setErrorMessage(SyncConstants.ERROR_INVALID_SERVER.toString());
                     response.setFileName(SyncConstants.FILENAME_INVALID_SERVER);
-                    response.setUuid(SyncConstants.GUID_UNKNOWN);
+                    response.setUuid(SyncConstants.UUID_UNKNOWN);
                     response.setState(SyncTransmissionState.INVALID_SERVER);                
                 } else if ( transmission == null ) {
                     response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
                     response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
-                    response.setUuid(SyncConstants.GUID_UNKNOWN);
+                    response.setUuid(SyncConstants.UUID_UNKNOWN);
                     response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
                 }
             }
@@ -368,7 +368,7 @@ public class SyncUtilTransmission {
         SyncTransmissionResponse response = new SyncTransmissionResponse();
         response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
         response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
-        response.setUuid(SyncConstants.GUID_UNKNOWN);
+        response.setUuid(SyncConstants.UUID_UNKNOWN);
         response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
         
         try {
@@ -395,7 +395,7 @@ public class SyncUtilTransmission {
             } else {
                 response.setErrorMessage(SyncConstants.ERROR_INVALID_SERVER.toString());
                 response.setFileName(SyncConstants.FILENAME_INVALID_SERVER);
-                response.setUuid(SyncConstants.GUID_UNKNOWN);
+                response.setUuid(SyncConstants.UUID_UNKNOWN);
                 response.setState(SyncTransmissionState.INVALID_SERVER);                
             }
         } catch ( Exception e ) {
@@ -417,7 +417,7 @@ public class SyncUtilTransmission {
         SyncTransmissionResponse response = new SyncTransmissionResponse();
         response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
         response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
-        response.setUuid(SyncConstants.GUID_UNKNOWN);
+        response.setUuid(SyncConstants.UUID_UNKNOWN);
         response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
         
         try {
@@ -480,7 +480,7 @@ public class SyncUtilTransmission {
             } else {
                 response.setErrorMessage(SyncConstants.ERROR_INVALID_SERVER.toString());
                 response.setFileName(SyncConstants.FILENAME_INVALID_SERVER);
-                response.setUuid(SyncConstants.GUID_UNKNOWN);
+                response.setUuid(SyncConstants.UUID_UNKNOWN);
                 response.setState(SyncTransmissionState.INVALID_SERVER);                
             }
         } catch ( Exception e ) {
@@ -603,7 +603,7 @@ public class SyncUtilTransmission {
         SyncTransmissionResponse response = new SyncTransmissionResponse();
         response.setErrorMessage(SyncConstants.ERROR_NO_PARENT_DEFINED.toString());
         response.setFileName(SyncConstants.FILENAME_NO_PARENT_DEFINED);
-        response.setUuid(SyncConstants.GUID_UNKNOWN);
+        response.setUuid(SyncConstants.UUID_UNKNOWN);
         response.setState(SyncTransmissionState.NO_PARENT_DEFINED);
         
         RemoteServer parent = Context.getService(SyncService.class).getParentServer();

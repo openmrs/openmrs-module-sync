@@ -528,7 +528,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
      * are determined are contained in SyncUtil class.
      * <p/>
      * SyncItem with status of DELETED is handled differently from insert/update: In case of a delete, all that is needed (and sent) 
-     * is the object type and its GUID. Consequently, the process for handling deletes consists of first fetching 
+     * is the object type and its UUID. Consequently, the process for handling deletes consists of first fetching 
      * existing object by uuid and then deleting it by a call to sync service API. Note, if object is not found in DB by its uuid, we
      * skip the delete and record warning message. 
      * <p/>

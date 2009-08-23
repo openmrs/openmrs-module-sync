@@ -48,8 +48,8 @@ public class SyncTransmissionResponse implements IItem {
     private String fileOutput = "";
     private SyncTransmissionState state;
     private String errorMessage;
-    private String syncSourceUuid = null; //GUID of the node where the Tx came from
-    private String syncTargetUuid = null; //GUID of the node where Tx is being applied to, and who is now sending a response
+    private String syncSourceUuid = null; //UUID of the node where the Tx came from
+    private String syncTargetUuid = null; //UUID of the node where Tx is being applied to, and who is now sending a response
     private SyncTransmission syncTransmission = null;
 
     // constructor(s)
@@ -74,16 +74,16 @@ public class SyncTransmissionResponse implements IItem {
     	if ( transmission != null ) {
         	this.uuid = transmission.getUuid();
             this.syncSourceUuid = transmission.getSyncSourceUuid();
-            this.syncTargetUuid = SyncConstants.GUID_UNKNOWN;
+            this.syncTargetUuid = SyncConstants.UUID_UNKNOWN;
         	fileName = transmission.getFileName();
         	int idx = fileName.lastIndexOf(".");
         	if ( idx > -1 ) fileName = fileName.substring(0, idx) + SyncConstants.RESPONSE_SUFFIX + fileName.substring(idx);
         	else fileName = fileName + SyncConstants.RESPONSE_SUFFIX;
         	this.state = SyncTransmissionState.OK;  // even though we really mean "OK so far" - it'll get overwritten later if there's a prob
     	} else {
-    		this.uuid = SyncConstants.GUID_UNKNOWN;
-            this.syncSourceUuid = SyncConstants.GUID_UNKNOWN;
-            this.syncTargetUuid = SyncConstants.GUID_UNKNOWN;
+    		this.uuid = SyncConstants.UUID_UNKNOWN;
+            this.syncSourceUuid = SyncConstants.UUID_UNKNOWN;
+            this.syncTargetUuid = SyncConstants.UUID_UNKNOWN;
     		this.errorMessage = SyncConstants.ERROR_TX_NOT_UNDERSTOOD;
     		this.fileName = SyncConstants.FILENAME_TX_NOT_UNDERSTOOD;
     		this.state = SyncTransmissionState.TRANSMISSION_NOT_UNDERSTOOD;
@@ -116,17 +116,17 @@ public class SyncTransmissionResponse implements IItem {
     				e.printStackTrace();
     	    		this.errorMessage = SyncConstants.ERROR_RESPONSE_NOT_UNDERSTOOD.toString();
     	        	this.fileName = SyncConstants.FILENAME_RESPONSE_NOT_UNDERSTOOD;
-    	        	this.uuid = SyncConstants.GUID_UNKNOWN;
-                    this.syncSourceUuid = SyncConstants.GUID_UNKNOWN;
-                    this.syncTargetUuid = SyncConstants.GUID_UNKNOWN;
+    	        	this.uuid = SyncConstants.UUID_UNKNOWN;
+                    this.syncSourceUuid = SyncConstants.UUID_UNKNOWN;
+                    this.syncTargetUuid = SyncConstants.UUID_UNKNOWN;
     	        	this.state = SyncTransmissionState.RESPONSE_NOT_UNDERSTOOD;
     			} 
     		} else {
         		this.errorMessage = SyncConstants.ERROR_SEND_FAILED.toString();
             	this.fileName = SyncConstants.FILENAME_SEND_FAILED;
-            	this.uuid = SyncConstants.GUID_UNKNOWN;
-                this.syncSourceUuid = SyncConstants.GUID_UNKNOWN;
-                this.syncTargetUuid = SyncConstants.GUID_UNKNOWN;
+            	this.uuid = SyncConstants.UUID_UNKNOWN;
+                this.syncSourceUuid = SyncConstants.UUID_UNKNOWN;
+                this.syncTargetUuid = SyncConstants.UUID_UNKNOWN;
             	this.state = SyncTransmissionState.FAILED;
             	if ( connResponse.getState().equals(ServerConnectionState.MALFORMED_URL)) this.state = SyncTransmissionState.MALFORMED_URL;
             	if ( connResponse.getState().equals(ServerConnectionState.CERTIFICATE_FAILED)) this.state = SyncTransmissionState.CERTIFICATE_FAILED;
@@ -134,9 +134,9 @@ public class SyncTransmissionResponse implements IItem {
     	} else {
     		this.errorMessage = SyncConstants.ERROR_SEND_FAILED.toString();
         	this.fileName = SyncConstants.FILENAME_SEND_FAILED;
-        	this.uuid = SyncConstants.GUID_UNKNOWN;
-            this.syncSourceUuid = SyncConstants.GUID_UNKNOWN;
-            this.syncTargetUuid = SyncConstants.GUID_UNKNOWN;
+        	this.uuid = SyncConstants.UUID_UNKNOWN;
+            this.syncSourceUuid = SyncConstants.UUID_UNKNOWN;
+            this.syncTargetUuid = SyncConstants.UUID_UNKNOWN;
         	this.state = SyncTransmissionState.FAILED;
     	}
     }

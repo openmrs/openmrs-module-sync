@@ -226,7 +226,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 						log.debug(record.getItems().size()
 						        + " SyncItems in SyncRecord, saving!");
 
-					// Grab user if we have one, and use the GUID of the user as
+					// Grab user if we have one, and use the UUID of the user as
 					// creator of this SyncRecord
 					User user = Context.getAuthenticatedUser();
 					if (user != null) {
@@ -241,7 +241,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 					record.setUuid(UUID.randomUUID().toString());
 					if (record.getOriginalUuid() == null) {
 						if (log.isInfoEnabled())
-							log.info("OriginalUuid is null, so assigning a new GUID: " + record.getUuid());
+							log.info("OriginalUuid is null, so assigning a new UUID: " + record.getUuid());
 						record.setOriginalUuid(record.getUuid());
 					} else {
 						if (log.isInfoEnabled())
@@ -342,7 +342,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 * Packages up the changes and sets item state to NEW.
 	 * 
 	 * @return false if data is unmodified by this interceptor, true if
-	 *         modified. Adding GUIDs to new objects that lack them.
+	 *         modified. Adding UUIDs to new objects that lack them.
 	 * 
 	 * @see org.hibernate.EmptyInterceptor#onSave(java.lang.Object,
 	 *      java.io.Serializable, java.lang.Object[], java.lang.String[],
@@ -391,7 +391,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 * care about synchronizing.
 	 * 
 	 * @return false if data is unmodified by this interceptor, true if
-	 *         modified. Adding GUIDs to new objects that lack them.
+	 *         modified. Adding UUIDs to new objects that lack them.
 	 * 
 	 * @see org.hibernate.EmptyInterceptor#onFlushDirty(java.lang.Object,
 	 *      java.io.Serializable, java.lang.Object[], java.lang.Object[],
@@ -598,7 +598,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 
 		try {
 			
-			//boolean isUuidAssigned = assignGUID(entity, currentState, propertyNames, state);
+			//boolean isUuidAssigned = assignUUID(entity, currentState, propertyNames, state);
 			objectUuid = entity.getUuid();
 
 			// pull-out sync-network wide change id for the sync *record* (not
@@ -1318,22 +1318,22 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 */
 	private void setOriginalUuid(Object entity) {
 
-		String originalRecordGuid = null;
+		String originalRecordUuid = null;
 		if (syncRecordHolder.get() != null) {
 			if (syncRecordHolder.get().getOriginalUuid() != null) {
-				originalRecordGuid = syncRecordHolder.get().getOriginalUuid();
+				originalRecordUuid = syncRecordHolder.get().getOriginalUuid();
 
 			} else if (entity instanceof org.openmrs.GlobalProperty) {
 				org.openmrs.GlobalProperty gp = (org.openmrs.GlobalProperty) entity;
 				if (SyncConstants.PROPERTY_ORIGINAL_UUID.equals(gp
 						.getProperty())) {
-					// okay, this is original guid being passed in from ingest
-					originalRecordGuid = gp.getPropertyValue();
+					// okay, this is original uuid being passed in from ingest
+					originalRecordUuid = gp.getPropertyValue();
 					if (this.syncRecordHolder.get().getOriginalUuid() == null
 							|| "".equals(syncRecordHolder.get()
 									.getOriginalUuid())) {
 						syncRecordHolder.get().setOriginalUuid(
-								originalRecordGuid);
+								originalRecordUuid);
 					}
 				}
 			}

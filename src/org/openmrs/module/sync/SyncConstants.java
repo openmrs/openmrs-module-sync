@@ -17,10 +17,8 @@ import java.text.SimpleDateFormat;
 
 import org.openmrs.module.sync.SyncTask;
 
-
 /**
- * Common sync consts.
- *
+ * Common sync constants
  */
 public class SyncConstants {
 
@@ -28,7 +26,7 @@ public class SyncConstants {
 	public static final String LAST_SYNC_LOCAL = "sync.last_sync_local";
 	public static final String LAST_SYNC_REMOTE = "sync.last_sync_remote";
 	
-	public static final String DATA_IMPORT_SERVLET = "/admin/synchronization/synchronizationImport.list";
+	public static final String DATA_IMPORT_SERVLET = "/module/sync/import.list";
 	
 	public static final String TEST_MESSAGE = "test";
 	
@@ -75,7 +73,7 @@ public class SyncConstants {
 	public static final String FILENAME_INVALID_SERVER = "invalid_server";
 	public static final String FILENAME_TEST = "test";
 	
-	public static final String GUID_UNKNOWN = "";
+	public static final String UUID_UNKNOWN = "";
 
 	public static final String UTF8 = "UTF-8";
 	public static final String POST_METHOD = "POST";

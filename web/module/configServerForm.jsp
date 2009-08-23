@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/synchronizationConfigServer.form" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/configServer.form" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -78,13 +78,13 @@
 			
 			
 			var display = getMessage(result.connectionState) + "&nbsp;" + img;
-			DWRUtil.setValue("testInfo", display);
+			DWRUtil.setValue("testInfo", display, { escapeHtml:false });
 			document.getElementById("testConnectionButton").disabled = false;
 		}
 	
 		function testConnection() {
 			document.getElementById("testConnectionButton").disabled = true;
-			DWRUtil.setValue("testInfo", "<spring:message code="sync.config.server.connection.testing" />");
+			DWRUtil.setValue("testInfo", '<spring:message code="sync.config.server.connection.testing" />');
 			var address = DWRUtil.getValue("address");
 			var username = DWRUtil.getValue("username");
 			var password = DWRUtil.getValue("password");
@@ -253,7 +253,7 @@
 		</div>		
 	
 		<br>
-		&nbsp;&nbsp;<a href="javascript://" onclick="showHideDiv('details');"><spring:message code="general.showHideMoreOptions" /></a>
+		&nbsp;&nbsp;<a href="javascript://" onclick="showHideDiv('details');"><spring:message code="sync.general.showHideMoreOptions" /></a>
 		<br>
 		<br>
 	

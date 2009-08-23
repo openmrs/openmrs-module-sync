@@ -51,7 +51,7 @@ public class DWRSyncService {
 		SyncTransmissionResponseItem transmissionResponse = new SyncTransmissionResponseItem(); 
     	transmissionResponse.setErrorMessage(SyncConstants.ERROR_SEND_FAILED.toString());
     	transmissionResponse.setFileName(SyncConstants.FILENAME_SEND_FAILED);
-    	transmissionResponse.setUuid(SyncConstants.GUID_UNKNOWN);
+    	transmissionResponse.setUuid(SyncConstants.UUID_UNKNOWN);
     	transmissionResponse.setTransmissionState(SyncTransmissionState.FAILED.toString());
 
     	SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize();

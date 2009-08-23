@@ -105,9 +105,11 @@
   
   <patient patient_id="2" creator="1" date_created="2008-01-14 17:56:26.0" voided="0"/>
   <patient patient_id="3" creator="1" date_created="2008-01-14 17:56:26.0" voided="0"/>
+  <patient patient_id="4" creator="1" date_created="2008-01-14 17:56:26.0" voided="0"/>
 
   <patient_identifier patient_identifier_id = "2" patient_id="2" identifier="ID1234" identifier_type="2" preferred="1" location_id="1" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="6b920848-1b90-102b-8082-d8cf852a43d2"/>
   <patient_identifier patient_identifier_id = "3" patient_id="3" identifier="ID4381924" identifier_type="2" preferred="1" location_id="1" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="75ca462a-1b90-102b-8082-d8cf852a43d2"/>
+  <patient_identifier patient_identifier_id = "4" patient_id="4" identifier="ID4381925" identifier_type="2" preferred="1" location_id="1" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="121a462a-1b90-102b-8082-d8cf852a43d3"/>
   <patient_identifier_type retired="false" patient_identifier_type_id="1" name="OpenMRS Identification Number" description="Unique number used in OpenMRS" format="" check_digit="true" creator="1" date_created="2005-09-22 00:00:00.0" required="false" uuid="3010e3ee-144e-102b-8d9c-e44ed545d86c"/>
   <patient_identifier_type retired="false" patient_identifier_type_id="2" name="Old Identification Number" description="Number given out prior to the OpenMRS system (No check digit)" format="" check_digit="false" creator="1" date_created="2005-09-22 00:00:00.0" required="false" uuid="3010e86a-144e-102b-8d9c-e44ed545d86c"/>
 
@@ -118,9 +120,11 @@
   <person person_id="1" gender="M" dead="0" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="31712910-144e-102b-8d9c-e44ed545d86c"/>
   <person person_id="2" gender="F" dead="0" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="577d58db-15a5-102b-8d9c-e44ed545d86c"/>
   <person person_id="3" gender="F" dead="0" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="196bef28-168c-102b-8d9c-e44ed545d86c"/>
+  <person person_id="4" gender="F" dead="0" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="426bef28-168c-102b-8d9c-e44ed545d863"/>
 
   <person_address person_address_id="2" person_id="2" preferred="true" address1="1050 Wishard Blvd." address2="RG5" city_village="Indianapolis" state_province="IN" postal_code="46202" country="USA" latitude="" longitude="" creator="1" date_created="2005-09-22 00:00:00.0" voided="false" void_reason="" uuid="196bef28-168c-102b-8d9c-e44ed545d111"/>
   <person_address person_address_id="7" person_id="3" preferred="false" address1="" address2="" city_village="Kapina" state_province="" postal_code="" country="" latitude="" longitude="" creator="1" date_created="2006-01-18 00:00:00.0" voided="false" void_reason="" uuid="196bef28-168c-102b-8d9c-e44ed545d222"/>
+  <person_address person_address_id="8" person_id="4" preferred="false" address1="" address2="" city_village="Youngstown" state_province="" postal_code="" country="" latitude="" longitude="" creator="1" date_created="2006-01-18 00:00:00.0" voided="false" void_reason="" uuid="196bef28-168c-102b-8d9c-e44ed545d223"/>
 
   <person_attribute/>
 

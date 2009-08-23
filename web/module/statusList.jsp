@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/synchronizationStatus.list" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/status.list" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -103,7 +103,7 @@
 
 		function syncToParent() {
 			document.getElementById("webExportButton").disabled = true;
-			DWRUtil.setValue("syncInfo", "<spring:message code="sync.status.export.viaWeb.sending" arguments="${fn:length(synchronizationStatusList)}" />");
+			DWRUtil.setValue("syncInfo", "<spring:message code="sync.status.export.viaWeb.sending" arguments="${fn:length(statusCommandObject)}" />");
 			DWRSyncService.syncToParent(displaySyncResults);
 		}
 		
@@ -196,9 +196,9 @@
 			</tr>
 		</thead>
 		<tbody id="globalPropsList">
-			<c:if test="${not empty synchronizationStatusList}">
+			<c:if test="${not empty statusCommandObject}">
 				<c:set var="bgStyle" value="eee" />
-				<c:forEach var="syncRecord" items="${synchronizationStatusList}" varStatus="status">
+				<c:forEach var="syncRecord" items="${statusCommandObject}" varStatus="status">
 					<%--<c:forEach var="syncItem" items="${syncRecord.items}" varStatus="itemStatus">--%>
 						<tr>
 							<td valign="middle" nowrap style="background-color: #${bgStyle};">
@@ -235,7 +235,7 @@
 					<%--</c:forEach>--%>
 				</c:forEach>
 			</c:if>
-			<c:if test="${empty synchronizationStatusList}">
+			<c:if test="${empty statusCommandObject}">
 				<td colspan="5" align="left">
 					<i><spring:message code="sync.status.noItems" /></i>
 				</td>

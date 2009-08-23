@@ -267,7 +267,7 @@ public interface SyncDAO {
 
     /**
      * Dumps the entire database, much like what you'd get from the mysqldump command, and
-     * adds a few lines to set the child's GUID, and delete sync history 
+     * adds a few lines to set the child's UUID, and delete sync history 
      * 
      * @param uuidForChild if not null, use this as the uuid for the child server, otherwise autogenerate one 
      * @param out write the sql here

@@ -55,7 +55,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 import org.springframework.web.servlet.view.RedirectView;
 
-public class SynchronizationServerFormController extends SimpleFormController {
+public class ConfigServerFormController extends SimpleFormController {
 
     /** Logger for this class and subclasses */
     protected final Log log = LogFactory.getLog(getClass());
@@ -72,7 +72,7 @@ public class SynchronizationServerFormController extends SimpleFormController {
 	@Override
     protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse reponse, Object obj, BindException errors) throws Exception {
 
-		log.debug("in processFormSubmission");
+		log.debug("in onSubmit");
 		
     	ModelAndView result = new ModelAndView(new RedirectView(getSuccessView()));
     	
@@ -159,11 +159,10 @@ public class SynchronizationServerFormController extends SimpleFormController {
                         
                         // create in database
                         try {
-                            Context.getUserService().createUser(user, password);
+                            Context.getUserService().saveUser(user, password);
                             server.setChildUsername(user.getUsername());
                         } catch ( Exception e ) {
-                            log.error("Unable to create new user to associate with child server");
-                            e.printStackTrace();
+                            log.error("Unable to create new user to associate with child server", e);
                             error = msa.getMessage("sync.config.child.error.uniqueUsername");
                         }
                     }

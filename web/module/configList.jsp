@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/synchronizationConfig.list" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/config.list" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -45,7 +45,7 @@
 		<b class="boxHeader"><spring:message code="sync.config.servers.remote"/></b>
 		<div class="box">
 			<table id="syncChangesTable" cellpadding="10" cellspacing="0">
-				<c:if test="${not empty synchronizationConfigList.serverList}">
+				<c:if test="${not empty configListBackingObject.serverList}">
 					<thead>
 						<tr>
 							<th></th>
@@ -65,7 +65,7 @@
 								<spring:message code="sync.config.server.syncViaWeb" />
 							<th style="background-color: #fee; text-align: center;"><img src="${pageContext.request.contextPath}/moduleResources/sync/scheduled_send.gif" border="0" style="margin-bottom: -3px;">
 								<spring:message code="sync.config.server.syncAutomatic" />
-								(<spring:message code="general.scheduled" />)
+								(<spring:message code="sync.general.scheduled" />)
 							<th style="text-align: center;"><spring:message code="sync.config.server.delete" /></th>
 						</tr>
 					</thead>
@@ -74,15 +74,15 @@
 						<c:set var="bgStyleFile" value="dde" />				
 						<c:set var="bgStyleWebMan" value="ded" />				
 						<c:set var="bgStyleWebAuto" value="edd" />				
-						<c:forEach var="server" items="${synchronizationConfigList.serverList}" varStatus="status">
+						<c:forEach var="server" items="${configListBackingObject.serverList}" varStatus="status">
 							<tr>
 								<td nowrap style="background-color: #${bgStyle};">
 									<c:choose>
 										<c:when test="${server.serverType == 'CHILD'}">
-											<a href="synchronizationConfigServer.form?serverId=${server.serverId}" disabled><b>${server.nickname}</b></a>
+											<a href="configServer.form?serverId=${server.serverId}" disabled><b>${server.nickname}</b></a>
 										</c:when>
 										<c:otherwise>
-											<a href="synchronizationConfigServer.form?serverId=${server.serverId}"><b>${server.nickname}</b></a>
+											<a href="configServer.form?serverId=${server.serverId}"><b>${server.nickname}</b></a>
 											<%--(${server.address})--%>
 										</c:otherwise>
 									</c:choose>
@@ -103,16 +103,16 @@
 								<td style="background-color: #${bgStyleFile}; text-align:center;">
 									<c:choose>
 										<c:when test="${server.serverType == 'CHILD'}">
-											<a href="synchronizationImport.list?serverId=${server.serverId}">
+											<a href="import.list?serverId=${server.serverId}">
 												<spring:message code="sync.config.server.uploadAndReply" />
 											</a>
 										</c:when>
 										<c:otherwise>
-											<a href="synchronizationStatus.list?mode=SEND_FILE">
+											<a href="status.list?mode=SEND_FILE">
 												<spring:message code="sync.config.server.sendFile" />
 											</a>
 											&nbsp;
-											<a href="synchronizationStatus.list?mode=UPLOAD_REPLY">
+											<a href="status.list?mode=UPLOAD_REPLY">
 												<spring:message code="sync.config.server.uploadResponse" />
 											</a>
 										</c:otherwise>
@@ -124,7 +124,7 @@
 											-
 										</c:when>
 										<c:otherwise>
-											<a href="synchronizationStatus.list?mode=SEND_WEB">
+											<a href="status.list?mode=SEND_WEB">
 												<spring:message code="sync.config.server.synchronizeNow" />
 											</a>
 										</c:otherwise>
@@ -138,16 +138,16 @@
 										<c:otherwise>
 											<c:if test="${parentSchedule.started == false}">
 												(<spring:message code="sync.config.parent.not.scheduled" />)
-												<a href="synchronizationConfigServer.form?serverId=${server.serverId}" style="font-size: 0.9em;">
-													<spring:message code="general.configure" />
+												<a href="configServer.form?serverId=${server.serverId}" style="font-size: 0.9em;">
+													<spring:message code="sync.general.configure" />
 												</a>
 											</c:if>
 											<c:if test="${parentSchedule.started == true}">
 												<spring:message code="sync.config.parent.scheduled.every" />
 												<b>${repeatInterval}</b>
 												<spring:message code="sync.config.parent.scheduled.minutes" />
-												<a href="synchronizationConfigServer.form?serverId=${server.serverId}" style="font-size: 0.9em;">
-													<spring:message code="general.configure" />
+												<a href="configServer.form?serverId=${server.serverId}" style="font-size: 0.9em;">
+													<spring:message code="sync.general.configure" />
 												</a>
 											</c:if>
 										</c:otherwise>
@@ -156,7 +156,7 @@
 								<td style="background-color: #${bgStyle}; text-align:center;">
 									<c:choose>
 										<c:when test="${server.serverType != 'PARENT'}">
-											<form id="deleteServer${server.serverId}" action="synchronizationConfig.list" method="post">
+											<form id="deleteServer${server.serverId}" action="config.list" method="post">
 												<input type="hidden" name="action" value="deleteServer" />
 												<input type="hidden" id="serverId" name="serverId" value="${server.serverId}" />
 												<a href="javascript:confirmDelete('${server.serverId}');"><img src="<%= request.getContextPath() %>/images/trash.gif" alt="delete" border="0" /></a>
@@ -184,7 +184,7 @@
 							</c:choose>
 						</c:forEach>
 					</c:if>
-					<c:if test="${empty synchronizationConfigList.serverList}">
+					<c:if test="${empty configListBackingObject.serverList}">
 						<td colspan="3" align="left">
 							<i><spring:message code="sync.config.servers.noItems" /></i>
 						</td>
@@ -192,12 +192,12 @@
 					<tr>
 						<td colspan="3">
 							<br>
-							<a href="synchronizationConfigServer.form?type=CHILD"><img src="${pageContext.request.contextPath}/images/add.gif" style="margin-bottom: -3px;" border="0" /></a>
-							<a href="synchronizationConfigServer.form?type=CHILD"><spring:message code="sync.config.server.config.child" /></a>
+							<a href="configServer.form?type=CHILD"><img src="${pageContext.request.contextPath}/images/add.gif" style="margin-bottom: -3px;" border="0" /></a>
+							<a href="configServer.form?type=CHILD"><spring:message code="sync.config.server.config.child" /></a>
 							<c:if test="${empty parent}">
 								 |
-								<a href="synchronizationConfigServer.form?type=PARENT"><img src="${pageContext.request.contextPath}/images/add.gif" style="margin-bottom: -3px;" border="0" /></a>
-								<a href="synchronizationConfigServer.form?type=PARENT"><spring:message code="sync.config.server.config.parent" /></a>
+								<a href="configServer.form?type=PARENT"><img src="${pageContext.request.contextPath}/images/add.gif" style="margin-bottom: -3px;" border="0" /></a>
+								<a href="configServer.form?type=PARENT"><spring:message code="sync.config.server.config.parent" /></a>
 							</c:if>
 						</td>
 					</tr>
@@ -209,7 +209,7 @@
 
 <div id="advanced" style="display:none;">
 
-	<form action="synchronizationConfig.list" method="post">
+	<form action="config.list" method="post">
 	<input type="hidden" name="action" value="saveClasses" />
 
 		<b class="boxHeader"><spring:message code="sync.config.advanced.configOptions"/></b>
@@ -244,7 +244,7 @@
 							<thead>
 								<tr>
 									<th colspan="2" valign="bottom"><spring:message code="sync.config.class.item" /></th>
-									<th colspan="2" align="center">&nbsp;&nbsp;<spring:message code="general.default.behavior" /></th>
+									<th colspan="2" align="center">&nbsp;&nbsp;<spring:message code="sync.general.default.behavior" /></th>
 								</tr>
 							</thead>
 							<tbody id="globalPropsList">
@@ -305,7 +305,7 @@
 							<thead>
 								<tr>
 									<th colspan="2" valign="bottom"><spring:message code="sync.config.class.item" /></th>
-									<th colspan="2" align="center">&nbsp;&nbsp;<spring:message code="general.default.behavior" /></th>
+									<th colspan="2" align="center">&nbsp;&nbsp;<spring:message code="sync.general.default.behavior" /></th>
 								</tr>
 							</thead>
 							<tbody id="globalPropsList">
@@ -364,8 +364,8 @@
 				</tr>
 				<tr>
 					<td colspan="2" align="center">
-						<input type="submit" value="<spring:message code="general.save" />" />
-						<input type="button" onclick="location.href='synchronizationConfig.list';" value="<spring:message code="general.cancel" />" />
+						<input type="submit" value="<spring:message code="sync.general.save" />" />
+						<input type="button" onclick="location.href='config.list';" value="<spring:message code="sync.general.cancel" />" />
 					</td>
 				</tr>
 			</table>

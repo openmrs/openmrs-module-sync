@@ -18,57 +18,57 @@
     	<property name="order"><value>1</value></property>
     	<property name="mappings">
             <props>
-            	<prop key="module/@MODULE_ID@/synchronizationStatus.list">synchronizationStatusListController</prop>
-				<prop key="module/@MODULE_ID@/synchronizationImport.list">synchronizationImportListController</prop>
-				<prop key="module/@MODULE_ID@/synchronizationHistory.list">synchronizationHistoryListController</prop>
-				<prop key="module/@MODULE_ID@/synchronizationConfig.list">synchronizationConfigListController</prop>
-				<prop key="module/@MODULE_ID@/synchronizationStats.list">synchronizationStatsListController</prop>
-				<prop key="module/@MODULE_ID@/synchronizationConfigServer.form">synchronizationServerFormController</prop>
-				<prop key="module/@MODULE_ID@/synchronizationHelp.list">synchronizationHelpListController</prop>
+            	<prop key="module/@MODULE_ID@/status.list">statusListController</prop>
+				<prop key="module/@MODULE_ID@/import.list">importListController</prop>
+				<prop key="module/@MODULE_ID@/history.list">historyListController</prop>
+				<prop key="module/@MODULE_ID@/config.list">configListController</prop>
+				<prop key="module/@MODULE_ID@/overview.htm">overviewController</prop>
+				<prop key="module/@MODULE_ID@/configServer.form">configServerFormController</prop>
+				<prop key="module/@MODULE_ID@/help.htm">helpController</prop>
 	    	</props>
 		</property>
     </bean>
 
-    <bean id="synchronizationStatusListController" class="@MODULE_PACKAGE@.web.controller.SynchronizationStatusListController">
-		<property name="commandName"><value>synchronizationStatusList</value></property>
-		<property name="formView"><value>/module/@MODULE_ID@/synchronizationStatusList</value></property>
-		<property name="successView"><value>synchronizationStatus.list</value></property>
+    <bean id="statusListController" class="@MODULE_PACKAGE@.web.controller.StatusListController">
+		<property name="commandName"><value>statusCommandObject</value></property>
+		<property name="formView"><value>/module/@MODULE_ID@/statusList</value></property>
+		<property name="successView"><value>status.list</value></property>
 	</bean>
 	
-	<bean id="synchronizationImportListController"  class="@MODULE_PACKAGE@.web.controller.SynchronizationImportListController">
-		<property name="commandName"><value>synchronizationImportList</value></property>
-		<property name="formView"><value>/module/@MODULE_ID@/synchronizationImportList</value></property>
-		<property name="successView"><value>synchronizationImport.list</value></property>
+	<bean id="importListController" class="@MODULE_PACKAGE@.web.controller.ImportListController">
+		<property name="commandName"><value>importCommandObject</value></property>
+		<property name="formView"><value>/module/@MODULE_ID@/importList</value></property>
+		<property name="successView"><value>import.list</value></property>
 	</bean>
 
-	<bean id="synchronizationHistoryListController"  class="@MODULE_PACKAGE@.web.controller.SynchronizationHistoryListController">
-		<property name="commandName"><value>synchronizationHistoryList</value></property>
-		<property name="formView"><value>/module/@MODULE_ID@/synchronizationHistoryList</value></property>
-		<property name="successView"><value>synchronizationHistory.list</value></property>
+	<bean id="historyListController" class="@MODULE_PACKAGE@.web.controller.HistoryListController">
+		<property name="commandName"><value>historyCommandObject</value></property>
+		<property name="formView"><value>/module/@MODULE_ID@/historyList</value></property>
+		<property name="successView"><value>history.list</value></property>
 	</bean>
 
-	<bean id="synchronizationConfigListController"  class="@MODULE_PACKAGE@.web.controller.SynchronizationConfigListController">
-		<property name="commandName"><value>synchronizationConfigList</value></property>
-		<property name="formView"><value>/module/@MODULE_ID@/synchronizationConfigList</value></property>
-		<property name="successView"><value>synchronizationConfig.list</value></property>
+	<bean id="configListController" class="@MODULE_PACKAGE@.web.controller.ConfigListController">
+		<property name="commandName"><value>configListBackingObject</value></property>
+		<property name="formView"><value>/module/@MODULE_ID@/configList</value></property>
+		<property name="successView"><value>config.list</value></property>
 	</bean>
 
-	<bean id="synchronizationStatsListController"  class="@MODULE_PACKAGE@.web.controller.SynchronizationStatsListController">
-		<property name="commandName"><value>synchronizationStatsList</value></property>
-		<property name="formView"><value>/module/@MODULE_ID@/synchronizationStatsList</value></property>
-		<property name="successView"><value>synchronizationStats.list</value></property>
+	<bean id="overviewController" class="@MODULE_PACKAGE@.web.controller.OverviewController">
+		<property name="commandName"><value>commandObject</value></property>
+		<property name="formView"><value>/module/@MODULE_ID@/overview</value></property>
+		<property name="successView"><value>overview.htm</value></property>
 	</bean>
 
-	<bean id="synchronizationHelpListController"  class="@MODULE_PACKAGE@.web.controller.SynchronizationHelpListController">
-		<property name="commandName"><value>synchronizationHelpList</value></property>
-		<property name="formView"><value>/module/@MODULE_ID@/synchronizationHelpList</value></property>
-		<property name="successView"><value>synchronizationHelp.list</value></property>
+	<bean id="helpController" class="@MODULE_PACKAGE@.web.controller.HelpController">
+		<property name="commandName"><value>parentServer</value></property>
+		<property name="formView"><value>/module/@MODULE_ID@/help</value></property>
+		<property name="successView"><value>help.htm</value></property>
 	</bean>
 
-	<bean id="synchronizationServerFormController"  class="@MODULE_PACKAGE@.web.controller.SynchronizationServerFormController">
+	<bean id="configServerFormController" class="@MODULE_PACKAGE@.web.controller.ConfigServerFormController">
 		<property name="commandName"><value>server</value></property>
-		<property name="formView"><value>/module/@MODULE_ID@/synchronizationServerForm</value></property>
-		<property name="successView"><value>synchronizationConfig.list</value></property>
+		<property name="formView"><value>/module/@MODULE_ID@/configServerForm</value></property>
+		<property name="successView"><value>config.list</value></property>
 	</bean>
 	
 	<bean parent="serviceContext">

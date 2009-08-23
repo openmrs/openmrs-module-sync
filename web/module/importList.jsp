@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/synchronizationImport.list" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/import.list" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -31,20 +31,20 @@
 	-->
 </script>
 
-<b class="boxHeader"><spring:message code="SynchronizationImport.import.from.file"/></b>
+<b class="boxHeader"><spring:message code="sync.import.import.from.file"/></b>
 <div class="box">
 	<table>
 		<tr>
 			<td>
 				<form method="post" enctype="multipart/form-data" onSubmit="return doSubmit();">
 				
-					<spring:message code="SynchronizationImport.filePrompt" />
+					<spring:message code="sync.import.filePrompt" />
 					
 					<input type="file" name="syncDataFile" value="" />
 					<input type="hidden" name="upload" value="true" />
-					<input type="submit" value="<spring:message code="SynchronizationImport.importData" />" id="submitButton" />
+					<input type="submit" value="<spring:message code="sync.import.importData" />" id="submitButton" />
 				
-					<span id="infoText" style="display:none;"><spring:message code="SynchronizationImport.generatingResponse" /></span>
+					<span id="infoText" style="display:none;"><spring:message code="sync.import.generatingResponse" /></span>
 				</form>
 			</td>
 		</tr>
@@ -52,19 +52,19 @@
 </div>
 
 <br>
-&nbsp;&nbsp;<a href="javascript://" onclick="showHideDiv('pasteImport');">Import via copy/paste</a>
+&nbsp;&nbsp;<a href="javascript://" onclick="showHideDiv('pasteImport');"><spring:message code="sync.import.copyPaste"/></a>
 
 <div id="pasteImport" style="display:none;">
 	<br>
 	<br>
 	
-	<b class="boxHeader"><spring:message code="SynchronizationImport.paste.data"/></b>
+	<b class="boxHeader"><spring:message code="sync.import.paste.data"/></b>
 	<div class="box">
-		<form method="post" action="synchronizationImport.list">
+		<form method="post" action="import.list">
 			<table>
 				<tr>
 					<td align="right" valign="top">
-						<b><spring:message code="SynchronizationImport.paste.here" /></b>
+						<b><spring:message code="sync.import.paste.here" /></b>
 					</td>
 					<td align="left" valign="top">
 						<textarea name="syncData" rows="16" cols="80"></textarea>
@@ -73,7 +73,7 @@
 				<tr>
 					<td></td>
 					<td>
-						<input type="submit" value="<spring:message code="SynchronizationImport.importData" />" />
+						<input type="submit" value="<spring:message code="sync.import.importData" />" />
 					</td>
 				</tr>
 			</table>

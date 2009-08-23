@@ -3,21 +3,21 @@
 		<a href="${pageContext.request.contextPath}/admin"><spring:message code="admin.title.short"/></a>
 	</li>
 	<openmrs:hasPrivilege privilege="Manage Synchronization">
-		<li <c:if test='<%= request.getRequestURI().contains("synchronizationStats") %>'>class="active"</c:if>>
-			<a href="${pageContext.request.contextPath}/module/sync/synchronizationStats.list">
+		<li <c:if test='<%= request.getRequestURI().contains("overview") %>'>class="active"</c:if>>
+			<a href="${pageContext.request.contextPath}/module/sync/overview.htm">
 				<spring:message code="sync.stats.title"/>
 			</a>
 		</li>
 	</openmrs:hasPrivilege>
 	<openmrs:hasPrivilege privilege="Manage Synchronization">
-		<li <c:if test='<%= request.getRequestURI().contains("synchronizationConfig") %>'>class="active"</c:if>>
-			<a href="${pageContext.request.contextPath}/module/sync/synchronizationConfig.list">
+		<li <c:if test='<%= request.getRequestURI().contains("config") %>'>class="active"</c:if>>
+			<a href="${pageContext.request.contextPath}/module/sync/config.list">
 				<spring:message code="sync.config.title"/>
 			</a>
 		</li>
 	</openmrs:hasPrivilege>
-	<li <c:if test='<%= request.getRequestURI().contains("synchronizationHelp") %>'>class="active"</c:if>>
-		<a href="${pageContext.request.contextPath}/module/sync/synchronizationHelp.list">
+	<li <c:if test='<%= request.getRequestURI().contains("help") %>'>class="active"</c:if>>
+		<a href="${pageContext.request.contextPath}/module/sync/help.htm">
 			<spring:message code="sync.help.title"/>
 		</a>
 	</li>

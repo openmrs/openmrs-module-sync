@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/synchronizationStats.list" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/overview.htm" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -66,7 +66,7 @@
 		<b class="boxHeader"><spring:message code="sync.config.servers.remote"/></b>
 		<div class="box">
 			<table id="sync" cellpadding="10" cellspacing="0">
-				<c:if test="${not empty synchronizationStatsList.serverList}">
+				<c:if test="${not empty commandObject.serverList}">
 					<thead>
 						<tr>
 							<th></th>
@@ -91,8 +91,8 @@
 						<c:set var="bgStyleReceive" value="dde" />				
 						<c:set var="bgStyleSend" value="ded" />				
 						<!-- iterate over servers and their stats -->
-						<c:forEach var="server" items="${synchronizationStatsList.serverList}" varStatus="status">
-							<c:set var="serverStatsSet" value="${synchronizationStatsList.syncStats[server]}" />
+						<c:forEach var="server" items="${commandObject.serverList}" varStatus="status">
+							<c:set var="serverStatsSet" value="${commandObject.syncStats[server]}" />
 							<c:set var="wroteServerInfo" value="false" />
 							<c:forEach var="serverStats" items="${serverStatsSet}" varStatus="statusServerStats">
 							<c:choose>
@@ -185,7 +185,7 @@
 							</c:choose>
 						</c:forEach>
 					</c:if>
-					<c:if test="${empty synchronizationStatsList.serverList}">
+					<c:if test="${empty commandObject.serverList}">
 						<td colspan="3" align="left">
 							<i><spring:message code="sync.config.servers.noItems" /></i>
 						</td>

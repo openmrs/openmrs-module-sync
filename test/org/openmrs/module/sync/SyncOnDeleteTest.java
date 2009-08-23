@@ -138,15 +138,15 @@ public class SyncOnDeleteTest extends SyncBaseTest {
     @NotTransactional
 	public void shouldDeletePatient() throws Exception {
 		runSyncTest(new SyncTestHelper() {
+			Integer patientId = 4;
+			
 			public void runOnChild() {				
-				Patient p = Context.getPatientService().getPatient(2);
+				Patient p = Context.getPatientService().getPatient(patientId);
 				Context.getPatientService().purgePatient(p);				
 			}
 			public void runOnParent() {
-				/*
-				Patient p = Context.getPatientService().getPatient(2);
+				Patient p = Context.getPatientService().getPatient(patientId);
 				assertNull("Patient should have been deleted!", p);
-				*/
 			}
 		});
 	}

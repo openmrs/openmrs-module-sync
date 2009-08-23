@@ -25,7 +25,7 @@ import org.openmrs.module.sync.serialization.TimestampNormalizer;
  *
  */
 public class SyncImportRecordItem {
-    private String guid;
+    private String uuid;
     private String timestampRaw;
     private String timestampDisplay;
     private Integer retryCount;
@@ -37,7 +37,7 @@ public class SyncImportRecordItem {
     
     public SyncImportRecordItem(SyncImportRecord importRecord) {
     	if ( importRecord != null ) {
-    		this.guid = importRecord.getUuid();
+    		this.uuid = importRecord.getUuid();
 
     		if ( importRecord.getTimestamp() != null ) this.timestampRaw = new TimestampNormalizer().toString(importRecord.getTimestamp());
     		else this.timestampRaw = "";
@@ -81,11 +81,11 @@ public class SyncImportRecordItem {
     }
 	
     public String getUuid() {
-    	return guid;
+    	return uuid;
     }
 	
-    public void setUuid(String guid) {
-    	this.guid = guid;
+    public void setUuid(String uuid) {
+    	this.uuid = uuid;
     }
 	
     public Integer getRetryCount() {

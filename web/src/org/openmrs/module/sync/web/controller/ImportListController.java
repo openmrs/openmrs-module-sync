@@ -45,7 +45,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
-public class SynchronizationImportListController extends SimpleFormController {
+public class ImportListController extends SimpleFormController {
 
     /** Logger for this class and subclasses */
     protected final Log log = LogFactory.getLog(getClass());
@@ -144,9 +144,9 @@ public class SynchronizationImportListController extends SimpleFormController {
 		SyncTransmissionResponse str = new SyncTransmissionResponse();		
     	str.setErrorMessage(SyncConstants.ERROR_TX_NOT_UNDERSTOOD);
     	str.setFileName(SyncConstants.FILENAME_TX_NOT_UNDERSTOOD);
-    	str.setUuid(SyncConstants.GUID_UNKNOWN);
-        str.setSyncSourceUuid(SyncConstants.GUID_UNKNOWN);
-        str.setSyncTargetUuid(SyncConstants.GUID_UNKNOWN);
+    	str.setUuid(SyncConstants.UUID_UNKNOWN);
+        str.setSyncSourceUuid(SyncConstants.UUID_UNKNOWN);
+        str.setSyncTargetUuid(SyncConstants.UUID_UNKNOWN);
     	str.setState(SyncTransmissionState.TRANSMISSION_NOT_UNDERSTOOD);        
         str.setTimestamp(new Date()); //set the timestamp of the response
 

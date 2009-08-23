@@ -30,11 +30,11 @@ public class AdminList extends AdministrationSectionExt {
 		Map<String, String> links = new LinkedHashMap<String, String>();
 		
 		if (Context.hasPrivilege("Manage Synchronization")) {
-			links.put("module/sync/synchronizationStats.list", "sync.stats.title");
-			links.put("module/sync/synchronizationConfig.list", "sync.config.title");
+			links.put("module/sync/overview.htm", "sync.overview.title");
+			links.put("module/sync/config.list", "sync.config.title");
 		}
 		
-		links.put("module/sync/synchronizationHelp.list", "sync.help.title");
+		links.put("module/sync/help.htm", "sync.help.title");
 		
 		return links;
 	}

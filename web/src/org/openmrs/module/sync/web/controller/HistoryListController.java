@@ -37,7 +37,7 @@ import org.springframework.web.servlet.mvc.SimpleFormController;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class SynchronizationHistoryListController extends SimpleFormController {
+public class HistoryListController extends SimpleFormController {
 
     /** Logger for this class and subclasses */
     protected final Log log = LogFactory.getLog(getClass());
@@ -107,7 +107,7 @@ public class SynchronizationHistoryListController extends SimpleFormController {
                 
 				//String itemInfoKey = itemInfoKeys.get(className);
 				
-				// now we have to go through the item child nodes to find the real GUID that we want
+				// now we have to go through the item child nodes to find the real UUID that we want
 				NodeList nodes = root.getNode().getChildNodes();
 				for ( int i = 0; i < nodes.getLength(); i++ ) {
 					Node n = nodes.item(i);

@@ -313,10 +313,10 @@ public interface SyncService {
      * Sets globally unique id of the server. WARNING: Use only during initial server setup.
      * 
      * WARNING: DO NOT CALL this method unless you fully understand the implication of
-     * this action. Specifically, changing already assigned GUID for a server will cause
+     * this action. Specifically, changing already assigned UUID for a server will cause
      * it to loose its link to history of changes that may be designated for this server.
      * 
-     * @param uuid unique GUID of the server. String representation of java.util.UUID.
+     * @param uuid unique UUID of the server. String representation of java.util.UUID.
      * @throws APIException
      */
     public void setServerUuid(String uuid) throws APIException;
@@ -410,7 +410,7 @@ public interface SyncService {
     
     /**
      * Dumps the entire database, much like what you'd get from the mysqldump command, and
-     * adds a few lines to set the child's GUID, and delete sync history 
+     * adds a few lines to set the child's UUID, and delete sync history 
      * 
      * @param uuidForChild if not null, use this as the uuid for the child server, otherwise autogenerate one 
      * @param out write the sql here

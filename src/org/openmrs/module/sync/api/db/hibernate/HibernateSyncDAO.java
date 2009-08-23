@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,7 +41,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
-import org.openmrs.Encounter;
 import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.context.Context;
@@ -83,7 +83,7 @@ public class HibernateSyncDAO implements SyncDAO {
     public void createSyncRecord(SyncRecord record) throws DAOException {
         if (record.getUuid() == null) {
             //TODO: Create Uuid if missing?
-            throw new DAOException("SyncRecord must have a GUID");
+            throw new DAOException("SyncRecord must have a UUID");
         }
         
         Session session = sessionFactory.getCurrentSession();
@@ -112,7 +112,7 @@ public class HibernateSyncDAO implements SyncDAO {
     public void createSyncImportRecord(SyncImportRecord record) throws DAOException {
         if (record.getUuid() == null) {
             //TODO: Create Uuid if missing?
-            throw new DAOException("SyncImportRecord must have a GUID");
+            throw new DAOException("SyncImportRecord must have a UUID");
         }
         Session session = sessionFactory.getCurrentSession();
         session.save(record);
@@ -357,8 +357,18 @@ public class HibernateSyncDAO implements SyncDAO {
             throw new DAOException("Cannot set property with null property name.");
 
         Session session = sessionFactory.getCurrentSession();
-        GlobalProperty gp = new GlobalProperty(propertyName,propertyValue);
-        //gp.setIsOpenmrsObject(false); //do *not* record this change for synchronization
+        
+        // try to look up the global property first so we use the same uuid for the gp
+        GlobalProperty gp = (GlobalProperty)session.get(GlobalProperty.class, propertyName);
+        if (gp == null) {
+        	// the gp doesn't exist, create a new one with a new uuid now
+        	gp = new GlobalProperty(propertyName, propertyValue);
+        	gp.setUuid(UUID.randomUUID().toString());
+        }
+        else {
+        	gp.setPropertyValue(propertyValue);
+        }
+        
         session.merge(gp);
     }
 
@@ -522,7 +532,7 @@ public class HibernateSyncDAO implements SyncDAO {
             out.println("-- ------------------------------------------------------");
             out.println("-- Database dump to create an openmrs child server");
             out.println("-- Schema: " + schema);
-            out.println("-- Parent GUID: " + thisServerUuid);
+            out.println("-- Parent UUID: " + thisServerUuid);
             out.println("-- Parent version: " + OpenmrsConstants.OPENMRS_VERSION);
             out.println("-- ------------------------------------------------------");
             out.println("");

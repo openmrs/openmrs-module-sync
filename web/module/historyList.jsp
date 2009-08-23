@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/synchronizationHistory.list" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/history.list" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -54,10 +54,10 @@
 			</tr>
 		</thead>
 		<tbody id="globalPropsList">
-			<c:if test="${not empty synchronizationHistoryList}">
+			<c:if test="${not empty historyCommandObject}">
 				<c:set var="bgStyle" value="eee" />
 				<c:set var="bgStyleParent" value="dde" />
-				<c:forEach var="syncRecord" items="${synchronizationHistoryList}" varStatus="status">
+				<c:forEach var="syncRecord" items="${historyCommandObject}" varStatus="status">
 					<%--<c:forEach var="syncItem" items="${syncRecord.items}" varStatus="itemStatus">--%>
 						<tr>
 							<td valign="middle" nowrap style="background-color: #${bgStyle};">
@@ -108,7 +108,7 @@
 					<%--</c:forEach>--%>
 				</c:forEach>
 			</c:if>
-			<c:if test="${empty synchronizationHistoryList}">
+			<c:if test="${empty historyCommandObject}">
 				<td colspan="5" align="left">
 					<i><spring:message code="SynchronizationHistory.noItems" /></i>
 				</td>
