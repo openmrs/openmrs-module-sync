@@ -17,10 +17,13 @@ import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.openmrs.Concept;
 import org.openmrs.ConceptAnswer;
@@ -31,77 +34,129 @@ import org.openmrs.ConceptNumeric;
 import org.openmrs.ConceptSet;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
-import org.openmrs.test.TestUtil;
 import org.springframework.test.annotation.NotTransactional;
 
 /**
  *
  */
 public class SyncConceptTest extends SyncBaseTest {
-
+	
 	@Override
-    public String getInitialDataset() {
-	    return "org/openmrs/module/sync/include/SyncCreateTest.xml";
-    }
-
+	public String getInitialDataset() {
+		return "org/openmrs/module/sync/include/SyncCreateTest.xml";
+	}
+	
 	@Test
-    @NotTransactional
+	@NotTransactional
+	public void shouldSaveConceptDescriptionsWithConcept() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			
+			String conceptName = "A concept";
+			
+			public void runOnChild() {
+				ConceptService cs = Context.getConceptService();
+				
+				Concept concept = new Concept();
+				concept.setDatatype(cs.getConceptDatatypeByName("Coded"));
+				concept.setConceptClass(cs.getConceptClassByName("Question"));
+				concept.addName(new ConceptName(conceptName, Context.getLocale()));
+				concept.addDescription(new ConceptDescription("asdf", Context.getLocale()));
+				cs.saveConcept(concept);
+			}
+			
+			public void runOnParent() {
+				ConceptService cs = Context.getConceptService();
+				
+				log.error("The current locale: " + Context.getLocale());
+				
+				Concept c = cs.getConceptByName(conceptName);
+				assertNotNull("Failed to create the concept", c);
+				
+				log.info("descriptions: " + c.getDescriptions());
+				assertTrue("Failed to transfer descriptions", c.getDescriptions().size() > 0);
+			}
+		});
+	}
+	
+	@Test
+	@NotTransactional
 	public void shouldSaveConceptCoded() throws Exception {
 		runSyncTest(new SyncTestHelper() {
+			
 			public void runOnChild() {
-				try {
-	                TestUtil.printOutTableContents(getConnection(), "concept", "concept_numeric", "concept_name");
-                }
-                catch (Exception e) {
-	                // TODO Auto-generated catch block
-	                log.error("Error generated", e);
-                }
 				ConceptService cs = Context.getConceptService();
 				
 				Concept coded = new Concept();
 				coded.setDatatype(cs.getConceptDatatypeByName("Coded"));
 				coded.setConceptClass(cs.getConceptClassByName("Question"));
 				coded.setSet(false);
-				coded.addName(new ConceptName("CODED", Locale.ENGLISH));
+				ConceptName name = new ConceptName("CODED", Context.getLocale());
+				ConceptNameTag tag = new ConceptNameTag("default", "The default name");
+				tag.setConceptNameTagId(1);
+				name.addTag(tag);
+				coded.addName(name);
+				coded.addDescription(new ConceptDescription("asdf", Context.getLocale()));
 				coded.addAnswer(new ConceptAnswer(cs.getConceptByName("OTHER NON-CODED")));
 				coded.addAnswer(new ConceptAnswer(cs.getConceptByName("NONE")));
 				cs.saveConcept(coded);
 			}
+			
 			public void runOnParent() {
-				try {
-	                TestUtil.printOutTableContents(getConnection(), "concept", "concept_numeric", "concept_name");
-                }
-                catch (Exception e) {
-	                // TODO Auto-generated catch block
-	                log.error("Error generated", e);
-                }
+				Context.clearSession();
+				
 				ConceptService cs = Context.getConceptService();
-
+				
+				log.error("The current locale: " + Context.getLocale());
+				
 				Concept c = cs.getConceptByName("CODED");
 				assertNotNull("Failed to create CODED concept", c);
-				log.info("names: " + c.getNames(Locale.ENGLISH).size());
-				assertTrue("Failed to transfer names", c.getNames(Locale.ENGLISH).size() > 0);
-				assertEquals(c.getConceptClass().getConceptClassId(), cs.getConceptClassByName("Question").getConceptClassId());
-				assertEquals(c.getDatatype().getConceptDatatypeId(), cs.getConceptDatatypeByName("Coded").getConceptDatatypeId());
 				
-				//NOTE: this doesn't work in junit/in-mem DB; MUST test by running in UI :(
-				//java.util.Collection<ConceptAnswer> answers = c.getAnswers();
-				//assertEquals(2, answers.size());
+				log.info("names: " + c.getNames(true));
+				try {
+					Field field = Concept.class.getDeclaredField("names");
+					field.setAccessible(true);
+					log.warn("concept names list via reflection: " + field.get(c));
+				}
+				catch (IllegalArgumentException e) {
+					// TODO Auto-generated catch block
+					log.error("Error generated", e);
+				}
+				catch (SecurityException e) {
+					// TODO Auto-generated catch block
+					log.error("Error generated", e);
+				}
+				catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					log.error("Error generated", e);
+				}
+				catch (NoSuchFieldException e) {
+					// TODO Auto-generated catch block
+					log.error("Error generated", e);
+				}
+				assertTrue("Failed to transfer names", c.getNames(true).size() > 0);
+				assertEquals(c.getConceptClass().getConceptClassId(), cs.getConceptClassByName("Question")
+				        .getConceptClassId());
+				assertEquals(c.getDatatype().getConceptDatatypeId(), cs.getConceptDatatypeByName("Coded")
+				        .getConceptDatatypeId());
+				
+				Collection<ConceptAnswer> answers = c.getAnswers();
+				assertEquals(2, answers.size());
+				
 			}
 		});
 	}
 	
 	@Test
-    @NotTransactional
+	@NotTransactional
 	public void shouldSaveConceptNumeric() throws Exception {
 		runSyncTest(new SyncTestHelper() {
+			
 			ConceptService cs;
 			
 			public void runOnChild() {
 				cs = Context.getConceptService();
-				//this doesn't work with in-mem DB
 				ConceptNumeric cn = new ConceptNumeric();
-				cn.addName(new ConceptName("SOMETHING NUMERIC", Locale.ENGLISH));
+				cn.addName(new ConceptName("SOMETHING NUMERIC", Context.getLocale()));
 				cn.setDatatype(cs.getConceptDatatypeByName("Numeric"));
 				cn.setConceptClass(cs.getConceptClassByName("Question"));
 				cn.setSet(false);
@@ -110,7 +165,10 @@ public class SyncConceptTest extends SyncBaseTest {
 				cn.setHiCritical(100d);
 				cs.saveConcept(cn);
 			}
+			
 			public void runOnParent() {
+				Context.clearSession();
+				
 				Concept c = cs.getConceptByName("SOMETHING NUMERIC");
 				assertNotNull("Failed to create numeric", c);
 				System.out.println("1: " + c);
@@ -118,8 +176,8 @@ public class SyncConceptTest extends SyncBaseTest {
 				assertTrue("No names got transferred", c.getNames().size() > 0);
 				assertEquals(c.getName().getName(), "SOMETHING NUMERIC");
 				ConceptNumeric cn = cs.getConceptNumeric(c.getConceptId());
-				assertEquals("Concept numeric absolute low values do not match", (Double)0d, cn.getLowAbsolute());
-				assertEquals("Concept nuermic high critical values do not match", (Double)100d, cn.getHiCritical());
+				assertEquals("Concept numeric absolute low values do not match", (Double) 0d, cn.getLowAbsolute());
+				assertEquals("Concept nuermic high critical values do not match", (Double) 100d, cn.getHiCritical());
 				assertEquals("Concept numeric datatypes does not match", "Numeric", cn.getDatatype().getName());
 				assertEquals("Concept numeric classes does not match", "Question", cn.getConceptClass().getName());
 				
@@ -128,19 +186,21 @@ public class SyncConceptTest extends SyncBaseTest {
 	}
 	
 	@Test
-    @NotTransactional
+	@NotTransactional
 	public void shouldSaveConceptSet() throws Exception {
 		runSyncTest(new SyncTestHelper() {
-			ConceptService cs;
-			private int conceptNumericId=99997;
-			private int conceptCodedId=99998;
-			private int conceptSetId=99999;
 			
-			private String uuid = "";
+			ConceptService cs;
+			
+			private int conceptNumericId = 99997;
+			
+			private int conceptCodedId = 99998;
+			
+			private int conceptSetId = 99999;
 			
 			public void runOnChild() {
 				cs = Context.getConceptService();
-
+				
 				ConceptNumeric cn = new ConceptNumeric();
 				cn.setConceptId(conceptNumericId);
 				cn.addName(new ConceptName("SOMETHING NUMERIC", Context.getLocale()));
@@ -161,7 +221,7 @@ public class SyncConceptTest extends SyncBaseTest {
 				
 				Concept other = cs.getConceptByName("OTHER NON-CODED");
 				assertNotNull("Failed to get concept OTHER NON-CODED", other);
-
+				
 				Concept none = cs.getConceptByName("NONE");
 				assertNotNull("Failed to get concept NONE", none);
 				
@@ -169,10 +229,8 @@ public class SyncConceptTest extends SyncBaseTest {
 				coded.addAnswer(new ConceptAnswer(none));
 				coded.addAnswer(new ConceptAnswer(cn));
 				cs.saveConcept(coded);
-			
 				
 				//ConceptSet conceptSet = new ConceptSet();
-				
 				
 				Concept set = new Concept(conceptSetId);
 				
@@ -187,63 +245,55 @@ public class SyncConceptTest extends SyncBaseTest {
 				cset.add(new ConceptSet(cn, 2d));
 				set.setConceptSets(cset);
 				cs.saveConcept(set);
-				
-				uuid = set.getUuid();
-				log.info("GUID:  " + set.getUuid());
 			}
+			
 			public void runOnParent() {
+				Context.clearSession();
+				
 				Concept c = cs.getConceptByName("SOMETHING NUMERIC");
 				assertNotNull("Failed to create numeric", c);
-			
-				Concept set = cs.getConcept(conceptSetId);
-								
-				set = cs.getConceptByName("A CONCEPT SET");
 				
+				assertNotNull("Failed to find a name", c.getName());
+				assertEquals("Concept names do not match", "SOMETHING NUMERIC", c.getName().getName());
 				
-				assertEquals("Concept names do not match", "SOMETHING NUMERIC", cs.getConcept(conceptNumericId).getName().getName());
-				
-				
-				ConceptNumeric cn = cs.getConceptNumeric(conceptNumericId);
-				assertEquals("Concept numeric absolute low values do not match", (Double)0d, cn.getLowAbsolute());
-				assertEquals("Concept numeric critical high values do not match", (Double)100d, cn.getHiCritical());
+				ConceptNumeric cn = cs.getConceptNumeric(c.getConceptId());
+				assertEquals("Concept numeric absolute low values do not match", (Double) 0d, cn.getLowAbsolute());
+				assertEquals("Concept numeric critical high values do not match", (Double) 100d, cn.getHiCritical());
 				assertEquals("Concept numeric datatypes do not match", "Numeric", cn.getDatatype().getName());
 				assertEquals("Concept numeric classes do not match", "Question", cn.getConceptClass().getName());
 				
-				//doesn't work in junit/in-mem DB; tested manually only
-				//Set<String> answers = new HashSet<String>();
-				//for (ConceptAnswer a : c.getAnswers())
-				//	answers.add(a.getAnswerConcept().getName().getName());
-				
 				// Test the coded concept 			
-				Concept conceptCoded = cs.getConcept(conceptCodedId);
-				assertNotNull("Failed to save coded concept - Could not retrieve concept by ID", conceptCoded);
-
-				conceptCoded = cs.getConceptByName("SOMETHING CODED");
+				Concept conceptCoded = cs.getConceptByName("SOMETHING CODED");
 				assertNotNull("Failed to save coded concept - Could not retrieve concept by name", conceptCoded);
-					
+				
+				Set<String> answers = new HashSet<String>();
+				for (ConceptAnswer a : conceptCoded.getAnswers()) {
+					answers.add(a.getAnswerConcept().getName().getName());
+				}
+				Assert.assertTrue(answers.contains("SOMETHING NUMERIC"));
+				Assert.assertTrue(answers.contains("OTHER NON-CODED"));
+				Assert.assertTrue(answers.contains("NONE"));
 				
 				// Test the concept set 
-				
-				Concept conceptSet = cs.getConcept(conceptSetId);
-				assertNotNull("Failed to save concept set - Could not retrieve concept by ID", conceptSet);
-				
-				conceptSet = cs.getConceptByName("A CONCEPT SET");
+				Concept conceptSet = cs.getConceptByName("A CONCEPT SET");
 				assertNotNull("Failed to create coded concept - Could not retrieve code concept by name", conceptSet);
-
 				
-				assertEquals("Failed to create concept set - Concept set should have two elements", conceptSet.getConceptSets().size(), 2);
+				assertEquals("Failed to create concept set - Concept set should have two elements", conceptSet
+				        .getConceptSets().size(), 2);
 				
-			
 			}
 		});
-	}		
+	}
 	
 	@Test
-    @NotTransactional
+	@NotTransactional
 	public void shouldEditConcepts() throws Exception {
 		runSyncTest(new SyncTestHelper() {
+			
 			ConceptService cs;
+			
 			int numAnswersBefore;
+			
 			public void runOnChild() {
 				cs = Context.getConceptService();
 				Concept wt = cs.getConceptByName("WEIGHT");
@@ -262,10 +312,11 @@ public class SyncConceptTest extends SyncBaseTest {
 				coded.addAnswer(new ConceptAnswer(malaria));
 				cs.saveConcept(coded);
 			}
+			
 			public void runOnParent() {
 				Concept wt = cs.getConceptByName("WEIGHT");
 				ConceptNumeric weight = cs.getConceptNumeric(wt.getConceptId());
-				assertEquals("Failed to change property on a numeric concept",(Double) 200d, weight.getHiCritical());
+				assertEquals("Failed to change property on a numeric concept", (Double) 200d, weight.getHiCritical());
 				
 				Concept malaria = cs.getConceptByName("MALARIA");
 				assertNotNull("Implicit create of concept referenced in answer failed", malaria);
@@ -275,19 +326,23 @@ public class SyncConceptTest extends SyncBaseTest {
 			}
 		});
 	}
-
+	
 	@Test
-    @NotTransactional
+	@NotTransactional
 	public void shouldAddNameToConcept() throws Exception {
 		runSyncTest(new SyncTestHelper() {
+			
 			ConceptService cs = Context.getConceptService();
+			
 			int numNamesBefore;
+			
 			public void runOnChild() {
 				Concept wt = cs.getConceptByName("WEIGHT");
 				numNamesBefore = wt.getNames().size();
 				wt.addName(new ConceptName("POIDS", Locale.FRENCH));
 				cs.saveConcept(wt);
 			}
+			
 			public void runOnParent() {
 				Concept wt = cs.getConceptByName("WEIGHT");
 				assertNotNull(wt);
@@ -298,32 +353,41 @@ public class SyncConceptTest extends SyncBaseTest {
 	}
 	
 	@Test
-    @NotTransactional
+	@NotTransactional
 	public void shouldAddDescriptionToConcept() throws Exception {
 		runSyncTest(new SyncTestHelper() {
+			
 			ConceptService cs = Context.getConceptService();
+			
 			int numDescriptionsBefore;
+			
 			public void runOnChild() {
 				Concept wt = cs.getConceptByName("WEIGHT");
 				numDescriptionsBefore = wt.getDescriptions().size();
 				wt.addDescription(new ConceptDescription("Everyone tries to lose this", Locale.FRENCH));
 				cs.saveConcept(wt);
 			}
+			
 			public void runOnParent() {
 				Concept wt = cs.getConceptByName("WEIGHT");
 				assertNotNull(wt);
-				assertEquals("Should be one more description than before", numDescriptionsBefore + 1, wt.getDescriptions().size());
-				assertEquals("Incorrect french description", wt.getDescription(Locale.FRENCH).getDescription(), "Everyone tries to lose this");
+				assertEquals("Should be one more description than before", numDescriptionsBefore + 1, wt.getDescriptions()
+				        .size());
+				assertEquals("Incorrect french description", wt.getDescription(Locale.FRENCH).getDescription(),
+				    "Everyone tries to lose this");
 			}
 		});
 	}
 	
 	@Test
-    @NotTransactional
+	@NotTransactional
 	public void shouldAddTagToConceptName() throws Exception {
 		runSyncTest(new SyncTestHelper() {
+			
 			ConceptService cs = Context.getConceptService();
+			
 			int numTagsBefore;
+			
 			public void runOnChild() {
 				Concept wt = cs.getConceptByName("WEIGHT");
 				ConceptName cn = wt.getName();
@@ -332,6 +396,7 @@ public class SyncConceptTest extends SyncBaseTest {
 				cn.addTag(tag);
 				cs.saveConcept(wt);
 			}
+			
 			public void runOnParent() {
 				Concept wt = cs.getConceptByName("WEIGHT");
 				assertNotNull(wt);

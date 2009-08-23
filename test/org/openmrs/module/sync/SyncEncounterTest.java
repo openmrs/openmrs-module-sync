@@ -18,13 +18,20 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.util.Calendar;
+import java.util.Date;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.openmrs.Concept;
 import org.openmrs.Encounter;
 import org.openmrs.EncounterType;
+import org.openmrs.Location;
+import org.openmrs.Obs;
+import org.openmrs.Person;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.EncounterService;
 import org.openmrs.api.context.Context;
+import org.openmrs.test.TestUtil;
 import org.springframework.test.annotation.NotTransactional;
 import org.springframework.test.annotation.Rollback;
 
@@ -152,6 +159,55 @@ public class SyncEncounterTest extends SyncBaseTest {
 				assertNull(e);
 			}
 		});
-	}	
+	}
+	
+	@Test
+    @NotTransactional
+	public void shouldAddObsWithEncounter() throws Exception {
+		runSyncTest(new SyncTestHelper() {			
+			
+			String encUuid;
+			
+			public void runOnChild() {
+				
+				Encounter e = new Encounter();
+				e.setEncounterDatetime(new Date());
+				e.setPatient(Context.getPatientService().getPatient(2));
+				e.setEncounterType(Context.getEncounterService().getEncounterType("ADULTINITIAL"));
+				
+				// add some observations
+				Obs o = new Obs(new Person(1), new Concept(1), new Date(), new Location(1));
+				e.addObs(o);
+				
+				Context.getEncounterService().saveEncounter(e);
+				
+				encUuid = e.getUuid();
+				try {
+	                TestUtil.printOutTableContents(getConnection(), "encounter", "obs");
+                }
+                catch (Exception e1) {
+	                // TODO Auto-generated catch block
+	                log.error("Error generated", e1);
+                }
+				
+			}
+			public void runOnParent() {
+				Context.clearSession();
+				
+				Encounter e = Context.getEncounterService().getEncounterByUuid(encUuid);
+				assertNotNull(e);
+				try {
+	                TestUtil.printOutTableContents(getConnection(), "encounter", "obs");
+                }
+                catch (Exception e1) {
+	                // TODO Auto-generated catch block
+	                log.error("Error generated", e1);
+                }
+				Assert.assertTrue("No obs were found", e.getObs().size() > 0);
+			}
+		});
+	}
+	
+	
 	
 }

@@ -653,8 +653,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 				idPropertyObj = ((org.hibernate.persister.entity.AbstractEntityPersister) data).getEntityMetamodel()
 				                                                                               .getIdentifierProperty();
 				if (id != null && idPropertyObj.getIdentifierGenerator() != null
-				        && ((idPropertyObj.getIdentifierGenerator() instanceof org.hibernate.id.Assigned) ||
-				            (idPropertyObj.getIdentifierGenerator() instanceof NativeIfNotAssignedIdentityGenerator))) {
+				        && (idPropertyObj.getIdentifierGenerator() instanceof org.hibernate.id.Assigned)) {
 					// serialize value as string
 					values.put(idPropertyName,
 					           new PropertyClassValue(id.getClass().getName(),

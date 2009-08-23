@@ -37,7 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  *  Sets up common routines and initialization for all sync tests. Note for all sync tests:
- *  MUST MARK AS NotTransctional so that Tx that is created in runOnChild() menthod is
+ *  MUST MARK AS NotTransctional so that Tx that is created in runOnChild() method is
  *  committed upon exit of that method. 
  *  
  *  Note: org.springframework.transaction.annotation.Propagation.REQUIRES_NEW doesn't help
@@ -76,7 +76,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		
         //now run parent
 		log.info("\n************************************* Running on Parent *************************************");		
-		testMethods.runOnParent();		
+		testMethods.runOnParent();
 	}
 
 	//this is final step so do rollback and let the test finish
@@ -103,7 +103,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		Context.openSession();
 		deleteAllData();
 		executeDataSet("org/openmrs/module/sync/include/SyncCreateTest.xml");
-		authenticate();		
+		authenticate();
 	}
 	
 	@Transactional
@@ -154,10 +154,10 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	 * <br/>2. Execute set of instructions simulating sync child
 	 * <br/>3. Fetch sync records, re-initialize DB for parent and then apply the sync records
 	 * <br/>4. Execute set of instructions  simulating sync parent; typically just asserts to ensure child changes
-	 * came accross.
+	 * came across.
 	 * 
 	 *<br/>Note: The non-transactional vs. transactional behavior of helper methods: each step must be in its own Tx since sync flushes
-	 * its sync record at Tx boundry. Consequently it is required for the overall test to run as non-transactional
+	 * its sync record at Tx boundary. Consequently it is required for the overall test to run as non-transactional
 	 * and each individual step to be transactional; as stated in class comments, true nested transactions are RDMS fantasy,
 	 * it mostly doesn't exist.
 	 * 

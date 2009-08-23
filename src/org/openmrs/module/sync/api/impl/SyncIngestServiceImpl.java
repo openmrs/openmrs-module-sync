@@ -81,7 +81,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
     /**
      * Applies  synchronization record against the local data store in single transaction.  
      * <p/> Remarks: Exceptions are always thrown if something goes wrong while processing the record in order to abort sync items as 
-     * one transaction. To report back SyncImportRecord accuratenly in case of exception, notice that SyncIngestException contains
+     * one transaction. To report back SyncImportRecord accurately in case of exception, notice that SyncIngestException contains
      * SyncImportRecord. In case of exception, callers should inspect this value as it will contain more information about the status of sync
      * item as it failed.
      * 
@@ -107,7 +107,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                 //log.warn("\nINGESTING ALL CLASSES: " + recordClasses + " BECAUSE SERVER IS READY TO ACCEPT ALL");
                 // second, let's see if this SyncRecord has already been imported
                 // use the original record id to locate import_record copy
-                log.warn("AT THIS POINT, ORIGINALGUID FOR RECORD IS " + record.getOriginalUuid());
+                log.warn("AT THIS POINT, ORIGINALUUID FOR RECORD IS " + record.getOriginalUuid());
                 importRecord = Context.getService(SyncService.class).getSyncImportRecord(record.getOriginalUuid());
                 boolean isUpdateNeeded = false;
                 
@@ -165,8 +165,8 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                      * because of hibernate flushing semantics inside transactions:
                      * if deleted entity is part of a collection on another object within the same session
                      * and this object gets flushed, error is thrown stating that deleted entities must first be removed
-                     * from collection; this happens immediately when stmts are executed (and not at the Tx boundry) because
-                     * default hibernate FlushMode is AUTO. To futher avoid this issue, explicitely susspend flushing for the 
+                     * from collection; this happens immediately when stmts are executed (and not at the Tx boundary) because
+                     * default hibernate FlushMode is AUTO. To further avoid this issue, explicitly suspend flushing for the 
                      * duration of deletes.
                      */
                 	Context.getService(SyncService.class).setFlushModeManual(); 
@@ -616,12 +616,11 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 	        // now try to commit this fully inflated object
 	        try {
 	        	log.warn("About to update or create a " + className + " object, uuid: " + uuid);
-	        	// TODO bwolfe - this might not be a safe cast -- put here by Ben to get compiling
-	            SyncUtil.updateOpenmrsObject2((OpenmrsObject)o, className, uuid,preCommitRecordActions);
+	            SyncUtil.updateOpenmrsObject2(o, className, uuid, preCommitRecordActions);
 	            Context.getService(SyncService.class).flushSession();
 	        } catch ( Exception e ) {
 	        	e.printStackTrace();
-	            throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_NOT_COMMITTED, className, itemContent,null);
+	            throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_NOT_COMMITTED, className, itemContent, null);
 	        }
         }
         	                
