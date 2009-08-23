@@ -21,7 +21,7 @@
 <table>
 	<tr>
 		<td>
-			<h2><spring:message code="sync.stats.title"/></h2>
+			<h2><spring:message code="sync.overview.title"/></h2>
 		</td>
 	</tr>
 </table>

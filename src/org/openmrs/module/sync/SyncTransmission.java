@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,14 +55,14 @@ public class SyncTransmission implements IItem {
      */
     public SyncTransmission(String sourceUuid, boolean isRequestingTransmission) {
 
-        uuid = UUID.randomUUID().toString();        
+        uuid = SyncUtil.generateUuid();        
         fileName = "sync_tx_" + SyncConstants.SYNC_FILENAME_MASK.format(new Date()) + "_request";
         this.syncSourceUuid  = sourceUuid;
         this.isRequestingTransmission = isRequestingTransmission;
     }
     public SyncTransmission(String sourceUuid, boolean isRequestingTransmission, String targetUuid) {
 
-        uuid = UUID.randomUUID().toString();        
+        uuid = SyncUtil.generateUuid();        
         fileName = "sync_tx_" + SyncConstants.SYNC_FILENAME_MASK.format(new Date()) + "_request";
         this.syncSourceUuid  = sourceUuid;
         this.syncSourceUuid  = targetUuid;
@@ -81,7 +80,7 @@ public class SyncTransmission implements IItem {
     }
     private void init(String sourceUuid, List<SyncRecord> valRecords,String targetUuid) {
 
-        uuid = UUID.randomUUID().toString();        
+        uuid = SyncUtil.generateUuid();        
         fileName = "sync_tx_" + SyncConstants.SYNC_FILENAME_MASK.format(new Date());
         this.syncRecords = valRecords;
         this.syncSourceUuid  = sourceUuid;

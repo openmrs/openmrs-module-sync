@@ -406,10 +406,8 @@ public class SyncUtil {
     }
     
     /**
-     * Replaces updateOpenmrsObject by using generic hibernate API to perform the save as oposed to service API. Exceptions that 
-     * still need custom code:
-     * <br />LoginCredential
-     * <br />Concept - needs name rebuild
+     * Uses the generic hibernate API to perform the save<br/>
+     * Possible exceptions that need post-processing:<br/>
      * <br />Form - may need rebuild XSN  
      *  
      * @param o object to save
@@ -419,7 +417,7 @@ public class SyncUtil {
      * 
      * @see SyncUtil#updateOpenmrsObject(Object, String, String, boolean)
      */
-    public static synchronized void updateOpenmrsObject2(OpenmrsObject o, 
+    public static synchronized void updateOpenmrsObject(OpenmrsObject o, 
     		String className, 
     		String Uuid, 
     		List<SyncPreCommitAction> preCommitRecordActions) {
@@ -442,9 +440,13 @@ public class SyncUtil {
     			preCommitRecordActions.add(new SyncPreCommitAction(SyncPreCommitAction.PreCommitActionName.UPDATECONCEPTWORDS, c));
     		}
     	}
-
     }  
 	
+    /**
+     * Helper method for the {@link UUID#randomUUID()} method.
+     * 
+     * @return a generated random uuid
+     */
     public static String generateUuid() {
         return UUID.randomUUID().toString();
     }

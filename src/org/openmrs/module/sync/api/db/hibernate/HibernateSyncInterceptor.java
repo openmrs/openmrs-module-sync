@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,7 +42,7 @@ import org.hibernate.type.Type;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.User;
 import org.openmrs.api.context.Context;
-import org.openmrs.api.db.hibernate.NativeIfNotAssignedIdentityGenerator;
+import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncException;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemKey;
@@ -58,7 +57,6 @@ import org.openmrs.module.sync.serialization.Normalizer;
 import org.openmrs.module.sync.serialization.Package;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
-import org.openmrs.module.sync.SyncConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -238,7 +236,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 					                                 .getGlobalProperty("database_version"));
 
 					// Complete the record
-					record.setUuid(UUID.randomUUID().toString());
+					record.setUuid(SyncUtil.generateUuid());
 					if (record.getOriginalUuid() == null) {
 						if (log.isInfoEnabled())
 							log.info("OriginalUuid is null, so assigning a new UUID: " + record.getUuid());

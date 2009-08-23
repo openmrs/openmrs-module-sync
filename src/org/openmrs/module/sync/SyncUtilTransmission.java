@@ -131,7 +131,7 @@ public class SyncUtilTransmission {
                         tx.setSyncTargetUuid(server.getUuid());
                     }
                     // let's update SyncRecords to reflect the fact that we now have tried to sync them, by setting state to SENT or SENT_AGAIN
-                    maxRetryCount = Long.parseLong(Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT));
+                    maxRetryCount = Long.parseLong(Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT, SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT_DEFAULT));
                     
                     log.info("Max retry count: " + maxRetryCount);
                     if ( tx.getSyncRecords() != null ) {
@@ -399,7 +399,7 @@ public class SyncUtilTransmission {
                 response.setState(SyncTransmissionState.INVALID_SERVER);                
             }
         } catch ( Exception e ) {
-            e.printStackTrace();
+            log.error("Unable to create sync transmission request", e);
         }
         
         return response;

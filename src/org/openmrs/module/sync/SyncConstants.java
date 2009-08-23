@@ -85,6 +85,7 @@ public class SyncConstants {
     public static final String PROPERTY_SERVER_ID = "sync.server_id"; //numeric value used for scoping any local values (such as user_ids)
     public static final String PROPERTY_SERVER_NAME = "sync.server_name"; //used for display purposes, nickname
     public static final String PROPERTY_NAME_MAX_RETRY_COUNT = "sync.max_retry_count";
+    public static final String PROPERTY_NAME_MAX_RETRY_COUNT_DEFAULT = "5";
     public static final String PROPERTY_SYNC_ADMIN_EMAIL = "sync.admin_email";
     public static final String PROPERTY_NAME_MAX_RECORDS = "sync.max_records";
     public static final String PROPERTY_NAME_MAX_RECORDS_DEFAULT = "50";

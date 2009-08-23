@@ -109,8 +109,18 @@
 	</c:otherwise>
 </c:choose>
 
+<spring:hasBindErrors name="server">
+	<spring:message code="fix.error"/>
+	<div class="error">
+		<c:forEach items="${errors.allErrors}" var="error">
+			<spring:message code="${error.code}" text="${error.code}"/><br/><!-- ${error} -->
+		</c:forEach>
+	</div>
+	<br />
+</spring:hasBindErrors>
+
 <div id="general">
-	<form method="post" action="">
+	<form method="post" action="configServer.form">
 		<input type="hidden" name="action" value="save" />
 		<input type="hidden" name="type" value="${server.serverType}" />
 		<c:if test="${server.serverType == 'CHILD' || type == 'CHILD'}">
@@ -119,9 +129,14 @@
 		<c:if test="${not empty server.serverId}">
 			<input type="hidden" name="serverId" value="${server.serverId}" />
 		</c:if>
-	
+		
+		<c:if test="${(server.serverType == 'PARENT' || type == 'PARENT')}">
+			<spring:message code="sync.config.parent.help"/><br/><br/>
+		</c:if>
+			
 		<b class="boxHeader"><spring:message code="sync.config.server.configure"/></b>
 		<div class="box">
+			
 			<table>
 				<tr>
 					<td align="right" valign="top">

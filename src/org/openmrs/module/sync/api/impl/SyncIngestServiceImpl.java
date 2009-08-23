@@ -228,7 +228,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                 }
             }
         } catch (SyncIngestException e) {
-	        e.printStackTrace();
+	        log.error("Unable to ingest a sync request", e);
         	//fill in sync import record and rethrow to abort tx
 	        importRecord.setState(SyncRecordState.FAILED);
 	        importRecord.setErrorMessage(e.getMessage());
@@ -236,7 +236,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         	throw (e);
         }
         catch (Exception e ) {
-            e.printStackTrace();
+        	log.error("Unexpected exception occurred when processing sync records", e);
             //fill in sync import record and rethrow to abort tx
             importRecord.setState(SyncRecordState.FAILED);
             importRecord.setErrorMessage(e.getMessage());
@@ -511,9 +511,9 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         try {
         	//no need to mess around with precommit actions for collections, at least
         	//at this point
-            SyncUtil.updateOpenmrsObject2(owner, ownerClassName, ownerUuid,null);
+            SyncUtil.updateOpenmrsObject(owner, ownerClassName, ownerUuid,null);
         } catch ( Exception e ) {
-        	e.printStackTrace();
+        	log.error("Unexpected exception occurred while processing hibernate collections", e);
             throw new SyncIngestException(SyncConstants.ERROR_ITEM_NOT_COMMITTED, ownerClassName, incoming,null);
         }
     }
@@ -607,8 +607,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 	            	log.debug("trying to set property: " + nodes.item(i).getNodeName() + " in className " + className);
 	                SyncUtil.setProperty(o, nodes.item(i), allFields);
 	            } catch ( Exception e ) {
-	            	log.error("Error when trying to set " + nodes.item(i).getNodeName() + ", which is a " + className);
-	            	e.printStackTrace();
+	            	log.error("Error when trying to set " + nodes.item(i).getNodeName() + ", which is a " + className, e);
 	                throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_UNSET_PROPERTY, nodes.item(i).getNodeName() + "," + className, itemContent,null);
 	            }
 	        }
@@ -616,10 +615,10 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 	        // now try to commit this fully inflated object
 	        try {
 	        	log.warn("About to update or create a " + className + " object, uuid: " + uuid);
-	            SyncUtil.updateOpenmrsObject2(o, className, uuid, preCommitRecordActions);
+	            SyncUtil.updateOpenmrsObject(o, className, uuid, preCommitRecordActions);
 	            Context.getService(SyncService.class).flushSession();
 	        } catch ( Exception e ) {
-	        	e.printStackTrace();
+	        	log.error("Unexpected exception occurred while saving openmrsobject: " + className + " uuid", e);
 	            throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_NOT_COMMITTED, className, itemContent, null);
 	        }
         }

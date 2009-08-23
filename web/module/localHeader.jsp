@@ -5,7 +5,7 @@
 	<openmrs:hasPrivilege privilege="Manage Synchronization">
 		<li <c:if test='<%= request.getRequestURI().contains("overview") %>'>class="active"</c:if>>
 			<a href="${pageContext.request.contextPath}/module/sync/overview.htm">
-				<spring:message code="sync.stats.title"/>
+				<spring:message code="sync.overview.title"/>
 			</a>
 		</li>
 	</openmrs:hasPrivilege>
