@@ -58,6 +58,7 @@ import org.openmrs.module.sync.serialization.Normalizer;
 import org.openmrs.module.sync.serialization.Package;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
+import org.openmrs.module.sync.SyncConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -353,6 +354,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		if (log.isDebugEnabled())
 			log.debug("onSave: " + state.toString());
 
+		// Set the originating uuid for the sync record 
+	 	setOriginalUuid(entity);
+	 	
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
 			if (log.isDebugEnabled()) {
@@ -399,6 +403,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	        String[] propertyNames, Type[] types) {
 		if (log.isDebugEnabled())
 			log.debug("onFlushDirty: " + entity.getClass().getName());
+
+		// Set the originating uuid for the sync record 
+	 	setOriginalUuid(entity);
 
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
@@ -594,9 +601,14 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			//boolean isUuidAssigned = assignGUID(entity, currentState, propertyNames, state);
 			objectUuid = entity.getUuid();
 
-			// pull-out sync-network wide change id, if one was already assigned
-			// (i.e. this change is coming from some other server)
-			//originalRecordUuid = entity.getLastRecordUuid();
+			// pull-out sync-network wide change id for the sync *record* (not
+			// the entity itself),
+			// if one was already assigned (i.e. this change is coming from some
+			// other server)
+			if (this.syncRecordHolder.get() != null) {
+				originalRecordUuid = this.syncRecordHolder.get()
+						.getOriginalUuid();
+			} 
 
 			// build up a starting msg for all logging:
 			StringBuilder sb = new StringBuilder();
@@ -604,8 +616,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			sb.append(entity.getClass().getName());
 			sb.append(", entity uuid:");
 			sb.append(objectUuid);
-			//sb.append(", originalUuid uuid:");
-			//sb.append(originalRecordUuid);
+			sb.append(", originalUuid uuid:");
+			sb.append(originalRecordUuid);
 			infoMsg = sb.toString();
 
 			if (log.isInfoEnabled())
@@ -830,10 +842,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			                                               .getSimpleName());
 
 			// set the originating uuid for the record: do this once per Tx;
-			// else we may end up with empty
-			// string (i.e. depending on exact sequence of auto-flush, it may be
-			// that onFlushDirty is called last time
-			// before a call to OpenmrsObject.setLastRecordUuid() is made
+			// else we may end up with empty string
 			if (syncRecordHolder.get().getOriginalUuid() == null
 			        || "".equals(syncRecordHolder.get().getOriginalUuid())) {
 				syncRecordHolder.get().setOriginalUuid(originalRecordUuid);
@@ -909,6 +918,11 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 				log.debug("Do nothing. Flush with type that does not implement OpenmrsObject, type is:"
 				        + entity.getClass().getName());
 			return false;
+		}
+		
+		//do not sync global properties
+		if (entity instanceof org.openmrs.GlobalProperty) {
+				return false;
 		}
 
 		// finally, if 'deactivated' bit was set manually, return accordingly
@@ -1060,7 +1074,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		// retrieve owner and original uuid if there is one
 		if (set.getOwner() instanceof OpenmrsObject) {
 			owner = (OpenmrsObject) set.getOwner();
-			//originalRecordUuid = owner.getLastRecordUuid();
+			if (this.syncRecordHolder.get() != null) { 
+				originalRecordUuid = this.syncRecordHolder.get().getOriginalUuid(); 
+			};
 		} else {
 			log.info("Cannot process PersistentSet where owner is not OpenmrsObject.");
 			return;
@@ -1276,4 +1292,53 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	
 		return concreteObj.getClass().getName();
 	}
+
+	/**
+	 * Sets the originating uuid for the sync record. This is done once per Tx;
+	 * else we may end up with empty string.
+	 * 
+	 * NOTE: This code is needed because we need for entity to know if it is
+	 * genuine local change or it is coming from the ingest code. This is what
+	 * original_uuid field in sync_journal is used for.
+	 * 
+	 * The way sync record uuids from ingest code are passed to the interceptor
+	 * is by convention: the the *1st* thing ingest code will do when processing
+	 * changes is to issue an update to global property with name
+	 * SyncConstants.PROPERTY_ORIGINAL_UUID and passing the ingest record uuid
+	 * as a value.
+	 * 
+	 * This is done so that the intercetor can pull out the 'original' record
+	 * uuid associated with the change to the entity that is being processed.
+	 * Since ingest and interceptor do not have direct reference to each other,
+	 * there is no simple way to pass this info directly.
+	 * 
+	 * More: read javadoc on SyncRecord to see what SyncRecord.OriginalUuid is
+	 * and how it is used.
+	 * 
+	 * @param entity
+	 */
+	private void setOriginalUuid(Object entity) {
+
+		String originalRecordGuid = null;
+		if (syncRecordHolder.get() != null) {
+			if (syncRecordHolder.get().getOriginalUuid() != null) {
+				originalRecordGuid = syncRecordHolder.get().getOriginalUuid();
+
+			} else if (entity instanceof org.openmrs.GlobalProperty) {
+				org.openmrs.GlobalProperty gp = (org.openmrs.GlobalProperty) entity;
+				if (SyncConstants.PROPERTY_ORIGINAL_UUID.equals(gp
+						.getProperty())) {
+					// okay, this is original guid being passed in from ingest
+					originalRecordGuid = gp.getPropertyValue();
+					if (this.syncRecordHolder.get().getOriginalUuid() == null
+							|| "".equals(syncRecordHolder.get()
+									.getOriginalUuid())) {
+						syncRecordHolder.get().setOriginalUuid(
+								originalRecordGuid);
+					}
+				}
+			}
+		}
+	} 	
+
 }

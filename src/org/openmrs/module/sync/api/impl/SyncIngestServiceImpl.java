@@ -488,10 +488,19 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 					throw new SyncIngestException(SyncConstants.ERROR_ITEM_NOT_COMMITTED, ownerClassName, incoming,null);
 				}
     		}
-    	}
-              
-        //set the original uuid: this will prevent the change from being sent back to originating server
-        //((OpenmrsObject)owner).setLastRecordUuid(originalUuid);
+    	}      
+        
+        /*
+		 * Pass the original uuid to interceptor: this will prevent the change
+		 * from being sent back to originating server the technique used here is
+		 * to simply fire an update to 'fake' global property which will be then
+		 * made on the same transaction that the real commit will come on.
+		 * Interceptor code is watching for this update. For more info see
+		 * HibernateSyncInterceptor.setOriginalUuid()
+		 */
+		Context.getService(SyncService.class).setGlobalProperty(
+				SyncConstants.PROPERTY_ORIGINAL_UUID, originalUuid);
+        
 
         //assign collection back to the owner if it is recreated
         if (needsRecreate) {
@@ -571,10 +580,16 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 	        log.debug("isDelete: " + isDelete);
         }
                 
-        //set the original uuid: this will prevent the change from being send back to originating server
-        //see SyncServiceImpl.createRecord() which will eventually get called from interceptor when
-        //this change in committed
-        //((OpenmrsObject)o).setLastRecordUuid(originalUuid);
+        /*
+		 * Pass the original uuid to interceptor: this will prevent the change
+		 * from being sent back to originating server the technique used here is
+		 * to simply fire an update to 'fake' global property which will be then
+		 * made on the same transaction that the real commit will come on.
+		 * Interceptor code is watching for this update. For more info see
+		 * HibernateSyncInterceptor.setOriginalUuid()
+		 */
+		Context.getService(SyncService.class).setGlobalProperty(
+				SyncConstants.PROPERTY_ORIGINAL_UUID, originalUuid);
         
     	//execute delete if instance was found and operation is delete
         if (alreadyExists && isDelete) {
