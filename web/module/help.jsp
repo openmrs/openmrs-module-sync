@@ -8,6 +8,7 @@
 
 <openmrs:htmlInclude file="/dwr/util.js" />
 <openmrs:htmlInclude file="/dwr/interface/DWRSyncService.js" />
+<openmrs:htmlInclude file="/moduleResources/sync/sync.css" />
 
 <h2><spring:message code="sync.help.title"/></h2>
 

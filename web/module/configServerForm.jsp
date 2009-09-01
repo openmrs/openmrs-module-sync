@@ -6,6 +6,7 @@
 
 <openmrs:htmlInclude file="/dwr/interface/DWRSyncService.js" />
 <openmrs:htmlInclude file="/dwr/util.js" />
+<openmrs:htmlInclude file="/moduleResources/sync/sync.css" />
 
 <%@ include file="localHeader.jsp" %>
 
