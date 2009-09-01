@@ -820,7 +820,10 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			}
 
 			values.clear(); // Be nice to GC
-
+			
+			if (objectUuid == null) 
+				throw new SyncException("uuid is null for: " + className + " with id: " + id);
+			
 			/*
 			 * Create SyncItem and store change in SyncRecord kept in
 			 * ThreadLocal.

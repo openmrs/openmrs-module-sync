@@ -29,7 +29,7 @@ import org.openmrs.module.sync.server.ServerConnectionState;
 public class SyncTransmissionResponseItem {
     private String fileName = null;
     private Vector<SyncImportRecordItem> syncImportRecords;
-    private String guid;
+    private String uuid;
     private String transmissionState;
     private String errorMessage;
 
@@ -50,13 +50,13 @@ public class SyncTransmissionResponseItem {
     		} else {
     			log.debug("No import records to pull from SyncTransmissionResponse to DWR item");
     		}
-    		this.guid = transmissionResponse.getUuid();
+    		this.uuid = transmissionResponse.getUuid();
     		if ( transmissionResponse.getState() != null ) this.transmissionState = transmissionResponse.getState().toString();
     		else this.transmissionState = SyncTransmissionState.FAILED.toString();
     		this.errorMessage = transmissionResponse.getErrorMessage();
     	} else {
     		this.fileName = SyncConstants.FILENAME_NO_CONNECTION;
-    		this.guid = SyncConstants.UUID_UNKNOWN;
+    		this.uuid = SyncConstants.UUID_UNKNOWN;
     		this.transmissionState = ServerConnectionState.CONNECTION_FAILED.toString();
     		this.errorMessage = SyncConstants.ERROR_NO_CONNECTION;
     	}
@@ -79,11 +79,11 @@ public class SyncTransmissionResponseItem {
     }
 
     public String getUuid() {
-    	return guid;
+    	return uuid;
     }
 	
-    public void setUuid(String guid) {
-    	this.guid = guid;
+    public void setUuid(String uuid) {
+    	this.uuid = uuid;
     }
 	
     public Vector<SyncImportRecordItem> getSyncImportRecords() {

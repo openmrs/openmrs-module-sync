@@ -24,43 +24,56 @@ import org.openmrs.module.sync.server.ServerConnection;
 import org.openmrs.module.sync.server.ServerConnectionState;
 
 /**
- *
+ * DWR methods used by the sync module
  */
 public class DWRSyncService {
-
+	
 	protected final Log log = LogFactory.getLog(getClass());
-
+	
+	/**
+	 * Pings the given server with the given username/password to make sure the settings are correct
+	 * 
+	 * @param address url to ping
+	 * @param username username with which to log in
+	 * @param password password with which to log in
+	 * @return SyncConnectionTestItem that contains success or failure
+	 */
 	public SyncConnectionTestItem testConnection(String address, String username, String password) {
 		SyncConnectionTestItem item = new SyncConnectionTestItem();
 		item.setConnectionState(ServerConnectionState.NO_ADDRESS.toString());
 		
-		if ( address != null && address.length() > 0 ) {
+		if (address != null && address.length() > 0) {
 			ConnectionResponse connResponse = ServerConnection.test(address, username, password);
-	
-	   		// constructor for SyncTransmissionResponse is null-safe
-	    	SyncTransmissionResponse str = new SyncTransmissionResponse(connResponse);
-
-	    	// constructor for SyncConnectionTestItem is null-safe
-	    	item = new SyncConnectionTestItem(str);
+			
+			// constructor for SyncTransmissionResponse is null-safe
+			SyncTransmissionResponse str = new SyncTransmissionResponse(connResponse);
+			
+			// constructor for SyncConnectionTestItem is null-safe
+			item = new SyncConnectionTestItem(str);
 		}
 		
 		return item;
 	}
-
+	
+	/**
+	 * Used by the status.list page to send data to the parent and show the results
+	 * 
+	 * @return results of the transmission
+	 */
 	public SyncTransmissionResponseItem syncToParent() {
-		SyncTransmissionResponseItem transmissionResponse = new SyncTransmissionResponseItem(); 
-    	transmissionResponse.setErrorMessage(SyncConstants.ERROR_SEND_FAILED.toString());
-    	transmissionResponse.setFileName(SyncConstants.FILENAME_SEND_FAILED);
-    	transmissionResponse.setUuid(SyncConstants.UUID_UNKNOWN);
-    	transmissionResponse.setTransmissionState(SyncTransmissionState.FAILED.toString());
-
-    	SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize();
-    	
-    	if ( response != null ) {
-    		transmissionResponse = new SyncTransmissionResponseItem(response);
-    	}
-    	
-    	return transmissionResponse;
+		SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize();
+		
+		if (response != null) {
+			return new SyncTransmissionResponseItem(response);
+		} else {
+			SyncTransmissionResponseItem transmissionResponse = new SyncTransmissionResponseItem();
+			transmissionResponse.setErrorMessage(SyncConstants.ERROR_SEND_FAILED.toString());
+			transmissionResponse.setFileName(SyncConstants.FILENAME_SEND_FAILED);
+			transmissionResponse.setUuid(SyncConstants.UUID_UNKNOWN);
+			transmissionResponse.setTransmissionState(SyncTransmissionState.FAILED.toString());
+			return transmissionResponse;
+		}
+		
 	}
-
+	
 }

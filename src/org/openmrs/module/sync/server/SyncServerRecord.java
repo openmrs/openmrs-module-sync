@@ -14,20 +14,9 @@
 package org.openmrs.module.sync.server;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 
-import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
-import org.openmrs.module.sync.serialization.IItem;
-import org.openmrs.module.sync.serialization.Item;
-import org.openmrs.module.sync.serialization.Record;
-import org.openmrs.module.sync.serialization.TimestampNormalizer;
 
 /**
  * SyncRecord is a collection of sync items that represents a smallest transactional unit.
@@ -36,7 +25,7 @@ import org.openmrs.module.sync.serialization.TimestampNormalizer;
  * - committed/rolled back together
  * 
  * Information about sync records -- what was sent, received should be stored in DB by each
- * sync source. Minimally, each source source should keep track of history of sync records that were
+ * sync source. Minimally, each source should keep track of history of sync records that were
  * sent 'up' to parent. 
  * 
  * Consequently a sync 'transmission' is nothing more than a transport of a set of sync records from 

@@ -34,6 +34,8 @@ public class SyncTask extends AbstractTask {
 	// Instance of configuration information for task
 	private Integer serverId = 0;
 
+	private static Boolean isExecuting = false; // allow only one running
+	
 	/**
 	 * Default Constructor (Uses SchedulerConstants.username and
 	 * SchedulerConstants.password
@@ -50,6 +52,13 @@ public class SyncTask extends AbstractTask {
 	 */
 	public void execute() {
 		Context.openSession();
+		synchronized (isExecuting) {
+			if (isExecuting) {
+				log.warn("SyncTask processor aborting (another SyncTask already running)");
+				return;
+			}
+			isExecuting = true;
+		}
 		try {
 			log.debug("Synchronizing data to a server.");
 			if (Context.isAuthenticated() == false && serverId > 0)
@@ -62,12 +71,12 @@ public class SyncTask extends AbstractTask {
 					response.createFile(false, SyncConstants.DIR_JOURNAL);
 				} catch ( Exception e ) {
     				log.error("Unable to create file to store SyncTransmissionResponse: " + response.getFileName(), e);
-    				e.printStackTrace();
 				}
 			}
 		} catch (Exception e) {
 			log.error("Scheduler error while trying to synchronize data. Will retry per schedule.", e);
 		} finally {
+			isExecuting = false;
 			Context.closeSession();
 			log.debug("Synchronization complete.");
 		}
@@ -76,7 +85,7 @@ public class SyncTask extends AbstractTask {
 	/**
 	 * Initializes task. Note serverId is in most cases an Id (as stored in sync server table) of parent. As such, parent Id
 	 * does not need to be stored separately with the task as it can always be determined from sync server table. 
-	 * serverId is stored here as we envision using this feature to also 'export' data to another server -- esentially 
+	 * serverId is stored here as we envision using this feature to also 'export' data to another server -- essentially 
 	 * 'shadow' copying data to a separate server for other uses such as reporting.   
 	 * 
 	 * @param config

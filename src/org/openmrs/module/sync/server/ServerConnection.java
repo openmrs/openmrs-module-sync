@@ -69,7 +69,7 @@ public class ServerConnection {
 
 	public static ConnectionResponse sendExportedData(String url, String username, String password, String content, boolean isResponse) {
 
-		// Default response - default constructor institantiates contains error codes 
+		// Default response - default constructor instantiates contains error codes 
 		ConnectionResponse syncResponse = new ConnectionResponse();
 		
 		url = url + SyncConstants.DATA_IMPORT_SERVLET;

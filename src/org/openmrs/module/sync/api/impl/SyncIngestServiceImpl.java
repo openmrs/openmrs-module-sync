@@ -614,11 +614,11 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         	        
 	        // now try to commit this fully inflated object
 	        try {
-	        	log.warn("About to update or create a " + className + " object, uuid: " + uuid);
+	        	log.warn("About to update or create a " + className + " object, uuid: '" + uuid + "'");
 	            SyncUtil.updateOpenmrsObject(o, className, uuid, preCommitRecordActions);
 	            Context.getService(SyncService.class).flushSession();
 	        } catch ( Exception e ) {
-	        	log.error("Unexpected exception occurred while saving openmrsobject: " + className + " uuid", e);
+	        	log.error("Unexpected exception occurred while saving openmrsobject: " + className + ", uuid '" + uuid + "'", e);
 	            throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_NOT_COMMITTED, className, itemContent, null);
 	        }
         }

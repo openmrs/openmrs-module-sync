@@ -464,6 +464,14 @@ public class SyncUtilTransmission {
                             str.setSyncTransmission(st);
                             str.createFile(false, "/receiveAndSend");
                             response = SyncUtilTransmission.sendSyncTranssmission(parent, null, str);
+                            
+                            // add all changes from parent into response
+                            if (str.getSyncImportRecords() != null) {
+                            	if (response.getSyncImportRecords() == null)
+                            		response.setSyncImportRecords(str.getSyncImportRecords());
+                            	else
+                            		response.getSyncImportRecords().addAll(str.getSyncImportRecords());
+                            }
                         } else {
                             log.info("No updates from parent, generating our own transmission");
                             response = SyncUtilTransmission.sendSyncTranssmission(parent, st, null);
@@ -600,18 +608,19 @@ public class SyncUtilTransmission {
      */
     public static SyncTransmissionResponse doFullSynchronize() {
         // sends to parent server (by default)
-        SyncTransmissionResponse response = new SyncTransmissionResponse();
-        response.setErrorMessage(SyncConstants.ERROR_NO_PARENT_DEFINED.toString());
-        response.setFileName(SyncConstants.FILENAME_NO_PARENT_DEFINED);
-        response.setUuid(SyncConstants.UUID_UNKNOWN);
-        response.setState(SyncTransmissionState.NO_PARENT_DEFINED);
-        
         RemoteServer parent = Context.getService(SyncService.class).getParentServer();
         
         if ( parent != null ) {
-            response = SyncUtilTransmission.doFullSynchronize(parent); 
+            return SyncUtilTransmission.doFullSynchronize(parent); 
         }
-                
-        return response;
+        else {
+        	SyncTransmissionResponse response = new SyncTransmissionResponse();
+            response.setErrorMessage(SyncConstants.ERROR_NO_PARENT_DEFINED.toString());
+            response.setFileName(SyncConstants.FILENAME_NO_PARENT_DEFINED);
+            response.setUuid(SyncConstants.UUID_UNKNOWN);
+            response.setState(SyncTransmissionState.NO_PARENT_DEFINED);
+            
+            return response;
+        }
     }
 }
