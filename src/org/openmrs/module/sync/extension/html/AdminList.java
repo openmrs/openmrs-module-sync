@@ -34,6 +34,7 @@ public class AdminList extends AdministrationSectionExt {
 			links.put("module/sync/config.list", "sync.config.title");
 		}
 		
+		links.put("module/sync/history.list", "sync.history.title");
 		links.put("module/sync/help.htm", "sync.help.title");
 		
 		return links;
