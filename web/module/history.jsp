@@ -7,27 +7,9 @@
 <%@ include file="localHeader.jsp" %>
 
 <openmrs:htmlInclude file="/dwr/util.js" />
-<openmrs:htmlInclude file="/dwr/interface/DWRSyncService.js" />
 <openmrs:htmlInclude file="/moduleResources/sync/sync.css" />
 
 <h2><spring:message code="sync.history.title"/></h2>
-
-<script language="JavaScript">
-	<!--
-
-		function showHideDiv(id) {
-			var div = document.getElementById(id);
-			if ( div ) {
-				if ( div.style.display != "none" ) {
-					div.style.display = "none";
-				} else { 
-					div.style.display = "";
-				}
-			}
-		}
-			
-	-->
-</script>
 
 <b class="boxHeader"><spring:message code="sync.changes.all"/></b>
 <div class="box">
@@ -55,10 +37,10 @@
 			</tr>
 		</thead>
 		<tbody id="globalPropsList">
-			<c:if test="${not empty historyCommandObject}">
+			<c:if test="${not empty syncRecords}">
 				<c:set var="bgStyle" value="eee" />
 				<c:set var="bgStyleParent" value="dde" />
-				<c:forEach var="syncRecord" items="${historyCommandObject}" varStatus="status">
+				<c:forEach var="syncRecord" items="${syncRecords}" varStatus="status">
 					<%--<c:forEach var="syncItem" items="${syncRecord.items}" varStatus="itemStatus">--%>
 						<tr>
 							<td valign="middle" nowrap style="background-color: #${bgStyle};">
@@ -107,15 +89,19 @@
 							</c:otherwise>
 						</c:choose>
 					<%--</c:forEach>--%>
+					
 				</c:forEach>
 			</c:if>
-			<c:if test="${empty historyCommandObject}">
+			<c:if test="${empty syncRecords}">
 				<td colspan="5" align="left">
-					<i><spring:message code="SynchronizationHistory.noItems" /></i>
+					<i><spring:message code="sync.history.noItems" /></i>
 				</td>
 			</c:if>
 		</tbody>
 	</table>
+	<a href="?firstRecordId=${firstRecordId - size}&size=${size}">&larr; <spring:message code="general.previous"/></a>
+	<a href="?firstRecordId=${firstRecordId + size}&size=${size}"><spring:message code="general.next"/> &rarr;</a>
+	
 </div>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>

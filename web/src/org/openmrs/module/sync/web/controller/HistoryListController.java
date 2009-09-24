@@ -13,13 +13,10 @@
  */
 package org.openmrs.module.sync.web.controller;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,123 +28,116 @@ import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
-import org.springframework.validation.Errors;
-import org.springframework.web.bind.ServletRequestDataBinder;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class HistoryListController extends SimpleFormController {
-
-    /** Logger for this class and subclasses */
-    protected final Log log = LogFactory.getLog(getClass());
-
-    /**
-     * @see org.springframework.web.servlet.mvc.BaseCommandController#initBinder(javax.servlet.http.HttpServletRequest,
-     *      org.springframework.web.bind.ServletRequestDataBinder)
-     */
-    protected void initBinder(HttpServletRequest request,
-            ServletRequestDataBinder binder) throws Exception {
-        super.initBinder(request, binder);
-    }
-
-
-    /**
-     * 
-     * This is called prior to displaying a form for the first time. It tells
-     * Spring the form/command object to load into the request
-     * 
-     * @see org.springframework.web.servlet.mvc.AbstractFormController#formBackingObject(javax.servlet.http.HttpServletRequest)
-     */
-    protected Object formBackingObject(HttpServletRequest request)
-            throws ServletException {
-        // default empty Object
-        List<SyncRecord> recordList = new ArrayList<SyncRecord>();
-
-        // only fill the Object if the user has authenticated properly
-        if (Context.isAuthenticated()) {
-        	SyncService ss = Context.getService(SyncService.class);
-            recordList.addAll(ss.getSyncRecords());
-        }
-
-        return recordList;
-    }
-
-	@Override
-    protected Map referenceData(HttpServletRequest request, Object obj, Errors errors) throws Exception {
-		Map<String,Object> ret = new HashMap<String,Object>();
+/**
+ * Controller behind the history page showing all sync'd items.
+ */
+@Controller
+public class HistoryListController {
+	
+	/** Logger for this class and subclasses */
+	protected final Log log = LogFactory.getLog(getClass());
+	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/module/sync/history", method = RequestMethod.GET)
+	public void showThePage(ModelMap modelMap, @RequestParam(value = "firstRecordId", required = false) Integer firstRecordId,
+	                        @RequestParam(value = "size", required = false) Integer size) throws Exception {
 		
-		Map<String,String> recordTypes = new HashMap<String,String>();
-		Map<Object,String> itemTypes = new HashMap<Object,String>();
-		Map<Object,String> itemUuids = new HashMap<Object,String>();
-		Map<String,String> recordText = new HashMap<String,String>();
-        Map<String,String> recordChangeType = new HashMap<String,String>();
-		//Map<String,String> itemInfoKeys = new HashMap<String,String>();
-        List<SyncRecord> recordList = (ArrayList<SyncRecord>)obj;
-
-        //itemInfoKeys.put("Patient", "gender,birthdate");
-        //itemInfoKeys.put("PersonName", "name");
-        //itemInfoKeys.put("User", "username");
-        
-        // warning: right now we are assuming there is only 1 item per record
-        for ( SyncRecord record : recordList ) {
-            
-            String mainClassName = null;
-            String mainUuid = null;
-            String mainState = null;
-            
-			for ( SyncItem item : record.getItems() ) {
+		// default the list size to 20 items
+		if (size == null)
+			size = 20;
+		
+		log.error("Vewing history page with size: " + size);
+		
+		List<SyncRecord> recordList = null;
+		
+		// only fill the Object if the user has authenticated properly
+		if (Context.isAuthenticated()) {
+			SyncService ss = Context.getService(SyncService.class);
+			recordList = ss.getSyncRecords(firstRecordId, size);
+		}
+		
+		if (recordList == null)
+			recordList = Collections.emptyList();
+		
+		Map<String, String> recordTypes = new HashMap<String, String>();
+		Map<Object, String> itemTypes = new HashMap<Object, String>();
+		Map<Object, String> itemUuids = new HashMap<Object, String>();
+		Map<String, String> recordText = new HashMap<String, String>();
+		Map<String, String> recordChangeType = new HashMap<String, String>();
+		
+		for (SyncRecord record : recordList) {
+			
+			String mainClassName = null;
+			String mainUuid = null;
+			String mainState = null;
+			
+			for (SyncItem item : record.getItems()) {
 				String syncItem = item.getContent();
-                mainState = item.getState().toString();
+				mainState = item.getState().toString();
 				Record xml = Record.create(syncItem);
 				Item root = xml.getRootItem();
 				String className = root.getNode().getNodeName().substring("org.openmrs.".length());
 				itemTypes.put(item.getKey().getKeyValue(), className);
-				if ( mainClassName == null ) mainClassName = className;
-                
-				//String itemInfoKey = itemInfoKeys.get(className);
+				if (mainClassName == null)
+					mainClassName = className;
 				
 				// now we have to go through the item child nodes to find the real UUID that we want
 				NodeList nodes = root.getNode().getChildNodes();
-				for ( int i = 0; i < nodes.getLength(); i++ ) {
+				for (int i = 0; i < nodes.getLength(); i++) {
 					Node n = nodes.item(i);
 					String propName = n.getNodeName();
-					if ( propName.equalsIgnoreCase("uuid") ) {
-                        String uuid = n.getTextContent();
+					if (propName.equalsIgnoreCase("uuid")) {
+						String uuid = n.getTextContent();
 						itemUuids.put(item.getKey().getKeyValue(), uuid);
-                        if ( mainUuid == null ) mainUuid = uuid;
-                    }
+						if (mainUuid == null)
+							mainUuid = uuid;
+					}
 				}
 			}
-
-			// persistent sets should show something other than their mainClassName (persistedSet)
-			if ( mainClassName.indexOf("Persistent") >= 0 ) mainClassName = record.getContainedClasses();
 			
-            recordTypes.put(record.getUuid(), mainClassName);
-            recordChangeType.put(record.getUuid(), mainState);
-
-            // refactored - CA 21 Jan 2008
-            String displayName = "";
-            try {
-                displayName = SyncUtil.displayName(mainClassName, mainUuid);
-            } catch ( Exception e ) {
-            	// some methods like Concept.getName() throw Exception s all the time...
-            	displayName = "";
-            }
-            if ( displayName != null ) if ( displayName.length() > 0 ) recordText.put(record.getUuid(), displayName);
-        }
-        
-        ret.put("recordTypes", recordTypes);
-        ret.put("itemTypes", itemTypes);
-        ret.put("itemUuids", itemUuids);
-        //ret.put("itemInfo", itemInfo);
-        ret.put("recordText", recordText);
-        ret.put("recordChangeType", recordChangeType);
-        ret.put("parent", Context.getService(SyncService.class).getParentServer());
-        ret.put("servers", Context.getService(SyncService.class).getRemoteServers());
-        ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
-        
-	    return ret;
-    }
-
+			// persistent sets should show something other than their mainClassName (persistedSet)
+			if (mainClassName.indexOf("Persistent") >= 0)
+				mainClassName = record.getContainedClasses();
+			
+			recordTypes.put(record.getUuid(), mainClassName);
+			recordChangeType.put(record.getUuid(), mainState);
+			
+			// refactored - CA 21 Jan 2008
+			String displayName = "";
+			try {
+				displayName = SyncUtil.displayName(mainClassName, mainUuid);
+			}
+			catch (Exception e) {
+				// some methods like Concept.getName() throw Exception s all the time...
+				displayName = "";
+			}
+			if (displayName != null)
+				if (displayName.length() > 0)
+					recordText.put(record.getUuid(), displayName);
+		}
+		
+		modelMap.put("syncRecords", recordList);
+		
+		modelMap.put("recordTypes", recordTypes);
+		modelMap.put("itemTypes", itemTypes);
+		modelMap.put("itemUuids", itemUuids);
+		modelMap.put("recordText", recordText);
+		modelMap.put("recordChangeType", recordChangeType);
+		
+		modelMap.put("parent", Context.getService(SyncService.class).getParentServer());
+		modelMap.put("servers", Context.getService(SyncService.class).getRemoteServers());
+		modelMap.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
+		
+		modelMap.put("firstRecordId", firstRecordId);
+		modelMap.put("size", size);
+	}
+	
 }

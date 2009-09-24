@@ -300,31 +300,31 @@ public class HibernateSyncDAO implements SyncDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecordsSince(java.util.Date)
-     */
-    @SuppressWarnings("unchecked")
-    public List<SyncRecord> getSyncRecordsSince(Date from) throws DAOException {
-        return sessionFactory.getCurrentSession()
-            .createCriteria(SyncRecord.class)
-            .add(Restrictions.gt("timestamp", from)) // greater than
-            .addOrder(Order.asc("timestamp"))
-            .addOrder(Order.asc("recordId"))
-            .list();
-    }
-
-    /**
-     * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecordsBetween(java.util.Date, java.util.Date)
-     */
-    @SuppressWarnings("unchecked")
-    public List<SyncRecord> getSyncRecordsBetween(Date from, Date to)
+	 * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecords(java.util.Date,
+	 *      java.util.Date, Integer, Integer)
+	 */
+	@SuppressWarnings("unchecked")
+    public List<SyncRecord> getSyncRecords(Date from, Date to, Integer firstRecordId, Integer numberToReturn)
             throws DAOException {
-        return sessionFactory.getCurrentSession()
-            .createCriteria(SyncRecord.class)
-            .add(Restrictions.gt("timestamp", from)) // greater than
-            .add(Restrictions.le("timestamp", to)) // less-than or equal
-            .addOrder(Order.asc("timestamp"))
-            .addOrder(Order.asc("recordId"))
-            .list();
+        Criteria criteria = sessionFactory.getCurrentSession()
+            .createCriteria(SyncRecord.class);
+        
+        if (from != null)
+        	criteria.add(Restrictions.gt("timestamp", from)); // greater than
+           
+        if (to != null)
+            criteria.add(Restrictions.le("timestamp", to)); // less-than or equal
+        
+        if (firstRecordId != null)
+        	criteria.add(Restrictions.gt("recordId", firstRecordId));
+        
+        if (numberToReturn != null)
+        	criteria.setMaxResults(numberToReturn);
+        
+        criteria.addOrder(Order.asc("timestamp"));
+        criteria.addOrder(Order.asc("recordId"));
+        
+        return criteria.list();
     }
 
     

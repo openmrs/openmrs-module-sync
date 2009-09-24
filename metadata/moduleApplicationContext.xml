@@ -2,10 +2,9 @@
 
 <!-- Beans to add to the current Application context definition -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:util="http://www.springframework.org/schema/util"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context-2.5.xsd
@@ -13,6 +12,9 @@
            http://www.springframework.org/schema/util/spring-util-2.0.xsd">
 
 	<bean id="synchronizationInterceptor" class="org.openmrs.module.sync.api.db.hibernate.HibernateSyncInterceptor" primary="true"/>
+
+    <!-- The default place to look for controllers that have annotations -->
+	<context:component-scan base-package="org.openmrs.module.sync.web.controller" />
 
     <bean id="@MODULE_ID@UrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
     	<property name="order"><value>1</value></property>
@@ -28,7 +30,7 @@
 	    	</props>
 		</property>
     </bean>
-
+    
     <bean id="statusListController" class="@MODULE_PACKAGE@.web.controller.StatusListController">
 		<property name="commandName"><value>statusCommandObject</value></property>
 		<property name="formView"><value>/module/@MODULE_ID@/statusList</value></property>
@@ -39,12 +41,6 @@
 		<property name="commandName"><value>importCommandObject</value></property>
 		<property name="formView"><value>/module/@MODULE_ID@/importList</value></property>
 		<property name="successView"><value>import.list</value></property>
-	</bean>
-
-	<bean id="historyListController" class="@MODULE_PACKAGE@.web.controller.HistoryListController">
-		<property name="commandName"><value>historyCommandObject</value></property>
-		<property name="formView"><value>/module/@MODULE_ID@/historyList</value></property>
-		<property name="successView"><value>history.list</value></property>
 	</bean>
 
 	<bean id="configListController" class="@MODULE_PACKAGE@.web.controller.ConfigListController">
@@ -117,5 +113,4 @@
 		</property>
 	</bean>
 	
-    
 </beans>

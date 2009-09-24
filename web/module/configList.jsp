@@ -365,8 +365,8 @@
 				</tr>
 				<tr>
 					<td colspan="2" align="center">
-						<input type="submit" value="<spring:message code="sync.general.save" />" />
-						<input type="button" onclick="location.href='config.list';" value="<spring:message code="sync.general.cancel" />" />
+						<input type="submit" value="<spring:message code="general.save" />" />
+						<input type="button" onclick="location.href='config.list';" value="<spring:message code="general.cancel" />" />
 					</td>
 				</tr>
 			</table>

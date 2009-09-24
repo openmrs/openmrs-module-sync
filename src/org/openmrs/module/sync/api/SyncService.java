@@ -204,6 +204,16 @@ public interface SyncService {
     @Transactional(readOnly=true)
     public List<SyncRecord> getSyncRecordsBetween(Date from, Date to) throws APIException;
 
+    /**
+     * Get the most recent sync records
+     * @param firstRecordId the first SyncRecord#getRecordId() to return 
+     * @param numberToReturn the max number of records to return
+     * @return SyncRecord A list containing all SyncRecords with a timestamp between the from timestamp and up to and including the to timestamp
+     * @throws APIException
+     */
+    //@Authorized({"View Synchronization Records"})
+    @Transactional(readOnly=true)
+    public List<SyncRecord> getSyncRecords(Integer firstRecordId, Integer numberToReturn) throws APIException;
     
     /**
      * 

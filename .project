@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>sync</name>
+	<name>sync-module</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -15,15 +15,9 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
-		<buildCommand>
-			<name>org.openmrs.devstudio.module.omodbuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
-		<nature>org.openmrs.devstudio.module.omodnature</nature>
 	</natures>
 </projectDescription>
