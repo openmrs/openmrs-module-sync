@@ -197,14 +197,11 @@ public class ConfigListController extends SimpleFormController {
 		} else if ("saveClasses".equals(action)) {
 			// save uuid, server name, and admin email first
 			String serverUuid = ServletRequestUtils.getStringParameter(request, "serverUuid", "");
-			String serverId = ServletRequestUtils.getStringParameter(request, "serverId", "");
 			String serverName = ServletRequestUtils.getStringParameter(request, "serverName", "");
 			String adminEmail = ServletRequestUtils.getStringParameter(request, "serverAdminEmail", "");
 			
 			if (serverUuid.length() > 0)
 				Context.getService(SyncService.class).setServerUuid(serverUuid);
-			if (serverId.length() > 0)
-				Context.getService(SyncService.class).setServerId(serverId);
 			if (serverName.length() > 0)
 				Context.getService(SyncService.class).setServerName(serverName);
 			if (adminEmail.length() > 0)
@@ -451,7 +448,6 @@ public class ConfigListController extends SimpleFormController {
 			
 			//sync status staff
 			ret.put("localServerUuid", ref.get("localServerUuid"));
-			ret.put("localServerId", Context.getService(SyncService.class).getServerId());
 			ret.put("localServerName", Context.getService(SyncService.class).getServerName());
 			ret.put("localServerAdminEmail", SyncUtil.getAdminEmail());
 		}

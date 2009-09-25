@@ -20,6 +20,13 @@
 		<class>@MODULE_PACKAGE@.extension.html.AdminList</class>
 	</extension>
 	
+	<!-- AOP -->
+	<advice>
+		<point>org.openmrs.api.UserService</point>
+		<class>@MODULE_PACKAGE@.advice.GenerateSystemIdAdvisor</class>
+	</advice>
+	<!-- /AOP -->
+	
 	<globalProperty>
 		<property>sync.server_name</property>
 		<defaultValue/>

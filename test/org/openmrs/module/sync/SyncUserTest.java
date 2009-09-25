@@ -20,12 +20,14 @@ import static org.junit.Assert.assertTrue;
 import java.util.Date;
 
 import org.junit.Test;
+import org.openmrs.GlobalProperty;
 import org.openmrs.PersonName;
 import org.openmrs.Privilege;
 import org.openmrs.Role;
 import org.openmrs.User;
 import org.openmrs.api.UserService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.advice.GenerateSystemIdAdvisor;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.test.annotation.NotTransactional;
 
@@ -145,6 +147,66 @@ public class SyncUserTest extends SyncBaseTest {
 				             numAtStart + 1,
 				             role.getPrivileges().size());
 				assertTrue("Does not have newly granted privilege", role.hasPrivilege("Manage Locations"));
+			}
+		});
+	}
+	
+	
+	/**
+	 * This validates that the {@link GenerateSystemIdAdvisor} is working
+	 * and prepending the server id to the system id when a new user is created
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	@NotTransactional
+	public void shouldPrependServerIdToNewUsersGeneratedSystemId() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			String EXPECTED_SYSTEM_ID = "parent_2-1";
+			
+			UserService us = Context.getUserService();
+			public void runOnChild() {
+				User u = new User();
+				u.setUsername("djazayeri");
+				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
+				u.setGender("M");
+				us.saveUser(u, "test");
+				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
+			}
+			public void runOnParent() {
+				User u = us.getUserByUsername("djazayeri");
+				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
+			}
+		});
+	}
+	
+	/**
+	 * This validates that the {@link GenerateSystemIdAdvisor} is just
+	 * silently not doing anything if the server id is not defined yet
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	@NotTransactional
+	public void shouldNotFileGeneratingSystemIdIfServerIdNotDefined() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			String EXPECTED_SYSTEM_ID = "2-6";
+			
+			UserService us = Context.getUserService();
+			public void runOnChild() {
+				// override the xml defined server id with a blank server id
+				Context.getAdministrationService().saveGlobalProperty(new GlobalProperty(SyncConstants.PROPERTY_SERVER_NAME, ""));
+				
+				User u = new User();
+				u.setUsername("djazayeri");
+				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
+				u.setGender("M");
+				us.saveUser(u, "test");
+				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
+			}
+			public void runOnParent() {
+				User u = us.getUserByUsername("djazayeri");
+				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
 			}
 		});
 	}

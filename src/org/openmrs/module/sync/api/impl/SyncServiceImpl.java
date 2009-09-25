@@ -373,31 +373,10 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
-	 * Updates/saves the friendly server name for sync purposes.
+	 * Updates/saves the user friendly server name for sync purposes.
 	 */
 	public void setServerName(String name) throws APIException {
 		Context.getService(SyncService.class).setGlobalProperty(SyncConstants.PROPERTY_SERVER_NAME, name);
-	}
-	
-	/**
-	 * Returns unique id of the server within its sync network. Note: the id is used to scope values
-	 * and local identifier that are unique locally only. Thus the provided server id must be unique
-	 * within a server sync network by convention.
-	 */
-	public String getServerId() throws APIException {
-		return Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_SERVER_ID);
-	}
-	
-	/**
-	 * Updates sync server id. Note: the id is used to scope values and local identifier that are
-	 * unique locally only. Thus the provided server id must be unique within a server sync network
-	 * by convention.
-	 * 
-	 * @param id ID to update. Short numerics are recommented (01, 02, etc.)
-	 * @throws APIException
-	 */
-	public void setServerId(String id) throws APIException {
-		Context.getService(SyncService.class).setGlobalProperty(SyncConstants.PROPERTY_SERVER_ID, id);
 	}
 	
 	/**

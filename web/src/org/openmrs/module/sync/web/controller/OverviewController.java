@@ -180,7 +180,6 @@ public class OverviewController extends SimpleFormController {
             
             //sync status staff
 	        ret.put("localServerUuid", ref.get("localServerUuid"));
-	        ret.put("localServerId", Context.getService(SyncService.class).getServerId());
 	        ret.put("localServerName", Context.getService(SyncService.class).getServerName());           
 	        ret.put("localServerAdminEmail", SyncUtil.getAdminEmail());           
 		}

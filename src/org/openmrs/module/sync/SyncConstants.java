@@ -82,7 +82,6 @@ public class SyncConstants {
 	
 	//global props
     public static final String PROPERTY_SERVER_UUID = "sync.server_uuid"; //used internally in sync
-    public static final String PROPERTY_SERVER_ID = "sync.server_id"; //numeric value used for scoping any local values (such as user_ids)
     public static final String PROPERTY_SERVER_NAME = "sync.server_name"; //used for display purposes, nickname
     public static final String PROPERTY_NAME_MAX_RETRY_COUNT = "sync.max_retry_count";
     public static final String PROPERTY_NAME_MAX_RETRY_COUNT_DEFAULT = "5";
