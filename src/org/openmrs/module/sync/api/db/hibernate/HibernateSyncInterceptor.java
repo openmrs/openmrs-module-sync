@@ -57,6 +57,7 @@ import org.openmrs.module.sync.serialization.Normalizer;
 import org.openmrs.module.sync.serialization.Package;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
+import org.openmrs.util.OpenmrsConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -232,8 +233,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 					}
 
 					// Grab database version
-					record.setDatabaseVersion(Context.getAdministrationService()
-					                                 .getGlobalProperty("database_version"));
+					record.setDatabaseVersion(OpenmrsConstants.OPENMRS_VERSION_SHORT);
 
 					// Complete the record
 					record.setUuid(SyncUtil.generateUuid());
