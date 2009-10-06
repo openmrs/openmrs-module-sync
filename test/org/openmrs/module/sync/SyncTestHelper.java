@@ -18,7 +18,7 @@ package org.openmrs.module.sync;
  */
 public interface SyncTestHelper {
 
-	public void runOnChild();
-	public void runOnParent();
+	public void runOnChild() throws Exception;
+	public void runOnParent() throws Exception;
 	
 }

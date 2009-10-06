@@ -966,7 +966,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 */
 	protected String fetchUuid(OpenmrsObject obj) {
 		String uuid = null;
-		String idPropertyName = null;
 		Object idPropertyValue = null;
 		Method m = null;
 
@@ -985,17 +984,23 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			} else {
 				objTrueType = obj.getClass();
 			}
+			
+			try {
+				idPropertyValue = obj.getId();
+			}
+			catch (Throwable t) {
+				log.debug("Unable to get internal identifier for obj: " + obj, t);
+				
+				// ClassMetadata is only available for entities configured in hibernate
+				ClassMetadata data = factory.getClassMetadata(objTrueType);
+				if (data != null) {
+					String idPropertyName = data.getIdentifierPropertyName();
+					if (idPropertyName != null) {
 
-			// ClassMetadata is only available for entities configured in
-			// hibernate
-			ClassMetadata data = factory.getClassMetadata(objTrueType);
-			if (data != null) {
-				idPropertyName = data.getIdentifierPropertyName();
-				if (idPropertyName != null) {
-
-					m = SyncUtil.getGetterMethod(objTrueType, idPropertyName);
-					if (m != null) {
-						idPropertyValue = m.invoke(obj, (Object[]) null);
+						m = SyncUtil.getGetterMethod(objTrueType, idPropertyName);
+						if (m != null) {
+							idPropertyValue = m.invoke(obj, (Object[]) null);
+						}
 					}
 				}
 			}
@@ -1015,6 +1020,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 				if (uuidVal != null) {
 					uuid = (String)uuidVal;
 				}
+				
+				if (uuid == null)
+					log.warn("Unable to find obj of type: " + objTrueType + " with primary key: " + idPropertyValue);
 
 			}
 		} catch (Exception ex) {
