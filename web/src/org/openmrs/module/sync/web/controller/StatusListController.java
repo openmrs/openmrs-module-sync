@@ -121,7 +121,7 @@ public class StatusListController extends SimpleFormController {
 
                 // Record last attempt
                 parent.setLastSync(new Date());
-                Context.getService(SyncService.class).updateRemoteServer(parent);
+                Context.getService(SyncService.class).saveRemoteServer(parent);
                 
                 // Write sync transmission to response
                 InputStream in = new ByteArrayInputStream(toTransmit.getBytes());

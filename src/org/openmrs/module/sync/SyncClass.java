@@ -13,48 +13,75 @@
  */
 package org.openmrs.module.sync;
 
+import org.openmrs.OpenmrsObject;
+import org.openmrs.Patient;
 
 /**
-  *
-  */
+ * By default, all OpenmrsObjects in the system are sync'ed. A SyncClass is an {@link OpenmrsObject}
+ * type that should not be sync'ed. This is defined by the user. At the moment, we don't restrict
+ * what can/can't be in this list, so a user could theoretically shoot themselves in the foot by
+ * choosing to ignore, say, the very important {@link Patient} class.
+ */
 public class SyncClass {
-    private Integer syncClassId;
-    private String name;
-    private SyncClassType type;
-    private Boolean defaultTo;
-    private Boolean defaultFrom;
-    
-    public Boolean getDefaultFrom() {
-        return defaultFrom;
-    }
-    public void setDefaultFrom(Boolean defaultFrom) {
-        this.defaultFrom = defaultFrom;
-    }
-    public Boolean getDefaultTo() {
-        return defaultTo;
-    }
-    public void setDefaultTo(Boolean defaultTo) {
-        this.defaultTo = defaultTo;
-    }
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public Integer getSyncClassId() {
-        return syncClassId;
-    }
-    public void setSyncClassId(Integer syncClassId) {
-        this.syncClassId = syncClassId;
-    }
-    public SyncClassType getType() {
-        return type;
-    }
-    public void setType(SyncClassType type) {
-        this.type = type;
-    }
-    
-    
-    
+	
+	private Integer syncClassId;
+	
+	private String name;
+	
+	private Boolean defaultSendTo = Boolean.TRUE;
+	
+	private Boolean defaultReceiveFrom = Boolean.TRUE;
+	
+	/**
+	 * If true, this object is imported from other servers
+	 * 
+	 * @return true/false whether or not to import the class named in {@link #name}
+	 */
+	public Boolean getDefaultReceiveFrom() {
+		return defaultReceiveFrom;
+	}
+	
+	/**
+	 * If true, this object is imported from other servers
+	 * 
+	 * @param defaultFrom true/false whether or not to import the class named in {@link #name}
+	 */
+	public void setDefaultReceiveFrom(Boolean defaultFrom) {
+		this.defaultReceiveFrom = defaultFrom;
+	}
+	
+	/**
+	 * If true, this object is not exported to other servers
+	 * 
+	 * @return true/false whether or not to export the class named in {@link #name}
+	 */
+	public Boolean getDefaultSendTo() {
+		return defaultSendTo;
+	}
+	
+	/**
+	 * If true, this object is not exported to other servers
+	 * 
+	 * @param defaultTo true/false whether or not to export the class named in {@link #name}
+	 */
+	public void setDefaultSendTo(Boolean defaultTo) {
+		this.defaultSendTo = defaultTo;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public Integer getSyncClassId() {
+		return syncClassId;
+	}
+	
+	public void setSyncClassId(Integer syncClassId) {
+		this.syncClassId = syncClassId;
+	}
+	
 }

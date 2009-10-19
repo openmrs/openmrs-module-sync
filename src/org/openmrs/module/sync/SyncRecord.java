@@ -407,7 +407,8 @@ public class SyncRecord implements Serializable, IItem {
     private static String deriveMapKey(SyncItem item) {
         return item.getKey().getKeyValue().toString() 
         	+ item.getState().toString() 
-        	+ ((item.getContainedType() == null) ? "null" : item.getContainedType().getSimpleName()); 
+        	+ ((item.getContainedType() == null) ? "null" : item.getContainedType().getName()); 
+        // (was getSimpleName instead of just getName)
     	
     }
 }

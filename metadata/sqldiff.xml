@@ -93,7 +93,7 @@
 		</sql>
 	</diff>
 	
-	<diff>
+		<diff>
 		<version>0.2</version>
 		<author>Ben Wolfe</author>
 		<date>Aug 21st 2009</date>
@@ -102,61 +102,7 @@
 		</description>
 		<sql>
 			INSERT INTO `sync_class` (`name`,`type`,`default_to`,`default_from`) values
-			('Cohort', 'PATIENT', 1, 1),
-			('ComplexObs', 'PATIENT', 1, 1),
-			('Concept', 'DICTIONARY', 1, 1),
-			('ConceptAnswer', 'DICTIONARY', 1, 1),
-			('ConceptClass', 'DICTIONARY', 1, 1),
-			('ConceptComplex', 'DICTIONARY', 1, 1),
-			('ConceptDatatype', 'DICTIONARY', 1, 1),
-			('ConceptDerived', 'DICTIONARY', 1, 1),
-			('ConceptDescription', 'DICTIONARY', 1, 1),
-			('ConceptMap', 'DICTIONARY', 1, 1),
-			('ConceptName', 'DICTIONARY', 1, 1),
-			('ConceptNameTag', 'DICTIONARY', 1, 1),
-			('ConceptNumeric', 'DICTIONARY', 1, 1),
-			('ConceptProposal', 'DICTIONARY', 1, 1),
-			('ConceptSet', 'DICTIONARY', 1, 1),
-			('ConceptSetDerived', 'DICTIONARY', 1, 1),
-			('ConceptSource', 'DICTIONARY', 1, 1),
-			('ConceptStateConversion', 'PATIENT', 1, 1),
-			('ConceptSynonym', 'DICTIONARY', 1, 1),
-			('ConceptWord', 'DICTIONARY', 1, 1),
-			('Drug', 'DICTIONARY', 1, 1),
-			('DrugIngredient', 'DICTIONARY', 1, 1),
-			('DrugOrder', 'PATIENT', 1, 1),
-			('Encounter', 'PATIENT', 1, 1),
-			('EncounterType', 'PATIENT', 1, 1),
-			('Field', 'FORM', 1, 1),
-			('FieldAnswer', 'FORM', 1, 1),
-			('FieldType', 'FORM', 1, 1),
-			('Form', 'FORM', 1, 1),
-			('FormField', 'FORM', 1, 1),
-			('GlobalProperty', 'MISC', 0, 0),
-			('Location', 'PATIENT', 1, 1),
-			('LoginCredential', 'REQUIRED', 1, 1),
-			('MimeType', 'DICTIONARY', 1, 1),
-			('Obs', 'PATIENT', 1, 1),
-			('Order', 'PATIENT', 1, 1),
-			('OrderType', 'PATIENT', 1, 1),
-			('Patient', 'PATIENT', 1, 1),
-			('PatientIdentifier', 'PATIENT', 1, 1),
-			('PatientIdentifierType', 'PATIENT', 1, 1),
-			('PatientProgram', 'PATIENT', 1, 1),
-			('PatientState', 'PATIENT', 1, 1),
-			('Person', 'REQUIRED', 1, 1),
-			('PersonAddress', 'PATIENT', 1, 1),
-			('PersonAttribute', 'PATIENT', 1, 1),
-			('PersonAttributeType', 'PATIENT', 1, 1),
-			('PersonName', 'PATIENT', 1, 1),
-			('Privilege', 'REQUIRED', 1, 1),
-			('Program', 'PATIENT', 1, 1),
-			('ProgramWorkflow', 'PATIENT', 1, 1),
-			('ProgramWorkflowState', 'PATIENT', 1, 1),
-			('Relationship', 'PATIENT', 1, 1),
-			('RelationshipType', 'PATIENT', 1, 1),
-			('Role', 'REQUIRED', 1, 1),
-			('User', 'REQUIRED', 1, 1);
+			('GlobalProperty', 'MISC', 0, 0);
 		</sql>
 	</diff>
 	
@@ -186,6 +132,56 @@
 				uuid(),
 				'Universally unique server id used to identify a given data source in synchronization.',
 				uuid());
+		</sql>
+	</diff>
+	
+	<diff>
+		<version>0.4</version>
+		<author>Ben Wolfe</author>
+		<date>Oct 6th 2009</date>
+		<description>
+			Modify sync_class table to be opt_out and only have classes that are _not_ sync'd
+		</description>
+		<sql>
+			ALTER TABLE sync_class DROP COLUMN type;
+			ALTER TABLE sync_class CHANGE COLUMN default_from default_receive_from tinyint(1) NOT NULL;
+			ALTER TABLE sync_class CHANGE COLUMN default_to default_send_to tinyint(1) NOT NULL;
+		</sql>
+	</diff>
+	
+	<diff>
+		<version>0.4.1</version>
+		<author>Ben Wolfe</author>
+		<date>Oct 6th 2009</date>
+		<description>
+			Clean up sync_class and sync_server_class tables to have only the one opted-out classes
+		</description>
+		<sql>
+			DELETE FROM sync_server_class WHERE receive_from = 1 AND send_to = 1;
+			
+			DELETE FROM 
+				sync_class
+			WHERE
+				default_receive_from = 1
+				AND
+				default_send_to = 1
+				AND
+				class_id not in (select class_id from sync_server_class);
+			
+			UPDATE sync_class set name = concat('org.openmrs.', name);
+		</sql>
+	</diff>
+	
+	<diff>
+		<version>0.4.2</version>
+		<author>Ben Wolfe</author>
+		<date>Oct 15th 2009</date>
+		<description>
+			Increase size of database_version column to hold the more complicated openmrs code version now
+		</description>
+		<sql>
+			ALTER TABLE sync_record CHANGE COLUMN database_version database_version char(20) default NULL;
+			ALTER TABLE sync_import CHANGE COLUMN database_version database_version char(20) default NULL;
 		</sql>
 	</diff>
 	

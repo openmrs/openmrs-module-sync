@@ -15,17 +15,15 @@
 
     <!-- The default place to look for controllers that have annotations -->
 	<context:component-scan base-package="org.openmrs.module.sync.web.controller" />
-
+	
     <bean id="@MODULE_ID@UrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
     	<property name="order"><value>1</value></property>
     	<property name="mappings">
             <props>
             	<prop key="module/@MODULE_ID@/status.list">statusListController</prop>
 				<prop key="module/@MODULE_ID@/import.list">importListController</prop>
-				<prop key="module/@MODULE_ID@/history.list">historyListController</prop>
 				<prop key="module/@MODULE_ID@/config.list">configListController</prop>
 				<prop key="module/@MODULE_ID@/overview.htm">overviewController</prop>
-				<prop key="module/@MODULE_ID@/configServer.form">configServerFormController</prop>
 				<prop key="module/@MODULE_ID@/help.htm">helpController</prop>
 	    	</props>
 		</property>
@@ -61,10 +59,8 @@
 		<property name="successView"><value>help.htm</value></property>
 	</bean>
 
-	<bean id="configServerFormController" class="@MODULE_PACKAGE@.web.controller.ConfigServerFormController">
-		<property name="commandName"><value>server</value></property>
-		<property name="formView"><value>/module/@MODULE_ID@/configServerForm</value></property>
-		<property name="successView"><value>config.list</value></property>
+	<bean class="@MODULE_PACKAGE@.api.db.hibernate.HibernateSyncDAO">
+		<property name="sessionFactory"><ref bean="sessionFactory"/></property>	
 	</bean>
 	
 	<bean parent="serviceContext">
@@ -74,13 +70,7 @@
 				<bean class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
 					<property name="transactionManager"><ref bean="transactionManager"/></property>
 					<property name="target">
-						<bean class="@MODULE_PACKAGE@.api.impl.SyncServiceImpl">
-							<property name="syncDAO">
-								<bean class="@MODULE_PACKAGE@.api.db.hibernate.HibernateSyncDAO">
-									<property name="sessionFactory"><ref bean="sessionFactory"/></property>	
-								</bean>
-							</property>	
-						</bean>
+						<bean class="@MODULE_PACKAGE@.api.impl.SyncServiceImpl" autowire="byType" />
 					</property>
 					<property name="preInterceptors">
 						<ref bean="serviceInterceptors"/>

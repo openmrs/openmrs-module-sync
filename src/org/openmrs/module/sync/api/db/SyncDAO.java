@@ -177,20 +177,12 @@ public interface SyncDAO {
 	public void setGlobalProperty(String propertyName, String propertyValue) throws APIException;
 	
 	/**
-	 * Create a new RemoteServer
+	 * Save a new or current RemoteServer in the database
 	 * 
-	 * @param RemoteServer The RemoteServer to create
+	 * @param RemoteServer The RemoteServer to create/update
 	 * @throws DAOException
 	 */
-	public void createRemoteServer(RemoteServer server) throws DAOException;
-	
-	/**
-	 * Update a RemoteServer
-	 * 
-	 * @param RemoteServer The RemoteServer to update
-	 * @throws DAOException
-	 */
-	public void updateRemoteServer(RemoteServer server) throws DAOException;
+	public void saveRemoteServer(RemoteServer server) throws DAOException;
 	
 	/**
 	 * Delete a RemoteServer
@@ -236,20 +228,12 @@ public interface SyncDAO {
 	public RemoteServer getParentServer() throws DAOException;
 	
 	/**
-	 * Create a new SyncClass
-	 * 
-	 * @param SyncClass The SyncClass to create
-	 * @throws DAOException
-	 */
-	public void createSyncClass(SyncClass record) throws DAOException;
-	
-	/**
 	 * Update a SyncClass
 	 * 
 	 * @param SyncClass The SyncClass to update
 	 * @throws DAOException
 	 */
-	public void updateSyncClass(SyncClass record) throws DAOException;
+	public void saveSyncClass(SyncClass record) throws DAOException;
 	
 	/**
 	 * Delete a SyncClass
@@ -260,7 +244,7 @@ public interface SyncDAO {
 	public void deleteSyncClass(SyncClass record) throws DAOException;
 	
 	/**
-	 * @param uuid of the SyncClass to retrieve
+	 * @param syncClassId of the SyncClass to retrieve
 	 * @return SyncClass The SyncClass or null if not found
 	 * @throws DAOException
 	 */
@@ -271,6 +255,13 @@ public interface SyncDAO {
 	 * @throws DAOException
 	 */
 	public List<SyncClass> getSyncClasses() throws DAOException;
+	
+	/**
+	 * @param classname of the SyncClass to retrieve
+	 * @return SyncClass The SyncClass or null if not found
+	 * @throws DAOException
+	 */
+	public SyncClass getSyncClassByName(String className) throws DAOException;
 	
 	/**
 	 * Dumps the entire database, much like what you'd get from the mysqldump command, and adds a

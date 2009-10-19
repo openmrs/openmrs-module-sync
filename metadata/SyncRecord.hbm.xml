@@ -21,7 +21,7 @@
 			column="creator" length="36" />
 
 		<property name="databaseVersion" type="java.lang.String"
-			column="database_version" length="8" />
+			column="database_version" length="20" />
 			
 		<property name="timestamp" type="java.util.Date"
 			column="timestamp" length="19" />

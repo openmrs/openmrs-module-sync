@@ -39,10 +39,16 @@ import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.SyncServerRecord;
+import org.openmrs.util.OpenmrsUtil;
 
+/**
+ * Default implementation of the {@link SyncService}
+ */
 public class SyncServiceImpl implements SyncService {
 	
 	private SyncDAO dao;
+	
+	private List<Class<OpenmrsObject>> allOpenmrsObjects;
 	
 	private final Log log = LogFactory.getLog(getClass());
 	
@@ -52,6 +58,17 @@ public class SyncServiceImpl implements SyncService {
 	
 	public void setSyncDAO(SyncDAO dao) {
 		this.dao = dao;
+	}
+	
+	public void setAllObjectsObjects(List<Class<OpenmrsObject>> openmrsObjects) {
+		log.fatal("Got openmrs objects: " + openmrsObjects);
+		
+		this.allOpenmrsObjects = openmrsObjects;
+	}
+	
+	public List<Class<OpenmrsObject>> getAllOpenmrsObjects() {
+		
+		return this.allOpenmrsObjects;
 	}
 	
 	/**
@@ -193,7 +210,7 @@ public class SyncServiceImpl implements SyncService {
 		if (ret != null) {
 			temp = new ArrayList<SyncRecord>();
 			for (SyncRecord record : ret) {
-				if (server.getClassesSent().containsAll(record.getContainedClassSet())) {
+				if (!OpenmrsUtil.containsAny(record.getContainedClassSet(), server.getClassesNotSent())) {
 					record.setForServer(server);
 					temp.add(record);
 					
@@ -292,9 +309,9 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
-	 * @see org.openmrs.api.SyncService#createRemoteServer(org.openmrs.module.sync.engine.RemoteServer)
+	 * @see org.openmrs.api.SyncService#saveRemoteServer(org.openmrs.module.sync.engine.RemoteServer)
 	 */
-	public void createRemoteServer(RemoteServer server) throws APIException {
+	public void saveRemoteServer(RemoteServer server) throws APIException {
 		if (server != null) {
 			Set<SyncServerClass> serverClasses = server.getServerClasses();
 			if (serverClasses == null) {
@@ -310,15 +327,8 @@ public class SyncServiceImpl implements SyncService {
 				server.setServerClasses(serverClasses);
 			}
 			
-			getSynchronizationDAO().createRemoteServer(server);
+			getSynchronizationDAO().saveRemoteServer(server);
 		}
-	}
-	
-	/**
-	 * @see org.openmrs.api.SyncService#updateRemoteServer(org.openmrs.module.sync.engine.RemoteServer)
-	 */
-	public void updateRemoteServer(RemoteServer server) throws APIException {
-		getSynchronizationDAO().updateRemoteServer(server);
 	}
 	
 	/**
@@ -359,7 +369,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * Updates globally unique identifier of the local server.
 	 */
-	public void setServerUuid(String uuid) throws APIException {
+	public void saveServerUuid(String uuid) throws APIException {
 		Context.getService(SyncService.class).setGlobalProperty(SyncConstants.PROPERTY_SERVER_UUID, uuid);
 	}
 	
@@ -375,22 +385,23 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * Updates/saves the user friendly server name for sync purposes.
 	 */
-	public void setServerName(String name) throws APIException {
+	public void saveServerName(String name) throws APIException {
 		Context.getService(SyncService.class).setGlobalProperty(SyncConstants.PROPERTY_SERVER_NAME, name);
 	}
 	
-	/**
-	 * @see org.openmrs.api.SyncService#createSyncClass(org.openmrs.module.sync.SyncClass)
-	 */
-	public void createSyncClass(SyncClass syncClass) throws APIException {
-		getSynchronizationDAO().createSyncClass(syncClass);
-	}
+	public String getAdminEmail() {
+        return Context.getService(SyncService.class).getGlobalProperty(SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL);        
+    }
+    
+    public void saveAdminEmail(String email) {
+        Context.getService(SyncService.class).setGlobalProperty(SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL, email);
+    }
 	
 	/**
-	 * @see org.openmrs.api.SyncService#updateSyncClass(org.openmrs.module.sync.SyncClass)
+	 * @see org.openmrs.api.SyncService#saveSyncClass(org.openmrs.module.sync.SyncClass)
 	 */
-	public void updateSyncClass(SyncClass syncClass) throws APIException {
-		getSynchronizationDAO().updateSyncClass(syncClass);
+	public void saveSyncClass(SyncClass syncClass) throws APIException {
+		getSynchronizationDAO().saveSyncClass(syncClass);
 	}
 	
 	/**
@@ -406,6 +417,10 @@ public class SyncServiceImpl implements SyncService {
 	
 	public List<SyncClass> getSyncClasses() throws APIException {
 		return getSynchronizationDAO().getSyncClasses();
+	}
+	
+	public SyncClass getSyncClassByName(String className) throws APIException {
+		return getSynchronizationDAO().getSyncClassByName(className);
 	}
 	
 	/**

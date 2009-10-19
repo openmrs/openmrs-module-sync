@@ -17,15 +17,11 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -37,12 +33,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncConstants;
-import org.openmrs.module.sync.SyncSource;
-import org.openmrs.module.sync.SyncSourceJournal;
 import org.openmrs.module.sync.SyncTransmission;
-import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.SyncUtilTransmission;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
@@ -54,7 +46,6 @@ import org.openmrs.web.WebConstants;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.ServletRequestUtils;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
@@ -67,14 +58,6 @@ public class ConfigListController extends SimpleFormController {
 	
 	/** Logger for this class and subclasses */
 	protected final Log log = LogFactory.getLog(getClass());
-	
-	/**
-	 * @see org.springframework.web.servlet.mvc.BaseCommandController#initBinder(javax.servlet.http.HttpServletRequest,
-	 *      org.springframework.web.bind.ServletRequestDataBinder)
-	 */
-	protected void initBinder(HttpServletRequest request, ServletRequestDataBinder binder) throws Exception {
-		super.initBinder(request, binder);
-	}
 	
 	@Override
 	protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, Object obj,
@@ -96,144 +79,7 @@ public class ConfigListController extends SimpleFormController {
 		
 		log.debug("action is " + action);
 		
-		if ("saveParent".equals(action)) {
-			//System.out.println("\n\nSTARTED IS " + request.getParameterValues("started")[0]);
-			
-			String address = ServletRequestUtils.getStringParameter(request, "address", "");
-			String nickname = ServletRequestUtils.getStringParameter(request, "nickname", "");
-			String username = ServletRequestUtils.getStringParameter(request, "username", "");
-			String password = ServletRequestUtils.getStringParameter(request, "password", "");
-			String uuid = ServletRequestUtils.getStringParameter(request, "parentUuid", "");
-			String[] startedParams = request.getParameterValues("started");
-			boolean started = false;
-			if (startedParams != null) {
-				for (String startedParam : startedParams) {
-					if (startedParam.equals("true"))
-						started = true;
-				}
-			}
-			Integer repeatInterval = ServletRequestUtils.getIntParameter(request, "repeatInterval", 0) * 60; // interval really is in seconds, to * 60 to convert to minutes 
-			
-			if (password.length() == 0)
-				error = msa.getMessage("sync.config.parent.error.passwordRequired");
-			if (username.length() == 0)
-				error = msa.getMessage("sync.config.parent.error.usernameRequired");
-			if (address.length() == 0)
-				error = msa.getMessage("sync.config.parent.error.addressRequired");
-			if (started && repeatInterval == 0)
-				error = msa.getMessage("sync.config.parent.error.invalidRepeat");
-			
-			if (error.length() == 0) {
-				RemoteServer parent = Context.getService(SyncService.class).getParentServer();
-				
-				if (parent == null) {
-					parent = new RemoteServer();
-				}
-				parent.setAddress(address);
-				// this is special for parent - will always be "Parent"
-				parent.setNickname(RemoteServerType.PARENT.toString());
-				parent.setUsername(username);
-				parent.setPassword(password);
-				parent.setServerType(RemoteServerType.PARENT);
-				if (uuid.length() > 0)
-					parent.setUuid(uuid);
-				
-				if (parent.getServerId() == null) {
-					Context.getService(SyncService.class).createRemoteServer(parent);
-				} else {
-					Context.getService(SyncService.class).updateRemoteServer(parent);
-				}
-				
-				// also set TaskConfig for scheduling
-				if (parent.getServerId() != null) {
-					TaskDefinition parentSchedule = null;
-					Collection<TaskDefinition> tasks = Context.getSchedulerService().getRegisteredTasks();
-					
-					String serverId = parent.getServerId().toString();
-					if (tasks != null) {
-						for (TaskDefinition task : tasks) {
-							if (task.getTaskClass().equals(SyncConstants.SCHEDULED_TASK_CLASS)) {
-								if (serverId.equals(task.getProperty(SyncConstants.SCHEDULED_TASK_PROPERTY_SERVER_ID))) {
-									parentSchedule = task;
-								}
-							}
-						}
-					}
-					
-					Map<String, String> props = new HashMap<String, String>();
-					props.put(SyncConstants.SCHEDULED_TASK_PROPERTY_SERVER_ID, serverId);
-					if (parentSchedule != null) {
-						Context.getSchedulerService().shutdownTask(parentSchedule);
-						parentSchedule.setStarted(started);
-						parentSchedule.setRepeatInterval((long) repeatInterval);
-						parentSchedule.setStartOnStartup(started);
-						parentSchedule.setProperties(props);
-						if (started) {
-							parentSchedule.setStartTime(new Date());
-						}
-						Context.getSchedulerService().saveTask(parentSchedule);
-						if (started) {
-							Context.getSchedulerService().scheduleTask(parentSchedule);
-						}
-					} else {
-						if (started) {
-							parentSchedule = new TaskDefinition();
-							parentSchedule.setName(msa.getMessage(SyncConstants.DEFAULT_PARENT_SCHEDULE_NAME));
-							parentSchedule.setDescription(msa.getMessage(SyncConstants.DEFAULT_PARENT_SCHEDULE_DESCRIPTION));
-							parentSchedule.setRepeatInterval((long) repeatInterval);
-							parentSchedule.setStartTime(new Date());
-							parentSchedule.setTaskClass(SyncConstants.SCHEDULED_TASK_CLASS);
-							parentSchedule.setStarted(started);
-							parentSchedule.setStartOnStartup(started);
-							parentSchedule.setProperties(props);
-							Context.getSchedulerService().saveTask(parentSchedule);
-							Context.getSchedulerService().scheduleTask(parentSchedule);
-						}
-					}
-				}
-				
-				success = msa.getMessage("sync.config.parent.saved");
-			}
-		} else if ("saveClasses".equals(action)) {
-			// save uuid, server name, and admin email first
-			String serverUuid = ServletRequestUtils.getStringParameter(request, "serverUuid", "");
-			String serverName = ServletRequestUtils.getStringParameter(request, "serverName", "");
-			String adminEmail = ServletRequestUtils.getStringParameter(request, "serverAdminEmail", "");
-			
-			if (serverUuid.length() > 0)
-				Context.getService(SyncService.class).setServerUuid(serverUuid);
-			if (serverName.length() > 0)
-				Context.getService(SyncService.class).setServerName(serverName);
-			if (adminEmail.length() > 0)
-				SyncUtil.setAdminEmail(adminEmail);
-			
-			String[] classIdsTo = ServletRequestUtils.getRequiredStringParameters(request, "toDefault");
-			String[] classIdsFrom = ServletRequestUtils.getRequiredStringParameters(request, "fromDefault");
-			Set<String> idsTo = new HashSet<String>();
-			Set<String> idsFrom = new HashSet<String>();
-			if (classIdsTo != null)
-				idsTo.addAll(Arrays.asList(classIdsTo));
-			if (classIdsFrom != null)
-				idsFrom.addAll(Arrays.asList(classIdsFrom));
-			
-			List<SyncClass> syncClasses = Context.getService(SyncService.class).getSyncClasses();
-			if (syncClasses != null) {
-				//log.warn("SYNCCLASSES IS SIZE: " + syncClasses.size());
-				for (SyncClass syncClass : syncClasses) {
-					if (idsTo.contains(syncClass.getSyncClassId().toString()))
-						syncClass.setDefaultTo(true);
-					else
-						syncClass.setDefaultTo(false);
-					if (idsFrom.contains(syncClass.getSyncClassId().toString()))
-						syncClass.setDefaultFrom(true);
-					else
-						syncClass.setDefaultFrom(false);
-					Context.getService(SyncService.class).updateSyncClass(syncClass);
-				}
-			}
-			
-			success = msa.getMessage("sync.config.classes.saved");
-		} else if ("deleteServer".equals(action)) {
+		if ("deleteServer".equals(action)) {
 			// check to see if the user is trying to delete a server, react accordingly
 			Integer serverId = ServletRequestUtils.getIntParameter(request, "serverId", 0);
 			String serverName = "Server " + serverId.toString();
@@ -270,7 +116,7 @@ public class ConfigListController extends SimpleFormController {
 				
 				// Record last attempt
 				server.setLastSync(new Date());
-				Context.getService(SyncService.class).updateRemoteServer(server);
+				Context.getService(SyncService.class).saveRemoteServer(server);
 				
 				// Write sync transmission to response
 				InputStream in = new ByteArrayInputStream(toTransmit.getBytes());
@@ -316,9 +162,6 @@ public class ConfigListController extends SimpleFormController {
 			
 			serverList.addAll(ss.getRemoteServers());
 			obj.put("serverList", serverList);
-			
-			SyncSource source = new SyncSourceJournal();
-			obj.put("localServerUuid", source.getSyncSourceUuid());
 		}
 		
 		return obj;
@@ -380,76 +223,11 @@ public class ConfigListController extends SimpleFormController {
 				}
 			}
 			
-			Map<String, List<SyncClass>> syncClassGroups = new HashMap<String, List<SyncClass>>();
-			Map<String, List<SyncClass>> syncClassGroupsLeft = new HashMap<String, List<SyncClass>>();
-			Map<String, List<SyncClass>> syncClassGroupsRight = new HashMap<String, List<SyncClass>>();
-			Map<String, Boolean> syncClassGroupTo = new HashMap<String, Boolean>();
-			Map<String, Boolean> syncClassGroupFrom = new HashMap<String, Boolean>();
-			
-			List<SyncClass> syncClasses = Context.getService(SyncService.class).getSyncClasses();
-			if (syncClasses != null) {
-				//log.warn("SYNCCLASSES IS SIZE: " + syncClasses.size());
-				for (SyncClass syncClass : syncClasses) {
-					String type = syncClass.getType().toString();
-					List<SyncClass> currList = syncClassGroups.get(type);
-					if (currList == null) {
-						currList = new ArrayList<SyncClass>();
-						syncClassGroupTo.put(type, false);
-						syncClassGroupFrom.put(type, false);
-					}
-					currList.add(syncClass);
-					syncClassGroups.put(type, currList);
-					if (syncClass.getDefaultTo())
-						syncClassGroupTo.put(type, true);
-					if (syncClass.getDefaultFrom())
-						syncClassGroupFrom.put(type, true);
-					//log.warn("Added type " + type + " to list, size is now " + currList.size());
-				}
-				
-				/*
-				 * This algorithm is nicer in theory
-				int countLeft = 0;
-				int countRight = 0;
-				for ( Iterator<Map.Entry<String, List<SyncClass>>> it = syncClassGroups.entrySet().iterator(); it.hasNext(); ) {
-				    Map.Entry<String, List<SyncClass>> entry = it.next();
-				    if ( countLeft > countRight ) {
-				        syncClassGroupsRight.put(entry.getKey(), entry.getValue());
-				        countRight += entry.getValue().size();
-				    } else {
-				        syncClassGroupsLeft.put(entry.getKey(), entry.getValue());
-				        countLeft += entry.getValue().size();
-				    }
-				}
-				*/
-				// but this one simply is a better end-product
-				for (Iterator<Map.Entry<String, List<SyncClass>>> it = syncClassGroups.entrySet().iterator(); it.hasNext();) {
-					Map.Entry<String, List<SyncClass>> entry = it.next();
-					if (entry.getKey().equals("REQUIRED") || entry.getKey().equals("PATIENT")) {
-						syncClassGroupsLeft.put(entry.getKey(), entry.getValue());
-					} else {
-						syncClassGroupsRight.put(entry.getKey(), entry.getValue());
-					}
-				}
-				
-			} else {
-				//log.warn("SYNCCLASSES CAME BACK NULL");
-			}
-			
-			ret.put("syncClassGroups", syncClassGroups);
-			ret.put("syncClassGroupsLeft", syncClassGroupsLeft);
-			ret.put("syncClassGroupsRight", syncClassGroupsRight);
-			ret.put("syncClassGroupTo", syncClassGroupTo);
-			ret.put("syncClassGroupFrom", syncClassGroupFrom);
 			ret.put("connectionState", connectionState.entrySet());
 			ret.put("parent", parent);
 			ret.put("parentSchedule", parentSchedule);
 			ret.put("repeatInterval", repeatInterval);
 			ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
-			
-			//sync status staff
-			ret.put("localServerUuid", ref.get("localServerUuid"));
-			ret.put("localServerName", Context.getService(SyncService.class).getServerName());
-			ret.put("localServerAdminEmail", SyncUtil.getAdminEmail());
 		}
 		
 		return ret;

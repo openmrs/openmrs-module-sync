@@ -36,4 +36,5 @@ public class SyncServiceTest extends BaseModuleContextSensitiveTest {
 		Assert.assertNotNull(dt);
 		Assert.assertEquals(Integer.valueOf(3), dt.getConceptDatatypeId());
 	}
+
 }

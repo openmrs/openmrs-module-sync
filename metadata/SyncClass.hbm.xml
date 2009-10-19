@@ -14,15 +14,9 @@
 		<property name="name" type="java.lang.String"
 			column="name" length="255" not-null="true" />
 
-		<property name="type" not-null="true">
-			<type name="org.openmrs.module.sync.api.db.hibernate.usertype.GenericEnumUserType">
-				<param name="enumClassName">org.openmrs.module.sync.SyncClassType</param>
-			</type>
-		</property>
-			
-		<property name="defaultTo" column="default_to" type="boolean" not-null="true" />
+		<property name="defaultSendTo" column="default_send_to" type="boolean" not-null="true" />
 
-		<property name="defaultFrom" column="default_from" type="boolean" not-null="true" />
+		<property name="defaultReceiveFrom" column="default_receive_from" type="boolean" not-null="true" />
         
 	</class>
 </hibernate-mapping>

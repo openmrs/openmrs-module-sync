@@ -17,6 +17,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 
+import java.util.List;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.openmrs.Concept;
 import org.openmrs.Field;
@@ -24,6 +27,7 @@ import org.openmrs.Form;
 import org.openmrs.FormField;
 import org.openmrs.api.FormService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.serialization.Record;
 import org.springframework.test.annotation.NotTransactional;
 
 /**
@@ -130,6 +134,32 @@ public class SyncFormTest extends SyncBaseTest {
 					}
 				}
 				assertEquals(numTheSame, 1);
+			}
+		});
+	}
+	
+	@Test
+    @NotTransactional
+	public void shouldSaveFieldWithoutSendingAllFormData() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			FormService fs = Context.getFormService();
+			String name = "New Name for Field";
+			public void runOnChild() {
+				// a field that is associated with formid=1
+				Field field = fs.getField(2);
+				field.setName(name);
+				fs.saveField(field);
+			}
+			public void changedBeingApplied(List<SyncRecord> records, Record record) {
+				for (SyncRecord syncRecord : records) {
+					if (syncRecord.getContainedClassSet().contains("org.openmrs.Form")) {
+						Assert.fail("Form objects should not be in the sync records for simply Field saves");
+					}
+				}
+			}
+			public void runOnParent() {
+				Field field = fs.getField(2);
+				assertEquals("The name should have changed", name, field.getName());
 			}
 		});
 	}

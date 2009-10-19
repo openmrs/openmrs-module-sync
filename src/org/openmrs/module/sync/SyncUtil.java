@@ -571,22 +571,10 @@ public class SyncUtil {
 		}
 	}
 
-    public static String getAdminEmail() {
-        return Context.getService(SyncService.class).getGlobalProperty(SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL);        
-    }
-    
-    public static void setAdminEmail(String email) {
-        Context.getService(SyncService.class).setGlobalProperty(SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL, email);
-        
-        return;   
-    }
-    
 	public static void sendSyncErrorMessage(SyncRecord syncRecord, RemoteServer server, Exception exception) { 
 		
 		try {
-							
-			
-			String adminEmail = SyncUtil.getAdminEmail();
+			String adminEmail = Context.getService(SyncService.class).getAdminEmail();
 			
 			if (adminEmail == null || adminEmail.length() == 0 ) { 
 				log.warn("Sync error message could not be sent because " + SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL + " is not configured.");
@@ -643,7 +631,7 @@ public class SyncUtil {
 			log.error("An error occurred while sending the sync error message", e);
 		} 
 		
-	}    
+	}
 	
 	
 	

@@ -33,7 +33,6 @@ import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncSource;
 import org.openmrs.module.sync.SyncSourceJournal;
 import org.openmrs.module.sync.SyncStatistic;
-import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.module.sync.server.RemoteServer;
@@ -181,7 +180,7 @@ public class OverviewController extends SimpleFormController {
             //sync status staff
 	        ret.put("localServerUuid", ref.get("localServerUuid"));
 	        ret.put("localServerName", Context.getService(SyncService.class).getServerName());           
-	        ret.put("localServerAdminEmail", SyncUtil.getAdminEmail());           
+	        ret.put("localServerAdminEmail", Context.getService(SyncService.class).getAdminEmail());           
 		}
         
 	    return ret;

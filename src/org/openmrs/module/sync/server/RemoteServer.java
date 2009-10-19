@@ -131,24 +131,36 @@ public class RemoteServer {
     	this.username = username;
     }
 	
-	public Set<String> getClassesSent() {
+	/**
+	 * Uses the {@link #getServerClasses()} method to figure out which classes
+     * should not be sync'd to this server.
+	 * 
+	 * @return
+	 */
+	public Set<String> getClassesNotSent() {
 	    Set<String> ret = new HashSet<String>();
         
         if ( this.serverClasses != null ) {
             for ( SyncServerClass serverClass : this.serverClasses ) {
-                if ( serverClass.getSendTo() ) ret.add(serverClass.getSyncClass().getName());
+                if ( serverClass.getSendTo() == false ) ret.add(serverClass.getSyncClass().getName());
             }
         }
         
         return  ret;
     }
     
-    public Set<String> getClassesReceived() {
+    /**
+     * Uses the {@link #getServerClasses()} method to figure out which classes
+     * should not be sync'd from this server.
+     * 
+     * @return
+     */
+    public Set<String> getClassesNotReceived() {
         Set<String> ret = new HashSet<String>();
         
         if ( this.serverClasses != null ) {
             for ( SyncServerClass serverClass : this.serverClasses ) {
-                if ( serverClass.getReceiveFrom() ) ret.add(serverClass.getSyncClass().getName());
+                if ( serverClass.getReceiveFrom() == false ) ret.add(serverClass.getSyncClass().getName());
             }
         }
 

@@ -100,7 +100,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         
         try {
             // first, let's see if this server even accepts this kind of syncRecord
-            if ( !server.getClassesReceived().containsAll(record.getContainedClassSet())) {
+            if ( OpenmrsUtil.containsAny(record.getContainedClassSet(), server.getClassesNotReceived())) {
                 importRecord.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
                 log.warn("\nNOT INGESTING RECORD with " + record.getContainedClasses() + " BECAUSE SERVER IS NOT READY TO ACCEPT ALL CONTAINED OBJECTS\n");
             } else {

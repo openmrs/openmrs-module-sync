@@ -77,7 +77,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 
 	/**
 	 * Helper container class to store type/value tuple for a given object
-	 * property. Utilized during serializtion of intercepted entity changes.
+	 * property. Utilized during serialization of intercepted entity changes.
 	 * 
 	 * @see HibernateSyncInterceptor#packageObject(OpenmrsObject,
 	 *      Object[], String[], Type[], SyncItemState)
@@ -839,7 +839,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 
 			syncRecordHolder.get().addItem(syncItem);
 			syncRecordHolder.get().addContainedClass(entity.getClass()
-			                                               .getSimpleName());
+			                                               .getName());
 
 			// set the originating uuid for the record: do this once per Tx;
 			// else we may end up with empty string
@@ -889,17 +889,12 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	}
 
 	/**
-	 * Determines if entity is to be 'synchronized'. There are three ways this
+	 * Determines if entity is to be 'synchronized'. There are two ways this
 	 * can happen:
 	 * <p>
-	 * 1. Sync status is globally set to disabled.
+	 * 1. Entity implements OpenmrsObject interface.
 	 * <p>
-	 * 2. Entity implements OpenmrsObject interface.
-	 * <p>
-	 * 3. Entity implements OpenmrsObjectInstance and IsOpenmrsObject is set
-	 * to true
-	 * <p>
-	 * 4. Finally, interceptor supports manual override to suspend
+	 * 2. Interceptor supports manual override to suspend
 	 * synchronization by setting the deactivated bit (see
 	 * {@link #deactivateTransactionSerialization()}). This option is provided
 	 * only for rare occasions when previous methods are not sufficient (i.e
@@ -922,7 +917,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		
 		//do not sync global properties
 		if (entity instanceof org.openmrs.GlobalProperty) {
-				return false;
+			return false;
 		}
 
 		// finally, if 'deactivated' bit was set manually, return accordingly
@@ -1266,7 +1261,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 
 			syncRecordHolder.get().addOrRemoveAndAddItem(syncItem);
 			syncRecordHolder.get().addContainedClass(owner.getClass()
-			                                              .getSimpleName());
+			                                              .getName());
 
 			// do the original uuid dance, same as in packageObject
 			if (syncRecordHolder.get().getOriginalUuid() == null

@@ -24,6 +24,7 @@ import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.SyncServerRecord;
+import org.openmrs.util.OpenmrsUtil;
 
 /**
  * sync strategy that implements sync-ing via disconnected push/pull.
@@ -115,7 +116,7 @@ public class SyncStrategyFile {
                     	break;
                     }
                     Set<String> containedClasses = record.getContainedClassSet();
-                    if ( server.getClassesSent().containsAll(containedClasses) ) {
+                    if ( OpenmrsUtil.containsAny(containedClasses, server.getClassesNotSent())) {
                         filteredChangeset.add(record);
                     } else {
                         if ( server.getServerType().equals(RemoteServerType.PARENT)) {

@@ -38,6 +38,7 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openmrs.GlobalProperty;
@@ -372,19 +373,11 @@ public class HibernateSyncDAO implements SyncDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SyncDAO#createRemoteServer(org.openmrs.module.sync.engine.RemoteServer)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#saveRemoteServer(org.openmrs.module.sync.engine.RemoteServer)
      */
-    public void createRemoteServer(RemoteServer record) throws DAOException {
+    public void saveRemoteServer(RemoteServer server) throws DAOException {
         Session session = sessionFactory.getCurrentSession();
-        session.save(record);
-    }
-
-    /**
-     * @see org.openmrs.module.sync.api.db.SyncDAO#updateRemoteServer(org.openmrs.module.sync.engine.RemoteServer)
-     */
-    public void updateRemoteServer(RemoteServer record) throws DAOException {
-        Session session = sessionFactory.getCurrentSession();
-        session.saveOrUpdate(record);
+        session.saveOrUpdate(server);
     }
 
     /**
@@ -441,17 +434,9 @@ public class HibernateSyncDAO implements SyncDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SyncDAO#createSyncClass(org.openmrs.module.sync.SyncClass)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#saveSyncClass(org.openmrs.module.sync.SyncClass)
      */
-    public void createSyncClass(SyncClass syncClass) throws DAOException {
-        Session session = sessionFactory.getCurrentSession();
-        session.save(syncClass);
-    }
-
-    /**
-     * @see org.openmrs.module.sync.api.db.SyncDAO#updateSyncClass(org.openmrs.module.sync.SyncClass)
-     */
-    public void updateSyncClass(SyncClass syncClass) throws DAOException {
+    public void saveSyncClass(SyncClass syncClass) throws DAOException {
         Session session = sessionFactory.getCurrentSession();
         session.saveOrUpdate(syncClass);
     }
@@ -465,21 +450,20 @@ public class HibernateSyncDAO implements SyncDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SyncDAO#getGlobalProperty(String propertyName)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncClass(Integer)
      */
     public SyncClass getSyncClass(Integer syncClassId) throws DAOException {        
         return (SyncClass)sessionFactory.getCurrentSession().get(SyncClass.class, syncClassId);
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SyncDAO#getGlobalProperty(String propertyName)
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncClasses()
      */
     @SuppressWarnings("unchecked")
     public List<SyncClass> getSyncClasses() throws DAOException {        
         
         List<SyncClass> classes = (List<SyncClass>)sessionFactory.getCurrentSession()
                 .createCriteria(SyncClass.class)
-                .addOrder(Order.asc("type"))
                 .addOrder(Order.asc("name"))
                 .list();
         
@@ -487,6 +471,17 @@ public class HibernateSyncDAO implements SyncDAO {
             log.warn("getSyncClasses is null.");
         
         return classes;
+    }
+    
+    /**
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncClassByName(String)
+     */
+    public SyncClass getSyncClassByName(String className) throws DAOException {
+    	Criteria crit = sessionFactory.getCurrentSession()
+        .createCriteria(SyncClass.class)
+        .add(Expression.eq("name", className));
+    	
+        return (SyncClass)crit.uniqueResult();
     }
 
     /**

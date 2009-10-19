@@ -255,22 +255,13 @@ public interface SyncService {
 	public void setGlobalProperty(String propertyName, String propertyValue) throws APIException;
 	
 	/**
-	 * Create a new SyncRecord
+	 * Update or create a server (child or parent)
 	 * 
-	 * @param SyncRecord The SyncRecord to create
+	 * @param server The RemoteServer to persist in the database
 	 * @throws APIException
 	 */
 	//@Authorized({"Manage Synchronization Servers"})
-	public void createRemoteServer(RemoteServer server) throws APIException;
-	
-	/**
-	 * Update a SyncRecord
-	 * 
-	 * @param SyncRecord The SyncRecord to update
-	 * @throws APIException
-	 */
-	//@Authorized({"Manage Synchronization Servers"})
-	public void updateRemoteServer(RemoteServer server) throws APIException;
+	public void saveRemoteServer(RemoteServer server) throws APIException;
 	
 	/**
 	 * Delete a SyncRecord
@@ -344,7 +335,7 @@ public interface SyncService {
 	 * @param uuid unique UUID of the server. String representation of java.util.UUID.
 	 * @throws APIException
 	 */
-	public void setServerUuid(String uuid) throws APIException;
+	public void saveServerUuid(String uuid) throws APIException;
 	
 	/**
 	 * Retrieve user friendly nickname for the server that is (by convention) unique for the given
@@ -365,25 +356,32 @@ public interface SyncService {
 	 * @param name new server name
 	 * @throws APIException
 	 */
-	public void setServerName(String name) throws APIException;
-	
-    /**
-	 * Create a new SyncClass
-	 * 
-	 * @param SyncClass The SyncClass to create
-	 * @throws APIException
-	 */
-	//@Authorized({"Manage Synchronization"})
-	public void createSyncClass(SyncClass syncClass) throws APIException;
+	public void saveServerName(String name) throws APIException;
 	
 	/**
-	 * Update a SyncClass
+	 * Get the stored administrative email address or null if none 
+	 * 
+	 * @return admin email address or null
+	 * @throws APIException
+	 */
+	public String getAdminEmail() throws APIException;
+	
+    /**
+     * Save the admin email address for this server
+     * 
+     * @param email the admin's email address
+     * @throws APIException
+     */
+    public void saveAdminEmail(String email) throws APIException;
+    
+	/**
+	 * Update or create a SyncClass
 	 * 
 	 * @param SyncClass The SyncClass to update
 	 * @throws APIException
 	 */
 	//@Authorized({"Manage Synchronization"})
-	public void updateSyncClass(SyncClass syncClass) throws APIException;
+	public void saveSyncClass(SyncClass syncClass) throws APIException;
 	
 	/**
 	 * Delete a SyncClass
@@ -395,7 +393,7 @@ public interface SyncService {
 	public void deleteSyncClass(SyncClass syncClass) throws APIException;
 	
 	/**
-	 * @param uuid of the SyncClass to retrieve
+	 * @param syncClassId of the SyncClass to retrieve
 	 * @return SyncClass The SyncClass or null if not found
 	 * @throws APIException
 	 */
@@ -404,12 +402,21 @@ public interface SyncService {
 	public SyncClass getSyncClass(Integer syncClassId) throws APIException;
 	
 	/**
-	 * @return SyncClass The latest SyncClass or null if not found
+	 * @return List<SyncClass> The latest default {@link SyncClass}es
 	 * @throws APIException
 	 */
 	//@Authorized({"Manage Synchronization"})
 	@Transactional(readOnly = true)
 	public List<SyncClass> getSyncClasses() throws APIException;
+	
+	/**
+	 * @param String of the String class name to retrieve
+	 * @return SyncClass The SyncClass or null if not found
+	 * @throws APIException
+	 */
+	//@Authorized({"Manage Synchronization"})
+	@Transactional(readOnly = true)
+	public SyncClass getSyncClassByName(String className) throws APIException;
 	
 	/**
 	 * Dumps the entire database, much like what you'd get from the mysqldump command, and adds a
@@ -482,5 +489,12 @@ public interface SyncService {
 	 * @should get any openmrs object by its uuid
 	 */
 	public <T extends OpenmrsObject> T getOpenmrsObjectByUuid(Class<T> clazz, String uuid);
+	
+	/**
+	 * Get all possible classes that extend OpenmrsObject in the system
+	 * 
+	 * @return a list of {@link OpenmrsObject}
+	 */
+	public List<Class<OpenmrsObject>> getAllOpenmrsObjects();
 	
 }

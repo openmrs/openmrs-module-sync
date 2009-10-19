@@ -13,12 +13,51 @@
  */
 package org.openmrs.module.sync;
 
-/**
- *
- */
-public interface SyncTestHelper {
+import java.util.List;
 
-	public void runOnChild() throws Exception;
-	public void runOnParent() throws Exception;
+import org.openmrs.module.sync.serialization.Record;
+
+/**
+ * This class is meant to be implemented inline by sync tests. The
+ * {@link SyncBaseTest#runSyncTest(SyncTestHelper)} method calls the methods here to test
+ * synchronization from a child, to a parent, and then to another child.
+ */
+public abstract class SyncTestHelper {
+	
+	/**
+	 * This method should do the initial work of saving new changes to the child server
+	 * 
+	 * @throws Exception
+	 */
+	public abstract void runOnChild() throws Exception;
+	
+	/**
+	 * This is called right before applying the sync records to the parent and right before apply
+	 * the sync records to child2
+	 * 
+	 * @param syncRecords the sync records to apply
+	 * @param record the serialized package of the given syncRecords
+	 * @throws Exception
+	 */
+	public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
+		// no default checks here
+	}
+	
+	/**
+	 * This method runs assertions to make sure the parent got all the changes.
+	 * 
+	 * @throws Exception
+	 */
+	public abstract void runOnParent() throws Exception;
+	
+	/**
+	 * The assertions in this method are usually the same as the ones in the {@link #runOnParent()},
+	 * so implementing this method is optional
+	 * 
+	 * @throws Exception
+	 */
+	public void runOnChild2() throws Exception {
+		this.runOnParent();
+	}
 	
 }
