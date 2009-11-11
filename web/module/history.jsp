@@ -93,14 +93,19 @@
 				</c:forEach>
 			</c:if>
 			<c:if test="${empty syncRecords}">
-				<td colspan="5" align="left">
-					<i><spring:message code="sync.history.noItems" /></i>
-				</td>
+				<tr>
+					<td colspan="5" align="left">
+						<i><spring:message code="sync.history.noItems" /></i>
+					</td>
+				</tr>
 			</c:if>
 		</tbody>
 	</table>
-	<a href="?firstRecordId=${firstRecordId - size}&size=${size}">&larr; <spring:message code="general.previous"/></a>
-	<a href="?firstRecordId=${firstRecordId + size}&size=${size}"><spring:message code="general.next"/> &rarr;</a>
+	
+	<c:if test="${fn:length(syncRecords) >= size}">
+		<a href="?firstRecordId=${firstRecordId - size}&size=${size}" disabled="disabled">&larr; <spring:message code="general.previous"/></a>
+		<a href="?firstRecordId=${firstRecordId + size}&size=${size}"><spring:message code="general.next"/> &rarr;</a>
+	</c:if>
 	
 </div>
 

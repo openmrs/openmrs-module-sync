@@ -134,7 +134,7 @@
 			<table>
 				<tr>
 					<td align="right" valign="top" nowrap>
-						<b><spring:message code="sync.config.server.nickname" /></b>
+						<b><spring:message code="sync.config.advanced.serverName.info" /></b>
 					</td>
 					<td align="left" valign="top">
 						<input type="text" size="25" maxlength="250" id="nickname" name="nickname" value="${server.nickname}" />
