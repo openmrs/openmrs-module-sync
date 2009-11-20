@@ -102,10 +102,8 @@
 		</tbody>
 	</table>
 	
-	<c:if test="${fn:length(syncRecords) >= size}">
-		<a href="?firstRecordId=${firstRecordId - size}&size=${size}" disabled="disabled">&larr; <spring:message code="general.previous"/></a>
-		<a href="?firstRecordId=${firstRecordId + size}&size=${size}"><spring:message code="general.next"/> &rarr;</a>
-	</c:if>
+	<a href="?firstRecordId=${firstRecordId - size}&size=${size}" disabled="disabled">&larr; <spring:message code="sync.general.newer"/></a>
+	<a href="?firstRecordId=${firstRecordId + size}&size=${size}"><spring:message code="sync.general.older"/> &rarr;</a>
 	
 </div>
 

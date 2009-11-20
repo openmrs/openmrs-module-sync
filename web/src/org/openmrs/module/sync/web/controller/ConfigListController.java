@@ -111,7 +111,7 @@ public class ConfigListController extends SimpleFormController {
 				log.warn("IN MANUAL-TX WITH SERVERID: " + serverId);
 				
 				// we are creating a sync-transmission, so start by generating a SyncTransmission object
-				SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(server);
+				SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(server, true);
 				String toTransmit = tx.getFileOutput();
 				
 				// Record last attempt

@@ -134,7 +134,7 @@
 			<table>
 				<tr>
 					<td align="right" valign="top" nowrap>
-						<b><spring:message code="sync.config.advanced.serverName.info" /></b>
+						<b><spring:message code="sync.config.advanced.serverName" /></b>
 					</td>
 					<td align="left" valign="top">
 						<input type="text" size="25" maxlength="250" id="nickname" name="nickname" value="${server.nickname}" />
@@ -142,17 +142,19 @@
 						<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.config.server.nickname.hint" /></span></i>
 					</td>
 				</tr>
+				<tr>
+					<td align="right" valign="top" nowrap>
+						<b><spring:message code="sync.config.server.uuid" /></b>
+					</td>
+					<td align="left" valign="top">
+						<input type="text" size="48" maxlength="250" id="uuid" name="uuid" value="${server.uuid}" />
+						<br>
+						<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.config.server.uuid.hint" /></span></i>
+					</td>
+				</tr>
 				<c:if test="${(server.serverType == 'CHILD' || param.type == 'CHILD') && not empty server.serverId}">
 					<!-- Editing a child server -->
 					<input type="hidden" name="action" value="editChild"/>
-					<tr>
-						<td align="right" valign="top" nowrap>
-							<b><spring:message code="sync.config.server.uuid" /></b>
-						</td>
-						<td align="left" valign="top">
-							<input type="text" size="48" maxlength="250" id="uuid" name="uuid" value="${server.uuid}" />
-						</td>
-					</tr>
 				</c:if>
 				<c:if test="${(server.serverType == 'CHILD' || param.type == 'CHILD') && empty server.serverId}">
 					<!-- adding a new child server -->
@@ -194,7 +196,7 @@
 						<td align="left" valign="top">
 							<input type="checkbox" name="shouldEmail" value="true" checked style="margin-top: 0px; margin-bottom: 0px;" />
 							&nbsp;<spring:message code="sync.config.server.adminEmail.address" />
-							<input type="text" size="25" maxlength="250" id="adminEmail" name="adminEmail" value="" />
+							<input type="text" size="25" maxlength="250" id="adminEmail" name="adminEmail" value="${localServerAdminEmail}" />
 							<br />
 							<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.config.server.adminEmail.instructions" /></span></i>
 						</td>

@@ -197,7 +197,7 @@ public class ImportListController extends SimpleFormController {
         }
                      
         //Test message. Test message was sent (i.e. using 'test connection' button on server screen)
-    	//just send empty ackowledgment
+    	//just send empty acknowledgment
         if ( SyncConstants.TEST_MESSAGE.equals(contents) ) {
 			str.setErrorMessage("");
 			str.setState(SyncTransmissionState.OK);
@@ -216,14 +216,15 @@ public class ImportListController extends SimpleFormController {
          * 
          * Start processing!
          * 1. Deserialize what was sent; it can be either SyncTransmssion, or SyncTransmissionResponse
-         * 2. If it is a respose,  
+         * 2. If it is a response,  
          *************************************************************************************************************************/
         SyncTransmission st = null;
 
         if ( !isResponse ) {
         	//this is not 'response' to something we sent out; thus the contents should contain plan SyncTransmission 
         	try {
-            st = SyncDeserializer.xmlToSyncTransmission(contents);
+        		log.info("xml to sync transmission with contents: " + contents);
+        		st = SyncDeserializer.xmlToSyncTransmission(contents);
         	} catch ( Exception e ) {
         		log.error("Unable to deserialize the following: " + contents, e);
     			str.setErrorMessage("Unable to deserialize transmission contents into SyncTansmission.");
@@ -236,6 +237,7 @@ public class ImportListController extends SimpleFormController {
             SyncTransmissionResponse priorResponse = null;
                 
             try {
+            	// this is the confirmation of receipt of previous transmission
                 priorResponse = SyncDeserializer.xmlToSyncTransmissionResponse(contents);
                 log.info("This is a response from a previous transmission.  Uuid is: " + priorResponse.getUuid());
             } catch ( Exception e ) {
@@ -246,8 +248,8 @@ public class ImportListController extends SimpleFormController {
     	    	return null;
             }
                 
-            //figure out where this came from:
-            //for responses, the target ID contains the server that generated the response
+            // figure out where this came from:
+            // for responses, the target ID contains the server that generated the response
             String sourceUuid = priorResponse.getSyncTargetUuid();
             log.info("SyncTransmissionResponse has a sourceUuid of " + sourceUuid);
             RemoteServer origin = Context.getService(SyncService.class).getRemoteServer(sourceUuid);
@@ -277,7 +279,7 @@ public class ImportListController extends SimpleFormController {
                 }
             }
             
-            // now set pull out the data that originated on the 'source' server and try to process it
+            // now pull out the data that originated on the 'source' server and try to process it
             st = priorResponse.getSyncTransmission();
 
         }
@@ -286,6 +288,8 @@ public class ImportListController extends SimpleFormController {
         if ( st != null ) {
             str = SyncUtilTransmission.processSyncTransmission(st);
         }
+        else
+        	log.info("st was null");
         
         //send response
 		this.sendResponse(str, isUpload, response);
@@ -304,9 +308,7 @@ public class ImportListController extends SimpleFormController {
     protected Object formBackingObject(HttpServletRequest request)
             throws ServletException {
         // default empty Object
-    	String ret = "";
-    	
-        return ret;
+    	return "";
     }
     
     private void sendResponse(SyncTransmissionResponse str, boolean isUpload, HttpServletResponse response) throws Exception {

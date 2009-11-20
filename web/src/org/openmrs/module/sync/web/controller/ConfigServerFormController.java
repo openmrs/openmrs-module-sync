@@ -65,7 +65,7 @@ public class ConfigServerFormController {
 	protected final Log log = LogFactory.getLog(getClass());
 	
 	@RequestMapping(value = "/module/sync/configServer", method = RequestMethod.POST, params = "action=saveNewChild")
-	protected String onSaveNewChild(@RequestParam String nickname, @RequestParam String username,
+	protected String onSaveNewChild(@RequestParam String nickname, @RequestParam String uuid, @RequestParam String username,
 	                                @RequestParam String password, @RequestParam String passwordRetype,
 	                                @RequestParam(required = false) Boolean shouldEmail, @RequestParam String adminEmail,
 	                                HttpSession httpSession, @ModelAttribute("server") RemoteServer server, Errors errors,
@@ -97,6 +97,7 @@ public class ConfigServerFormController {
 		
 		server.setServerType(RemoteServerType.CHILD);
 		server.setNickname(nickname);
+		server.setUuid(uuid);
 		
 		// create a new user
 		User user = new User();
@@ -170,7 +171,7 @@ public class ConfigServerFormController {
 	@RequestMapping(value = "/module/sync/configServer", method = RequestMethod.POST, params = "action=saveParent")
 	protected String onSaveParent(@RequestParam String nickname, @RequestParam String address,
 	                              @RequestParam String username, @RequestParam String password,
-	                              @RequestParam Boolean started, @RequestParam(required = false) Integer repeatInterval,
+	                              @RequestParam(required = false) Boolean started, @RequestParam(required = false) Integer repeatInterval,
 	                              HttpSession httpSession, @ModelAttribute("server") RemoteServer server, Errors errors,
 	                              @RequestParam(required = false) List<String> notSendTo,
 	                              @RequestParam(required = false) List<String> notReceiveFrom) throws Exception {
@@ -183,6 +184,11 @@ public class ConfigServerFormController {
 		
 		if (!StringUtils.hasLength(address))
 			errors.rejectValue("address", "sync.config.server.error.addressRequired");
+		
+		if (started == null) {
+			started = false; // if they didn't check the box, the value is false
+			repeatInterval = 0;
+		}
 		
 		if (started && repeatInterval < 1)
 			errors.rejectValue("address", "sync.config.server.error.invalidRepeat");
@@ -426,14 +432,14 @@ public class ConfigServerFormController {
 		return server;
 	}
 	
-	@RequestMapping(value = "/module/sync/configServer", method = RequestMethod.GET)
+	@SuppressWarnings("unchecked")
+    @RequestMapping(value = "/module/sync/configServer", method = RequestMethod.GET)
 	protected String showPage(ModelMap modelMap, @ModelAttribute("server") RemoteServer server,
 	                          @RequestParam(value = "type", required = false) String serverType) throws Exception {
-		Map<String, Object> ret = new HashMap<String, Object>();
 		
 		if (Context.isAuthenticated()) {
 			
-			if (RemoteServerType.PARENT.equals(serverType) || RemoteServerType.PARENT.equals(server.getServerType())) {
+			if (serverType == null || RemoteServerType.PARENT.equals(serverType) || RemoteServerType.PARENT.equals(server.getServerType())) {
 				// testConnection error messages
 				MessageSourceService mss = Context.getMessageSourceService();
 				Map<String, String> connectionState = new HashMap<String, String>();
@@ -472,18 +478,19 @@ public class ConfigServerFormController {
 						}
 					}
 				}
-				ret.put("connectionState", connectionState.entrySet());
-				ret.put("serverSchedule", serverSchedule);
-				ret.put("repeatInterval", repeatInterval);
+				modelMap.put("connectionState", connectionState.entrySet());
+				modelMap.put("serverSchedule", serverSchedule);
+				modelMap.put("repeatInterval", repeatInterval);
 			}
 			
-			ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
-			ret.put("type", serverType);
+			modelMap.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
+			modelMap.put("type", serverType);
 			
-			//sync status staff for this server
-			ret.put("localServerUuid", ret.get("localServerUuid"));
-			ret.put("localServerName", Context.getService(SyncService.class).getServerName());
-			ret.put("localServerAdminEmail", Context.getService(SyncService.class).getAdminEmail());
+			//sync status stuff for this server
+			SyncService syncService = Context.getService(SyncService.class);
+			modelMap.put("localServerUuid", syncService.getServerUuid());
+			modelMap.put("localServerName", syncService.getServerName());
+			modelMap.put("localServerAdminEmail", syncService.getAdminEmail());
 		}
 		
 		return "/module/sync/configServerForm";

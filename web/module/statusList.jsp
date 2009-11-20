@@ -80,7 +80,9 @@
 				row.appendChild(messageCell);
 
 				// hide the "no items" row
-				document.getElementById("noItemsRow").style.display = "none";
+				var noItemsRow = document.getElementById("noItemsRow");
+				if (noItemsRow != null)
+					noItemsRow.style.display = "none";
 
 				// add in this new sync record row
 				document.getElementById("resultList").appendChild(row);

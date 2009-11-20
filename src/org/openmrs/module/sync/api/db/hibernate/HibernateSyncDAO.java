@@ -199,6 +199,19 @@ public class HibernateSyncDAO implements SyncDAO {
         		.add(Restrictions.eq("uuid", uuid))
         		.uniqueResult();
     }
+    
+    /**
+     * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncImportRecords(org.openmrs.module.sync.engine.SyncRecordState)
+     */
+    @SuppressWarnings("unchecked")
+    public List<SyncImportRecord> getSyncImportRecords(SyncRecordState state) throws DAOException {
+        return sessionFactory.getCurrentSession()
+            .createCriteria(SyncImportRecord.class)
+            .add(Restrictions.eq("state", state))
+            .addOrder(Order.asc("timestamp"))
+            .addOrder(Order.asc("recordId"))
+            .list();
+    }
 
     /**
      * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecords()
@@ -305,7 +318,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	 *      java.util.Date, Integer, Integer)
 	 */
 	@SuppressWarnings("unchecked")
-    public List<SyncRecord> getSyncRecords(Date from, Date to, Integer firstRecordId, Integer numberToReturn)
+    public List<SyncRecord> getSyncRecords(Date from, Date to, Integer firstRecordId, Integer numberToReturn, boolean oldestToNewest)
             throws DAOException {
         Criteria criteria = sessionFactory.getCurrentSession()
             .createCriteria(SyncRecord.class);
@@ -322,8 +335,14 @@ public class HibernateSyncDAO implements SyncDAO {
         if (numberToReturn != null)
         	criteria.setMaxResults(numberToReturn);
         
-        criteria.addOrder(Order.asc("timestamp"));
-        criteria.addOrder(Order.asc("recordId"));
+        if (oldestToNewest) {
+	        criteria.addOrder(Order.asc("timestamp"));
+	        criteria.addOrder(Order.asc("recordId"));
+        }
+        else {
+        	criteria.addOrder(Order.desc("timestamp"));
+	        criteria.addOrder(Order.desc("recordId"));
+        }
         
         return criteria.list();
     }

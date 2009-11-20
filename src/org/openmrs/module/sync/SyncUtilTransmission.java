@@ -41,49 +41,6 @@ public class SyncUtilTransmission {
 	private static Log log = LogFactory.getLog(SyncUtil.class);		
 
 
-	/*
-	 * TODO: consolidate this method with createSyncTransmission(RemoteServer server); has unnecessary dulication of
-	 * logic
-	 * this method is called when sync via file is used
-	 * createSyncTransmission(RemoteServer server) is called when send via Web or scheduled tx are used
-	 */
-	@Deprecated
-    public static SyncTransmission createSyncTransmission() {
-        SyncTransmission tx = null;
-
-        try {
-            SyncSource source = new SyncSourceJournal();
-            SyncStrategyFile strategy = new SyncStrategyFile();
-
-            try {
-                tx = strategy.createStateBasedSyncTransmission(source, true);
-            } catch (Exception e) {
-                e.printStackTrace();
-
-                // difference is that this time we'll do this without trying to create a file (just getting the output)
-                // if it works, that probably means that there was a problem writing file to disk
-                tx = strategy.createStateBasedSyncTransmission(source, false);
-            } finally {
-                if ( tx != null ) {
-                    // let's update SyncRecords to reflect the fact that we now have tried to sync them, by setting state to SENT or SENT_AGAIN
-                    if ( tx.getSyncRecords() != null ) {
-                        for ( SyncRecord record : tx.getSyncRecords() ) {
-                            record.setRetryCount(record.getRetryCount() + 1);
-                            if ( record.getState().equals(SyncRecordState.NEW ) ) record.setState(SyncRecordState.SENT);
-                            else record.setState(SyncRecordState.SENT_AGAIN);
-                            Context.getService(SyncService.class).updateSyncRecord(record);
-                        }
-                    }
-                }
-            }
-        } catch ( Exception e ) {
-            e.printStackTrace();
-            tx = null;
-        }
-
-        return tx;
-    }
-
     public static SyncTransmission createSyncTransmissionRequest(RemoteServer server) {
         SyncTransmission tx = null;
         
@@ -95,7 +52,7 @@ public class SyncUtilTransmission {
             }
             tx.create(false);
         } catch ( Exception e ) {
-            e.printStackTrace();
+            log.error("Error while creating sync transmission", e);
             tx = null;
         }
 
@@ -108,7 +65,7 @@ public class SyncUtilTransmission {
      * @param server
      * @return
      */
-    public static SyncTransmission createSyncTransmission(RemoteServer server) {
+    public static SyncTransmission createSyncTransmission(RemoteServer server, boolean requestResponseWithTransmission) {
         SyncTransmission tx = null;
         long maxRetryCount = 0;
         boolean maxRetryCountReached = false;
@@ -118,13 +75,12 @@ public class SyncUtilTransmission {
             SyncStrategyFile strategy = new SyncStrategyFile();
 
             try {
-                tx = strategy.createStateBasedSyncTransmission(source, false, server);
+                tx = strategy.createStateBasedSyncTransmission(source, false, server, requestResponseWithTransmission);
             } catch (Exception e) {
-                e.printStackTrace();
-
+            	log.error("Error while creating state based sync", e);
                 // difference is that this time we'll do this without trying to create a file (just getting the output)
                 // if it works, that probably means that there was a problem writing file to disk
-                tx = strategy.createStateBasedSyncTransmission(source, false, server);
+                tx = strategy.createStateBasedSyncTransmission(source, false, server, requestResponseWithTransmission);
             } finally {
                 if ( tx != null ) {
                     if ( server != null ) {
@@ -182,83 +138,27 @@ public class SyncUtilTransmission {
                 }
             }
         } catch ( Exception e ) {
-            e.printStackTrace();
+            log.error("Error while writing creating sync transmission for server: " + server.getNickname(), e);
             throw(new SyncException("Error while performing synchronization, see log messages and callstack.", e));
         }
 
         return tx;
     }
 
-    public static SyncTransmissionResponse sendSyncTranssmission() {
-        // sends to parent server (by default)
-        SyncTransmissionResponse response = new SyncTransmissionResponse();
-        response.setErrorMessage(SyncConstants.ERROR_NO_PARENT_DEFINED.toString());
-        response.setFileName(SyncConstants.FILENAME_NO_PARENT_DEFINED);
-        response.setUuid(SyncConstants.UUID_UNKNOWN);
-        response.setState(SyncTransmissionState.NO_PARENT_DEFINED);
-        
-        RemoteServer parent = Context.getService(SyncService.class).getParentServer();
-        if ( parent != null ) {
-            response = SyncUtilTransmission.sendSyncTranssmission(parent); 
-        }
-                
-        return response;
-    }
-        
-    public static SyncTransmissionResponse sendSyncTranssmission(RemoteServer server) {
-
-        SyncTransmissionResponse response = new SyncTransmissionResponse();
-        response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
-        response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
-        response.setUuid(SyncConstants.UUID_UNKNOWN);
-        response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
-        
-        try {
-            if ( server != null ) {
-                SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(server);
-                
-                // record last attempt to synchronize
-                server.setLastSync(new Date());
-                Context.getService(SyncService.class).saveRemoteServer(server);
-                
-                if ( tx != null ) {
-                    response = SyncUtilTransmission.sendSyncTranssmission(server, tx);
-                    if ( response != null ) {
-                        // but let's try to find out the uuid of this remote server and make sure we have it stored
-                        String remoteUuid = response.getSyncTargetUuid();
-                        if ( remoteUuid != null && remoteUuid.length() > 0 ) {
-                            if ( !remoteUuid.equals(server.getUuid()) ) {
-                                server.setUuid(remoteUuid);
-                                Context.getService(SyncService.class).saveRemoteServer(server);
-                            }
-                        }
-                    }
-                } // no need for handling else - the correct error messages, etc have been written already
-            } else {
-                response.setErrorMessage(SyncConstants.ERROR_INVALID_SERVER.toString());
-                response.setFileName(SyncConstants.FILENAME_INVALID_SERVER);
-                response.setUuid(SyncConstants.UUID_UNKNOWN);
-                response.setState(SyncTransmissionState.INVALID_SERVER);                
-            }
-        } catch ( Exception e ) {
-            e.printStackTrace();
-        }
-        
-        return response;
-    }
-        
     public static SyncTransmissionResponse sendSyncTranssmission(RemoteServer server, SyncTransmission transmission) {
-        return SyncUtilTransmission.sendSyncTranssmission(server, transmission, null);
+        return SyncUtilTransmission.sendSyncTransmission(server, transmission, null);
     }
 
-    public static SyncTransmissionResponse sendSyncTranssmission(RemoteServer server, SyncTransmission transmission, SyncTransmissionResponse responseInstead) {
+    public static SyncTransmissionResponse sendSyncTransmission(RemoteServer server, SyncTransmission transmission, SyncTransmissionResponse responseInstead) {
         SyncTransmissionResponse response = new SyncTransmissionResponse();
         response.setErrorMessage(SyncConstants.ERROR_SEND_FAILED.toString());
         response.setFileName(SyncConstants.FILENAME_SEND_FAILED);
         response.setUuid(SyncConstants.UUID_UNKNOWN);
         response.setState(SyncTransmissionState.FAILED);
         
-        try {
+        SyncService syncService = Context.getService(SyncService.class);
+        
+		try {
         	//handle the case of getting to too many retries
         	if(transmission != null) if(transmission.getIsMaxRetryReached()) {
         		response.setState(SyncTransmissionState.MAX_RETRY_REACHED);
@@ -268,7 +168,7 @@ public class SyncUtilTransmission {
             if ( server != null ) {
                 String toTransmit = null;
                 server.setLastSyncState(SyncTransmissionState.PENDING);
-                Context.getService(SyncService.class).saveRemoteServer(server);
+                syncService.saveRemoteServer(server);
                 if ( responseInstead != null ) {
                     toTransmit = responseInstead.getFileOutput();
                     log.info("Sending a response (with tx inside): " + toTransmit);
@@ -295,7 +195,7 @@ public class SyncUtilTransmission {
                             e.printStackTrace();
                             // no need to change state or error message - it's already set properly; just update last sync state
                             server.setLastSyncState(SyncTransmissionState.FAILED);
-                            Context.getService(SyncService.class).saveRemoteServer(server);
+                            syncService.saveRemoteServer(server);
                         }
 
                         if ( connResponse != null ) {
@@ -329,11 +229,11 @@ public class SyncUtilTransmission {
                                 }
                             }
                             //update lastSyncState
-                            Context.getService(SyncService.class).saveRemoteServer(server);
+                            syncService.saveRemoteServer(server);
                         }
                     }
                 } else {
-                    response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
+                	response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
                     response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
                     response.setUuid(SyncConstants.UUID_UNKNOWN);
                     response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
@@ -355,56 +255,12 @@ public class SyncUtilTransmission {
             e.printStackTrace();
             if (server != null) {
             	server.setLastSyncState(SyncTransmissionState.FAILED);
-            	Context.getService(SyncService.class).saveRemoteServer(server);
+            	syncService.saveRemoteServer(server);
             }
         }
         
         return response;
     }    
-
-    @Deprecated
-    private static SyncTransmissionResponse sendSyncTranssmissionRequest(RemoteServer server) {
-
-        SyncTransmissionResponse response = new SyncTransmissionResponse();
-        response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
-        response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
-        response.setUuid(SyncConstants.UUID_UNKNOWN);
-        response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
-        
-        try {
-            if ( server != null ) {
-                SyncTransmission tx = SyncUtilTransmission.createSyncTransmissionRequest(server);
-                
-                // record last attempt to synchronize
-                server.setLastSync(new Date());
-                Context.getService(SyncService.class).saveRemoteServer(server);
-                
-                if ( tx != null ) {
-                    response = SyncUtilTransmission.sendSyncTranssmission(server, tx);
-                    if ( response != null ) {
-                        //  let's try to find out the uuid of this remote server and make sure we have it stored
-                        String remoteUuid = response.getSyncTargetUuid();
-                        if ( remoteUuid != null && remoteUuid.length() > 0 ) {
-                            if ( !remoteUuid.equals(server.getUuid()) ) {
-                                server.setUuid(remoteUuid);
-                                Context.getService(SyncService.class).saveRemoteServer(server);
-                            }
-                        }
-                    }
-                } // no need for handling else - the correct error messages, etc have been written already
-            } else {
-                response.setErrorMessage(SyncConstants.ERROR_INVALID_SERVER.toString());
-                response.setFileName(SyncConstants.FILENAME_INVALID_SERVER);
-                response.setUuid(SyncConstants.UUID_UNKNOWN);
-                response.setState(SyncTransmissionState.INVALID_SERVER);                
-            }
-        } catch ( Exception e ) {
-            log.error("Unable to create sync transmission request", e);
-        }
-        
-        return response;
-    }
-
 
     /**
      * 
@@ -439,13 +295,14 @@ public class SyncUtilTransmission {
                         // get syncTx from that response, and process it
                         SyncTransmission initialTxFromParent = initialResponse.getSyncTransmission();
                         SyncTransmissionResponse str = null;
-                        if ( initialTxFromParent != null ) {
+                        SyncService syncService = Context.getService(SyncService.class);
+						if ( initialTxFromParent != null ) {
                             // since we know what server this should be from, 
                         	//let's check to make sure we've got the uuid - we'll need it later
                             String remoteUuid = initialTxFromParent.getSyncSourceUuid();
                             if ( parent.getUuid() == null ) {
                             	parent.setUuid(remoteUuid);
-                                Context.getService(SyncService.class).saveRemoteServer(parent);
+                                syncService.saveRemoteServer(parent);
                             }
                             
                             // process syncTx from parent, and generate response
@@ -458,12 +315,12 @@ public class SyncUtilTransmission {
                         }
 
                         // now get local changes destined for parent, and package those inside
-                        SyncTransmission st = SyncUtilTransmission.createSyncTransmission(parent);
+                        SyncTransmission st = SyncUtilTransmission.createSyncTransmission(parent, false);
                         if ( str != null ) {
                             log.info("Received updates from parent, so replying and sending updates of our own: " + st.getFileOutput());
                             str.setSyncTransmission(st);
                             str.createFile(false, "/receiveAndSend");
-                            response = SyncUtilTransmission.sendSyncTranssmission(parent, null, str);
+                            response = SyncUtilTransmission.sendSyncTransmission(parent, null, str);
                             
                             // add all changes from parent into response
                             if (str.getSyncImportRecords() != null) {
@@ -471,10 +328,16 @@ public class SyncUtilTransmission {
                             		response.setSyncImportRecords(str.getSyncImportRecords());
                             	else
                             		response.getSyncImportRecords().addAll(str.getSyncImportRecords());
+                            	
+                            	// mark all of these imported records as "committed plus confirmed"
+                            	for (SyncImportRecord record : str.getSyncImportRecords()) {
+                                	record.setState(SyncRecordState.COMMITTED_AND_CONFIRMATION_SENT);
+                                	syncService.updateSyncImportRecord(record);
+                                }
                             }
                         } else {
                             log.info("No updates from parent, generating our own transmission");
-                            response = SyncUtilTransmission.sendSyncTranssmission(parent, st, null);
+                            response = SyncUtilTransmission.sendSyncTransmission(parent, st, null);
                         }
 
                     } else {
@@ -513,20 +376,21 @@ public class SyncUtilTransmission {
         SyncTransmissionResponse str = new SyncTransmissionResponse(st);
 
         //fill-in the server uuid for the response AGAIN
-        str.setSyncTargetUuid(Context.getService(SyncService.class).getServerUuid());
+        SyncService syncService = Context.getService(SyncService.class);
+		str.setSyncTargetUuid(syncService.getServerUuid());
         String sourceUuid = st.getSyncSourceUuid();
-        RemoteServer origin = Context.getService(SyncService.class).getRemoteServer(sourceUuid);
+        RemoteServer origin = syncService.getRemoteServer(sourceUuid);
 
         User authenticatedUser = Context.getAuthenticatedUser();
         if ( origin == null && authenticatedUser != null ) {
             // make a last-ditch effort to try to figure out what server this is coming from, so we can behave appropriately.
             String username = authenticatedUser.getUsername();
             log.warn("CANNOT GET ORIGIN SERVER FOR THIS REQUEST, get by username " + username + " instead");
-            origin = Context.getService(SyncService.class).getRemoteServerByUsername(username);
+            origin = syncService.getRemoteServerByUsername(username);
             if ( origin != null && sourceUuid != null && sourceUuid.length() > 0 ) {
                 // take this opportunity to save the uuid, now we've identified which server this is
                 origin.setUuid(sourceUuid);
-                Context.getService(SyncService.class).saveRemoteServer(origin);
+                syncService.saveRemoteServer(origin);
             } else {
                 log.warn("STILL UNABLE TO GET ORIGIN WITH username " + username + " and sourceuuid " + sourceUuid);
             }
@@ -538,7 +402,7 @@ public class SyncUtilTransmission {
         //update timestamp for origin server, set the status to processing
         origin.setLastSync(new Date());
         origin.setLastSyncState(SyncTransmissionState.PENDING); //set it failed to start with
-        Context.getService(SyncService.class).saveRemoteServer(origin);
+        syncService.saveRemoteServer(origin);
         
         //now start processing
         boolean success = true;
@@ -559,15 +423,16 @@ public class SyncUtilTransmission {
             		importRecord = Context.getService(SyncIngestService.class).processSyncRecord(record, origin);
             		
             	} catch (SyncIngestException e) {
-            		e.printStackTrace();
+            		log.error("Sync error while ingesting records for server: " + origin.getNickname(), e);
             		importRecord = e.getSyncImportRecord();
             	} catch (Exception e) {
             		//just report error, import record already set to failed
-            		e.printStackTrace();
+            		log.error("Unexpected exception while ingesting records for server: " + origin.getNickname(), e);
             	}
                 importRecords.add(importRecord);
                 
                 //if the record update failed for any reason, do not continue on, stop now
+                
                 if (importRecord.getState() != SyncRecordState.COMMITTED && importRecord.getState() != SyncRecordState.ALREADY_COMMITTED) {
                 	success = false;
                 	break;
@@ -581,20 +446,30 @@ public class SyncUtilTransmission {
         // now we're ready to see if we need to fire back a response transmission
         if ( origin != null ) {
             if ( !origin.getDisabled() && st.getIsRequestingTransmission() ) {
-                SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(origin);
+                SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(origin, false);
                 if ( tx != null ) {
+                	log.info("processing transmission with this many records: " + tx.getSyncRecords().size());
                     str.setSyncTransmission(tx);
                 }
+                else {
+                	log.info("transmission tx is null");
+                }
             }
+            else if (log.isInfoEnabled()) {
+            	log.info("Did not create transmission. orgin is disabled? " + origin.getDisabled() + " && st.isRequestingTransmission? " + st.getIsRequestingTransmission());
+            }
+        }
+        else {
+        	log.info("For some reason the origin is null");
         }
         
         //update the last sync status appropriately
         if (success) {
-        	origin.setLastSyncState(SyncTransmissionState.OK); //set it failed to start with	
+        	origin.setLastSyncState(SyncTransmissionState.OK);	
         } else {
         	origin.setLastSyncState(SyncTransmissionState.FAILED); //set it failed to start with
         }
-        Context.getService(SyncService.class).saveRemoteServer(origin);
+        syncService.saveRemoteServer(origin);
         
         return str;
     }

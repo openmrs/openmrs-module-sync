@@ -106,24 +106,40 @@ public class StatusListController extends SimpleFormController {
         MessageSourceAccessor msa = getMessageSourceAccessor();
         
         String action = ServletRequestUtils.getStringParameter(request, "action", "");
-       
+        
+        SyncService syncService = Context.getService(SyncService.class);
+        
         // handle transmission generation
-        if ("createTx".equals(action)) {            	
+        if ("createTx".equals(action)) {
             try {
-                parent = Context.getService(SyncService.class).getParentServer();
+                parent = syncService.getParentServer();
                 if (parent == null) {
                 	throw new SyncException("Could not retrieve information about the parent server; null returned.");
                 }
-
-            	// we are creating a sync-transmission, so start by generating a SyncTransmission object
-            	SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(parent);
-                String toTransmit = tx.getFileOutput();
-
+                
+                // we are creating a sync-transmission, so start by generating a SyncTransmission object
+            	SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(parent, true);
+                String toTransmit = null; // the actual text that will be sent (either an ST or an STR)
+                
+                List<SyncImportRecord> syncImportRecords = syncService.getSyncImportRecords(SyncRecordState.COMMITTED);
+                
+                SyncTransmissionResponse str = new SyncTransmissionResponse();
+                str.setState(SyncTransmissionState.OK);
+                str.setSyncImportRecords(syncImportRecords); // these are all the records we've received and are not sending a confirmation of receipt
+                str.setSyncSourceUuid(tx.getSyncSourceUuid());
+                str.setSyncTargetUuid(tx.getSyncTargetUuid());
+                str.setSyncTransmission(tx);
+                str.setTimestamp(tx.getTimestamp());
+                str.setUuid(tx.getUuid());
+                
+                str.createFile(false);
+                toTransmit = str.getFileOutput();
+                
                 // Record last attempt
                 parent.setLastSync(new Date());
-                Context.getService(SyncService.class).saveRemoteServer(parent);
+                syncService.saveRemoteServer(parent);
                 
-                // Write sync transmission to response
+                // Write text to response
                 InputStream in = new ByteArrayInputStream(toTransmit.getBytes());
                 response.setContentType("text/xml; charset=utf-8");
                 response.setHeader("Content-Disposition", "attachment; filename=" + tx.getFileName() + ".xml");
@@ -131,6 +147,11 @@ public class StatusListController extends SimpleFormController {
                 IOUtils.copy(in, out);
                 out.flush();
                 out.close();
+                
+                for (SyncImportRecord record : syncImportRecords) {
+                	record.setState(SyncRecordState.COMMITTED_AND_CONFIRMATION_SENT);
+                	syncService.updateSyncImportRecord(record);
+                }
 
                 // don't return a model/view - we'll need to return a file instead.
                 result = null;
@@ -142,7 +163,7 @@ public class StatusListController extends SimpleFormController {
 
         	try {
             	String contents = "";
-                parent = Context.getService(SyncService.class).getParentServer();
+                parent = syncService.getParentServer();
 
             	// first, get contents of file that is being uploaded.  it is clear we are uploading a response from parent at this point
             	MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
@@ -160,7 +181,6 @@ public class StatusListController extends SimpleFormController {
     					}
     					contents = sb.toString();
     				} catch (Exception e) {
-                        e.printStackTrace();
     					log.error("Unable to read in sync data file", e);
     					error = e.getMessage();
     				} finally {
@@ -173,8 +193,8 @@ public class StatusListController extends SimpleFormController {
     					}
     				}
     			}
-
-                if ( contents.length() > 0 ) {
+    			
+    			if ( contents.length() > 0 ) {
         			SyncTransmissionResponse str = SyncDeserializer.xmlToSyncTransmissionResponse(contents);
         			
         			int numCommitted = 0;
@@ -184,14 +204,9 @@ public class StatusListController extends SimpleFormController {
         			
         			if ( str.getSyncImportRecords() == null ) log.debug("No records to process in response");
         			else {
-        				// process each incoming syncImportRecord
+        				// process each incoming syncImportRecord, this is just status update
         				for ( SyncImportRecord importRecord : str.getSyncImportRecords() ) {
         					Context.getService(SyncIngestService.class).processSyncImportRecord(importRecord, parent);
-                            // get some numbers to show user the results
-        					if ( importRecord.getState().equals(SyncRecordState.COMMITTED )) numCommitted++;
-        					else if ( importRecord.getState().equals(SyncRecordState.ALREADY_COMMITTED )) numAlreadyCommitted++;
-        					else if ( importRecord.getState().equals(SyncRecordState.FAILED )) numFailed++;
-        					else numOther++;
         				}
         			}
         			
@@ -202,6 +217,23 @@ public class StatusListController extends SimpleFormController {
         				log.error("Unable to create file to store SyncTransmissionResponse: " + str.getFileName());
         				e.printStackTrace();
         			}
+        			
+        			// now pull out the data that originated on the 'source' server and try to process it
+        			SyncTransmission st = str.getSyncTransmission();
+        			
+        			// now process the syncTransmission if one was received                    
+        	        if ( st != null ) {
+        	            str = SyncUtilTransmission.processSyncTransmission(st);
+        	            // get some numbers about what was just processed to show user the results
+        	            if (str.getSyncImportRecords() != null) {
+	        	            for ( SyncImportRecord importRecord : str.getSyncImportRecords() ) {
+	        					if ( importRecord.getState().equals(SyncRecordState.COMMITTED )) numCommitted++;
+	        					else if ( importRecord.getState().equals(SyncRecordState.ALREADY_COMMITTED )) numAlreadyCommitted++;
+	        					else if ( importRecord.getState().equals(SyncRecordState.FAILED )) numFailed++;
+	        					else numOther++;
+	        				}
+        	            }
+        	        }
         			
         			Object[] args = {numCommitted,numFailed,numAlreadyCommitted,numOther};
         				

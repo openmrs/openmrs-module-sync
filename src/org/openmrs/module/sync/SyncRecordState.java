@@ -29,10 +29,13 @@ public enum SyncRecordState {
     
     /** attempted send failed */
     SEND_FAILED,
-        
-    /** the record was successfully committed at target source */
+    
+    /** the record was successfully committed at target source (the source server hasn't been notified yet) */
     COMMITTED, 
-        
+    
+    /** This record has been committed and the source server has been notified of this **/
+    COMMITTED_AND_CONFIRMATION_SENT,
+    
     /** the record reached the failed state during ingest: will retry next time */
     FAILED, 
 

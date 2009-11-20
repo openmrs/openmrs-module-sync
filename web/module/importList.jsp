@@ -42,6 +42,7 @@
 					
 					<input type="file" name="syncDataFile" value="" />
 					<input type="hidden" name="upload" value="true" />
+					<input type="hidden" name="isResponse" value="true" />
 					<input type="submit" value="<spring:message code="sync.import.importData" />" id="submitButton" />
 				
 					<span id="infoText" style="display:none;"><spring:message code="sync.import.generatingResponse" /></span>

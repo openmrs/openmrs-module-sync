@@ -170,6 +170,13 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
+	 * @see org.openmrs.api.SyncService#getSyncImportRecords(org.openmrs.module.sync.engine.SyncRecordState)
+	 */
+	public List<SyncImportRecord> getSyncImportRecords(SyncRecordState state) throws APIException {
+		return getSynchronizationDAO().getSyncImportRecords(state);
+	}
+	
+	/**
 	 * @see org.openmrs.api.SyncService#getSyncRecords()
 	 */
 	public List<SyncRecord> getSyncRecords() throws APIException {
@@ -277,21 +284,21 @@ public class SyncServiceImpl implements SyncService {
 	 * @see org.openmrs.api.SyncService#getSyncRecordsSince(java.util.Date)
 	 */
 	public List<SyncRecord> getSyncRecordsSince(Date from) throws APIException {
-		return getSynchronizationDAO().getSyncRecords(from, null, null, null);
+		return getSynchronizationDAO().getSyncRecords(from, null, null, null, true);
 	}
 	
 	/**
 	 * @see org.openmrs.api.SyncService#getSyncRecordsBetween(java.util.Date, java.util.Date)
 	 */
 	public List<SyncRecord> getSyncRecordsBetween(Date from, Date to) throws APIException {
-		return getSynchronizationDAO().getSyncRecords(from, to, null, null);
+		return getSynchronizationDAO().getSyncRecords(from, to, null, null, true);
 	}
 	
 	/**
      * @see org.openmrs.module.sync.api.SyncService#getSyncRecords(java.lang.Integer, java.lang.Integer)
      */
     public List<SyncRecord> getSyncRecords(Integer firstRecordId, Integer numberToReturn) throws APIException {
-    	return getSynchronizationDAO().getSyncRecords(null, null, firstRecordId, numberToReturn);
+    	return getSynchronizationDAO().getSyncRecords(null, null, firstRecordId, numberToReturn, false);
     }
 
 	/**

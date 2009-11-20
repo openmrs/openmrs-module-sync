@@ -129,6 +129,17 @@ public interface SyncService {
 	public SyncImportRecord getSyncImportRecord(String uuid) throws APIException;
 	
 	/**
+	 * Get all SyncImportRecords in a specific SyncRecordState
+	 * 
+	 * @param state SyncRecordState for the SyncImportRecords to be returned
+	 * @return SyncRecord A list containing all SyncImportRecords with the given state
+	 * @throws APIException
+	 */
+	//@Authorized({"View Synchronization Records"})
+	@Transactional(readOnly = true)
+	public List<SyncImportRecord> getSyncImportRecords(SyncRecordState state) throws APIException;
+	
+	/**
 	 * Returns the first SyncRecord in either the PENDING SEND or the NEW state
 	 * 
 	 * @return SyncRecord The first SyncRecord matching the criteria, or null if none matches
@@ -225,8 +236,7 @@ public interface SyncService {
 	 * 
 	 * @param firstRecordId the first SyncRecord#getRecordId() to return
 	 * @param numberToReturn the max number of records to return
-	 * @return SyncRecord A list containing all SyncRecords with a timestamp between the from
-	 *         timestamp and up to and including the to timestamp
+	 * @return SyncRecord A list containing all SyncRecords ordered from most recent to oldest
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})

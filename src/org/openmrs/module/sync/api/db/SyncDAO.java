@@ -105,6 +105,15 @@ public interface SyncDAO {
 	public SyncImportRecord getSyncImportRecord(String uuid) throws DAOException;
 	
 	/**
+	 * Get all SyncImportRecords in a specific SyncRecordState
+	 * 
+	 * @param state SyncRecordState for the SyncImportRecords to be returned
+	 * @return SyncRecord A list containing all SyncImportRecords with the given state
+	 * @throws DAOException
+	 */
+	public List<SyncImportRecord> getSyncImportRecords(SyncRecordState state) throws DAOException;
+	
+	/**
 	 * Returns the first SyncRecord in either the PENDING SEND or the NEW state
 	 * 
 	 * @return SyncRecord The first SyncRecord matching the criteria, or null if none matches
@@ -151,11 +160,12 @@ public interface SyncDAO {
 	 * @param to Timestamp specifying upper bound, included. (nullable)
 	 * @param firstRecordId the first SyncRecord#getRecordId() to return (nullable)
 	 * @param numberToReturn the max number of records to return(nullable)
+	 * @param oldestToNewest true/false whether to order the records from oldest to most recent
 	 * @return SyncRecord A list containing all SyncRecords with a timestamp between the from
 	 *         timestamp and up to and including the to timestamp
 	 * @throws DAOException
 	 */
-	public List<SyncRecord> getSyncRecords(Date from, Date to, Integer firstRecordId, Integer numberToReturn)
+	public List<SyncRecord> getSyncRecords(Date from, Date to, Integer firstRecordId, Integer numberToReturn, boolean oldestToNewest)
 	                                                                                                         throws DAOException;
 	
 	/**

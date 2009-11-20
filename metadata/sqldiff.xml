@@ -185,4 +185,18 @@
 		</sql>
 	</diff>
 	
+	<diff>
+		<version>0.5</version>
+		<author>Ben Wolfe</author>
+		<date>Nov 20th 2009</date>
+		<description>
+			Increase size of state columns to hold longer state names
+		</description>
+		<sql>
+			ALTER TABLE sync_record CHANGE COLUMN state state char(32) default NULL;
+			ALTER TABLE sync_import CHANGE COLUMN state state char(32) default NULL;
+			ALTER TABLE sync_server_record CHANGE COLUMN state state char(32) default NULL;
+		</sql>
+	</diff>
+	
 </sqldiff>

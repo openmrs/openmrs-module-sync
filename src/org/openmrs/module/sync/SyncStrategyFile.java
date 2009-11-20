@@ -66,25 +66,13 @@ public class SyncStrategyFile {
         return syncTx;
     }
 
-    public SyncTransmission createStateBasedSyncTransmission(SyncSource source, boolean writeFileToo) {
-
-        SyncTransmission ret =  null;
-        RemoteServer parent = Context.getService(SyncService.class).getParentServer();
-        
-        if ( parent != null ) {
-            ret = createStateBasedSyncTransmission(source, writeFileToo, parent);
-        }
-        
-        return ret;
-    }
-
     /**
      * Prepares a sync trasnmission containing sync records from source that are to be send to the remote server.
      * The records to be sent are determined as follows:
      * <br/> - select records from sync journal that are in the correct state (see SyncConstants.SYNC_TO_PARENT_STATES)
      * <br/> - if a sync record from the journal reached state of FAILED_AND_STOPPED; do not attempt to send
      * it and records after it again
-     * <br/> - filter out records that contain classes that are accepted by the server
+     * <br/> - filter out records that contain classes that are not accepted by the server
      * 
      * @param source server from where changes are to be retrieved (local server)
      * @param writeFileToo flag to dump file or not
@@ -93,7 +81,7 @@ public class SyncStrategyFile {
      * 
      * @see org.openmrs.module.sync.SyncConstants#SYNC_TO_PARENT_STATES
      */
-    public SyncTransmission createStateBasedSyncTransmission(SyncSource source, boolean writeFileToo, RemoteServer server) {
+    public SyncTransmission createStateBasedSyncTransmission(SyncSource source, boolean writeFileToo, RemoteServer server, boolean requestResponseWithTransmission) {
 
         SyncTransmission syncTx = null;
         boolean isMaxRetryReached = false;
@@ -116,7 +104,7 @@ public class SyncStrategyFile {
                     	break;
                     }
                     Set<String> containedClasses = record.getContainedClassSet();
-                    if ( OpenmrsUtil.containsAny(containedClasses, server.getClassesNotSent())) {
+                    if ( !OpenmrsUtil.containsAny(containedClasses, server.getClassesNotSent())) {
                         filteredChangeset.add(record);
                     } else {
                         if ( server.getServerType().equals(RemoteServerType.PARENT)) {
@@ -136,6 +124,7 @@ public class SyncStrategyFile {
             
             //pack it into transmission
             syncTx = new SyncTransmission(source.getSyncSourceUuid(),filteredChangeset, server.getUuid());
+            syncTx.setIsRequestingTransmission(requestResponseWithTransmission);
             syncTx.create(writeFileToo);
             syncTx.setSyncTargetUuid(server.getUuid());
             if (isMaxRetryReached)  {
