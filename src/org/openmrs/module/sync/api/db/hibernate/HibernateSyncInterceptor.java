@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +42,7 @@ import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.Type;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.User;
+import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncException;
@@ -696,6 +698,14 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 							           new PropertyClassValue(typeName,
 							                                  n.toString(currentState[i])));
 						}
+						else if (types[i].isCollectionType() && (n = isCollectionOfSafeTypes(entity, propertyNames[i])) != null) {
+							// if the property is a list/set/collection AND the members of that collection are a "safe type",
+							// then we put the values into the xml
+							values.put(propertyNames[i],
+						           new PropertyClassValue(typeName,
+						                                  n.toString(currentState[i])));
+						}
+						
 						/*
 						 * Not a safe type, check if the object implements the
 						 * OpenmrsObject interface
@@ -721,6 +731,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 									log.warn("SUBSTITUTED AUTHENTICATED USER FOR ACTUAL USER");
 									childUuid = Context.getAuthenticatedUser()
 									                   .getUuid();
+									
+									// adding this in to test if this ever gets hit and/or shoulld be removed now in the bi-sync world
+									throw new APIException("SHOULD NOT BE HERE");
 								} else {
 									// TODO: abort here also?
 									log.error("COULD NOT SUBSTITUTE AUTHENTICATED USER FOR ACTUAL USER");
@@ -856,6 +869,34 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		}
 
 		return;
+	}
+
+	/**
+	 * Checks the given object to see
+	 * 
+	 * @param object
+	 * @param propertyName
+	 * @return a Normalizer for the given type or null if not a safe type
+	 * @throws NoSuchFieldException 
+	 * @throws SecurityException 
+	 */
+	private Normalizer isCollectionOfSafeTypes(OpenmrsObject object, String propertyName) throws SecurityException, NoSuchFieldException {
+		try {
+			java.lang.reflect.Type collectionType = ((java.lang.reflect.ParameterizedType)object.getClass().getDeclaredField(propertyName).getGenericType()).getActualTypeArguments()[0];
+			
+			Class collectionTypeClass = (Class)collectionType;
+			String possibleSafeType = collectionTypeClass.getSimpleName().toLowerCase();
+			
+			return safetypes.get(possibleSafeType);
+		}
+		catch (Throwable t) {
+			// might get here if the property is on a superclass to the object
+			
+			log.trace("Unable to get collection field: " + propertyName + " from object " + object.getClass() + " for some reason", t);
+		}
+		
+		// on errors just return null
+		return null;
 	}
 
 	/**
@@ -1178,8 +1219,10 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 					entriesHolder.put(entryUuid + "|update",obj);
 				} else {
 					// TODO: more debug info
-					log.error("Cannot handle sets where entries are not OpenmrsObject!");
-					throw new CallbackException("Cannot handle sets where entries are not OpenmrsObject!");
+					log.warn("Cannot handle sets where entries are not OpenmrsObject!");
+					// skip out early because we don't want to write any xml for it.  it
+					// was handled by the normal property writer hopefully
+					return; 
 				}
 			}
 
@@ -1215,8 +1258,10 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 							
 						} else {
 							// TODO: more debug info
-							log.error("Cannot handle sets where entries are not OpenmrsObject!");
-							throw new CallbackException("Cannot handle sets where entries are not OpenmrsObject!");
+							log.warn("Cannot handle sets where entries are not OpenmrsObject!");
+							// skip out early because we don't want to write any xml for it.  it
+							// was handled by the normal property writer hopefully
+							return;
 						}
 					}
 				}

@@ -34,6 +34,7 @@ import org.openmrs.ConceptNumeric;
 import org.openmrs.ConceptSet;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
+import org.openmrs.test.TestUtil;
 import org.springframework.test.annotation.NotTransactional;
 
 /**
@@ -53,8 +54,10 @@ public class SyncConceptTest extends SyncBaseTest {
 			
 			String conceptName = "A concept";
 			
-			public void runOnChild() {
+			public void runOnChild() throws Exception {
 				ConceptService cs = Context.getConceptService();
+				
+				TestUtil.printOutTableContents(getConnection(), "concept", "concept_name");
 				
 				Concept concept = new Concept();
 				concept.setDatatype(cs.getConceptDatatypeByName("Coded"));
@@ -62,12 +65,17 @@ public class SyncConceptTest extends SyncBaseTest {
 				concept.addName(new ConceptName(conceptName, Context.getLocale()));
 				concept.addDescription(new ConceptDescription("asdf", Context.getLocale()));
 				cs.saveConcept(concept);
+				
+				TestUtil.printOutTableContents(getConnection(), "concept", "concept_name");
 			}
 			
-			public void runOnParent() {
+			public void runOnParent() throws Exception {
 				ConceptService cs = Context.getConceptService();
 				
+				Context.setLocale(Locale.UK);
 				log.error("The current locale: " + Context.getLocale());
+				
+				TestUtil.printOutTableContents(getConnection(), "concept", "concept_name");
 				
 				Concept c = cs.getConceptByName(conceptName);
 				assertNotNull("Failed to create the concept", c);

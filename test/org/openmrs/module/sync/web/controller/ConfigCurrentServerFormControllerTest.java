@@ -37,7 +37,7 @@ public class ConfigCurrentServerFormControllerTest extends BaseModuleContextSens
 		SyncService syncService = Context.getService(SyncService.class);
 		
 		// sanity check
-		Assert.assertNull(syncService.getServerName());
+		Assert.assertNotSame("new server name", syncService.getServerName());
 		Assert.assertNull(syncService.getServerUuid());
 		Assert.assertNull(syncService.getAdminEmail());
 		

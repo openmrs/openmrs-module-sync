@@ -25,13 +25,17 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.Vector;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
@@ -63,6 +67,7 @@ import org.openmrs.ProgramWorkflow;
 import org.openmrs.ProgramWorkflowState;
 import org.openmrs.Relationship;
 import org.openmrs.RelationshipType;
+import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.FilePackage;
@@ -226,75 +231,141 @@ public class SyncUtil {
 			//log.debug("field is " + f.getName());
 			if ( f.getName().equals(fieldName) ) {
 				log.debug("found Field " + fieldName + " with type is " + f.getGenericType());
-
-				String className = f.getGenericType().toString();
-				if ( className.startsWith("class ") ) className = className.substring("class ".length());
+				Class classType = null;
+				String className = f.getGenericType().toString(); // the string class name for the actual field
+				
+				// if its a collection, set, list, etc
+				if (ParameterizedType.class.isAssignableFrom(f.getGenericType().getClass())) {
+					ParameterizedType pType = (ParameterizedType)f.getGenericType();
+					classType = (Class)pType.getRawType(); // can this be anything but Class at this point?!
+				}
+				
+				if ( className.startsWith("class ") ) {
+					className = className.substring("class ".length());
+					classType = (Class)f.getGenericType();
+				}
+				else {
+					log.trace("Abnormal className for " + f.getGenericType());
+				}
 
 				// we have to explicitly create a new value object here because all we have is a string - won't know how to convert
-				if ( className.startsWith("org.openmrs.") ) {
+				if ( OpenmrsObject.class.isAssignableFrom(classType) ) {
 					o = getOpenmrsObj(className, fieldVal);
-				} else if ( "java.lang.String".equals(className) ) {
-					o = (Object)(new String(fieldVal));
-                } else if ( "java.lang.Short".equals(className) ) {
-                    try {
-                        o = (Object)(Short.valueOf(fieldVal));
-                    } catch (NumberFormatException nfe) {
-                        log.debug("NumberFormatException trying to turn " + fieldVal + " into a Short");
-                    }
-				} else if ( "java.lang.Integer".equals(className) ) {
-					try {
-						o = (Object)(Integer.valueOf(fieldVal));
-					} catch (NumberFormatException nfe) {
-						log.debug("NumberFormatException trying to turn " + fieldVal + " into a Integer");
+				} else if ((o = convertStringToObject(fieldVal, className)) != null) {
+					log.trace("Converted " + fieldVal + " into " + className);
+				}
+				else if (Collection.class.isAssignableFrom(classType)) {
+					// this is a collection of items. this is intentionally not in the convertStringToObject method
+					
+					Collection tmpCollection = null;
+					if (Set.class.isAssignableFrom(classType))
+						tmpCollection = new LinkedHashSet();
+					else
+						tmpCollection = new Vector();
+					
+					// get the type of class held in the collection
+					String collectionTypeClassName = null;
+					java.lang.reflect.Type collectionType = ((java.lang.reflect.ParameterizedType)f.getGenericType()).getActualTypeArguments()[0];
+					if ( collectionType.toString().startsWith("class ") )
+						collectionTypeClassName = collectionType.toString().substring("class ".length());
+					
+					// change the string to just a comma delimited list
+					fieldVal = fieldVal.replaceFirst("\\[", "").replaceFirst("\\]", "");
+					
+					for (String eachFieldVal : fieldVal.split(",")) {
+						eachFieldVal = eachFieldVal.trim(); // take out whitespace
+						// convert to a simple object
+						Object tmpObject = convertStringToObject(eachFieldVal, collectionTypeClassName);
+						if (tmpObject == null)
+							log.error("Unable to convert: " + eachFieldVal + " to a " + collectionTypeClassName);
+						else
+							tmpCollection.add(tmpObject);
 					}
-				} else if ( "java.lang.Long".equals(className) ) {
-					try {
-						o = (Object)(Long.valueOf(fieldVal));
-					} catch (NumberFormatException nfe) {
-						log.debug("NumberFormatException trying to turn " + fieldVal + " into a Long");
-					}
-				} else if ( "java.lang.Float".equals(className) ) {
-					try {
-						o = (Object)(Float.valueOf(fieldVal));
-					} catch (NumberFormatException nfe) {
-						log.debug("NumberFormatException trying to turn " + fieldVal + " into a Float");
-					}
-				} else if ( "java.lang.Double".equals(className) ) {
-					try {
-						o = (Object)(Double.valueOf(fieldVal));
-					} catch (NumberFormatException nfe) {
-						log.debug("NumberFormatException trying to turn " + fieldVal + " into a Double");
-					}
-				} else if ( "java.lang.Boolean".equals(className) ) {
-					o = (Object)(Boolean.valueOf(fieldVal));
-				} else if ( "java.util.Date".equals(className) ) {
-					SimpleDateFormat sdf = new SimpleDateFormat(TimestampNormalizer.DATETIME_MASK);
-					Date d;
-					try {
-						d = sdf.parse(fieldVal);
-						o = (Object)(d);
-					} catch (ParseException e) {
-						log.debug("DateParsingException trying to turn " + fieldVal + " into a date, so retrying with backup mask");
-						try {
-							SimpleDateFormat sdfBackup = new SimpleDateFormat(TimestampNormalizer.DATETIME_MASK_BACKUP);
-							d = sdfBackup.parse(fieldVal);
-							o = (Object)(d);
-						} catch (ParseException pee) {
-							log.debug("Still getting DateParsingException trying to turn " + fieldVal + " into a date, so retrying with backup mask");
-						}
-					}
-				} else if ( "java.util.Locale".equals(className) ) {
-					o = LocaleUtility.fromSpecification(fieldVal);
+					
+					o = tmpCollection;
+				}
+				else {
+					log.debug("Don't know how to deserialize class: " + className);
 				}
 			}
 		}
 		
-		if ( o == null ) log.debug("Never found a property named: " + fieldName + " for this class");
+		if ( o == null )
+			log.debug("Never found a property named: " + fieldName + " for this class");
 		
 		return o;
 	}
 
     /**
+     * Converts the given string into an object of the given className.  Supports basic objects like String, 
+     * Integer, Long, Float, Double, Boolean, Date, and Locale. 
+     * 
+     * @param fieldVal the string object representation
+     * @param className the name of the class that is represented by this string. e.g. "java.lang.Integer"
+     * @return object of type "className"
+     */
+    private static Object convertStringToObject(String fieldVal, String className) {
+    	
+    	Object o = null; // the object to return
+    	
+    	if ( "java.lang.String".equals(className) ) {
+    		o = (Object)(new String(fieldVal));
+        } else if ( "java.lang.Short".equals(className) ) {
+            try {
+                o = (Object)(Short.valueOf(fieldVal));
+            } catch (NumberFormatException nfe) {
+                log.debug("NumberFormatException trying to turn " + fieldVal + " into a Short");
+            }
+    	} else if ( "java.lang.Integer".equals(className) ) {
+    		try {
+    			o = (Object)(Integer.valueOf(fieldVal));
+    		} catch (NumberFormatException nfe) {
+    			log.debug("NumberFormatException trying to turn " + fieldVal + " into a Integer");
+    		}
+    	} else if ( "java.lang.Long".equals(className) ) {
+    		try {
+    			o = (Object)(Long.valueOf(fieldVal));
+    		} catch (NumberFormatException nfe) {
+    			log.debug("NumberFormatException trying to turn " + fieldVal + " into a Long");
+    		}
+    	} else if ( "java.lang.Float".equals(className) ) {
+    		try {
+    			o = (Object)(Float.valueOf(fieldVal));
+    		} catch (NumberFormatException nfe) {
+    			log.debug("NumberFormatException trying to turn " + fieldVal + " into a Float");
+    		}
+    	} else if ( "java.lang.Double".equals(className) ) {
+    		try {
+    			o = (Object)(Double.valueOf(fieldVal));
+    		} catch (NumberFormatException nfe) {
+    			log.debug("NumberFormatException trying to turn " + fieldVal + " into a Double");
+    		}
+    	} else if ( "java.lang.Boolean".equals(className) ) {
+    		o = (Object)(Boolean.valueOf(fieldVal));
+    	} else if ( "java.util.Date".equals(className) ) {
+    		SimpleDateFormat sdf = new SimpleDateFormat(TimestampNormalizer.DATETIME_MASK);
+    		Date d;
+    		try {
+    			d = sdf.parse(fieldVal);
+    			o = (Object)(d);
+    		} catch (ParseException e) {
+    			log.debug("DateParsingException trying to turn " + fieldVal + " into a date, so retrying with backup mask");
+    			try {
+    				SimpleDateFormat sdfBackup = new SimpleDateFormat(TimestampNormalizer.DATETIME_MASK_BACKUP);
+    				d = sdfBackup.parse(fieldVal);
+    				o = (Object)(d);
+    			} catch (ParseException pee) {
+    				log.debug("Still getting DateParsingException trying to turn " + fieldVal + " into a date, so retrying with backup mask");
+    			}
+    		}
+    	} else if ( "java.util.Locale".equals(className) ) {
+    		o = LocaleUtility.fromSpecification(fieldVal);
+    	}
+    	
+    	return o;
+    }
+
+	/**
      * 
      * Finds property 'get' accessor based on target type and property name.
      * 
