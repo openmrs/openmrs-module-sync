@@ -149,6 +149,15 @@ public interface SyncDAO {
 	
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, RemoteServer server)
 	                                                                                                      throws DAOException;
+	/**
+	 * Deletes all sync records that have the given state and are before the given date
+	 * 
+	 * @param states the states to delete
+	 * @param to the date to delete before
+	 * @return the number of delete records
+	 * @throws DAOException
+	 */
+	public Integer deleteSyncRecords(SyncRecordState[] states, Date to) throws DAOException;
 	
 	/**
 	 * Get all SyncRecords between two timestamps, including the to-timestamp. <br/>

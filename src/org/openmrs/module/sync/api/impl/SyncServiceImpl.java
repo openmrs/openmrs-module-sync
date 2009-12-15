@@ -300,6 +300,13 @@ public class SyncServiceImpl implements SyncService {
     public List<SyncRecord> getSyncRecords(Integer firstRecordId, Integer numberToReturn) throws APIException {
     	return getSynchronizationDAO().getSyncRecords(null, null, firstRecordId, numberToReturn, false);
     }
+    
+    /**
+     * @see org.openmrs.module.sync.api.SyncService#deleteSyncRecords(org.openmrs.module.sync.SyncRecordState[], java.util.Date)
+     */
+    public Integer deleteSyncRecords(SyncRecordState[] states, Date to) throws APIException {
+    	return getSynchronizationDAO().deleteSyncRecords(states, to);
+    }
 
 	/**
 	 * @see org.openmrs.api.SyncService#getGlobalProperty(java.lang.String)

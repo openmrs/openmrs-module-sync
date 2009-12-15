@@ -312,7 +312,48 @@ public class HibernateSyncDAO implements SyncDAO {
             .list();
         }
     }
-
+    
+    /**
+	 * @see org.openmrs.module.sync.api.db.SyncDAO#deleteSyncRecords(org.openmrs.module.sync.SyncRecordState[],
+	 *      java.util.Date)
+	 */
+	public Integer deleteSyncRecords(SyncRecordState[] states, Date to) throws DAOException {
+//		Query serverRecordsQuery = sessionFactory.getCurrentSession().createQuery(
+//		    "delete from SyncServerRecord where state in (:states) and syncRecord.timestamp < :to");
+//		serverRecordsQuery.setParameterList("states", states);
+//		serverRecordsQuery.setDate("to", to);
+//		serverRecordsQuery.executeUpdate();
+		
+		List<String> stateStrings = new ArrayList<String>();
+		for (SyncRecordState s : states) {
+			stateStrings.add(s.name());
+		}
+		
+		
+//		Query tmp = sessionFactory.getCurrentSession().createSQLQuery("select sr.record_id from sync_record sr where (select count(*) from sync_server_record ssr where ssr.state in (:states) and ssr.record_id = sr.record_id) = 1 and sr.timestamp <= :to");
+//		tmp.setParameterList("states", stateStrings);
+//		tmp.setDate("to", to);
+//		List<Object> rows = tmp.list();
+		
+		// delete all rows in sync_server_id that are of the right state and are old
+		Query deleteSSRQuery = sessionFactory
+	        .getCurrentSession()
+	        .createSQLQuery("delete from sync_server_record ssr where ssr.state in (:states) and (select timestamp from sync_record sr where sr.record_id = ssr.record_id) < :to");
+		deleteSSRQuery.setParameterList("states", stateStrings);
+		deleteSSRQuery.setDate("to", to);
+		Integer quantityDeleted = deleteSSRQuery.executeUpdate(); // this quantity isn't really used
+		
+		// if a sync_record now has zero sync_record_server rows, then that means all
+		// the rows were deleted in the previous query and so the sync_record can also be deleted
+		Query deleteQuery = sessionFactory
+		        .getCurrentSession()
+		        .createSQLQuery(
+		            "delete from sync_record sr where (select count(*) from sync_server_record ssr where ssr.record_id = sr.record_id) = 0 and sr.timestamp <= :to");
+		deleteQuery.setDate("to", to);
+		quantityDeleted = deleteQuery.executeUpdate();
+		return quantityDeleted;
+	}
+	
     /**
 	 * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecords(java.util.Date,
 	 *      java.util.Date, Integer, Integer)

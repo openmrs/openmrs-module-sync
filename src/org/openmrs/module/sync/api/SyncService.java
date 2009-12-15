@@ -29,6 +29,7 @@ import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
+import org.openmrs.module.sync.server.SyncServerRecord;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -242,6 +243,17 @@ public interface SyncService {
 	//@Authorized({"View Synchronization Records"})
 	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecords(Integer firstRecordId, Integer numberToReturn) throws APIException;
+	
+	/**
+	 * Deletes all {@link SyncRecord}s and {@link SyncServerRecord}s that have the given state 
+	 * and are before the given date
+	 * 
+	 * @param states the states on {@link SyncServerRecord} to delete
+	 * @param to the date to delete before
+	 * @return the number of delete records
+	 * @throws DAOException
+	 */
+	public Integer deleteSyncRecords(SyncRecordState[] states, Date to) throws APIException;
 	
 	/**
 	 * Retrieve value of given global property using synchronization data access mechanisms.

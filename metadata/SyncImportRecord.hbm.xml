@@ -7,7 +7,7 @@
 
 	<class name="SyncImportRecord" table="sync_import">
 
-		<id name="recordId" type="int" column="record_id">
+		<id name="importId" type="int" column="sync_import_id">
 			<generator class="native" />
 		</id>
 

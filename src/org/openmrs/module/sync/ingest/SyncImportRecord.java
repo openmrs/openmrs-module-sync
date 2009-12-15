@@ -26,25 +26,21 @@ import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 
 /**
- * SyncRecord is a collection of sync items that represents a smallest transactional unit.
- * In other words, all sync items within a record must be:
- * - transfered from/to sync source 
- * - committed/rolled back together
- * 
- * Information about sync records -- what was sent, received should be stored in DB by each
- * sync source. Minimally, each source source should keep track of history of sync records that were
- * sent 'up' to parent. 
- * 
- * Consequently a sync 'transmission' is nothing more than a transport of a set of sync records from 
- * source A to source B.
- * 
+ * {@link SyncImportRecord}s are kept on this server for every transactional unit that
+ * comes into the server.
+ * <br/><br/>
+ * This class is created as soon as information arrives from another server.  This table/class
+ * is the first place sync looks to know whether something has already come in or not. 
+ * <br/><br/>
+ * {@link SyncImportRecord#uuid} is the {@link SyncRecord#getUuid()} on the remote server 
+ * for the record. That remote server can be either a parent or child to this current server.
  */
 public class SyncImportRecord implements Serializable, IItem {
 
     public static final long serialVersionUID = 0L;
 
     // Fields
-    private Integer recordId;
+    private Integer importId;
     private String uuid = null;
     private String creator = null;
     private String databaseVersion = null;
@@ -71,12 +67,12 @@ public class SyncImportRecord implements Serializable, IItem {
     	}
     }
 
-	public Integer getRecordId() {
-    	return recordId;
+	public Integer getImportId() {
+    	return importId;
     }
 
-	public void setRecordId(Integer recordId) {
-    	this.recordId = recordId;
+	public void setImportId(Integer importId) {
+    	this.importId = importId;
     }
 
 	// Properties

@@ -199,4 +199,16 @@
 		</sql>
 	</diff>
 	
+	<diff>
+		<version>0.6</version>
+		<author>Ben Wolfe</author>
+		<date>Dec 14th 2009</date>
+		<description>
+			Renaming the sync_import.record_id column for clarity
+		</description>
+		<sql>
+			ALTER TABLE sync_import CHANGE COLUMN record_id sync_import_id int(11) NOT NULL auto_increment;
+		</sql>
+	</diff>
+	
 </sqldiff>

@@ -19,17 +19,19 @@ import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 
 /**
- * SyncRecord is a collection of sync items that represents a smallest transactional unit.
- * In other words, all sync items within a record must be:
- * - transfered from/to sync source 
- * - committed/rolled back together
+ * One {@link SyncServerRecord} is kept for each child server for each {@link SyncRecord}.
+ * <br/><br/>
+ * A {@link SyncServerRecord} is created for each known child server as soon as a {@link SyncRecord}
+ * is created.
+ * <br/><br/>
+ * A SyncServerRecord will be PENDING_SEND until a transaction is started.  At which point the status
+ * will be SENT until the remote server sends back a confirmation that it was successfully applied to
+ * the database.  At that point the status of the SyncServerRecord is set to COMMITTED and this record
+ * will not be sent to the child server any longer.
+ * <br/><br/>
+ * A SyncRecord contains a list of all known SyncServerRecords.
  * 
- * Information about sync records -- what was sent, received should be stored in DB by each
- * sync source. Minimally, each source should keep track of history of sync records that were
- * sent 'up' to parent. 
- * 
- * Consequently a sync 'transmission' is nothing more than a transport of a set of sync records from 
- * source A to source B.
+ * @see SyncRecord
  * 
  */
 public class SyncServerRecord implements Serializable {

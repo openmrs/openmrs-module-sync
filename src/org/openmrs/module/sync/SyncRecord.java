@@ -37,7 +37,7 @@ import org.openmrs.module.sync.server.SyncServerRecord;
  * - committed/rolled back together
  * 
  * Information about sync records -- what was sent, received should be stored in DB by each
- * sync source. Minimally, each source source should keep track of history of sync records that were
+ * sync source. Minimally, each source should keep track of history of sync records that were
  * sent 'up' to parent. 
  * 
  * Consequently a sync 'transmission' is nothing more than a transport of a set of sync records from 
