@@ -318,28 +318,21 @@ public class HibernateSyncDAO implements SyncDAO {
 	 *      java.util.Date)
 	 */
 	public Integer deleteSyncRecords(SyncRecordState[] states, Date to) throws DAOException {
-//		Query serverRecordsQuery = sessionFactory.getCurrentSession().createQuery(
-//		    "delete from SyncServerRecord where state in (:states) and syncRecord.timestamp < :to");
-//		serverRecordsQuery.setParameterList("states", states);
-//		serverRecordsQuery.setDate("to", to);
-//		serverRecordsQuery.executeUpdate();
-		
 		List<String> stateStrings = new ArrayList<String>();
 		for (SyncRecordState s : states) {
 			stateStrings.add(s.name());
 		}
 		
-		
-//		Query tmp = sessionFactory.getCurrentSession().createSQLQuery("select sr.record_id from sync_record sr where (select count(*) from sync_server_record ssr where ssr.state in (:states) and ssr.record_id = sr.record_id) = 1 and sr.timestamp <= :to");
-//		tmp.setParameterList("states", stateStrings);
-//		tmp.setDate("to", to);
-//		List<Object> rows = tmp.list();
+		// no matter what kind of server this current server is (parent or child), the sync server records
+		// must be either committed or not syncing in order to delete them
+		String[] syncServerStates = new String[] { SyncRecordState.NOT_SUPPOSED_TO_SYNC.name(),
+    	        SyncRecordState.COMMITTED.name() };
 		
 		// delete all rows in sync_server_id that are of the right state and are old
 		Query deleteSSRQuery = sessionFactory
 	        .getCurrentSession()
-	        .createSQLQuery("delete from sync_server_record ssr where ssr.state in (:states) and (select timestamp from sync_record sr where sr.record_id = ssr.record_id) < :to");
-		deleteSSRQuery.setParameterList("states", stateStrings);
+	        .createSQLQuery("delete from sync_server_record where state in (:states) and (select timestamp from sync_record sr where sr.record_id = sync_server_record.record_id) < :to");
+		deleteSSRQuery.setParameterList("states", syncServerStates);
 		deleteSSRQuery.setDate("to", to);
 		Integer quantityDeleted = deleteSSRQuery.executeUpdate(); // this quantity isn't really used
 		
@@ -348,9 +341,11 @@ public class HibernateSyncDAO implements SyncDAO {
 		Query deleteQuery = sessionFactory
 		        .getCurrentSession()
 		        .createSQLQuery(
-		            "delete from sync_record sr where (select count(*) from sync_server_record ssr where ssr.record_id = sr.record_id) = 0 and sr.timestamp <= :to");
+		            "delete from sync_record where (select count(*) from sync_server_record ssr where ssr.record_id = sync_record.record_id) = 0 and sync_record.timestamp <= :to and sync_record.state in (:states)");
 		deleteQuery.setDate("to", to);
+		deleteQuery.setParameterList("states", stateStrings);
 		quantityDeleted = deleteQuery.executeUpdate();
+		
 		return quantityDeleted;
 	}
 	
@@ -468,7 +463,7 @@ public class HibernateSyncDAO implements SyncDAO {
     /**
      * @see org.openmrs.module.sync.api.db.SyncDAO#getGlobalProperty(String propertyName)
      */
-    public RemoteServer getRemoteServerByUsername(String username) throws DAOException {        
+    public RemoteServer getRemoteServerByUsername(String username) throws DAOException {
         return (RemoteServer)sessionFactory.getCurrentSession()
         .createCriteria(RemoteServer.class)
         .add(Restrictions.eq("childUsername", username))

@@ -37,7 +37,7 @@ public class CleanupSyncTablesTask extends AbstractTask {
 	
 	private static Log log = LogFactory.getLog(CleanupSyncTablesTask.class);
 	
-	private String PROPERTY_DAYS_BACK = "delete_entries_files_older_than_x_days";
+	protected static final String PROPERTY_DAYS_BACK = "delete_entries_files_older_than_x_days";
 	
 	private Integer DEFAULT_DAYS_BACK_TO_START_DELETE = 28;
 	
@@ -45,10 +45,10 @@ public class CleanupSyncTablesTask extends AbstractTask {
 	 * Comma delimited list of {@link SyncRecordState} names that will be deleted. These states on
 	 * the {@link SyncServerRecord} rows.
 	 */
-	private String PROPERTY_STATES_TO_DELETE = "sync_record_states_to_delete";
+	protected static final String PROPERTY_STATES_TO_DELETE = "sync_record_states_to_delete";
 	
-	private SyncRecordState[] DEFAULT_STATES_TO_DELETE = new SyncRecordState[] { SyncRecordState.NOT_SUPPOSED_TO_SYNC,
-	        SyncRecordState.COMMITTED };
+	// by default let the service decide which states to delete
+	private SyncRecordState[] DEFAULT_STATES_TO_DELETE = new SyncRecordState[] { };
 	
 	/**
 	 * Do the actual deleting of tables.

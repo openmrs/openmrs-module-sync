@@ -305,6 +305,24 @@ public class SyncServiceImpl implements SyncService {
      * @see org.openmrs.module.sync.api.SyncService#deleteSyncRecords(org.openmrs.module.sync.SyncRecordState[], java.util.Date)
      */
     public Integer deleteSyncRecords(SyncRecordState[] states, Date to) throws APIException {
+    	
+    	// if no states passed in, then decide based on current server setup
+    	if (states == null || states.length == 0) {
+    		
+    		if (getParentServer() == null) {
+		    	// if server is not a leaf node (only a parent)
+		    	// state does not matter (but will always be NEW)
+		    	states = new SyncRecordState[] { SyncRecordState.NOT_SUPPOSED_TO_SYNC,
+		    	        SyncRecordState.NEW };
+    		}
+    		else {
+		    	// if a server is a leaf node, then only delete states that 
+    			// have been successfully sent to the parent already
+		    	states = new SyncRecordState[] { SyncRecordState.NOT_SUPPOSED_TO_SYNC,
+		    	        SyncRecordState.COMMITTED };
+    		}
+	    }
+    	
     	return getSynchronizationDAO().deleteSyncRecords(states, to);
     }
 

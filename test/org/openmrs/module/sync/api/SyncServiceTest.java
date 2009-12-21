@@ -13,11 +13,16 @@
  */
 package org.openmrs.module.sync.api;
 
+import java.util.Date;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openmrs.ConceptDatatype;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.TestUtil;
 import org.openmrs.test.Verifies;
 
 /**
@@ -37,4 +42,48 @@ public class SyncServiceTest extends BaseModuleContextSensitiveTest {
 		Assert.assertEquals(Integer.valueOf(3), dt.getConceptDatatypeId());
 	}
 
+	/**
+     * @see {@link SyncService#deleteSyncRecords(null,Date)}
+     * 
+     */
+    @Test
+    @Verifies(value = "should delete all sync records if server is root node", method = "deleteSyncRecords(null,Date)")
+    public void deleteSyncRecords_shouldDeleteAllSyncRecordsIfServerIsRootNode() throws Exception {
+    	executeDataSet("org/openmrs/module/sync/include/SyncRecords.xml");
+		
+    	SyncService syncService = Context.getService(SyncService.class);
+    	syncService.deleteSyncRecords(null, new Date());
+    	List<SyncRecord> records = syncService.getSyncRecords();
+		
+		Assert.assertEquals(0, records.size());
+    }
+
+	/**
+     * @see {@link SyncService#deleteSyncRecords(null,Date)}
+     * 
+     */
+    @Test
+    @Verifies(value = "should only delete committed sync records if child node", method = "deleteSyncRecords(null,Date)")
+    public void deleteSyncRecords_shouldOnlyDeleteCommittedSyncRecordsIfChildNode() throws Exception {
+    	executeDataSet("org/openmrs/module/sync/include/SyncRecords.xml");
+    	executeDataSet("org/openmrs/module/sync/include/SyncRecordsAddingParent.xml");
+    	
+    	TestUtil.printOutTableContents(getConnection(), "sync_record", "sync_server_record", "sync_server");
+    	
+    	SyncService syncService = Context.getService(SyncService.class);
+    	
+    	// sanity check
+    	List<SyncRecord> records = syncService.getSyncRecords();
+		Assert.assertEquals(64, records.size());
+    	
+    	syncService.deleteSyncRecords(null, new Date());
+    	
+    	TestUtil.printOutTableContents(getConnection(), "sync_record", "sync_server_record", "sync_server");
+		
+    	Context.clearSession(); // because we have the other records sitting in memory
+    	records = syncService.getSyncRecords();
+		
+		Assert.assertEquals(59, records.size());
+    }
+	
 }

@@ -226,22 +226,20 @@ public interface SyncDAO {
 	public RemoteServer getRemoteServer(String uuid) throws DAOException;
 	
 	/**
-	 * @param childUsername of the RemoteServer to retrieve
+	 * @param username (child_username) of the RemoteServer to retrieve
 	 * @return RemoteServer The RemoteServer or null if not found
 	 * @throws DAOException
 	 */
 	public RemoteServer getRemoteServerByUsername(String username) throws DAOException;
 	
 	/**
-	 * @param uuid of the RemoteServer to retrieve
-	 * @return RemoteServer The RemoteServer or null if not found
+	 * @return List of all {@link RemoteServer}s defined -- both parent and child.
 	 * @throws DAOException
 	 */
 	public List<RemoteServer> getRemoteServers() throws DAOException;
 	
 	/**
-	 * @param uuid of the RemoteServer to retrieve
-	 * @return RemoteServer The RemoteServer or null if not found
+	 * @return RemoteServer The RemoteServer or null if not defined
 	 * @throws DAOException
 	 */
 	public RemoteServer getParentServer() throws DAOException;

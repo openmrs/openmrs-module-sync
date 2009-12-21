@@ -20,8 +20,8 @@ import org.junit.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.api.SyncService;
+import org.openmrs.scheduler.TaskDefinition;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
-import org.openmrs.test.TestUtil;
 
 /**
  * Tests the {@link CleanupSyncTablesTask} to make sure it deletes sync records
@@ -29,28 +29,32 @@ import org.openmrs.test.TestUtil;
 public class CleanupSyncTablesTaskTest extends BaseModuleContextSensitiveTest {
 	
 	@Test
-	public void shouldDeleteOldSyncRecords() throws Exception {
+	public void shouldDeleteOnlyTheStatesGiven() throws Exception {
 		
 		executeDataSet("org/openmrs/module/sync/include/SyncRecords.xml");
 		
 		SyncService syncService = Context.getService(SyncService.class);
 		
-		TestUtil.printOutTableContents(getConnection(), "sync_record", "sync_import");
-		
 		// sanity check
 		List<SyncRecord> records = syncService.getSyncRecords();
-		Assert.assertEquals(59, records.size());
+		Assert.assertEquals(60, records.size());
 		
 		CleanupSyncTablesTask task = new CleanupSyncTablesTask();
-		task.execute();
 		
-		TestUtil.printOutTableContents(getConnection(), "sync_record", "sync_import");
+		TaskDefinition td = new TaskDefinition();
+		td.setProperty(CleanupSyncTablesTask.PROPERTY_STATES_TO_DELETE, "NOT_SUPPOSED_TO_SYNC");
+		task.initialize(td);
+		
+		task.execute();
 		
 		// because task.execute closes the session again
 		Context.clearSession();
 		Context.openSession();
 		records = syncService.getSyncRecords();
-		Assert.assertEquals(0, records.size());
+		
+		// there are 60 records and only 1 of them are NOT_SUPPOSED_TO_SYNC, we are telling 
+		// the task to only delete that 1
+		Assert.assertEquals(59, records.size());
 	}
 	
 }

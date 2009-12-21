@@ -245,13 +245,31 @@ public interface SyncService {
 	public List<SyncRecord> getSyncRecords(Integer firstRecordId, Integer numberToReturn) throws APIException;
 	
 	/**
-	 * Deletes all {@link SyncRecord}s and {@link SyncServerRecord}s that have the given state 
-	 * and are before the given date
+	 * Deletes all {@link SyncRecord}s that have the given states (optional) and are before the
+	 * given date. <br/>
+	 * <br/>
+	 * If <code>states</code> is null, then automatic detection of the current server setup is done
+	 * and the appropriate states are chosen to be deleted:
+	 * <dl>
+	 * <dt>if server has a parent (meaning this server is a leaf node)</dt>
+	 * <dd>sync_server_record will be empty, thus what we need to do is to delete all sync_record
+	 * rows that are COMMITTED or NOT_SUPPOSED_TO_SYNC</dd>
+	 * <dt>if server is root node (no parent, only children)</dt>
+	 * <dd>sync_record has only rows with 'NEW' (or NOT_SUPPOSED_TO_SYNC) status delete
+	 * sync_server_record rows first that are safe to delete then delete rows irrespective of status
+	 * in sync_record that have *no* rows in sync_server_record</dd>
+	 * </dl>
+	 * <br/>
+	 * All {@link SyncServerRecord}s are deleted that are before the given date and have are either
+	 * {@link SyncRecordState#COMMITTED} or {@link SyncRecordState#NOT_SUPPOSED_TO_SYNC}.
 	 * 
-	 * @param states the states on {@link SyncServerRecord} to delete
+	 * @param states the states on {@link SyncServerRecord} to delete (or null if automatic selection
+	 *            should be done)
 	 * @param to the date to delete before
 	 * @return the number of delete records
 	 * @throws DAOException
+	 * @should delete all sync records if server is root node
+	 * @should only delete committed sync records if child node
 	 */
 	public Integer deleteSyncRecords(SyncRecordState[] states, Date to) throws APIException;
 	
@@ -286,17 +304,17 @@ public interface SyncService {
 	public void saveRemoteServer(RemoteServer server) throws APIException;
 	
 	/**
-	 * Delete a SyncRecord
+	 * Delete a RemoteServer
 	 * 
-	 * @param SyncRecord The SyncRecord to delete
+	 * @param server The RemoteServer to delete
 	 * @throws APIException
 	 */
 	//@Authorized({"Manage Synchronization Servers"})
 	public void deleteRemoteServer(RemoteServer server) throws APIException;
 	
 	/**
-	 * @param uuid of the SyncRecord to retrieve
-	 * @return SyncRecord The SyncRecord or null if not found
+	 * @param serverId of the RemoteServer to retrieve
+	 * @return RemoteServer The RemoteServer or null if not found
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Servers"})
@@ -304,8 +322,8 @@ public interface SyncService {
 	public RemoteServer getRemoteServer(Integer serverId) throws APIException;
 	
 	/**
-	 * @param uuid of the SyncRecord to retrieve
-	 * @return SyncRecord The SyncRecord or null if not found
+	 * @param uuid of the RemoteServer to retrieve
+	 * @return RemoteServer The RemoteServer or null if not found
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Servers"})
@@ -314,7 +332,7 @@ public interface SyncService {
 	
 	/**
 	 * @param username child_username of the RemoteServer to retrieve
-	 * @return SyncRecord The SyncRecord or null if not found
+	 * @return RemoteServer The RemoteServer or null if not found
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Servers"})
@@ -322,8 +340,7 @@ public interface SyncService {
 	public RemoteServer getRemoteServerByUsername(String username) throws APIException;
 	
 	/**
-	 * @param uuid of the SyncRecord to retrieve
-	 * @return SyncRecord The SyncRecord or null if not found
+	 * @return List of all {@link RemoteServer}s defined -- both parent and child.
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Servers"})
@@ -331,8 +348,8 @@ public interface SyncService {
 	public List<RemoteServer> getRemoteServers() throws APIException;
 	
 	/**
-	 * @param uuid of the SyncRecord to retrieve
-	 * @return SyncRecord The SyncRecord or null if not found
+	 * @return RemoteServer The RemoteServer defined as the parent to this current server or 
+	 * null if this server is the root of all other servers
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Servers"})
