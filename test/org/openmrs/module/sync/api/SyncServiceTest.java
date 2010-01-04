@@ -85,5 +85,5 @@ public class SyncServiceTest extends BaseModuleContextSensitiveTest {
 		
 		Assert.assertEquals(59, records.size());
     }
-	
+    
 }

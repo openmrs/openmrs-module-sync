@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.After;
 import org.openmrs.api.UserService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.advice.GenerateSystemIdAdvisor;
@@ -205,5 +206,16 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		
 		//now finish by checking the changes recorded on parent against the target state
 		this.runOnChild2(testMethods);
+	}
+	
+	/**
+	 * Delete everything after each method so that non-sync tests work just fine off the normal
+	 * database
+	 * 
+	 * @throws Exception
+	 */
+	@After
+	public void cleanupDatabase() throws Exception {
+		deleteAllData();
 	}
 }

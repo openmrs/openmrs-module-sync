@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotNull;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -32,13 +33,13 @@ import org.openmrs.ConceptName;
 import org.openmrs.ConceptNameTag;
 import org.openmrs.ConceptNumeric;
 import org.openmrs.ConceptSet;
+import org.openmrs.ConceptWord;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
-import org.openmrs.test.TestUtil;
 import org.springframework.test.annotation.NotTransactional;
 
 /**
- *
+ * Tests sending Concepts over the wire
  */
 public class SyncConceptTest extends SyncBaseTest {
 	
@@ -404,6 +405,34 @@ public class SyncConceptTest extends SyncBaseTest {
 				ConceptName cn = wt.getName();
 				assertEquals("Should be one more tag than before", numTagsBefore + 1, cn.getTags().size());
 				assertEquals("tag not added", true, cn.hasTag("default"));
+			}
+		});
+	}
+	
+	@Test
+	@NotTransactional
+	public void shouldUpdateConceptWordsForNumericConcepts() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			
+			ConceptService cs = Context.getConceptService();
+			
+			public void runOnChild() {
+				Concept wt = cs.getConceptByName("WEIGHT");
+				wt.addName(new ConceptName("ASDF", Locale.UK));
+				cs.saveConcept(wt);
+			}
+			
+			public void runOnParent() {
+				Concept wt = cs.getConceptByName("WEIGHT");
+				List<ConceptWord> words = cs.getConceptWords("ASDF", Locale.UK);
+				boolean foundConcept = false;
+				for (ConceptWord word : words) {
+					if (word.getConcept().equals(wt)) {
+						foundConcept = true;
+					}
+				}
+				
+				assertTrue(foundConcept);
 			}
 		});
 	}

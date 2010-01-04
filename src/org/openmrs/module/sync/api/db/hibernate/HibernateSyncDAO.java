@@ -40,6 +40,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
@@ -910,5 +911,14 @@ public class HibernateSyncDAO implements SyncDAO {
 		Criteria crit = sessionFactory.getCurrentSession().createCriteria(clazz);
 		crit.add(Restrictions.eq("uuid", uuid));
 		return (T) crit.uniqueResult();
+    }
+	
+	public <T extends OpenmrsObject> String getUuidForOpenmrsObject(Class<T> clazz, String id) {
+		Criteria crit = sessionFactory.getCurrentSession().createCriteria(clazz);
+		crit.add(Restrictions.idEq(id));
+		crit.setProjection(Projections.property("uuid"));
+		List<Object[]> rows = crit.list();
+		Object[] rowOne = rows.get(0);
+		return (String)rowOne[0]; // get the first column of the first row
     }
 }

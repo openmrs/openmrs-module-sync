@@ -546,7 +546,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
      * 
      * @see SyncUtil#setProperty(Object, String, Object)
      * @see SyncUtil#getOpenmrsObj(String, String)
-     * @see SyncUtil#updateOpenmrsObject(Object, String, String, boolean)
+     * @see SyncUtil#updateOpenmrsObject(OpenmrsObject, String, String, List)
      */
     private void processOpenmrsObject(OpenmrsObject o, SyncItem item, String originalUuid, List<SyncPreCommitAction> preCommitRecordActions) throws Exception {
 

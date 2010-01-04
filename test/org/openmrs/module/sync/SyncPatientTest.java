@@ -364,7 +364,7 @@ public class SyncPatientTest extends SyncBaseTest {
 				p.addIdentifier(new PatientIdentifier("999", pit, loc));
 				p.setGender("m");
 				p.setBirthdate(new Date());
-				Context.getPatientService().createPatient(p);
+				Context.getPatientService().savePatient(p);
 				List<PatientIdentifier> ids = Context.getPatientService().getPatientIdentifiers("999", pit);
 				assertNotNull(ids);
 				if (ids.size() != 1)
@@ -373,7 +373,7 @@ public class SyncPatientTest extends SyncBaseTest {
 			}
 			public void runOnParent() {
 				System.out.println("Patients at beginning " + Context.getPatientService().findPatients("Darius", false).size());
-				Location loc = Context.getEncounterService().getLocationByName("Someplace");
+				Location loc = Context.getLocationService().getLocation("Someplace");
 				PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierType(2);
 				PersonName name = new PersonName("Darius", "Graham", "Jazayeri");
 				PatientIdentifier id = new PatientIdentifier("999", pit, loc);
@@ -396,13 +396,13 @@ public class SyncPatientTest extends SyncBaseTest {
 			PatientIdentifierType pit;
 			public void runOnChild() {
 				pit = Context.getPatientService().getPatientIdentifierType(2);
-				Location loc = Context.getEncounterService().getLocationByName("Someplace");
+				Location loc = Context.getLocationService().getLocation("Someplace");
 				Patient p = Context.getPatientService().getPatient(2);
 				p.setGender("F");
 				p.removeName(p.getPersonName());
 				p.addName(new PersonName("Peter", null, "Parker"));
 				p.addIdentifier(new PatientIdentifier("super123", pit, loc));
-				Context.getPatientService().updatePatient(p);
+				Context.getPatientService().savePatient(p);
 			}
 			public void runOnParent() {
 				Patient p = Context.getPatientService().getPatient(2);
@@ -413,8 +413,6 @@ public class SyncPatientTest extends SyncBaseTest {
 					if (id.getIdentifier().equals("super123") && id.getIdentifierType().equals(pit))
 						found = true;
 				assertTrue("Couldn't find new ID", found);
-		        Context.clearSession();
-				Context.closeSession();				
 			}
 		});
 	}
@@ -434,8 +432,6 @@ public class SyncPatientTest extends SyncBaseTest {
 				Patient p = Context.getPatientService().getPatient(2);
 				assertEquals("Should not have added a new name", numberBefore, p.getNames().size());
 				assertEquals("Name should be Superman", "Superman", p.getPersonName().getGivenName());
-		        Context.clearSession();
-				Context.closeSession();				
 			}
 		});
 	}
@@ -469,7 +465,6 @@ public class SyncPatientTest extends SyncBaseTest {
 				Context.getPatientService().mergePatients(p2, p1);
 			}
 			public void runOnParent() {
-				int compare = 0;
 				Patient p1 = Context.getPatientService().getPatient(2);
 				Patient p2 = Context.getPatientService().getPatient(3);
 				Set<PatientIdentifier> pis2 = p2.getIdentifiers();

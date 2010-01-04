@@ -25,12 +25,13 @@ public class SyncPreCommitAction {
 	private Object param;
 
 	/**
-	 * helper enum that is to indicate the know types of additional actions we expect to execute just before
+	 * helper enum that is to indicate the known types of additional actions we expect to execute just before
 	 * sync record will be committed 
 	 */
 	public enum PreCommitActionName {
 		REBUILDXSN,
-		UPDATECONCEPTWORDS
+		UPDATECONCEPTWORDS,
+		CHANGEOBSVOIDEDREASONUUID, 
 	}
 	
 	public SyncPreCommitAction(PreCommitActionName actionName,Object actionParam) {

@@ -57,7 +57,7 @@
 		 */
 		function processRecord(record) {
 			var state = "<span class='syncFAILED'><b><spring:message code="sync.record.state_FAILED" /></b></span>";
-			if ( record.state == "COMMITTED" ) state = "<span class='syncCOMMITTED'><b><spring:message code="sync.record.state_COMMITTED" /></b></span>";
+			if ( record.state == "COMMITTED" || record.state == "COMMITTED_AND_CONFIRMATION_SENT" ) state = "<span class='syncCOMMITTED'><b><spring:message code="sync.record.state_COMMITTED" /></b></span>";
 			else if ( record.state !=  "FAILED" ) state = "<span class='syncNEUTRAL'><b>" + getMessage(record.state) + "</b></span>";
 
 			// if the row doesn't exist, create it.  this means it is an incoming change from the parent 
@@ -69,11 +69,14 @@
 				var stateCell = document.createElement("td");
 				stateCell.id = "state_" + record.uuid;
 				stateCell.innerHTML = state;
+				stateCell.className = "centeredColumn";
 				row.appendChild(stateCell);
 				var retryCell = document.createElement("td");
+				retryCell.className = "centeredColumn";
 				row.appendChild(retryCell);
 				var messageCell = document.createElement("td");
 				messageCell.id = "message_" + record.uuid;
+				messageCell.className = "centeredColumn";
 				if ( record.state != "COMMITTED" ) {
 					messageCell.innerHTML = record.errorMessage;
 				}
@@ -134,6 +137,14 @@
 		
 	-->
 </script>
+
+<style>
+  #syncChangesTable td.centeredColumn {
+    white-space: nowrap;
+    text-align: center;
+    vertical-align: middle;
+  }
+</style>
 
 <b class="boxHeader"><spring:message code="sync.status.export.changes"/></b>
 <div class="box">
@@ -231,11 +242,11 @@
 									<%--<c:if test="${not empty itemInfo[syncItem.key.keyValue]}">(${itemInfo[syncItem.key.keyValue]})</c:if></b>--%>
 								</span>
 							</td>
-							<td valign="middle" nowrap align="center" id="state_${syncRecord.uuid}">
+							<td id="state_${syncRecord.uuid}" class="centeredColumn">
 								<span class="sync${syncRecord.state}"><spring:message code="sync.record.state_${syncRecord.state}" /></span>
 							</td>
-							<td valign="middle" nowrap align="center">${syncRecord.retryCount}</td>
-							<td valign="middle"><span id="message_${syncRecord.uuid}"></span></td>
+							<td class="centeredColumn">${syncRecord.retryCount}</td>
+							<td class="centeredColumn"><span id="message_${syncRecord.uuid}"></span></td>
 
 							<%--
 							<td valign="middle" nowrap>

@@ -67,7 +67,6 @@ import org.openmrs.ProgramWorkflow;
 import org.openmrs.ProgramWorkflowState;
 import org.openmrs.Relationship;
 import org.openmrs.RelationshipType;
-import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.FilePackage;
@@ -121,7 +120,7 @@ public class SyncUtil {
 			throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		String propName = n.getNodeName();
 		Object propVal = null;
-		propVal = SyncUtil.valForField(propName, n.getTextContent(), allFields);
+		propVal = SyncUtil.valForField(propName, n.getTextContent(), allFields, n);
 		
 		log.debug("Trying to set value to " + propVal + " when propName is " + propName + " and context is " + n.getTextContent());
 		
@@ -133,8 +132,7 @@ public class SyncUtil {
 
 	public static void setProperty(Object o, String propName, Object propVal)
 			throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		Object[] setterParams = new Object[1];
-		setterParams[0] = propVal;
+		Object[] setterParams = new Object[] { propVal };
 		
 		log.debug("getting setter method");
 		Method m = SyncUtil.getSetterMethod(o.getClass(), propName, propVal.getClass());
@@ -150,7 +148,7 @@ public class SyncUtil {
 				Node n = nodes.item(i);
 				String propName = n.getNodeName();
 				if ( attName.equals(propName) ) {
-					Object obj = SyncUtil.valForField(propName, n.getTextContent(), allFields);
+					Object obj = SyncUtil.valForField(propName, n.getTextContent(), allFields, n);
 					if ( obj != null ) ret = obj.toString();
 				}
 			}
@@ -224,9 +222,18 @@ public class SyncUtil {
 		}		
 	}
 	
-	public static Object valForField(String fieldName, String fieldVal, ArrayList<Field> allFields) {
+	public static Object valForField(String fieldName, String fieldVal, ArrayList<Field> allFields, Node n) {
 		Object o = null;
 		
+		// the String value on the node specifying the "type"
+		String nodeDefinedClassName = null;
+		if (n != null) {
+			Node tmpNode = n.getAttributes().getNamedItem("type");
+			if (tmpNode != null)
+				nodeDefinedClassName = tmpNode.getTextContent();
+		}
+		
+		// TODO: Speed up sync by passing in a Map of String fieldNames instead of list of Fields ? 
 		for ( Field f : allFields ) {
 			//log.debug("field is " + f.getName());
 			if ( f.getName().equals(fieldName) ) {
@@ -251,7 +258,24 @@ public class SyncUtil {
 				// we have to explicitly create a new value object here because all we have is a string - won't know how to convert
 				if ( OpenmrsObject.class.isAssignableFrom(classType) ) {
 					o = getOpenmrsObj(className, fieldVal);
-				} else if ((o = convertStringToObject(fieldVal, className)) != null) {
+				}
+				else if ("java.lang.Integer".equals(className) && !("integer".equals(nodeDefinedClassName) || "java.lang.Integer".equals(nodeDefinedClassName) )) {
+					// if we're dealing with a field like PersonAttributeType.foreignKey, the actual value was changed from
+					// an integer to a uuid by the HibernateSyncInterceptor.  The nodeDefinedClassName is the node.type which is the 
+					// actual classname as defined by the PersonAttributeType.format.  However, the field.getClassName is 
+					// still an integer because thats what the db stores.  we need to convert the uuid to the pk integer and return it
+					OpenmrsObject obj = getOpenmrsObj(nodeDefinedClassName, fieldVal);
+					o = obj.getId();
+				}
+				else if ("java.lang.String".equals(className) && !("string".equals(nodeDefinedClassName) || "java.lang.String".equals(nodeDefinedClassName))) {
+					// if we're dealing with a field like PersonAttribute.value, the actual value was changed from
+					// a string to a uuid by the HibernateSyncInterceptor.  The nodeDefinedClassName is the node.type which is the 
+					// actual classname as defined by the PersonAttributeType.format.  However, the field.getClassName is 
+					// still String because thats what the db stores.  we need to convert the uuid to the pk integer/string and return it
+					OpenmrsObject obj = getOpenmrsObj(nodeDefinedClassName, fieldVal);
+					o = obj.getId().toString(); // call toString so the class types match when looking up the setter
+				}
+				else if ((o = convertStringToObject(fieldVal, className)) != null) {
 					log.trace("Converted " + fieldVal + " into " + className);
 				}
 				else if (Collection.class.isAssignableFrom(classType)) {
@@ -486,7 +510,6 @@ public class SyncUtil {
      * @param Uuid unique id of the object that is being saved
      * @param preCommitRecordActions actions set to be added to if needed, also SyncIngestServiceImpl.processOpenmrsObject 
      * 
-     * @see SyncUtil#updateOpenmrsObject(Object, String, String, boolean)
      */
     public static synchronized void updateOpenmrsObject(OpenmrsObject o, 
     		String className, 
@@ -499,18 +522,31 @@ public class SyncUtil {
 			log.warn("Will not update OpenMRS object that is NULL");
 		}
     	
-    	//for forms, we need signal to rebuild XSN, do it here
+    	// for forms, we need signal to rebuild XSN, do it here
     	if ("org.openmrs.Form".equals(className)) {
     		if (preCommitRecordActions != null)
     			preCommitRecordActions.add(new SyncPreCommitAction(SyncPreCommitAction.PreCommitActionName.REBUILDXSN, o));
     	}
-    	//if conceptName change comes on its own, trigger clean up of related concept words also
-    	else if ("org.openmrs.ConceptNamex".equals(className)) {
+    	// if conceptName change comes on its own, trigger clean up of related concept words also
+    	else if ("org.openmrs.ConceptName".equals(className)) {
     		if (preCommitRecordActions != null && o != null) {
     			Concept c = ((ConceptName)o).getConcept();
     			preCommitRecordActions.add(new SyncPreCommitAction(SyncPreCommitAction.PreCommitActionName.UPDATECONCEPTWORDS, c));
     		}
     	}
+    	else if (Concept.class.isAssignableFrom(o.getClass())) {
+    		if (preCommitRecordActions != null && o != null) {
+    			preCommitRecordActions.add(new SyncPreCommitAction(SyncPreCommitAction.PreCommitActionName.UPDATECONCEPTWORDS, o));
+    		}
+    	}
+    	// if an obs comes through with a non-null voidReason, make sure we change it back to using a PK
+    	else if ("org.openmrs.Obs".equals(className)) {
+    		if (preCommitRecordActions != null && o != null) {
+    			if (((Obs)o).getVoidReason() != null)
+    				preCommitRecordActions.add(new SyncPreCommitAction(SyncPreCommitAction.PreCommitActionName.CHANGEOBSVOIDEDREASONUUID, o));
+    		}
+    	}
+    	
     }  
 	
     /**
@@ -828,17 +864,39 @@ public class SyncUtil {
 					SyncUtil.rebuildXSN((Form)action.getParam());
 				} else {
 					//error: action was scheduled as rebuild XSN but param passed was not form
-					throw new SyncException("REBUILDXSN action was scheduled for 'PreCommitRecordActions' exection but param passed was not From, parm passed was:" + action.getParam() );					
+					throw new SyncException("REBUILDXSN action was scheduled for 'PreCommitRecordActions' exection but param passed was not From, param passed was:" + action.getParam() );					
 				}
 			}
 			else if (action.getName().equals(SyncPreCommitAction.PreCommitActionName.UPDATECONCEPTWORDS)) {
 				
 				Object o = action.getParam();
-				if (o != null && (o instanceof Concept) ) {
+				if (o != null && Concept.class.isAssignableFrom(o.getClass()) ) {
 					Context.getConceptService().updateConceptWord((Concept)o);
 				} else {
-					//error: action was scheduled as rebuild XSN but param passsed was not form
-					throw new SyncException("UPDATECONCEPTWORDS action was scheduled for 'PreCommitRecordActions' exection but param passed was not Concept, parm passed was:" + action.getParam() );					
+					//error: action was scheduled as updateconceptwords but param passed was not form
+					throw new SyncException("UPDATECONCEPTWORDS action was scheduled for 'PreCommitRecordActions' exection but param passed was not Concept, param passed was:" + action.getParam() );					
+				}
+			}
+			else if (action.getName().equals(SyncPreCommitAction.PreCommitActionName.CHANGEOBSVOIDEDREASONUUID)) {
+				
+				Object o = action.getParam();
+				if (o != null && (o instanceof Obs) ) {
+					Obs obs = (Obs)o;
+					String voidReason = obs.getVoidReason();
+		    		int start = voidReason.lastIndexOf(" ") + 1; // assumes uuids don't have spaces 
+					int end = voidReason.length() - 1;
+					String uuid = voidReason.substring(start, end);
+					try {
+						OpenmrsObject openmrsObject = getOpenmrsObj("org.openmrs.Obs", uuid);
+						Integer obsId = openmrsObject.getId();
+						obs.setVoidReason(voidReason.substring(0, start) + obsId + ")");
+					}
+					catch (Exception e) {
+						log.trace("unable to get uuid from obs uuid: " + uuid, e);
+					}
+				} else {
+					//error: action was scheduled as fix void reason but param passed was not obs
+					throw new SyncException("CHANGEOBSVOIDEDREASONUUID action was scheduled for 'PreCommitRecordActions' exection but param passed was not Obs, param passed was:" + action.getParam() );					
 				}
 			}
 			else {

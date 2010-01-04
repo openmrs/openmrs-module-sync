@@ -339,4 +339,14 @@ public interface SyncDAO {
 	
 	public <T extends OpenmrsObject> T getOpenmrsObjectByUuid(Class<T> clazz, String uuid);
 	
+	/**
+	 * Gets the uuid for the given class according to its (usually integer) primary key
+	 * 
+	 * @param <T> the {@link OpenmrsObject} to return
+	 * @param clazz the class of object to return/lookup
+	 * @param id the primary key value
+	 * @return the uuid for the given class with given id 
+	 */
+	public <T extends OpenmrsObject> String getUuidForOpenmrsObject(Class<T> clazz, String id);
+	
 }

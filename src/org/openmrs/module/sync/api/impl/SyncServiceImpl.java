@@ -23,7 +23,10 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.Obs;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.PersonAttribute;
+import org.openmrs.PersonAttributeType;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.DAOException;
@@ -40,6 +43,7 @@ import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.util.OpenmrsUtil;
+import org.springframework.util.StringUtils;
 
 /**
  * Default implementation of the {@link SyncService}
@@ -87,10 +91,10 @@ public class SyncServiceImpl implements SyncService {
 			RemoteServer origin = null;
 			int idx = originalUuidPassed.indexOf("|");
 			if (idx > -1) {
-				log.warn("originalPassed is " + originalUuidPassed);
+				log.debug("originalPassed is " + originalUuidPassed);
 				String originalUuid = originalUuidPassed.substring(0, idx);
 				String serverUuid = originalUuidPassed.substring(idx + 1);
-				log.warn("serverUuid is " + serverUuid + ", and originalUuid is " + originalUuid);
+				log.debug("serverUuid is " + serverUuid + ", and originalUuid is " + originalUuid);
 				record.setOriginalUuid(originalUuid);
 				origin = Context.getService(SyncService.class).getRemoteServer(serverUuid);
 				if (origin != null) {
@@ -131,7 +135,7 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
-	 * @see org.openmrs.api.SyncService#createSyncRecord(org.openmrs.module.sync.SyncRecord)
+	 * @see org.openmrs.api.SyncService#createSyncImportRecord(org.openmrs.module.sync.SyncImportRecord)
 	 */
 	public void createSyncImportRecord(SyncImportRecord record) throws APIException {
 		getSynchronizationDAO().createSyncImportRecord(record);
@@ -267,7 +271,7 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
-	 * @see org.openmrs.api.SyncService#updateSyncRecord(org.openmrs.module.sync.SyncRecord)
+	 * @see org.openmrs.api.SyncService#updateSyncImportRecord(org.openmrs.module.sync.SyncImportRecord)
 	 */
 	public void updateSyncImportRecord(SyncImportRecord record) throws APIException {
 		getSynchronizationDAO().updateSyncImportRecord(record);
@@ -566,4 +570,5 @@ public class SyncServiceImpl implements SyncService {
 	public <T extends OpenmrsObject> T getOpenmrsObjectByUuid(Class<T> clazz, String uuid) {
 		return dao.getOpenmrsObjectByUuid(clazz, uuid);
 	}
+
 }

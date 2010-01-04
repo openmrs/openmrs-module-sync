@@ -535,5 +535,5 @@ public interface SyncService {
 	 * @return a list of {@link OpenmrsObject}
 	 */
 	public List<Class<OpenmrsObject>> getAllOpenmrsObjects();
-	
+
 }
