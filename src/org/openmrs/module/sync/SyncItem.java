@@ -17,6 +17,7 @@ import java.io.Serializable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
@@ -122,7 +123,7 @@ public class SyncItem implements Serializable, IItem {
 
         containedType = null;
         if ( me.getAttribute("containedType") != null && !"".equals(me.getAttribute("containedType")) ) 
-        	containedType = Class.forName(me.getAttribute("containedType"));
+        	containedType = Context.loadClass(me.getAttribute("containedType"));
 
         if ( me.getAttribute("key") != null) {
         	key = new SyncItemKey<String>(me.getAttribute("key"), String.class);

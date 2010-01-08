@@ -168,7 +168,7 @@ public class SyncUtil {
 	public static Object newObject(String className) throws Exception {
 		Object o = null;
 		if ( className != null ) {
-				Class clazz = Class.forName(className);
+				Class clazz = Context.loadClass(className);
 				Constructor ct = clazz.getConstructor();
 				o = ct.newInstance();
 		}

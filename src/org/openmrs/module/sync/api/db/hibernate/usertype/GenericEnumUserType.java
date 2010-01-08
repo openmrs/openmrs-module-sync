@@ -25,6 +25,7 @@ import org.hibernate.type.NullableType;
 import org.hibernate.type.TypeFactory;
 import org.hibernate.usertype.ParameterizedType;
 import org.hibernate.usertype.UserType;
+import org.openmrs.api.context.Context;
 
 
 public class GenericEnumUserType implements UserType, ParameterizedType {
@@ -42,7 +43,7 @@ public class GenericEnumUserType implements UserType, ParameterizedType {
     public void setParameterValues(Properties parameters) {
         String enumClassName = parameters.getProperty("enumClassName");
         try {
-            enumClass = Class.forName(enumClassName).asSubclass(Enum.class);
+            enumClass = Context.loadClass(enumClassName).asSubclass(Enum.class);
         } catch (ClassNotFoundException cfne) {
             throw new HibernateException("Enum class " + enumClassName + " not found", cfne);
         }

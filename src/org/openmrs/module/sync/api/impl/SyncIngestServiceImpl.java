@@ -98,7 +98,8 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         importRecord.setTimestamp(record.getTimestamp());
         List<SyncPreCommitAction> preCommitRecordActions = new ArrayList<SyncPreCommitAction> ();  
         
-        try {
+        SyncService syncService = Context.getService(SyncService.class);
+		try {
             // first, let's see if this server even accepts this kind of syncRecord
             if ( OpenmrsUtil.containsAny(record.getContainedClassSet(), server.getClassesNotReceived())) {
                 importRecord.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
@@ -108,7 +109,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                 // second, let's see if this SyncRecord has already been imported
                 // use the original record id to locate import_record copy
                 log.warn("AT THIS POINT, ORIGINALUUID FOR RECORD IS " + record.getOriginalUuid());
-                importRecord = Context.getService(SyncService.class).getSyncImportRecord(record.getOriginalUuid());
+                importRecord = syncService.getSyncImportRecord(record.getOriginalUuid());
                 boolean isUpdateNeeded = false;
                 
                 if ( importRecord == null ) {
@@ -117,7 +118,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     importRecord = new SyncImportRecord(record);
                     importRecord.setState(SyncRecordState.FAILED);
                     importRecord.setUuid(record.getOriginalUuid());
-                    Context.getService(SyncService.class).createSyncImportRecord(importRecord);
+                    syncService.createSyncImportRecord(importRecord);
                 } else {
                 	if(log.isWarnEnabled()) {
                 		log.warn("ImportRecord already exists and has retry count: " + importRecord.getRetryCount() + ", state: " + importRecord.getState());
@@ -143,7 +144,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     boolean isError = false;
                             
                     //as we start setting properties, suspend session flushing 
-                    Context.getService(SyncService.class).setFlushModeManual();
+                    syncService.setFlushModeManual();
 
                     // for each sync item, process it and insert/update the database; 
                     //put deletes into deletedItems collection -- these will get processed last
@@ -158,8 +159,8 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     	}
                     }
                     
-                    Context.getService(SyncService.class).flushSession();
-                    Context.getService(SyncService.class).setFlushModeAutomatic();
+                    syncService.flushSession();
+                    syncService.setFlushModeAutomatic();
                     
                     /* now run through deletes: deletes must be processed after inserts/updates
                      * because of hibernate flushing semantics inside transactions:
@@ -169,23 +170,23 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                      * default hibernate FlushMode is AUTO. To further avoid this issue, explicitly suspend flushing for the 
                      * duration of deletes.
                      */
-                	Context.getService(SyncService.class).setFlushModeManual(); 
+                	syncService.setFlushModeManual(); 
                     for ( SyncItem item : deletedItems ) {
                         SyncImportItem importedItem = this.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(),preCommitRecordActions);
                         importedItem.setKey(item.getKey());
                         importRecord.addItem(importedItem);
                         if ( !importedItem.getState().equals(SyncItemState.SYNCHRONIZED)) isError = true;
                     }
-                    Context.getService(SyncService.class).flushSession();
-                    Context.getService(SyncService.class).setFlushModeAutomatic();
+                    syncService.flushSession();
+                    syncService.setFlushModeAutomatic();
                     
                     /* 
                      * finally execute the pending actions that resulted from processing all sync items 
                      */
-                    Context.getService(SyncService.class).setFlushModeManual();
+                    syncService.setFlushModeManual();
                     SyncUtil.applyPreCommitRecordActions(preCommitRecordActions);
-                    Context.getService(SyncService.class).flushSession();
-                    Context.getService(SyncService.class).setFlushModeAutomatic();
+                    syncService.flushSession();
+                    syncService.setFlushModeAutomatic();
                     
                     if ( !isError ) {
                         importRecord.setState(SyncRecordState.COMMITTED);
@@ -224,7 +225,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                         throw(sie);
                     }
                     
-                    Context.getService(SyncService.class).updateSyncImportRecord(importRecord);
+                    syncService.updateSyncImportRecord(importRecord);
                 }
             }
         } catch (SyncIngestException e) {
@@ -244,7 +245,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
             throw(sie);
         } finally {
         	//reset the flush mode back to automatic, no matter what
-        	Context.getService(SyncService.class).setFlushModeAutomatic();
+        	syncService.setFlushModeAutomatic();
         }
 
         return importRecord;
