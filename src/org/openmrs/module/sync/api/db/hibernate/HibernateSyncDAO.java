@@ -210,7 +210,7 @@ public class HibernateSyncDAO implements SyncDAO {
             .createCriteria(SyncImportRecord.class)
             .add(Restrictions.eq("state", state))
             .addOrder(Order.asc("timestamp"))
-            .addOrder(Order.asc("recordId"))
+            .addOrder(Order.asc("importId"))
             .list();
     }
 
