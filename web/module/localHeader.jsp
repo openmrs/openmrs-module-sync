@@ -21,6 +21,11 @@
 			<spring:message code="sync.history.title"/>
 		</a>
 	</li>
+	<li <c:if test='<%= request.getRequestURI().contains("upgrade.form") %>'>class="active"</c:if>>
+		<a href="${pageContext.request.contextPath}/module/sync/upgrade.form">
+			<spring:message code="sync.upgrade.title"/>
+		</a>
+	</li>
 	<li <c:if test='<%= request.getRequestURI().contains("help") %>'>class="active"</c:if>>
 		<a href="${pageContext.request.contextPath}/module/sync/help.htm">
 			<spring:message code="sync.help.title"/>

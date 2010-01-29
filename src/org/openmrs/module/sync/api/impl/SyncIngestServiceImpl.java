@@ -14,12 +14,8 @@
 package org.openmrs.module.sync.api.impl;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,6 +31,7 @@ import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncIngestService;
 import org.openmrs.module.sync.api.SyncService;
+import org.openmrs.module.sync.api.db.SyncDAO;
 import org.openmrs.module.sync.ingest.SyncImportItem;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.ingest.SyncIngestException;
@@ -42,12 +39,17 @@ import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.util.OpenmrsUtil;
-import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 public class SyncIngestServiceImpl implements SyncIngestService {
 
     private Log log = LogFactory.getLog(this.getClass());
+    
+    private SyncDAO dao;
+    
+    public void setSyncDAO(SyncDAO dao) {
+    	this.dao = dao;
+    }
     
     /**
      * 
@@ -284,7 +286,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
             o = SyncUtil.getRootObject(itemContent);
             if (o instanceof org.hibernate.collection.PersistentCollection) {
             	log.debug("Processing a persistent collection");
-            	processHibernateCollection(o.getClass(),itemContent,originalUuid);
+            	dao.processCollection(o.getClass(),itemContent,originalUuid);
             } else {
             	processOpenmrsObject((OpenmrsObject)o,item,originalUuid,preCommitRecordActions);
             }
@@ -300,223 +302,6 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         }       
         
         return ret;        
-    }
-    
-    /**
-     * Processes the serializes state of a collection.
-     * <p>Remarks: Handles two types of hibernate collections: PersistentSortedSet and PersistenSet.
-     * Processing of collections is handled as follows based on the serialized info stored in incoming:
-     * <p>1. Pull out owner info, and collection action (i.e. update, recreate). 
-     * Attempt to create instance of the owner using openmrs API and retrieve the reference 
-     * to the existing collection that is associated with the owner.
-     * <br/>2. Iterate owner serialized entries and process actions (i.e entry update, delete)
-     * <br/>3. Record the original uuid using owner finally, trigger owner update using openmrs api
-     * <br/>For algorithmic details, see code comments as the implementation is extensively commented.
-     * 
-     * @param type collection type.
-     * @param incoming serialized state, interceptor implementation for serialization details
-     * @param originalUuid unique uuid assigned to this update that will be propagated throughout the synchronization to avoid
-     * duplicating this change
-     */
-    private void processHibernateCollection(Class collectionType, String incoming, String originalUuid) throws Exception {
-
-    	OpenmrsObject owner = null;
-    	String ownerClassName = null;
-    	String ownerCollectionPropertyName = null;
-    	String ownerUuid = null;
-    	String ownerCollectionAction = null; //is this coll update or recreate?
-    	NodeList nodes = null;
-    	Set entries = null;
-    	int i = 0;
-    	boolean needsRecreate = false;
-
-    	//first find out what kid of set we are dealing with:
-    	//Hibernate PersistentSortedSet == TreeSet, note this is derived from PersistentSet so we have to test for it first
-    	//Hibernate PersistentSet == HashSet
-    	if (!org.hibernate.collection.PersistentSet.class.isAssignableFrom(collectionType)) {    		
-    		//don't know how to process this collection type
-    		log.error("Do not know how to process this collection type: " + collectionType.getName());
-    		throw new SyncIngestException(SyncConstants.ERROR_ITEM_BADXML_MISSING, null, incoming,null);
-    	}
-    	    	    	
-    	//next, pull out the owner node and get owner instance: 
-    	//we need reference to owner object before we start messing with collection entries
-    	nodes = SyncUtil.getChildNodes(incoming);
-    	if (nodes == null) {
-    		throw new SyncIngestException(SyncConstants.ERROR_ITEM_BADXML_MISSING, null, incoming,null);
-    	}
-        for ( i = 0; i < nodes.getLength(); i++ ) {
-    		if ("owner".equals(nodes.item(i).getNodeName())) {
-    	    	//pull out collection owner info: class name of owner, its uuid, and name of poperty on owner that holds this collection
-    			ownerClassName = ((Element)nodes.item(i)).getAttribute("type");
-    			ownerCollectionPropertyName = ((Element)nodes.item(i)).getAttribute("properyName");
-    			ownerCollectionAction = ((Element)nodes.item(i)).getAttribute("action");
-    			ownerUuid = ((Element)nodes.item(i)).getAttribute("uuid");
-    			break;
-    		}
-    	}
-    	if (ownerUuid == null) {
-    		log.error("Owner uuid is null while processing collection.");
-    		throw new SyncIngestException(SyncConstants.ERROR_ITEM_BADXML_MISSING, null, incoming,null);
-    	}
-        owner = (OpenmrsObject)SyncUtil.getOpenmrsObj(ownerClassName, ownerUuid);    	
-    	
-        //we didn't get the owner record: throw an exception
-        //TODO: in future, when we have conflict resolution, this may be handled differently
-        if (owner == null) {
-        	log.error("Cannot retrieve the collection's owner object.");
-    		log.error("Owner info: " +
-      				"\nownerClassName:" + ownerClassName + 
-      				"\nownerCollectionPropertyName:" + ownerCollectionPropertyName +
-      				"\nownerCollectionAction:" + ownerCollectionAction +
-      				"\nownerUuid:" + ownerUuid);	        	
-        	throw new SyncIngestException(SyncConstants.ERROR_ITEM_BADXML_MISSING, null, incoming,null);
-        }
-        
-    	//NOTE: we cannot just new up a collection and assign to parent:
-        //if hibernate mapping has cascade deletes, it will orphan existing collection and hibernate will throw error
-        //to that effect: "A collection with cascade="all-delete-orphan" was no longer referenced by the owning entity instance"
-        //*only* if this is recreate; clear up the existing collection and start over
-        Method m = null;
-        m = SyncUtil.getGetterMethod(owner.getClass(),ownerCollectionPropertyName);
-        if (m == null) {
-        	log.error("Cannot retrieve getter method for ownerCollectionPropertyName:" + ownerCollectionPropertyName);
-    		log.error("Owner info: " +
-      				"\nownerClassName:" + ownerClassName + 
-      				"\nownerCollectionPropertyName:" + ownerCollectionPropertyName +
-      				"\nownerCollectionAction:" + ownerCollectionAction +
-      				"\nownerUuid:" + ownerUuid);	        	
-        	throw new SyncIngestException(SyncConstants.ERROR_ITEM_BADXML_MISSING, null, incoming,null);
-        }
-        entries = (Set)m.invoke(owner, (Object[])null);
-
-        /*Two instances where even after this we may need to create a new collection:
-         * a) when collection is lazy=false and it is newly created; then asking parent for it will
-         * not return new & empty proxy, it will return null
-         * b) Special recreate logic:
-         * if fetched owner instance has nothing attached, then it is safe to just create brand new collection
-         * and assign it to owner without worrying about getting orphaned deletes error
-         * if owner has something attached, then we process recreate as delete/update; 
-         * that is clear out the existing entries and then proceed to add ones received via sync. 
-         * This code essentially mimics hibernate org.hibernate.engine.Collections.prepareCollectionForUpdate()
-         * implementation. 
-         * NOTE: The unfortunate bi-product of this approach is that this series of events will not produce 
-         * 'recreate' event in the interceptor: thus parent's sync journal entries will look slightly diferently 
-         * from what child was sending up: child sent up single 'recreate' collection action however
-         * parent will instead have single 'update' with deletes & updates in it. Presumably, this is a distinction
-         * without a difference.
-         */
-        	
-    	if (entries == null) {
-        	if (org.hibernate.collection.PersistentSortedSet.class.isAssignableFrom(collectionType)) {
-        		needsRecreate = true;
-        		entries = new TreeSet();
-        	} else if (org.hibernate.collection.PersistentSet.class.isAssignableFrom(collectionType)) {
-        		needsRecreate = true;
-        		entries = new HashSet();
-        	}
-    	}
-    	        
-        if (entries == null) {
-    		log.error("Was not able to retrieve reference to the collection using owner object.");
-    		log.error("Owner info: " +
-    				"\nownerClassName:" + ownerClassName + 
-    				"\nownerCollectionPropertyName:" + ownerCollectionPropertyName +
-    				"\nownerCollectionAction:" + ownerCollectionAction +
-    				"\nownerUuid:" + ownerUuid);
-    		throw new SyncIngestException(SyncConstants.ERROR_ITEM_BADXML_MISSING, null, incoming,null);
-        }
-        
-    	//clear existing entries before adding new ones:
-        if ("recreate".equals(ownerCollectionAction)) {
-    		entries.clear();
-    	}
-        
-        //now, finally process nodes, phew!!
-        for ( i = 0; i < nodes.getLength(); i++ ) {
-        	if("entry".equals(nodes.item(i).getNodeName())) {
-				String entryClassName = ((Element)nodes.item(i)).getAttribute("type");
-				String entryUuid = ((Element)nodes.item(i)).getAttribute("uuid");
-				String entryAction = ((Element)nodes.item(i)).getAttribute("action");
-				Object entry = SyncUtil.getOpenmrsObj(entryClassName, entryUuid);
-				
-				if (entry == null) {
-					//the object not found: most likely cause here is data collision
-		    		log.error("Was not able to retrieve reference to the collection entry object.");
-		    		log.error("Entry info: " +
-		    				"\nentryClassName:" + entryClassName + 
-		    				"\nentryUuid:" + entryUuid +
-		    				"\nentryAction:" + entryAction);
-					throw new SyncIngestException(SyncConstants.ERROR_ITEM_NOT_COMMITTED, ownerClassName, incoming,null);					
-				} else if ("update".equals(entryAction)) {				
-					if (!OpenmrsUtil.collectionContains(entries, entry)) {
-						entries.add(entry);
-					}
-				} else if ("delete".equals(entryAction)) {
-					OpenmrsUtil.collectionContains(entries, entry);
-					entries.contains(entry);					
-					if (!entries.remove(entry)) {
-						//couldn't find entry in collection: hmm, bad implementation of equals?
-						//fall back to trying to find the item in entries by uuid
-						OpenmrsObject toBeRemoved = null;
-						for(Object o : entries) {
-							if (o instanceof OpenmrsObject) {
-								if( entryUuid.equals(((OpenmrsObject)o).getUuid())) {
-									toBeRemoved = (OpenmrsObject)o;
-									break;
-								}
-							}
-						}
-						if (toBeRemoved == null) {
-							//the item to be removed was not located in the collection: log it for reference and continue
-							log.warn("Was not able to process collection entry delete.");
-				    		log.warn("Owner info: " +
-				      				"\nownerClassName:" + ownerClassName + 
-				      				"\nownerCollectionPropertyName:" + ownerCollectionPropertyName +
-				      				"\nownerCollectionAction:" + ownerCollectionAction +
-				      				"\nownerUuid:" + ownerUuid);
-				    		log.warn("entry info: " +
-					      				"\nentryClassName:" + entryClassName + 
-					      				"\nentryUuid:" + entryUuid);							
-						} else {
-							//finally, remove it from the collection
-							entries.remove(toBeRemoved);
-						}
-					}
-					
-				} else {
-					log.error("Unknown collection entry action, action was: " + entryAction);
-					throw new SyncIngestException(SyncConstants.ERROR_ITEM_NOT_COMMITTED, ownerClassName, incoming,null);
-				}
-    		}
-    	}      
-        
-        /*
-		 * Pass the original uuid to interceptor: this will prevent the change
-		 * from being sent back to originating server the technique used here is
-		 * to simply fire an update to 'fake' global property which will be then
-		 * made on the same transaction that the real commit will come on.
-		 * Interceptor code is watching for this update. For more info see
-		 * HibernateSyncInterceptor.setOriginalUuid()
-		 */
-		Context.getService(SyncService.class).setGlobalProperty(
-				SyncConstants.PROPERTY_ORIGINAL_UUID, originalUuid);
-        
-
-        //assign collection back to the owner if it is recreated
-        if (needsRecreate) {
-        	SyncUtil.setProperty(owner,ownerCollectionPropertyName,entries);
-        }
-        
-        //finally, trigger update
-        try {
-        	//no need to mess around with precommit actions for collections, at least
-        	//at this point
-            SyncUtil.updateOpenmrsObject(owner, ownerClassName, ownerUuid,null);
-        } catch ( Exception e ) {
-        	log.error("Unexpected exception occurred while processing hibernate collections", e);
-            throw new SyncIngestException(SyncConstants.ERROR_ITEM_NOT_COMMITTED, ownerClassName, incoming,null);
-        }
     }
 
     /**

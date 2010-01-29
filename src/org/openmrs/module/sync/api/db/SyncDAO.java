@@ -14,20 +14,31 @@
 package org.openmrs.module.sync.api.db;
 
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.APIException;
+import org.openmrs.api.context.Context;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.sync.SyncClass;
+import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
+import org.openmrs.module.sync.SyncUtil;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
+import org.openmrs.module.sync.ingest.SyncIngestException;
 import org.openmrs.module.sync.server.RemoteServer;
+import org.openmrs.util.OpenmrsUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * Synchronization related database functions
@@ -349,4 +360,22 @@ public interface SyncDAO {
 	 */
 	public <T extends OpenmrsObject> String getUuidForOpenmrsObject(Class<T> clazz, String id);
 	
+	 /**
+     * Processes the serializes state of a collection.
+     * <p>(This typically handles two types of hibernate collections: PersistentSortedSet and PersistentSet.)
+     * </br>
+     * Processing of collections is handled as follows based on the serialized info stored in incoming:
+     * <p>1. Pull out owner info, and collection action (i.e. update, recreate). 
+     * Attempt to create instance of the owner using openmrs API and retrieve the reference 
+     * to the existing collection that is associated with the owner.
+     * <br/>2. Iterate owner serialized entries and process actions (i.e entry update, delete)
+     * <br/>3. Record the original uuid using owner finally, trigger owner update using openmrs api
+     * <br/>For algorithmic details, see code comments as the implementation is extensively commented.
+     * 
+     * @param type collection type.
+     * @param incoming serialized state, interceptor implementation for serialization details
+     * @param originalUuid unique uuid assigned to this update that will be propagated throughout the synchronization to avoid
+     * duplicating this change
+     */
+    public void processCollection(Class collectionType, String incoming, String originalUuid) throws Exception;
 }

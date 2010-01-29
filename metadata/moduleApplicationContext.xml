@@ -90,7 +90,7 @@
 				<bean class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
 					<property name="transactionManager"><ref bean="transactionManager"/></property>
 					<property name="target">
-						<bean class="@MODULE_PACKAGE@.api.impl.SyncIngestServiceImpl" />
+						<bean class="@MODULE_PACKAGE@.api.impl.SyncIngestServiceImpl" autowire="byType" />
 					</property>
 					<property name="preInterceptors">
 						<ref bean="serviceInterceptors"/>
