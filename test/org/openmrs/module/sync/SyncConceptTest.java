@@ -436,4 +436,34 @@ public class SyncConceptTest extends SyncBaseTest {
 			}
 		});
 	}
+	
+	@Test
+	@NotTransactional
+	public void shouldUpdateConceptWordsForNewConcepts() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			
+			ConceptService cs = Context.getConceptService();
+			
+			String conceptname = "THENEWCONCEPT";
+			
+			public void runOnChild() {
+				Concept newConcept = new Concept();
+				newConcept.addName(new ConceptName(conceptname, Context.getLocale()));
+				cs.saveConcept(newConcept);
+			}
+			
+			public void runOnParent() {
+				Concept wt = cs.getConceptByName(conceptname);
+				List<ConceptWord> words = cs.getConceptWords(conceptname, Context.getLocale());
+				boolean foundConcept = false;
+				for (ConceptWord word : words) {
+					if (word.getConcept().equals(wt)) {
+						foundConcept = true;
+					}
+				}
+				
+				assertTrue("The new concept's name was not found in the concept words", foundConcept);
+			}
+		});
+	}
 }

@@ -234,6 +234,7 @@ public class SyncUtil {
 		}
 		
 		// TODO: Speed up sync by passing in a Map of String fieldNames instead of list of Fields ? 
+		// TODO: Speed up sync by returning after "o" is first set?  Or are we doing "last field wins" ?
 		for ( Field f : allFields ) {
 			//log.debug("field is " + f.getName());
 			if ( f.getName().equals(fieldName) ) {
@@ -531,14 +532,15 @@ public class SyncUtil {
     	else if ("org.openmrs.ConceptName".equals(className)) {
     		if (preCommitRecordActions != null && o != null) {
     			Concept c = ((ConceptName)o).getConcept();
+    			c.addName((ConceptName)o);
     			preCommitRecordActions.add(new SyncPreCommitAction(SyncPreCommitAction.PreCommitActionName.UPDATECONCEPTWORDS, c));
     		}
     	}
-    	else if (Concept.class.isAssignableFrom(o.getClass())) {
-    		if (preCommitRecordActions != null && o != null) {
-    			preCommitRecordActions.add(new SyncPreCommitAction(SyncPreCommitAction.PreCommitActionName.UPDATECONCEPTWORDS, o));
-    		}
-    	}
+//    	else if (Concept.class.isAssignableFrom(o.getClass())) {
+//    		if (preCommitRecordActions != null && o != null) {
+//    			preCommitRecordActions.add(new SyncPreCommitAction(SyncPreCommitAction.PreCommitActionName.UPDATECONCEPTWORDS, o));
+//    		}
+//    	}
     	// if an obs comes through with a non-null voidReason, make sure we change it back to using a PK
     	else if ("org.openmrs.Obs".equals(className)) {
     		if (preCommitRecordActions != null && o != null) {

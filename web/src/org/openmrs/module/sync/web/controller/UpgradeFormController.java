@@ -50,14 +50,13 @@ public class UpgradeFormController {
 		// only make 1.5.* an option if running at least 1.6.0
 		if (ModuleUtil.compareVersion(OpenmrsConstants.OPENMRS_VERSION_SHORT, "1.6.0") >= 0) {
 			fromOptions.add("1.5.*");
-			fromOptions.add("1.6.*");
 		}
 		
 		modelMap.put("fromOptions", fromOptions);
 	}
 	
 	/**
-	 * A user has hit the submit button and
+	 * A user has hit the submit button and we are now printing out the sql to be used on the child db
 	 * 
 	 * @param response the http response
 	 * @param session the current http session
@@ -98,10 +97,10 @@ public class UpgradeFormController {
 	 * @param writer
 	 */
 	private void printUserUuidAdditions(PrintWriter writer) {
-		writer.println("--Setting uuids on Users table for 1.5.* database upgrade to 1.6.0 database");
-		writer.println("--This should be run on the child database BEFORE upgrading it to 1.6.0");
-		writer.println("--The command to run this file is: mysql -u -p -e\"source thisfilename.sql\" openmrs  (Assuming openmrs is the name of your database)");
-		writer.println("--");
+		writer.println("-- Setting uuids on Users table for 1.5.* database upgrade to 1.6.0 database");
+		writer.println("-- This should be run on the child database BEFORE upgrading it to 1.6.0");
+		writer.println("-- The command to run this file is: mysql -u -p -e\"source thisfilename.sql\" openmrs  (Assuming openmrs is the name of your database)");
+		writer.println("");
 		writer.println("ALTER TABLE users ADD uuid CHAR(38);");
 		
 		for (User u : Context.getUserService().getAllUsers()) {
