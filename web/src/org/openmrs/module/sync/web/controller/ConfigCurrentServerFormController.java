@@ -22,10 +22,13 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.APIAuthenticationException;
+import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncClass;
+import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.web.WebConstants;
 import org.springframework.stereotype.Controller;
@@ -56,6 +59,8 @@ public class ConfigCurrentServerFormController {
 	protected String onSaveSettings(@RequestParam("serverName") String serverName,
 	                                @RequestParam("serverUuid") String serverUuid,
 	                                @RequestParam(value = "serverAdminEmail", required = false) String serverAdminEmail,
+	                                @RequestParam(value = "maxPageRecords", required = false) Integer maxPageRecords,
+	                                @RequestParam(value = "maxRetryCount", required = false) Integer maxRetryCount,
 	                                HttpSession httpSession) throws Exception {
 		
 		log.debug("in onSave for current server");
@@ -67,6 +72,24 @@ public class ConfigCurrentServerFormController {
 		syncService.saveServerName(serverName);
 		syncService.saveServerUuid(serverUuid);
 		syncService.saveAdminEmail(serverAdminEmail);
+		
+		// save global property settings
+		AdministrationService as = Context.getAdministrationService();
+		if (maxRetryCount != null) {
+			GlobalProperty gp = as.getGlobalPropertyObject(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT);
+			if (!maxRetryCount.toString().equals(gp.getPropertyValue())) {
+				gp.setPropertyValue(maxRetryCount.toString());
+				as.saveGlobalProperty(gp);
+			}
+		}
+		
+		if (maxPageRecords != null) {
+			GlobalProperty gp = as.getGlobalPropertyObject(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS);
+			if (!maxPageRecords.toString().equals(gp.getPropertyValue())) {
+				gp.setPropertyValue(maxPageRecords.toString());
+				as.saveGlobalProperty(gp);
+			}
+		}
 		
 		httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.config.current.settingsSaved");
 		
@@ -184,6 +207,8 @@ public class ConfigCurrentServerFormController {
 		
 		if (Context.isAuthenticated()) {
 			SyncService syncService = Context.getService(SyncService.class);
+			AdministrationService as = Context.getAdministrationService();
+			
 			// this is how the old controller got the server uuid
 			//SyncSource source = new SyncSourceJournal();
 			//obj.put("localServerUuid", source.getSyncSourceUuid());
@@ -191,7 +216,9 @@ public class ConfigCurrentServerFormController {
 			modelMap.put("localServerUuid", syncService.getServerUuid());
 			modelMap.put("localServerName", syncService.getServerName());
 			modelMap.put("localServerAdminEmail", syncService.getAdminEmail());
-			
+			modelMap.put("maxPageRecords", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS, SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT_DEFAULT));
+			modelMap.put("maxRetryCount", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT, SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT_DEFAULT));
+
 			// advanced section
 			
 			// default classes

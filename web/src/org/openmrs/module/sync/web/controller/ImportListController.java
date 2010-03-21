@@ -14,7 +14,9 @@
 package org.openmrs.module.sync.web.controller;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.Date;
 
 import javax.servlet.ServletException;
@@ -207,6 +209,20 @@ public class ImportListController extends SimpleFormController {
 	    	this.sendResponse(str, isUpload, response);
         	return null;	            
 		}
+        
+        if (SyncConstants.CLONE_MESSAGE.equals(contents)) {
+			try {
+				log.info("CLONE MESSAGE RECEIVED, TRYING TO CLONE THE DB");
+				String fileName = Context.getService(SyncService.class).generateDataFile();
+				StringWriter writer = new StringWriter();
+				IOUtils.copy(new FileInputStream(fileName), writer);
+				this.sendCloneResponse(writer.toString(), response, false);
+			} catch (Exception ex) {
+				log.warn(ex.toString());
+				ex.printStackTrace();
+			}
+			return null;
+		}
 
         /*************************************************************************************************************************
          * This is a real transmission: 
@@ -358,7 +374,36 @@ public class ImportListController extends SimpleFormController {
         InputStream in = new ByteArrayInputStream(syncRequest.getBytes());
         IOUtils.copy(in, response.getOutputStream());
 
-        return;	        	
-    	
+        return;	
     }
+    
+    private void sendCloneResponse(String content,
+	        HttpServletResponse response, boolean isUpload) throws Exception {
+
+		boolean useCompression = Boolean.parseBoolean(Context.getAdministrationService()
+		                                                     .getGlobalProperty(SyncConstants.PROPERTY_ENABLE_COMPRESSION,
+		                                                                        "true"));
+		log.debug("Global property sychronization.enable_compression = "
+		        + useCompression);
+
+		// Otherwise, all other requests are compressed and sent back to the
+		// client
+		ConnectionRequest syncRequest = new ConnectionRequest(content,
+		                                                      useCompression);
+		log.info("Compressed content length: " + syncRequest.getContentLength());
+		log.info("Compression Checksum: " + syncRequest.getChecksum());
+
+		response.setContentLength((int) syncRequest.getContentLength());
+		response.addHeader("Enable-Compression", String.valueOf(useCompression));
+		response.addHeader("Content-Checksum",
+		                   String.valueOf(syncRequest.getChecksum()));
+		response.addHeader("Content-Encoding", "gzip");
+
+		// Write compressed sync data to response
+		InputStream in = new ByteArrayInputStream(syncRequest.getBytes());
+		IOUtils.copy(in, response.getOutputStream());
+
+		return;
+
+	}
 }

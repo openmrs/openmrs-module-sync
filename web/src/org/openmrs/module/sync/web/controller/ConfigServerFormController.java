@@ -27,6 +27,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.Person;
 import org.openmrs.PersonName;
 import org.openmrs.Role;
 import org.openmrs.User;
@@ -62,7 +63,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class ConfigServerFormController {
 	
 	/** Logger for this class and subclasses */
-	protected final Log log = LogFactory.getLog(getClass());
+	protected static transient final Log log = LogFactory.getLog(ConfigServerFormController.class);
 	
 	@RequestMapping(value = "/module/sync/configServer", method = RequestMethod.POST, params = "action=saveNewChild")
 	protected String onSaveNewChild(@RequestParam String nickname, @RequestParam String uuid, @RequestParam String username,
@@ -100,14 +101,17 @@ public class ConfigServerFormController {
 		server.setUuid(uuid);
 		
 		// create a new user
-		User user = new User();
-		user.setGender(SyncConstants.DEFAULT_CHILD_SERVER_USER_GENDER);
-		user.setUsername(username);
-		
+		Person person = new Person();
+		person.setGender(SyncConstants.DEFAULT_CHILD_SERVER_USER_GENDER);
+		person.setBirthdate(new Date());
 		PersonName name = new PersonName();
 		name.setFamilyName(nickname);
 		name.setGivenName(mss.getMessage(SyncConstants.DEFAULT_CHILD_SERVER_USER_NAME));
-		user.addName(name);
+		person.addName(name);
+		Context.getPersonService().savePerson(person);
+		
+		User user = new User(person);
+		user.setUsername(username);
 		
 		String defaultRole = Context.getAdministrationService().getGlobalProperty("synchronization.default_role");
 		if (defaultRole != null) {

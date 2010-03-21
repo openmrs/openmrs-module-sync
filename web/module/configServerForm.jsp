@@ -61,12 +61,51 @@
 	
 		function testConnection() {
 			document.getElementById("testConnectionButton").disabled = true;
-			DWRUtil.setValue("testInfo", '<spring:message code="sync.config.server.connection.testing" />');
+			DWRUtil.setValue("testInfo", '<spring:message code="sync.config.server.connection.testing" />'+'<img src="${pageContext.request.contextPath}/images/connectionTest.gif" border="0" style="margin-bottom: -3px;">', { escapeHtml:false });
 			var address = DWRUtil.getValue("address");
 			var username = DWRUtil.getValue("username");
 			var password = DWRUtil.getValue("password");
 			DWRSyncService.testConnection(address, username, password, showTestResult);
 		}
+
+		function showCloneResult(result) {
+
+            var img = '<img src="${pageContext.request.contextPath}/images/error.gif" border="0" style="margin-bottom: -3px;">';
+            if ( result.connectionState == "OK" ) img = '<img src="${pageContext.request.contextPath}/images/accept.gif" border="0" style="margin-bottom: -3px;">';
+            var display = "";
+            if ( result.connectionState != "OK" )
+                display+=getMessage(result.connectionState)+" - " ;
+            if(result.errorMessage!=null)
+                display+="&nbsp;"+ "&nbsp;"+result.errorMessage;
+            display+=img;
+            DWRUtil.setValue("cloneInfo", display);
+            if ( result.connectionState == "OK" )
+                document.getElementById("cloneViaWebButton").disabled = false;
+        }
+
+        function cloneParent() {
+            document.getElementById("cloneViaWebButton").disabled = true;
+            DWRUtil.setValue("cloneInfo", "Cloning parent data ..."+'<img src="${pageContext.request.contextPath}/images/connectionTest.gif" border="0" style="margin-bottom: -3px;">', { escapeHtml:false });
+            var address = DWRUtil.getValue("address");
+            var username = DWRUtil.getValue("username");
+            var password = DWRUtil.getValue("password");
+            DWRSyncService.cloneParentDB(address, username, password, showCloneResult);
+        }
+
+        var cloneStatus='<strong><spring:message code="sync.sending.parent.clone" /></strong>';
+        function submitCloneFile(){
+            var file=DWRUtil.getValue("cloneFile");
+            if(file==null || file==''){
+                DWRUtil.setValue("cloneInfo","<span style='color:red;'><b>Please select a file to upload</b></span>", { escapeHtml:false });
+                return false;
+            }
+            DWRUtil.setValue("cloneInfo",cloneStatus+'&nbsp;&nbsp;<img src="${pageContext.request.contextPath}/images/connectionTest.gif" border="0" style="margin-bottom: -3px;">', { escapeHtml:false });
+            return true;
+        }
+        function showUploadResponse(str,color){
+            DWRUtil.setValue("cloneInfo","<span style='color:"+color+";'><b>"+str+"</b></span>", { escapeHtml:false });
+            DWRUtil.setValue("cloneFile","");
+        }
 
 		function addNewClass(idAndName) {
 			var userInputNode = document.getElementById(idAndName);
@@ -260,6 +299,13 @@
 					</tr>
 				</c:if>
 				<tr>
+					<td align="right" valign="top"><b><spring:message code="sync.settings.server.clone.down.backup" /></b></td>
+					<td align="left" valign="top"><input type="button"
+						onClick="document.location='${pageContext.request.contextPath}/ms/sync/createChildServlet';"
+						value="<spring:message code="sync.settings.server.clone.down" />" />
+					<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.settings.server.clone.down.backup.help" /></span></i></td>
+				</tr>
+				<tr>
 					<td align="right">
 						<a href="javascript://" onclick="showHideDiv('details');"><spring:message code="sync.general.showHideMoreOptions" /></a>
 					</td>
@@ -353,9 +399,64 @@
 				</tr>
 			</table>
 		</div>
-	
-		
 	</form>
+
+<table>
+<tr>
+<td>
+<iframe id="uploadFrameID" name="uploadFrame" height="0" width="0"
+				frameborder="0" scrolling="yes"><spring:message
+				code="sync.sending.parent.clone" /></iframe>
+			<form method="post" target="uploadFrame"
+				enctype="multipart/form-data" onSubmit="return submitCloneFile();"
+				action="${pageContext.request.contextPath}/synchronizationCreateChildServlet">
+			<div class="syncSmallBox">
+			<div class="syncSmallTitle"><spring:message
+				code="sync.settings.server.clone.restore" /></div>
+			<table width="100%" border="0" align="center" cellpadding="5" cellspacing="0">
+				<tr bgcolor="#DFEFF4">
+					<td><input name="cloneRadioGroup" type="radio" value="radio"
+						checked="true" id="cloneViaWebRadio"
+						onchange="disableInput('cloneFile');disableInput('cloneViaFileButton');enableInput('cloneViaWebButton');" />
+					<b><spring:message
+						code="sync.settings.server.clone.parent.web" /></b></td>
+					<td><input type="button" name="cloneViaWebButton"
+						id="cloneViaWebButton" onClick="cloneParent();"
+						value="<spring:message
+                                                       code="sync.settings.server.clone.now" />" />
+					<span style="color: #555555;"> <spring:message
+						code="sync.settings.server.clone.expl" /> </span></td>
+				</tr>
+				<tr bgcolor="#F4ECB9">
+					<td><input name="cloneRadioGroup" type="radio" value="radio"
+						id="cloneViaWebRadio"
+						onchange="disableInput('cloneViaWebButton');enableInput('cloneFile');enableInput('cloneViaFileButton');" />
+					<b><spring:message
+						code="sync.settings.server.clone.parent.file" /></b></td>
+					<td><input id="cloneFile" disabled="true" name="cloneFile"
+						type="file" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input
+						type="submit" disabled="true" id="cloneViaFileButton"
+						name="cloneViaFileButton"
+						value="<spring:message
+                                            code="sync.settings.server.clone.upload" />" /></td>
+				</tr>
+				<tr>
+					<td>&nbsp;&nbsp;</td>
+					<td align="left">
+					<div id="cloneInfo">&nbsp;&nbsp;</div>
+					</td>
+				</tr>
+			</table>
+			</div>
+			</form>
+			</td>
+			<td width="30%" valign="top">
+			<div class="syncInfoBox"><spring:message
+				code="sync.settings.server.clone.notes" /></div>
+			</td>
+		</tr>
+	</table>	
+	
 </div>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>

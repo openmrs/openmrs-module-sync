@@ -17,7 +17,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Assert;
 import org.junit.Test;
+import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.springframework.mock.web.MockHttpSession;
@@ -35,6 +37,7 @@ public class ConfigCurrentServerFormControllerTest extends BaseModuleContextSens
 	@Test
 	public void shouldSaveCurrentServerSettings() throws Exception {
 		SyncService syncService = Context.getService(SyncService.class);
+		AdministrationService as = Context.getAdministrationService();
 		
 		// sanity check
 		Assert.assertNotSame("new server name", syncService.getServerName());
@@ -43,11 +46,13 @@ public class ConfigCurrentServerFormControllerTest extends BaseModuleContextSens
 		
 		ConfigCurrentServerFormController controller = new ConfigCurrentServerFormController();
 		
-		controller.onSaveSettings("new server name", "some uuid", "the server email address", new MockHttpSession());
+		controller.onSaveSettings("new server name", "some uuid", "the server email address", 98, 99, new MockHttpSession());
 		
 		Assert.assertNotNull(syncService.getServerName());
 		Assert.assertNotNull(syncService.getServerUuid());
 		Assert.assertNotNull(syncService.getAdminEmail());
+		Assert.assertEquals(98, as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS));
+		Assert.assertEquals(99, as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT));
 	}
 	
 }

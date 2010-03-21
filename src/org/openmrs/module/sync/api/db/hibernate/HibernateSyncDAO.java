@@ -13,10 +13,14 @@
  */
 package org.openmrs.module.sync.api.db.hibernate;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.lang.reflect.Method;
 import java.sql.Blob;
 import java.sql.Connection;
@@ -26,11 +30,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -62,6 +68,7 @@ import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -548,213 +555,6 @@ public class HibernateSyncDAO implements SyncDAO {
     }
 
     /**
-     * @see org.openmrs.module.sync.api.db.SyncDAO#createDatabaseForChild(java.lang.String, java.io.Writer)
-     * NOTE: THIS IS WORK IN PROGRESS *DO NOT* USE
-     */
-    @Deprecated
-    public void createDatabaseForChild(String uuidForChild, OutputStream os) throws DAOException {
-        PrintStream out = new PrintStream(os);
-        Set<String> tablesToSkip = new HashSet<String>();
-        {
-            tablesToSkip.add("hl7_in_archive");
-            tablesToSkip.add("hl7_in_queue");
-            tablesToSkip.add("hl7_in_error");
-            tablesToSkip.add("formentry_archive");
-            tablesToSkip.add("formentry_queue");
-            tablesToSkip.add("formentry_error");
-            // TODO: figure out which other tables to skip
-            tablesToSkip.add("obs");
-            tablesToSkip.add("concept");
-            tablesToSkip.add("patient");
-        }
-        List<String> tablesToDump = new ArrayList<String>();
-        Session session = sessionFactory.getCurrentSession();
-        
-        String schema = (String) session.createSQLQuery("SELECT schema()").uniqueResult();
-        log.warn("schema: " + schema);
-        
-        { // Get all tables that we'll need to dump
-            Query query = session.createSQLQuery("SELECT tabs.table_name FROM INFORMATION_SCHEMA.TABLES tabs WHERE tabs.table_schema = '" + schema + "'");
-            for (Object tn : query.list()) {
-                String tableName = (String) tn;
-                if (!tablesToSkip.contains(tableName.toLowerCase()))
-                    tablesToDump.add(tableName);
-            }
-        }
-        log.warn("tables to dump: " + tablesToDump);
-        
-        String thisServerUuid = getGlobalProperty(SyncConstants.PROPERTY_SERVER_UUID);
-       
-        { // write a header
-            out.println("-- ------------------------------------------------------");
-            out.println("-- Database dump to create an openmrs child server");
-            out.println("-- Schema: " + schema);
-            out.println("-- Parent UUID: " + thisServerUuid);
-            out.println("-- Parent version: " + OpenmrsConstants.OPENMRS_VERSION);
-            out.println("-- ------------------------------------------------------");
-            out.println("");
-            out.println("/*!40101 SET NAMES utf8 */;");
-            out.println("/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;");
-            out.println("/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;");
-            out.println("");
-        }
-        try {
-            //Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/" + schema, "test", "test");
-        	Connection conn = sessionFactory.getCurrentSession().connection();
-            try {
-                Statement st = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
-                
-                // Get the create database statement
-                ResultSet rs = st.executeQuery("SHOW CREATE DATABASE " + schema);
-                while (rs.next())
-                    out.println(rs.getString("Create Database") + ";");
-                
-                for (String tableName : tablesToDump) {
-                    out.println();
-                    out.println("--");
-                    out.println("-- Table structure for table `" + tableName + "`");
-                    out.println("--");
-                    out.println("DROP TABLE IF EXISTS `" + tableName + "`");
-                    
-                    rs = st.executeQuery("SHOW CREATE TABLE " + tableName);
-                    while (rs.next())
-                        out.println(rs.getString("Create Table") + ";");
-                    out.println();
-                    
-                    if (session.createSQLQuery("select count(*) from " + tableName).uniqueResult().toString().equals("0")) {
-                        out.println("-- `" + tableName + "` has no data");
-                    } else {
-                        out.println("-- Dumping data for table `" + tableName + "`");
-                        out.println("LOCK TABLES `" + tableName + "` WRITE;");
-                        out.println("/*!40000 ALTER TABLE `" + tableName + "` DISABLE KEYS */;");
-                        boolean first = true;
-                        out.println("INSERT INTO `" + tableName + "` VALUES ");
-                        
-                        rs = st.executeQuery("select * from " + tableName);
-                        ResultSetMetaData md = rs.getMetaData();
-                        int numColumns = md.getColumnCount();
-                        int rowNum = 0;
-                        while (rs.next()) {
-                            ++rowNum;
-                            if (first)
-                                first = false;
-                            else
-                                out.print(", ");
-                            if (rowNum % 20 == 0)
-                                out.println();
-                            out.print("(");
-                            for (int i = 1; i <= numColumns; ++i) {
-                                if (i != 1)
-                                    out.print(", ");
-                                if (rs.getObject(i) == null)
-                                    out.print("NULL");
-                                else {
-                                    switch (md.getColumnType(i)) {
-                                    case Types.VARCHAR:
-                                    case Types.CHAR:
-                                    case Types.LONGVARCHAR:
-                                        out.print("'");
-                                        out.print(rs.getString(i).replaceAll("\n","\\\\n").replaceAll("'","\\\\'"));
-                                        out.print("'");
-                                        break;
-                                    case Types.BIGINT:
-                                    case Types.DECIMAL:
-                                    case Types.NUMERIC:
-                                        out.print(rs.getBigDecimal(i));
-                                        break;
-                                    case Types.BIT:
-                                        out.print(rs.getBoolean(i));
-                                        break;
-                                    case Types.INTEGER:
-                                    case Types.SMALLINT:
-                                    case Types.TINYINT:
-                                        out.print(rs.getInt(i));
-                                        break;
-                                    case Types.REAL:
-                                    case Types.FLOAT:
-                                    case Types.DOUBLE:
-                                        out.print(rs.getDouble(i));
-                                        break;
-                                    case Types.BLOB:
-                                    case Types.VARBINARY:
-                                    case Types.LONGVARBINARY:
-                                        Blob blob = rs.getBlob(i);
-                                        out.print("'");
-                                        InputStream in = blob.getBinaryStream();
-                                        while (true) {
-                                        	int b = in.read();
-                                        	if (b < 0)
-                                        		break;
-                                        	char c = (char) b;
-                                        	if (c == '\'')
-                                        		out.print("\'");
-                                        	else
-                                        		out.print(c);
-                                        }
-                                        out.print("'");
-                                        break;
-                                    case Types.CLOB:
-                                        //Reader r = rs.getClob(i).getCharacterStream();
-                                        out.print("'");
-                                        out.print(rs.getString(i).replaceAll("\n","\\\\n").replaceAll("'","\\\\'"));
-                                        out.print("'");
-                                        break;
-                                    case Types.DATE:
-                                        out.print("'" + rs.getDate(i) + "'");
-                                        break;
-                                    case Types.TIMESTAMP:
-                                        out.print(rs.getTimestamp(i));
-                                        break;
-                                    default:
-                                        // when it comes time to look at BLOBs, look here: http://www.wave2.org/svnweb/Wave2%20Repository/view%2Fbinarystor%2Ftrunk%2Fsrc%2Fjava%2Forg%2Fbinarystor%2Fmysql/MySQLDump.java
-                                        throw new RuntimeException("TODO: handle type code " + md.getColumnType(i) + " (name " + md.getColumnTypeName(i) + ")");
-                                    }
-                                }
-                                //out.print("'" + data[i].toString().replaceAll("\n","\\\\n").replaceAll("'","\\\\'") + "'");
-                            }
-                            out.print(")");
-                        }
-                        out.println(";");
-                        
-                        out.println("/*!40000 ALTER TABLE `" + tableName + "` ENABLE KEYS */;");
-                        out.println("UNLOCK TABLES;");
-                        out.println();
-                    }
-                }
-            } finally {
-                conn.close();
-            }
-            
-            // Now we mark this as a child
-            out.println("-- Now mark this as a child database");
-            if (uuidForChild == null)
-                uuidForChild = SyncUtil.generateUuid();
-            out.println("update global_property set property_value = '" + uuidForChild + "' where property = '" + SyncConstants.PROPERTY_SERVER_UUID + "';");
-            
-            {
-            	// TODO: Write a footer to undo the following two lines
-                // out.println("/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;");
-                // out.println("/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;");
-            	// Maybe start from this as an example: 
-            	// /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-            	// /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-            	// /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-            	// /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-            	// /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-            	// /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-            	// /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-            	// /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-            }
-            
-        } catch (IOException ex) {
-        	log.error("IOException", ex);
-        	
-        } catch (SQLException ex) {
-            log.error("SQLException", ex);
-        }
-    }
-    
-    /**
      * @see org.openmrs.module.sync.api.db.SyncDAO#deleteOpenmrsObject(org.openmrs.synchronization.OpenmrsObject)
      */
     public void deleteOpenmrsObject(OpenmrsObject o) throws DAOException {
@@ -849,7 +649,463 @@ public class HibernateSyncDAO implements SyncDAO {
 		}
 						
 		return map;
-	}	
+	}
+	
+	/*
+	 * called at Openmrs sync parent server: exports the openmrs database to a
+	 * DDL output stream for sending it back to a new child node being created
+	 */
+	public void exportChildDB(String guidForChild, OutputStream os)
+	        throws DAOException {
+		PrintStream out = new PrintStream(os);
+		Set<String> tablesToSkip = new HashSet<String>();
+		{
+			tablesToSkip.add("hl7_in_archive");
+			tablesToSkip.add("hl7_in_queue");
+			tablesToSkip.add("hl7_in_error");
+			tablesToSkip.add("formentry_archive");
+			tablesToSkip.add("formentry_queue");
+			tablesToSkip.add("formentry_error");
+			tablesToSkip.add("scheduler_task_config");
+			tablesToSkip.add("scheduler_task_config_property");
+			tablesToSkip.add("synchronization_class");
+			tablesToSkip.add("synchronization_import");
+			tablesToSkip.add("synchronization_journal");
+			tablesToSkip.add("synchronization_server");
+			tablesToSkip.add("synchronization_server_class");
+			tablesToSkip.add("synchronization_server_record");
+			// TODO: figure out which other tables to skip
+			// tablesToSkip.add("obs");
+			// tablesToSkip.add("concept");
+			// tablesToSkip.add("patient");
+		}
+		List<String> tablesToDump = new ArrayList<String>();
+		Session session = sessionFactory.getCurrentSession();
+		String schema = (String) session.createSQLQuery("SELECT schema()")
+		                                .uniqueResult();
+		log.warn("schema: " + schema);
+		// Get all tables that we'll need to dump
+		{
+			Query query = session.createSQLQuery("SELECT tabs.table_name FROM INFORMATION_SCHEMA.TABLES tabs WHERE tabs.table_schema = '"
+			        + schema + "'");
+			for (Object tn : query.list()) {
+				String tableName = (String) tn;
+				if (!tablesToSkip.contains(tableName.toLowerCase()))
+					tablesToDump.add(tableName);
+			}
+		}
+		log.warn("tables to dump: " + tablesToDump);
+
+		String thisServerGuid = getGlobalProperty(SyncConstants.PROPERTY_SERVER_UUID);
+
+		// Write the DDL Header as mysqldump does
+		{
+			out.println("-- ------------------------------------------------------");
+			out.println("-- Database dump to create an openmrs child server");
+			out.println("-- Schema: " + schema);
+			out.println("-- Parent GUID: " + thisServerGuid);
+			out.println("-- Parent version: "
+			        + OpenmrsConstants.OPENMRS_VERSION);
+			out.println("-- ------------------------------------------------------");
+			out.println("");
+			out.println("/*!40101 SET CHARACTER_SET_CLIENT=utf8 */;");
+			out.println("/*!40101 SET NAMES utf8 */;");
+			out.println("/*!40103 SET TIME_ZONE='+00:00' */;");
+			out.println("/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;");
+			out.println("/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;");
+			out.println("/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;");
+			out.println("/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;");
+			out.println("/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;");
+			out.println("/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;");
+			out.println("/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;");
+			out.println("/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;");
+			out.println("");
+		}
+		try {
+			// JDBC way of doing this
+			// Connection conn =
+			// DriverManager.getConnection("jdbc:mysql://localhost/" + schema,
+			// "test", "test");
+			Connection conn = sessionFactory.getCurrentSession().connection();
+			try {
+				Statement st = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,
+				                                    ResultSet.CONCUR_READ_ONLY);
+
+				// Get the create database statement
+				ResultSet rs = st.executeQuery("SHOW CREATE DATABASE " + schema);
+				for (String tableName : tablesToDump) {
+					out.println();
+					out.println("--");
+					out.println("-- Table structure for table `" + tableName
+					        + "`");
+					out.println("--");
+					out.println("DROP TABLE IF EXISTS `" + tableName + "`;");
+					out.println("SET @saved_cs_client     = @@character_set_client;");
+					out.println("SET character_set_client = utf8;");
+					rs = st.executeQuery("SHOW CREATE TABLE " + tableName);
+					while (rs.next()) {
+						out.println(rs.getString("Create Table") + ";");
+					}
+					out.println("SET character_set_client = @saved_cs_client;");
+					out.println();
+
+					{
+						out.println("-- Dumping data for table `" + tableName
+						        + "`");
+						out.println("LOCK TABLES `" + tableName + "` WRITE;");
+						out.println("/*!40000 ALTER TABLE `" + tableName
+						        + "` DISABLE KEYS */;");
+						boolean first = true;
+
+						rs = st.executeQuery("select * from " + tableName);
+						ResultSetMetaData md = rs.getMetaData();
+						int numColumns = md.getColumnCount();
+						int rowNum = 0;
+						boolean insert = false;
+
+						while (rs.next()) {
+							if (rowNum == 0) {
+								insert = true;
+								out.print("INSERT INTO `" + tableName
+								        + "` VALUES ");
+							}
+							++rowNum;
+							if (first) {
+								first = false;
+							} else {
+								out.print(", ");
+							}
+							if (rowNum % 20 == 0) {
+								out.println();
+							}
+							out.print("(");
+							for (int i = 1; i <= numColumns; ++i) {
+								if (i != 1) {
+									out.print(",");
+								}
+								if (rs.getObject(i) == null) {
+									out.print("NULL");
+								} else {
+									switch (md.getColumnType(i)) {
+									case Types.VARCHAR:
+									case Types.CHAR:
+									case Types.LONGVARCHAR:
+										out.print("'");
+										out.print(rs.getString(i)
+										            .replaceAll("\n", "\\\\n")
+										            .replaceAll("'", "\\\\'"));
+										out.print("'");
+										break;
+									case Types.BIGINT:
+									case Types.DECIMAL:
+									case Types.NUMERIC:
+										out.print(rs.getBigDecimal(i));
+										break;
+									case Types.BIT:
+										out.print(rs.getBoolean(i));
+										break;
+									case Types.INTEGER:
+									case Types.SMALLINT:
+									case Types.TINYINT:
+										out.print(rs.getInt(i));
+										break;
+									case Types.REAL:
+									case Types.FLOAT:
+									case Types.DOUBLE:
+										out.print(rs.getDouble(i));
+										break;
+									case Types.BLOB:
+									case Types.VARBINARY:
+									case Types.LONGVARBINARY:
+										Blob blob = rs.getBlob(i);
+										out.print("'");
+										InputStream in = blob.getBinaryStream();
+										while (true) {
+											int b = in.read();
+											if (b < 0) {
+												break;
+											}
+											char c = (char) b;
+											if (c == '\'') {
+												out.print("\'");
+											} else {
+												out.print(c);
+											}
+										}
+										out.print("'");
+										break;
+									case Types.CLOB:
+										out.print("'");
+										out.print(rs.getString(i)
+										            .replaceAll("\n", "\\\\n")
+										            .replaceAll("'", "\\\\'"));
+										out.print("'");
+										break;
+									case Types.DATE:
+										out.print("'" + rs.getDate(i) + "'");
+										break;
+									case Types.TIMESTAMP:
+										out.print("'" + rs.getTimestamp(i)
+										        + "'");
+										break;
+									default:
+										throw new RuntimeException("TODO: handle type code "
+										        + md.getColumnType(i)
+										        + " (name "
+										        + md.getColumnTypeName(i) + ")");
+									}
+								}
+							}
+							out.print(")");
+						}
+						if (insert) {
+							out.println(";");
+							insert = false;
+						}
+
+						out.println("/*!40000 ALTER TABLE `" + tableName
+						        + "` ENABLE KEYS */;");
+						out.println("UNLOCK TABLES;");
+						out.println();
+					}
+				}
+			} finally {
+				conn.close();
+			}
+
+			// Now we mark this as a child
+			out.println("-- Now mark this as a child database");
+			if (guidForChild == null)
+				guidForChild = SyncUtil.generateUuid();
+			out.println("update global_property set property_value = '"
+			        + guidForChild + "' where property = '"
+			        + SyncConstants.PROPERTY_SERVER_UUID + "';");
+
+			// Write the footer of the DDL script
+			{
+				out.println("/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;");
+				out.println("/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;");
+				out.println("/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;");
+				out.println("/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;");
+				out.println("/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;");
+				out.println("/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;");
+				out.println("/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;");
+				out.println("/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;");
+			}
+			out.flush();
+			out.close();
+		} catch (IOException ex) {
+			log.error("IOException", ex);
+
+		} catch (SQLException ex) {
+			log.error("SQLException", ex);
+		}
+	}
+
+	/*
+	 * Called at Openmrs sync child: imports the DDL backup of the parent server
+	 * from an input stream generated from the parent DB @Impl: Reads the DDL
+	 * statement line by line and updates the child DB
+	 */
+	public void importParentDB(InputStream in) {
+		try {
+			Connection conn = sessionFactory.getCurrentSession().connection();
+			Statement statement = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,
+			                                           ResultSet.CONCUR_READ_ONLY);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+			String line;
+			StringBuffer query = new StringBuffer();
+			boolean queryEnds = false;
+
+			while ((line = reader.readLine()) != null) {
+				if ((line.startsWith("#") || line.startsWith("--"))) {
+					continue;
+				}
+				queryEnds = line.endsWith(";");
+				query.append(line);
+				if (queryEnds) {
+					try {
+						statement.execute(query.toString());
+					} catch (SQLException ex) {
+						log.warn(ex);
+						ex.printStackTrace();
+					}
+					query.setLength(0);
+				}
+			}
+			in.close();
+
+		} catch (IOException ex) {
+			log.warn(ex);
+			ex.printStackTrace();
+		} catch (SQLException ex) {
+			log.warn(ex);
+			ex.printStackTrace();
+		}
+	}
+
+	public void generateDataFile(File outFile, String[] ignoreTables) {
+		// TODO totally breaks if someone isn't using mysql as the backend
+		// TODO get custom location of mysql instead of just relying on path?
+		// TODO make this linux compatible
+		String[] props = getConnectionProperties();
+		String username = props[0];
+		String password = props[1];
+		String database = props[2];
+		try {
+			if (!outFile.exists())
+				outFile.createNewFile();
+		} catch (IOException io) {
+			log.warn(io.toString());
+		}
+
+		List<String> commands = new ArrayList<String>();
+		commands.add("mysqldump");
+		commands.add("-u" + username);
+		commands.add("-p" + password);
+		commands.add("-q");
+		commands.add("-e");
+		commands.add("--single-transaction");
+		commands.add("-r");
+		commands.add(outFile.getAbsolutePath());
+		commands.add(database);
+
+		// mark the tables to ignore
+		for (String table : ignoreTables) {
+			table = table.trim();
+			if (StringUtils.hasLength(table)) {
+				commands.add("--ignore-table");
+				commands.add(database + "." + table);
+			}
+		}
+
+		String output;
+		if (OpenmrsConstants.UNIX_BASED_OPERATING_SYSTEM)
+			output = execCmd(outFile.getParentFile(),
+			                 commands.toArray(new String[] {}));
+		else
+			output = execCmd(null, commands.toArray(new String[] {}));
+
+		if (output != null && output.length() > 0) {
+			log.debug("Exec called: " + Arrays.asList(commands));
+			log.debug("Output of exec: " + output);
+		}
+
+	}
+
+	/**
+	 * Auto generated method comment
+	 * 
+	 * @return
+	 */
+	private String[] getConnectionProperties() {
+		Properties props = Context.getRuntimeProperties();
+
+		// username, password, database
+		String[] connProps = { "test", "test", "openmrs" };
+
+		String username = (String) props.get("database.username");
+		if (username == null)
+			username = (String) props.get("connection.username");
+		if (username != null)
+			connProps[0] = username;
+
+		String password = (String) props.get("database.password");
+		if (password == null)
+			password = (String) props.get("connection.password");
+		if (password != null)
+			connProps[1] = password;
+		// get database name
+		String database = "openmrs";
+		String connectionUrl = (String) props.get("connection.url");
+		if (connectionUrl == null)
+			connectionUrl = (String) props.get("connection.url");
+		if (connectionUrl != null) {
+			int qmark = connectionUrl.lastIndexOf("?");
+			int slash = connectionUrl.lastIndexOf("/");
+			database = connectionUrl.substring(slash + 1, qmark);
+			connProps[2] = database;
+		}
+
+		return connProps;
+	}
+
+	/**
+	 * 
+	 * @param cmdWithArguments
+	 * @param wd
+	 * @return
+	 */
+	private String execCmd(File wd, String[] cmdWithArguments) {
+		log.debug("executing command: " + Arrays.toString(cmdWithArguments));
+
+		StringBuffer out = new StringBuffer();
+		try {
+			Process p = (wd != null) ? Runtime.getRuntime()
+			                                  .exec(cmdWithArguments, null, wd)
+			        : Runtime.getRuntime().exec(cmdWithArguments);
+
+			out.append("Normal cmd output:\n");
+			Reader reader = new InputStreamReader(p.getInputStream());
+			BufferedReader input = new BufferedReader(reader);
+			int readChar = 0;
+			while ((readChar = input.read()) != -1) {
+				out.append((char) readChar);
+			}
+			input.close();
+			reader.close();
+
+			out.append("ErrorStream cmd output:\n");
+			reader = new InputStreamReader(p.getErrorStream());
+			input = new BufferedReader(reader);
+			readChar = 0;
+			while ((readChar = input.read()) != -1) {
+				out.append((char) readChar);
+			}
+			input.close();
+			reader.close();
+
+			Integer exitValue = p.waitFor();
+
+			log.debug("Process exit value: " + exitValue);
+
+		} catch (Exception e) {
+			log.error("Error while executing command: '" + cmdWithArguments
+			        + "'", e);
+		}
+
+		log.debug("execCmd output: \n" + out.toString());
+
+		return out.toString();
+	}
+
+	public void execGeneratedFile(File generatedDataFile) {
+		// TODO this depends on mysql being on the path
+		// TODO fix this so that queries are parsed out and run linebyline?
+
+		String[] props = getConnectionProperties();
+		String username = props[0];
+		String password = props[1];
+		String database = props[2];
+
+		String path = generatedDataFile.getAbsolutePath();
+		path = path.replace("\\", "/");
+		// replace windows file separator with
+		// forward slash
+
+		String[] commands = { "mysql", "-e", "source " + path, "-f",
+		        "-u" + username, "-p" + password, "-D" + database };
+		String output;
+		if (OpenmrsConstants.UNIX_BASED_OPERATING_SYSTEM)
+			output = execCmd(generatedDataFile.getParentFile(), commands);
+		else
+			output = execCmd(null, commands);
+
+		if (output != null && output.length() > 0) {
+			log.error("Exec call: " + Arrays.asList(commands));
+			log.error("Output of exec: " + output);
+		}
+	}
 	
 	public boolean checkUuidsForClass(Class clazz) {
 		

@@ -20,7 +20,9 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncUtil;
@@ -51,8 +53,11 @@ public class HistoryListController {
 	                        @RequestParam(value = "size", required = false) Integer size) throws Exception {
 		
 		// default the list size to 20 items
-		if (size == null)
-			size = 20;
+		if (size == null) {
+			AdministrationService as = Context.getAdministrationService();
+			String max = as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS, SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT_DEFAULT);
+			size = Integer.valueOf(max);
+		}
 		
 		log.error("Vewing history page with size: " + size);
 		

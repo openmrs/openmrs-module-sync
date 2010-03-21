@@ -31,35 +31,34 @@
 
 	<b class="boxHeader"><spring:message code="sync.config.syncStatus"/></b>
 	<div class="box">
-		<table id="syncStatus" cellpadding="10" cellspacing="0">
-			<tbody>
-				<tr>
-					<td style="font-weight: bold;"><spring:message code="sync.status.LastSync" /></td>
-					<td>
-						<c:choose>
-							<c:when test="${not empty parent}"><openmrs:formatDate date="${parent.lastSync}" format="${syncDateDisplayFormat}" /></c:when>
-						<c:otherwise>n/a, parent server not configured</c:otherwise>
-						</c:choose>
-					</td>
-				</tr>
-				<tr>
-					<td style="font-weight: bold;"><spring:message code="sync.status.LastSync.result" /></td>
-					<td>
-						<c:choose>
-						<c:when test="${not empty parent}">
+		<c:choose>
+			<c:when test="${empty parent}">
+				<spring:message code="sync.status.parent"/>
+			</c:when>
+			<c:otherwise>
+			<table id="syncStatus" cellpadding="10" cellspacing="0">
+				<tbody>
+					<tr>
+						<td style="font-weight: bold;"><spring:message code="sync.status.LastSync" /></td>
+						<td>
+							<openmrs:formatDate date="${parent.lastSync}" format="${syncDateDisplayFormat}" />
+						</td>
+					</tr>
+					<tr>
+						<td style="font-weight: bold;"><spring:message code="sync.status.LastSync.result" /></td>
+						<td>
 							<c:if test="${parent.lastSyncState != 'OK'}">
 								<span class="syncStatsWarning">${parent.lastSyncState}</span>
 							</c:if>
 							<c:if test="${parent.lastSyncState == 'OK'}">
 								<span class="syncStatsOK">${parent.lastSyncState}</span>
 							</c:if>
-						</c:when>
-						<c:otherwise>n/a, parent server not configured</c:otherwise>
-					</c:choose>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			</c:otherwise>
+		</c:choose>
 	</div>
 	
 	&nbsp;

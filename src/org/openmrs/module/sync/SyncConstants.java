@@ -29,7 +29,12 @@ public class SyncConstants {
 	public static final String DATA_IMPORT_SERVLET = "/module/sync/import.list";
 	
 	public static final String TEST_MESSAGE = "test";
-	
+
+	public static final String CLONE_MESSAGE = "clone";
+	public static final String CLONE_DOWNLOAD_MESSAGE = "clone_download";
+	public static final String CLONE_IMPORT_FILE_NAME = "db_clone_import_parent_";
+	public static final String CLONE_EXPORT_FILE_NAME = "db_clone_export_child_";
+
     public static final int CONNECTION_TIMEOUT_MS = 10000; //http connection timeout in milliseconds
 	
 	public static final SyncRecordState[] SYNC_TO_PARENT_STATES = {
@@ -88,6 +93,8 @@ public class SyncConstants {
     public static final String PROPERTY_SYNC_ADMIN_EMAIL = "sync.admin_email";
     public static final String PROPERTY_NAME_MAX_RECORDS = "sync.max_records";
     public static final String PROPERTY_NAME_MAX_RECORDS_DEFAULT = "50";
+    public static final String PROPERTY_NAME_MAX_PAGE_RECORDS = "sync.max_page_records";
+	public static final String PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT = "10";
     public static final String PROPERTY_ENABLE_COMPRESSION = "sync.enable_compression";
     public static final String PROPERTY_VERSION = "sync.version";
     public static final String PROPERTY_ORIGINAL_UUID = "synchronization.original_uuid"; //note this value is used internally by sync; see Interceptor.setOriginalUuid()
@@ -105,4 +112,6 @@ public class SyncConstants {
 
     public static final String DEFAULT_CHILD_SERVER_USER_GENDER = "M";
     public static final String DEFAULT_CHILD_SERVER_USER_NAME = "sync.config.child.user.name";
+    
+    public static final String PRIV_BACKUP_ENTIRE_DATABASE = "Backup Entire Database";
 }

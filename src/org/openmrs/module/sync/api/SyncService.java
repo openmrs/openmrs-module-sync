@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.sync.api;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
@@ -458,19 +459,6 @@ public interface SyncService {
 	public SyncClass getSyncClassByName(String className) throws APIException;
 	
 	/**
-	 * Dumps the entire database, much like what you'd get from the mysqldump command, and adds a
-	 * few lines to set the child's UUID, and delete sync history
-	 * 
-	 * @param uuidForChild if not null, use this as the uuid for the child server, otherwise
-	 *            autogenerate one
-	 * @param out write the sql here
-	 * @throws APIException
-	 */
-	//@Authorized({"Backup Entire Database"})
-	@Transactional(readOnly = true)
-	public void createDatabaseForChild(String uuidForChild, OutputStream out) throws APIException;
-	
-	/**
 	 * Deletes instance of OpenmrsObject from data storage.
 	 * 
 	 * @param o instance to delete
@@ -535,5 +523,34 @@ public interface SyncService {
 	 * @return a list of {@link OpenmrsObject}
 	 */
 	public List<Class<OpenmrsObject>> getAllOpenmrsObjects();
+	
+	/**
+	 * Dumps the entire database, much like what you'd get from the mysqldump
+	 * command, and adds a few lines to set the child's GUID, and delete sync
+	 * history
+	 * 
+	 * @param guidForChild if not null, use this as the guid for the child
+	 *        server, otherwise autogenerate one
+	 * @param out write the sql here
+	 * @throws APIException
+	 */
+	// @Authorized({"Backup Entire Database"})
+	@Transactional(readOnly = true)
+	public void exportChildDB(String guidForChild, OutputStream os)
+	        throws APIException;
 
+	/**
+	 * imports a synchronization database backup from the parent
+	 * 
+	 * @throws DAOException
+	 */
+	public void importParentDB(InputStream in) throws APIException;
+
+	/**
+	 * Dumps the entire database with the mysqldump command
+	 */
+	public String generateDataFile() throws APIException;
+
+	public void execGeneratedFile(String generatedDataFileName)
+	        throws APIException;
 }

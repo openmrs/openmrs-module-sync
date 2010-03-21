@@ -13,15 +13,28 @@
  */
 package org.openmrs.module.sync.web.dwr;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Date;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
+import org.openmrs.module.sync.SyncItem;
+import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncTransmissionState;
 import org.openmrs.module.sync.SyncUtilTransmission;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.ingest.SyncTransmissionResponse;
+import org.openmrs.module.sync.serialization.ZipPackage;
 import org.openmrs.module.sync.server.ConnectionResponse;
 import org.openmrs.module.sync.server.ServerConnection;
 import org.openmrs.module.sync.server.ServerConnectionState;
+import org.openmrs.util.OpenmrsUtil;
 
 /**
  * DWR methods used by the sync module
@@ -30,6 +43,44 @@ public class DWRSyncService {
 	
 	protected final Log log = LogFactory.getLog(getClass());
 	
+	public SyncCloneItem cloneParentDB(String address, String username,
+	        String password) {
+		SyncCloneItem item = new SyncCloneItem();
+		if (address != null && address.length() > 0) {
+			String fileName = OpenmrsUtil.getApplicationDataDirectory() + "/"
+			        + SyncConstants.CLONE_IMPORT_FILE_NAME
+			        + SyncConstants.SYNC_FILENAME_MASK.format(new Date())
+			        + ".sql";
+			ConnectionResponse connResponse = ServerConnection.cloneParentDB(address,
+			                                                                 username,
+			                                                                 password);
+			item.setConnectionState(connResponse.getState().toString());
+			item.setErrorMessage(connResponse.getErrorMessage());
+			if (ServerConnectionState.OK.equals(connResponse.getState())) {
+				byte sql[] = connResponse.getResponsePayload().getBytes();
+				try {
+					IOUtils.write(sql, new FileOutputStream(fileName));
+
+					Context.getService(SyncService.class).execGeneratedFile(fileName);
+					item.setResponsefileName(fileName);
+					item.setErrorMessage("Parent data cloned successifully");
+				} catch (FileNotFoundException e) {
+					item.setErrorMessage("Unable to save file(" + fileName
+					        + ")");
+					log.error("Unable to save file(" + fileName
+					        + ") : Error generated", e);
+				} catch (IOException e) {
+					item.setErrorMessage("Unable to save file(" + fileName
+					        + ")");
+					log.error("Unable to save file(" + fileName
+					        + ") : Error generated", e);
+				}
+			}
+		}
+
+		return item;
+	}
+
 	/**
 	 * Pings the given server with the given username/password to make sure the settings are correct
 	 * 
@@ -74,6 +125,48 @@ public class DWRSyncService {
 			return transmissionResponse;
 		}
 		
+	}
+	
+	public String getSyncItemContent(String guid, String key) {
+		String content = "";
+		Collection<SyncItem> itemList;
+		if (guid != null && guid != "" && key != null && key != "") {
+			itemList = Context.getService(SyncService.class).getSyncRecord(guid)
+			                  .getItems();
+			for (SyncItem item : itemList) {
+				if (item.getKey().getKeyValue().equals(key))
+					content = item.getContent();
+			}
+		}
+		return content;
+	}
+
+	public String setSyncItemContent(String guid, String key, String content) {
+		String ret = "Error: Not saved";
+		Collection<SyncItem> itemList;
+		if (guid != null && guid != "" && key != null && key != "") {
+			itemList = Context.getService(SyncService.class).getSyncRecord(guid)
+			                  .getItems();
+			for (SyncItem item : itemList) {
+				if (item.getKey().getKeyValue().equals(key))
+					item.setContent(content);
+			}
+			SyncRecord record = Context.getService(SyncService.class).getSyncRecord(guid);
+			record.setItems(itemList);
+			Context.getService(SyncService.class).updateSyncRecord(record);
+			ret = "Item payload saved";
+		}
+		return ret;
+	}
+
+	public boolean archiveSyncJournal(boolean clearDir) {
+		return new ZipPackage(org.openmrs.util.OpenmrsUtil.getApplicationDataDirectory(),
+		                      "journal").zip(clearDir);
+	}
+
+	public boolean archiveSyncImport(boolean clearDir) {
+		return new ZipPackage(org.openmrs.util.OpenmrsUtil.getApplicationDataDirectory(),
+		                      "import").zip(clearDir);
 	}
 	
 }

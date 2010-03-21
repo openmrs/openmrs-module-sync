@@ -44,7 +44,7 @@
 					<%--<c:forEach var="syncItem" items="${syncRecord.items}" varStatus="itemStatus">--%>
 						<tr>
 							<td valign="middle" nowrap style="background-color: #${bgStyle};">
-								<b>${recordTypes[syncRecord.uuid]}</b>
+								<b><a href="viewrecord.form?uuid=${syncRecord.uuid}">${recordTypes[syncRecord.uuid]}</a></b>
 								<c:if test="${not empty recordText[syncRecord.uuid]}">
 									(${recordText[syncRecord.uuid]})
 								</c:if>

@@ -5,7 +5,7 @@
 	<!-- Synchronization Module Properties -->
 	<id>sync</id>
 	<name>Synchronization Module</name>
-	<version>0.6</version>
+	<version>0.7</version>
 	<package>org.openmrs.module.@MODULE_ID@</package>
 	<author>Maros Cunderlik</author>
 	<description>Synchronize data between a parent and multiple child servers</description>
@@ -49,6 +49,11 @@
 		<defaultValue>5</defaultValue>
 		<description>Number of times to try to retry automatic synchronization before giving up.</description>
 	</globalProperty>
+	<globalProperty>
+		<property>sync.max_page_records</property>
+		<defaultValue>10</defaultValue>
+		<description>Number of sync items to be shown per page.</description>
+	</globalProperty>
 	
 	<dwr>
 		<allow>
@@ -56,14 +61,25 @@
 			<convert converter="bean" match="org.openmrs.module.sync.web.dwr.SyncTransmissionResponseItem"/>
 			<convert converter="bean" match="org.openmrs.module.sync.web.dwr.SyncImportRecordItem"/>
 			<convert converter="bean" match="org.openmrs.module.sync.web.dwr.SyncImportItemItem"/>
+			<convert converter="bean" match="org.openmrs.web.dwr.SyncCloneItem" />
 			
 			<create creator="new" javascript="DWRSyncService">
 				<param name="class" value="org.openmrs.module.sync.web.dwr.DWRSyncService"/>
 				<include method="testConnection"/>
 				<include method="syncToParent"/>
+				<include method="getSyncItemContent" />
+				<include method="setSyncItemContent" />
+				<include method="archiveSyncJournal" />
+				<include method="archiveSyncImport" />
+				<include method="cloneParentDB" />
 			</create>
 		</allow>
 	</dwr>
+	
+	<servlet>
+		<servlet-name>createChildServlet</servlet-name>
+		<servlet-class>org.openmrs.module.sync.web.CreateChildServlet</servlet-class>
+	</servlet>
 	
 	<messages>
 		<lang>en</lang>

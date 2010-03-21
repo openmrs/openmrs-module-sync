@@ -35,6 +35,14 @@ import org.openmrs.module.sync.SyncConstants;
 public class ServerConnection {
 
 	private static final Log log = LogFactory.getLog(ServerConnection.class);
+	
+	public static ConnectionResponse cloneParentDB(String address, String username,
+			String password) {
+		return sendExportedData(address,
+		                        username,
+		                        password,
+		                        SyncConstants.CLONE_MESSAGE);
+	}
 
 	public static ConnectionResponse test(String address, String username,
 			String password) {

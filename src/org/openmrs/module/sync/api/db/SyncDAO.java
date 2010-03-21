@@ -13,32 +13,23 @@
  */
 package org.openmrs.module.sync.api.db;
 
+import java.io.File;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Method;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.APIException;
-import org.openmrs.api.context.Context;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.sync.SyncClass;
-import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
-import org.openmrs.module.sync.SyncUtil;
-import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
-import org.openmrs.module.sync.ingest.SyncIngestException;
 import org.openmrs.module.sync.server.RemoteServer;
-import org.openmrs.util.OpenmrsUtil;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  * Synchronization related database functions
@@ -292,17 +283,6 @@ public interface SyncDAO {
 	public SyncClass getSyncClassByName(String className) throws DAOException;
 	
 	/**
-	 * Dumps the entire database, much like what you'd get from the mysqldump command, and adds a
-	 * few lines to set the child's UUID, and delete sync history
-	 * 
-	 * @param uuidForChild if not null, use this as the uuid for the child server, otherwise
-	 *            autogenerate one
-	 * @param out write the sql here
-	 * @throws DAOException
-	 */
-	public void createDatabaseForChild(String uuidForChild, OutputStream out) throws DAOException;
-	
-	/**
 	 * Deletes instance of OpenmrsObject from storage.
 	 * 
 	 * @param o instance to delete from storage
@@ -378,4 +358,28 @@ public interface SyncDAO {
      * duplicating this change
      */
     public void processCollection(Class collectionType, String incoming, String originalUuid) throws Exception;
+    
+	/**
+	 * Dumps the entire database, much like what you'd get from the mysqldump
+	 * command, and adds a few lines to set the child's GUID, and delete sync
+	 * history
+	 * 
+	 * @param guidForChild if not null, use this as the guid for the child
+	 *        server, otherwise autogenerate one
+	 * @param out write the sql here
+	 * @throws DAOException
+	 */
+	public void exportChildDB(String guidForChild, OutputStream os)
+	        throws DAOException;
+
+	/**
+	 * imports a synchronization database backup from the parent
+	 * 
+	 * @throws DAOException
+	 */
+	public void importParentDB(InputStream in) throws DAOException;
+
+	public void generateDataFile(File outFile, String[] ignoreTables);
+
+	public void execGeneratedFile(File generatedDataFile);
 }

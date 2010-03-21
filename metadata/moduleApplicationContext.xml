@@ -16,61 +16,76 @@
     <!-- The default place to look for controllers that have annotations -->
 	<context:component-scan base-package="org.openmrs.module.sync.web.controller" />
 	
-    <bean id="@MODULE_ID@UrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+    <bean id="syncUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
     	<property name="order"><value>1</value></property>
     	<property name="mappings">
             <props>
-            	<prop key="module/@MODULE_ID@/status.list">statusListController</prop>
-				<prop key="module/@MODULE_ID@/import.list">importListController</prop>
-				<prop key="module/@MODULE_ID@/config.list">configListController</prop>
-				<prop key="module/@MODULE_ID@/overview.htm">overviewController</prop>
-				<prop key="module/@MODULE_ID@/help.htm">helpController</prop>
+            	<prop key="module/sync/status.list">statusListController</prop>
+				<prop key="module/sync/import.list">importListController</prop>
+				<prop key="module/sync/config.list">configListController</prop>
+				<prop key="module/sync/overview.htm">overviewController</prop>
+				<prop key="module/sync/help.htm">helpController</prop>
+				<prop key="module/sync/statistics.list">synchronizationStatisticsListController</prop>
+				<prop key="module/sync/maintenance.form">synchronizationMaintenanceListController</prop>
+				
 	    	</props>
 		</property>
     </bean>
     
-    <bean id="statusListController" class="@MODULE_PACKAGE@.web.controller.StatusListController">
+    <bean id="statusListController" class="org.openmrs.module.sync.web.controller.StatusListController">
 		<property name="commandName"><value>statusCommandObject</value></property>
-		<property name="formView"><value>/module/@MODULE_ID@/statusList</value></property>
+		<property name="formView"><value>/module/sync/statusList</value></property>
 		<property name="successView"><value>status.list</value></property>
 	</bean>
 	
-	<bean id="importListController" class="@MODULE_PACKAGE@.web.controller.ImportListController">
+	<bean id="importListController" class="org.openmrs.module.sync.web.controller.ImportListController">
 		<property name="commandName"><value>importCommandObject</value></property>
-		<property name="formView"><value>/module/@MODULE_ID@/importList</value></property>
+		<property name="formView"><value>/module/sync/importList</value></property>
 		<property name="successView"><value>import.list</value></property>
 	</bean>
 
-	<bean id="configListController" class="@MODULE_PACKAGE@.web.controller.ConfigListController">
+	<bean id="configListController" class="org.openmrs.module.sync.web.controller.ConfigListController">
 		<property name="commandName"><value>configListBackingObject</value></property>
-		<property name="formView"><value>/module/@MODULE_ID@/configList</value></property>
+		<property name="formView"><value>/module/sync/configList</value></property>
 		<property name="successView"><value>config.list</value></property>
 	</bean>
 
-	<bean id="overviewController" class="@MODULE_PACKAGE@.web.controller.OverviewController">
+	<bean id="overviewController" class="org.openmrs.module.sync.web.controller.OverviewController">
 		<property name="commandName"><value>commandObject</value></property>
-		<property name="formView"><value>/module/@MODULE_ID@/overview</value></property>
+		<property name="formView"><value>/module/sync/overview</value></property>
 		<property name="successView"><value>overview.htm</value></property>
 	</bean>
 
-	<bean id="helpController" class="@MODULE_PACKAGE@.web.controller.HelpController">
+	<bean id="helpController" class="org.openmrs.module.sync.web.controller.HelpController">
 		<property name="commandName"><value>parentServer</value></property>
-		<property name="formView"><value>/module/@MODULE_ID@/help</value></property>
+		<property name="formView"><value>/module/sync/help</value></property>
 		<property name="successView"><value>help.htm</value></property>
 	</bean>
+	
+	<bean id="synchronizationStatisticsListController"  class="org.openmrs.module.sync.web.controller.StatisticsController">
+		<property name="commandName"><value>syncStat</value></property>
+		<property name="formView"><value>/module/sync/statistics</value></property>
+		<property name="successView"><value>statistics.list</value></property>
+	</bean>
+	
+	<bean id="synchronizationMaintenanceListController"  class="org.openmrs.module.sync.web.controller.MaintenanceController">
+		<property name="commandName"><value>synchronizationMaintenanceList</value></property>
+		<property name="formView"><value>/module/sync/maintenance</value></property>
+		<property name="successView"><value>maintenance.form</value></property>
+	</bean>
 
-	<bean class="@MODULE_PACKAGE@.api.db.hibernate.HibernateSyncDAO">
+	<bean id="syncDAO" class="org.openmrs.module.sync.api.db.hibernate.HibernateSyncDAO">
 		<property name="sessionFactory"><ref bean="sessionFactory"/></property>	
 	</bean>
 	
 	<bean parent="serviceContext">
 		<property name="moduleService">
 			<list>
-				<value>@MODULE_PACKAGE@.api.SyncService</value> <!-- service interface name -->
+				<value>org.openmrs.module.sync.api.SyncService</value> <!-- service interface name -->
 				<bean class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
 					<property name="transactionManager"><ref bean="transactionManager"/></property>
 					<property name="target">
-						<bean class="@MODULE_PACKAGE@.api.impl.SyncServiceImpl" autowire="byType" />
+						<bean class="org.openmrs.module.sync.api.impl.SyncServiceImpl" autowire="byType" />
 					</property>
 					<property name="preInterceptors">
 						<ref bean="serviceInterceptors"/>
@@ -86,11 +101,11 @@
 	<bean parent="serviceContext">
 		<property name="moduleService">
 			<list>
-				<value>@MODULE_PACKAGE@.api.SyncIngestService</value> <!-- service interface name -->
+				<value>org.openmrs.module.sync.api.SyncIngestService</value> <!-- service interface name -->
 				<bean class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
 					<property name="transactionManager"><ref bean="transactionManager"/></property>
 					<property name="target">
-						<bean class="@MODULE_PACKAGE@.api.impl.SyncIngestServiceImpl" autowire="byType" />
+						<bean class="org.openmrs.module.sync.api.impl.SyncIngestServiceImpl" autowire="byType" />
 					</property>
 					<property name="preInterceptors">
 						<ref bean="serviceInterceptors"/>

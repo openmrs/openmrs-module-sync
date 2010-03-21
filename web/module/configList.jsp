@@ -104,7 +104,7 @@
 								<td style="background-color: #${bgStyleWebMan}; text-align:center;">
 									<c:choose>
 										<c:when test="${server.serverType == 'CHILD'}">
-											-
+											<span title="<spring:message code='sync.config.server.na.childWebSyncNotApplicable'/>"><spring:message code="sync.config.server.na"/></span>
 										</c:when>
 										<c:otherwise>
 											<a href="status.list?mode=SEND_WEB">
@@ -116,7 +116,7 @@
 								<td style="background-color: #${bgStyleWebAuto}; text-align:center;">
 									<c:choose>
 										<c:when test="${server.serverType == 'CHILD'}">
-											-
+											<span title="<spring:message code='sync.config.server.na.childWebSyncNotApplicable'/>"><spring:message code="sync.config.server.na"/></span>
 										</c:when>
 										<c:otherwise>
 											<c:if test="${parentSchedule.started == false}">

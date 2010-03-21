@@ -75,6 +75,16 @@
 					<td><spring:message code="sync.config.advanced.serverAdminEmail.info" /></td>
 				</tr>
 				<tr>
+					<td align="right" nowrap><b><spring:message code="sync.config.advanced.maxPageRecords" /></b></td>
+					<td><input type="text" size="6" name="maxPageRecords" id="maxPageRecords" value="${maxPageRecords}" /></td>
+					<td><spring:message code="sync.config.advanced.maxPageRecords.info" /></td>
+				</tr>
+				<tr>
+					<td align="right" nowrap><b><spring:message code="sync.config.advanced.maxRetryCount" /></b></td>
+					<td><input type="text" size="6" name="maxRetryCount" id="maxRetryCount" value="${maxRetryCount}" /></td>
+					<td><spring:message code="sync.config.advanced.maxRetryCount.info" /></td>
+				</tr>
+				<tr>
 					<td></td>
 					<td>
 						<input type="submit" value="<spring:message code="general.save" />" />

@@ -13,6 +13,8 @@
  */
 package org.openmrs.module.sync.api.impl;
 
+import java.io.File;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -456,13 +458,6 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
-	 * @see org.openmrs.api.SyncService#createDatabaseForChild(java.lang.String, java.io.Writer)
-	 */
-	public void createDatabaseForChild(String uuidForChild, OutputStream out) throws APIException {
-		getSynchronizationDAO().createDatabaseForChild(uuidForChild, out);
-	}
-	
-	/**
 	 * @see org.openmrs.api.SyncService#deleteOpenmrsObject(org.openmrs.synchronization.OpenmrsObject)
 	 */
 	public void deleteOpenmrsObject(OpenmrsObject o) throws APIException {
@@ -566,5 +561,49 @@ public class SyncServiceImpl implements SyncService {
 	public <T extends OpenmrsObject> T getOpenmrsObjectByUuid(Class<T> clazz, String uuid) {
 		return dao.getOpenmrsObjectByUuid(clazz, uuid);
 	}
+	
 
+	/**
+	 * @see org.openmrs.api.SynchronizationService#exportChildDB(java.lang.String,
+	 *      java.io.OutputStream)
+	 */
+	public void exportChildDB(String guidForChild, OutputStream os)
+	        throws APIException {
+		getSynchronizationDAO().exportChildDB(guidForChild, os);
+	}
+
+	/**
+	 * @see org.openmrs.api.SynchronizationService#importParentDB(java.io.InputStream)
+	 */
+	public void importParentDB(InputStream in) throws APIException {
+		getSynchronizationDAO().importParentDB(in);
+		//Delete any data kept into sync journal after clone of the parent DB
+		for (SyncRecord record : this.getSynchronizationDAO().getSyncRecords()) {
+			this.getSynchronizationDAO().deleteSyncRecord(record);
+		}
+	}
+
+	public String generateDataFile() throws APIException {
+		String fileName = OpenmrsUtil.getApplicationDataDirectory() + "/"
+		        + SyncConstants.CLONE_IMPORT_FILE_NAME
+		        + SyncConstants.SYNC_FILENAME_MASK.format(new Date()) + ".sql";
+		String[] ignoreTables = { "hl7_in_archive", "hl7_in_queue",
+		        "hl7_in_error", "formentry_archive", "formentry_queue",
+		        "formentry_error", "scheduler_task_config",
+		        "scheduler_task_config_property", "synchronization_class",
+		        "synchronization_import", "synchronization_journal",
+		        "synchronization_server", "synchronization_server_class",
+		        "synchronization_server_record" };
+		getSynchronizationDAO().generateDataFile(new File(fileName),
+		                                         ignoreTables);
+		return fileName;
+	}
+
+	public void execGeneratedFile(String fileName) throws APIException {
+		getSynchronizationDAO().execGeneratedFile(new File(fileName));
+		//Delete any data kept into sync journal after clone of the parent DB
+		for (SyncRecord record : this.getSynchronizationDAO().getSyncRecords()) {
+			this.getSynchronizationDAO().deleteSyncRecord(record);
+		}
+	}
 }
