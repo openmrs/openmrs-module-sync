@@ -192,8 +192,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 */
 	@Override
 	public void afterTransactionBegin(Transaction tx) {
-		if (log.isDebugEnabled())
-			log.debug("afterTransactionBegin: " + tx + " deactivated: "
+		if (log.isTraceEnabled())
+			log.trace("afterTransactionBegin: " + tx + " deactivated: "
 			        + deactivated.get());
 
 		if (syncRecordHolder.get() != null) {
@@ -261,8 +261,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 				} else {
 					// note: this will happen all the time with read-only
 					// transactions
-					if (log.isDebugEnabled())
-						log.debug("No SyncItems in SyncRecord, save discarded (note: maybe a read-only transaction)!");
+					if (log.isTraceEnabled())
+						log.trace("No SyncItems in SyncRecord, save discarded (note: maybe a read-only transaction)!");
 				}
 			}
 		} catch (Exception ex) {
@@ -291,8 +291,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 */
 	@Override
 	public void afterTransactionCompletion(Transaction tx) {
-		if (log.isDebugEnabled())
-			log.debug("afterTransactionCompletion: " + tx + " committed: "
+		if (log.isTraceEnabled())
+			log.trace("afterTransactionCompletion: " + tx + " committed: "
 			        + tx.wasCommitted() + " rolledback: " + tx.wasRolledBack()
 			        + " deactivated: " + deactivated.get());
 

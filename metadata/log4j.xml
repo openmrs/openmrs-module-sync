@@ -11,7 +11,7 @@
 	</appender>
  	
 	<logger name="org.openmrs.module.sync" additivity="false">
-		<level value="DEBUG" />
+		<level value="WARN" />
 		<appender-ref ref="SYNC_CONSOLE" />
 	</logger>
  		

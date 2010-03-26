@@ -107,7 +107,7 @@ public class SyncServiceImpl implements SyncService {
 			// before creation, we need to make sure that we create matching entries for each server (server-record relationship)
 			Set<SyncServerRecord> serverRecords = record.getServerRecords();
 			if (serverRecords == null) {
-				log.warn("IN createSyncRecord(), SERVERRECORDS ARE NULL, SO SETTING DEFAULTS");
+				log.debug("IN createSyncRecord(), SERVERRECORDS ARE NULL, SO SETTING DEFAULTS");
 				serverRecords = new HashSet<SyncServerRecord>();
 				List<RemoteServer> servers = this.getRemoteServers();
 				if (servers != null) {
