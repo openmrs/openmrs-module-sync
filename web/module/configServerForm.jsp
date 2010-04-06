@@ -38,6 +38,18 @@
 			}
 		}
 		
+    function enableInput(id) {
+        var el = document.getElementById(id);
+        if ( el ) {
+            el.disabled=false;
+        }
+    }
+    function disableInput(id) {
+        var el = document.getElementById(id);
+        if ( el ) {
+            el.disabled=true;
+        }
+    }
 		function getMessage(code) {
 			<c:forEach items="${connectionState}" var="state" >
 				if ( code == "${state.key}" ) return "${state.value}";
@@ -61,7 +73,7 @@
 	
 		function testConnection() {
 			document.getElementById("testConnectionButton").disabled = true;
-			DWRUtil.setValue("testInfo", '<spring:message code="sync.config.server.connection.testing" />'+'<img src="${pageContext.request.contextPath}/images/connectionTest.gif" border="0" style="margin-bottom: -3px;">', { escapeHtml:false });
+			DWRUtil.setValue("testInfo", '<spring:message code="sync.config.server.connection.testing" />'+'<img src="${pageContext.request.contextPath}/moduleResources/sync/connectionTest.gif" border="0" style="margin-bottom: -3px;">', { escapeHtml:false });
 			var address = DWRUtil.getValue("address");
 			var username = DWRUtil.getValue("username");
 			var password = DWRUtil.getValue("password");
@@ -71,7 +83,7 @@
 		function showCloneResult(result) {
 
             var img = '<img src="${pageContext.request.contextPath}/images/error.gif" border="0" style="margin-bottom: -3px;">';
-            if ( result.connectionState == "OK" ) img = '<img src="${pageContext.request.contextPath}/images/accept.gif" border="0" style="margin-bottom: -3px;">';
+            if ( result.connectionState == "OK" ) img = '<img src="${pageContext.request.contextPath}/moduleResources/sync/accept.gif" border="0" style="margin-bottom: -3px;">';
             var display = "";
             if ( result.connectionState != "OK" )
                 display+=getMessage(result.connectionState)+" - " ;
@@ -85,7 +97,7 @@
 
         function cloneParent() {
             document.getElementById("cloneViaWebButton").disabled = true;
-            DWRUtil.setValue("cloneInfo", "Cloning parent data ..."+'<img src="${pageContext.request.contextPath}/images/connectionTest.gif" border="0" style="margin-bottom: -3px;">', { escapeHtml:false });
+            DWRUtil.setValue("cloneInfo", "Cloning parent data ..."+'<img src="${pageContext.request.contextPath}/moduleResources/sync/connectionTest.gif" border="0" style="margin-bottom: -3px;">', { escapeHtml:false });
             var address = DWRUtil.getValue("address");
             var username = DWRUtil.getValue("username");
             var password = DWRUtil.getValue("password");
@@ -99,7 +111,7 @@
                 DWRUtil.setValue("cloneInfo","<span style='color:red;'><b>Please select a file to upload</b></span>", { escapeHtml:false });
                 return false;
             }
-            DWRUtil.setValue("cloneInfo",cloneStatus+'&nbsp;&nbsp;<img src="${pageContext.request.contextPath}/images/connectionTest.gif" border="0" style="margin-bottom: -3px;">', { escapeHtml:false });
+            DWRUtil.setValue("cloneInfo",cloneStatus+'&nbsp;&nbsp;<img src="${pageContext.request.contextPath}/moduleResources/sync/connectionTest.gif" border="0" style="margin-bottom: -3px;">', { escapeHtml:false });
             return true;
         }
         function showUploadResponse(str,color){
@@ -241,6 +253,14 @@
 						</td>
 					</tr>
 					<tr><td colspan="2">&nbsp;</td></tr>
+					<tr>
+					<td align="right" valign="top"><b><spring:message code="sync.settings.server.clone.down.backup" /></b></td>
+					<td align="left" valign="top"><input type="button"
+						onClick="document.location='${pageContext.request.contextPath}/ms/sync/createChildServlet';"
+						value="<spring:message code="sync.settings.server.clone.down" />" />
+					<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.settings.server.clone.down.backup.help" /></span></i></td>
+				</tr>
+				<tr><td colspan="2">&nbsp;</td></tr>
 				</c:if>
 				<c:if test="${not (server.serverType == 'CHILD' || param.type == 'CHILD')}">
 					<!--  adding/editing a parent server -->
@@ -298,13 +318,6 @@
 						</td>
 					</tr>
 				</c:if>
-				<tr>
-					<td align="right" valign="top"><b><spring:message code="sync.settings.server.clone.down.backup" /></b></td>
-					<td align="left" valign="top"><input type="button"
-						onClick="document.location='${pageContext.request.contextPath}/ms/sync/createChildServlet';"
-						value="<spring:message code="sync.settings.server.clone.down" />" />
-					<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.settings.server.clone.down.backup.help" /></span></i></td>
-				</tr>
 				<tr>
 					<td align="right">
 						<a href="javascript://" onclick="showHideDiv('details');"><spring:message code="sync.general.showHideMoreOptions" /></a>
@@ -400,9 +413,16 @@
 			</table>
 		</div>
 	</form>
-
+<c:if test="${not (server.serverType == 'CHILD' || param.type == 'CHILD') && not empty server.serverId}">
+<br/><br/>
+<b class="boxHeader"><spring:message code="sync.config.server.clone.parent"/></b>
+<div class="box">
 <table>
 <tr>
+			<td width="45%" valign="top">
+			<div class="syncInfoBox"><spring:message
+				code="sync.settings.server.clone.notes" /></div>
+			</td>
 <td>
 <iframe id="uploadFrameID" name="uploadFrame" height="0" width="0"
 				frameborder="0" scrolling="yes"><spring:message
@@ -450,13 +470,10 @@
 			</div>
 			</form>
 			</td>
-			<td width="30%" valign="top">
-			<div class="syncInfoBox"><spring:message
-				code="sync.settings.server.clone.notes" /></div>
-			</td>
 		</tr>
 	</table>	
-	
+	</div>
+	</c:if>
 </div>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>

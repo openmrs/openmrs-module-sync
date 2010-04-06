@@ -54,18 +54,18 @@
 			root=xmlDocument.documentElement;
 			rootElt=root.nodeName;
 			cn=root.childNodes;
-			newHTML="<form id='contentForm' action='' method=''><table width='100%' border='0' cellspacing='0' cellpadding='0'>";
+			newHTML="<div style=\"padding: 0px; position: relative; border: 1px solid gray; margin: 10px;\"><form id='contentForm' action='' method=''><table width='100%' border='0' cellspacing='0' cellpadding='0'>";
 			for(i=0;i<cn.length;i++){
 				newHTML+="<tr class='syncTr' ";
 				if(i%2==0)newHTML+="bgcolor='#C4D9D9'";
 				else newHTML+="bgcolor='#E7EFEF'";
-				newHTML+="><td><strong>"+cn[i].nodeName+"</strong></td><td>"+cn[i].attributes[0].value+"</td><td height='30'><input id='field'"+i+" type='text' value='";
+				newHTML+="><td style=\"padding: 8px;\"><strong>"+cn[i].nodeName+"</strong></td><td style=\"padding: 8px;\">"+cn[i].attributes[0].value+"</td><td height='30'><input id='field'"+i+" type='text' value='";
 				if(cn[i].childNodes.length==1)
 					newHTML+=cn[i].childNodes[0].nodeValue;
 				newHTML+="' size='50' /></td></tr>";
 			}
 			newHTML+="<tr><td>&nbsp;</td><td>&nbsp;</td><td height='35' align='left' valign='bottom'><input type='button' name='saveButton' value='  Save  ' onclick='setSyncItemContent();'/></td></tr>";
-			newHTML+="</table></form>";
+			newHTML+="</table></form></div>";
 			document.getElementById("contents").innerHTML = newHTML;
 			
 		}

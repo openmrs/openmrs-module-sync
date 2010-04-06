@@ -162,9 +162,12 @@ table td#syncChangesTable,table td#syncStatus {
     position:inherit;
     background-color:#8FABC7;
     color:#FFFFFF;
-    vertical-align:top;
+    vertical-align:middle;
+    font-size:14px;
     font-weight:bold;
     text-align:left;
+    height: 25px;
+    padding: 4px;
 }
 
 .syncInfoBox{

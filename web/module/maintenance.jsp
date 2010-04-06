@@ -99,23 +99,24 @@
   </label>
   <input name="searchButton" type="submit" id="searchButton" value="Search">
 </form>
-<table width="99%" border="0" align="center" cellpadding="0"
+<c:if test="${not empty synchronizationMaintenanceList}">
+<div style="position: relative; border: 1px solid gray; margin: 10px; padding: 0px;">
+<table width="100%" border="0" align="center" cellpadding="0"
 	cellspacing="0">
-	<c:if test="${not empty synchronizationMaintenanceList}">
 	<tr bgcolor="#E1E4EA">
-		<td align="left" valign="middle"><b><spring:message
-			code="sync.control.records.type" /></b></td>
-		<td align="left" valign="middle"><b><spring:message
-			code="sync.control.records.name" /></b></td>
-		<td align="left" valign="middle"><b><spring:message
-			code="sync.control.records.action" /></b></td>
-		<td align="left" valign="middle"><b><spring:message
-			code="sync.control.records.timestamp" /></b></td>
-		<td align="left" valign="middle"><b><spring:message
-			code="sync.control.records.status" /></b></td>
-		<td align="left" valign="middle"><b><spring:message
-			code="sync.control.records.retryCount" /></b></td>
-		<td align="left" valign="middle"></td>
+		<td align="left" valign="middle" style="padding: 8px;"><b><spring:message
+			code="sync.records.type" /></b></td>
+		<td align="left" valign="middle" style="padding: 8px;"><b><spring:message
+			code="sync.records.name" /></b></td>
+		<td align="left" valign="middle" style="padding: 8px;"><b><spring:message
+			code="sync.records.action" /></b></td>
+		<td align="left" valign="middle" style="padding: 8px;"><b><spring:message
+			code="sync.records.timestamp" /></b></td>
+		<td align="left" valign="middle" style="padding: 8px;"><b><spring:message
+			code="sync.records.status" /></b></td>
+		<td align="left" valign="middle" style="padding: 8px;"><b><spring:message
+			code="sync.records.retryCount" /></b></td>
+		<td align="left" valign="middle" style="padding: 8px;"></td>
 
 	</tr>
 	
@@ -125,20 +126,20 @@
 			<tr class="syncTr" bgcolor="#${bgs}"
 				onclick="location='viewrecord.form?uuid=${syncRecord.uuid}'"
 				height="25">
-				<td align="left" valign="middle"><b><a
-					href="synchronizationViewRecord.list?guid=${syncRecord.guid}">${recordTypes[syncRecord.guid]}</a></b></td>
-				<td align="left" valign="middle"><c:if
-					test="${not empty recordText[syncRecord.guid]}">${recordText[syncRecord.guid]}</c:if>
+				<td align="left" valign="middle" style="padding: 8px;"><b><a
+					href="synchronizationViewRecord.list?uuid=${syncRecord.uuid}">${recordTypes[syncRecord.uuid]}</a></b></td>
+				<td align="left" valign="middle" style="padding: 8px;"><c:if
+					test="${not empty recordText[syncRecord.uuid]}">${recordText[syncRecord.uuid]}</c:if>
 				</td>
-				<td align="left" valign="middle"><spring:message
-					code="sync.item.state_${recordChangeType[syncRecord.guid]}" /></td>
-				<td align="left" valign="middle"><openmrs:formatDate
+				<td align="left" valign="middle" style="padding: 8px;"><spring:message
+					code="sync.item.state_${recordChangeType[syncRecord.uuid]}" /></td>
+				<td align="left" valign="middle" style="padding: 8px;"><openmrs:formatDate
 					date="${syncRecord.timestamp}" format="${syncDateDisplayFormat}" /></td>
-				<td align="left" valign="middle" id="state_${syncRecord.guid}"><span
+				<td align="left" valign="middle" style="padding: 8px;" id="state_${syncRecord.uuid}"><span
 					class="sync${syncRecord.state}"> <spring:message
 					code="sync.record.state_${syncRecord.state}" /></span></td>
-				<td valign="middle">${syncRecord.retryCount}</td>
-				<td valign="middle"><span id="message_${syncRecord.guid}"></span></td>
+				<td valign="middle" style="padding: 8px;">${syncRecord.retryCount}</td>
+				<td valign="middle" style="padding: 8px;"><span id="message_${syncRecord.uuid}"></span></td>
 				<c:choose>
 					<c:when test="${bgs == 'EDEED2'}">
 						<c:set var="bgs" value="F7F7EA" />
@@ -149,8 +150,9 @@
 				</c:choose>
 			</tr>
 		</c:forEach>
-	</c:if>
 </table>
+</div>
+</c:if>
 <c:if test="${maxPages > 1}">
 	<table width="100%" border="0" cellspacing="0" cellpadding="0">
 		<tr>
@@ -171,14 +173,16 @@
 			<td>&nbsp;</td>
 		</tr>
 	</table>
-</c:if> <c:if test="${empty synchronizationMaintenanceList}">
+</c:if> 
+<c:if test="${empty synchronizationMaintenanceList}">
 	<table>
 		<tr>
 			<td align="center" valign="middle"><i><spring:message
 				code="sync.maintenance.noItems" /> <strong>${keyword}</strong></i></td>
 		</tr>
 	</table>
-</c:if></div>
+</c:if>
+</div>
 <br/>
 <b class="boxHeader"><spring:message code="sync.maintenance.archive.title"/></b>
 <div class="box"><br/>
