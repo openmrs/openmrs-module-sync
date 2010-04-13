@@ -113,11 +113,14 @@ public class ConfigServerFormController {
 		User user = new User(person);
 		user.setUsername(username);
 		
-		String defaultRole = Context.getAdministrationService().getGlobalProperty("synchronization.default_role");
+		String defaultRole = Context.getAdministrationService().getGlobalProperty("sync.default_role");
 		if (defaultRole != null) {
-			Role role = Context.getUserService().getRole(defaultRole);
-			if (role != null)
-				user.addRole(role);
+			String[] roles = defaultRole.split(",");
+			for (String role : roles) {
+				Role r = Context.getUserService().getRole(role.trim());
+				if (r != null)
+					user.addRole(r);
+			}
 		}
 		
 		// create in database
@@ -409,7 +412,7 @@ public class ConfigServerFormController {
 	                                                                                                              throws ServletException {
 		RemoteServer server = null;
 		
-		log.warn("IN FORMBACKING, type is " + serverType);
+		log.debug("IN FORMBACKING, type is " + serverType);
 		
 		// only fill the Object if the user has authenticated properly
 		if (Context.isAuthenticated()) {

@@ -41,7 +41,7 @@
 	</globalProperty>
 	<globalProperty>
 		<property>sync.default_role</property>
-		<defaultValue>Administrator</defaultValue>
+		<defaultValue>System Developer, Administrator</defaultValue>
 		<description>Server role for the synchronization scheduled task login.</description>
 	</globalProperty>
 	<globalProperty>
@@ -54,6 +54,12 @@
 		<defaultValue>10</defaultValue>
 		<description>Number of sync items to be shown per page.</description>
 	</globalProperty>
+	<globalProperty>
+		<property>sync.max_records</property>
+		<defaultValue>50</defaultValue>
+		<description>Number of records to package up and send at a time.</description>
+	</globalProperty>
+	
 	
 	<dwr>
 		<allow>
@@ -61,11 +67,12 @@
 			<convert converter="bean" match="org.openmrs.module.sync.web.dwr.SyncTransmissionResponseItem"/>
 			<convert converter="bean" match="org.openmrs.module.sync.web.dwr.SyncImportRecordItem"/>
 			<convert converter="bean" match="org.openmrs.module.sync.web.dwr.SyncImportItemItem"/>
-			<convert converter="bean" match="org.openmrs.web.dwr.SyncCloneItem" />
+			<convert converter="bean" match="org.openmrs.module.sync.web.dwr.SyncCloneItem" />
 			
 			<create creator="new" javascript="DWRSyncService">
 				<param name="class" value="org.openmrs.module.sync.web.dwr.DWRSyncService"/>
 				<include method="testConnection"/>
+				<include method="getNumberOfObjectsBeingReceived"/>
 				<include method="syncToParent"/>
 				<include method="getSyncItemContent" />
 				<include method="setSyncItemContent" />

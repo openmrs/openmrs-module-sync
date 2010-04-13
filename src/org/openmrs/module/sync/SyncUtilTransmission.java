@@ -266,10 +266,11 @@ public class SyncUtilTransmission {
      * 
      * Performs 'full' synchronization (from a child perspective) with parent server identified by parent parameter.
      *  
-     * @param parent
+     * @param parent the server to do send/receive to/from
+     * @param size (nullable) updated mid-method to be the number of objects coming from the parent
      * @return
      */
-    public static SyncTransmissionResponse doFullSynchronize(RemoteServer parent) {
+    public static SyncTransmissionResponse doFullSynchronize(RemoteServer parent, ReceivingSize size) {
         SyncTransmissionResponse response = new SyncTransmissionResponse();
         response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
         response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
@@ -305,6 +306,9 @@ public class SyncUtilTransmission {
                                 syncService.saveRemoteServer(parent);
                             }
                             
+                            if (initialTxFromParent.getSyncRecords() != null)
+                            	size.setSize(initialTxFromParent.getSyncRecords().size());
+                            
                             // process syncTx from parent, and generate response
                             // tx may be null - meaning no updates from parent
                             str = SyncUtilTransmission.processSyncTransmission(initialTxFromParent);
@@ -331,8 +335,14 @@ public class SyncUtilTransmission {
                             	
                             	// mark all of these imported records as "committed plus confirmed"
                             	for (SyncImportRecord record : str.getSyncImportRecords()) {
-                                	record.setState(SyncRecordState.COMMITTED_AND_CONFIRMATION_SENT);
-                                	syncService.updateSyncImportRecord(record);
+                            		if (record.getState().equals(SyncRecordState.COMMITTED) ||
+                            				record.getState().equals(SyncRecordState.ALREADY_COMMITTED)) {
+	                                	record.setState(SyncRecordState.COMMITTED_AND_CONFIRMATION_SENT);
+	                                	syncService.updateSyncImportRecord(record);
+                            		}
+                            		else {
+                            			response.setState(SyncTransmissionState.FAILED_RECORDS);
+                            		}
                                 }
                             }
                         } else {
@@ -385,7 +395,7 @@ public class SyncUtilTransmission {
         if ( origin == null && authenticatedUser != null ) {
             // make a last-ditch effort to try to figure out what server this is coming from, so we can behave appropriately.
             String username = authenticatedUser.getUsername();
-            log.warn("CANNOT GET ORIGIN SERVER FOR THIS REQUEST, get by username " + username + " instead");
+            log.warn("CANNOT GET ORIGIN SERVER FOR THIS REQUEST, get by username '" + username + "' instead");
             origin = syncService.getRemoteServerByUsername(username);
             if ( origin != null && sourceUuid != null && sourceUuid.length() > 0 ) {
                 // take this opportunity to save the uuid, now we've identified which server this is
@@ -473,20 +483,34 @@ public class SyncUtilTransmission {
         
         return str;
     }
-
+    
+    public static class ReceivingSize {
+    	
+    	private Integer size;
+    	
+    	public Integer getSize() {
+    		return size;
+    	}
+    	
+    	public void setSize(Integer s) {
+    		this.size = s;
+    	}
+    }
+    
     /**
      * Main method to initiate data synchronization from a child to its parent.
      *
-     * @return
+     * @param receivingSize (nullable) updated mid-method to be the number of objects coming in from the parent
+     * @return the {@link SyncTransmissionResponse} from the parent
      * 
      * @see #doFullSynchronize(RemoteServer)
      */
-    public static SyncTransmissionResponse doFullSynchronize() {
+    public static SyncTransmissionResponse doFullSynchronize(ReceivingSize size) {
         // sends to parent server (by default)
         RemoteServer parent = Context.getService(SyncService.class).getParentServer();
         
         if ( parent != null ) {
-            return SyncUtilTransmission.doFullSynchronize(parent); 
+            return SyncUtilTransmission.doFullSynchronize(parent, size); 
         }
         else {
         	SyncTransmissionResponse response = new SyncTransmissionResponse();

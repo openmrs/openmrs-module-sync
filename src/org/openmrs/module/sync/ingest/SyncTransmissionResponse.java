@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.sync.ingest;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.module.sync.server.ConnectionResponse;
 import org.openmrs.module.sync.server.ServerConnectionState;
+import org.openmrs.util.OpenmrsUtil;
 
 /**
  * SyncTransmission a collection of sync records to be sent to the parent.
@@ -224,9 +226,10 @@ public class SyncTransmissionResponse implements IItem {
 
             //now dump to file
             //TODO: use path!
-            fileOutput = pkg.savePackage(org.openmrs.util.OpenmrsUtil
-                    .getApplicationDataDirectory()
-                    + "/import/" + fileName, writeFile);
+            File dir = OpenmrsUtil.getDirectoryInApplicationDataDirectory("sync");
+            File importdir = new File(dir, "import");
+            importdir.mkdir();
+            fileOutput = pkg.savePackage(new File(importdir, fileName), writeFile);
 
         } catch (Exception e) {
             log.error("Cannot create sync transmission.",e);

@@ -42,17 +42,19 @@ public class ZipPackage {
 	private ZipOutputStream out;
 	private byte data[];
 
-	public ZipPackage(String root, String target) {
+	public ZipPackage(File root, String target) {
 		try {
-			this.rootName = root;
+			this.rootName = root.getAbsolutePath();
 			this.targetName = target;
-			File f = new File(rootName + "/archive/" + targetName);
+			File archiveFolder = new File(root, "archive");
+			archiveFolder.mkdir();
+			File f = new File(archiveFolder, targetName);
+			f.mkdir();
 			if (!f.exists())
 				f.mkdirs();
-			this.dest = new FileOutputStream(rootName + "/archive/"
-			        + targetName + "/" + targetName + "_"
-			        + SyncConstants.SYNC_FILENAME_MASK.format(new Date())
-			        + ".zip");
+			File outputStreamDir = new File(f, targetName + "_"
+			        + SyncConstants.SYNC_FILENAME_MASK.format(new Date()) + ".zip");
+			this.dest = new FileOutputStream(outputStreamDir);
 			this.checksum = new CheckedOutputStream(dest, new Adler32());
 			this.out = new ZipOutputStream(new BufferedOutputStream(checksum));
 			this.data = new byte[BUFFER];

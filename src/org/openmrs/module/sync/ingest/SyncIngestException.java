@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.sync.ingest;
 
+import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncException;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 
@@ -26,18 +27,29 @@ public class SyncIngestException extends SyncException {
 	SyncImportRecord syncImportRecord;
 
 	public SyncIngestException(Throwable t, String errorMessage, String errorMessageArgs, String syncItemContent, SyncImportRecord sir) {
-		super(errorMessage, t);
+		super(internationalize(errorMessage, errorMessageArgs), t);
 		this.setItemError(errorMessage);
 		this.setItemErrorArgs(errorMessageArgs);
 		this.setSyncItemContent(syncItemContent);
 		this.setSyncImportRecord(sir);
 	}	
 	public SyncIngestException(String errorMessage, String errorMessageArgs, String syncItemContent, SyncImportRecord sir) {
-		super(errorMessage);
-		this.setItemError(errorMessage);
-		this.setItemErrorArgs(errorMessageArgs);
-		this.setSyncItemContent(syncItemContent);
-		this.setSyncImportRecord(sir);
+		this(null, errorMessage, errorMessageArgs, syncItemContent, sir);
+	}
+	
+	/**
+	 * Convenience method to get get error message as code from a spring message file
+	 * 
+	 * @param message
+	 * @param errorMessageArgs
+	 * @return a translated string or the same string if no code exists by that name
+	 */
+	public static String internationalize(String message, String errorMessageArgs) {
+		String[] args = null;
+		if (errorMessageArgs != null)
+			args = errorMessageArgs.split(",");
+		
+		return Context.getMessageSourceService().getMessage(message, args, Context.getLocale());
 	}
 
 	public String getSyncItemContent() {

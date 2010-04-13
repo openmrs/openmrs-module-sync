@@ -28,10 +28,10 @@ public class SyncException extends APIException {
     }
 
     public SyncException(String message) {
-        super(message);
+        this(message, null);
     }
 
     public SyncException(String message, Throwable cause) {
-        super(message, cause);
+    	super(message, cause);
     }
 }

@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.sync.web.dwr;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,14 +28,15 @@ import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncTransmissionState;
+import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.SyncUtilTransmission;
+import org.openmrs.module.sync.SyncUtilTransmission.ReceivingSize;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.ingest.SyncTransmissionResponse;
 import org.openmrs.module.sync.serialization.ZipPackage;
 import org.openmrs.module.sync.server.ConnectionResponse;
 import org.openmrs.module.sync.server.ServerConnection;
 import org.openmrs.module.sync.server.ServerConnectionState;
-import org.openmrs.util.OpenmrsUtil;
 
 /**
  * DWR methods used by the sync module
@@ -43,36 +45,43 @@ public class DWRSyncService {
 	
 	protected final Log log = LogFactory.getLog(getClass());
 	
+	/**
+	 * Used when doing a full synchronize to get the number of objects the 
+	 * parent server is sending down to us before the actual update is done
+	 */
+	private static ReceivingSize receivingSize = new ReceivingSize();
+	
 	public SyncCloneItem cloneParentDB(String address, String username,
 	        String password) {
 		SyncCloneItem item = new SyncCloneItem();
 		if (address != null && address.length() > 0) {
-			String fileName = OpenmrsUtil.getApplicationDataDirectory() + "/"
-			        + SyncConstants.CLONE_IMPORT_FILE_NAME
+			File dir = SyncUtil.getSyncApplicationDir();
+			File file = new File(dir, SyncConstants.CLONE_IMPORT_FILE_NAME
 			        + SyncConstants.SYNC_FILENAME_MASK.format(new Date())
-			        + ".sql";
+			        + ".sql");
 			ConnectionResponse connResponse = ServerConnection.cloneParentDB(address,
 			                                                                 username,
 			                                                                 password);
 			item.setConnectionState(connResponse.getState().toString());
 			item.setErrorMessage(connResponse.getErrorMessage());
+			
+			// execute the parent's sql file on our database
 			if (ServerConnectionState.OK.equals(connResponse.getState())) {
 				byte sql[] = connResponse.getResponsePayload().getBytes();
 				try {
-					IOUtils.write(sql, new FileOutputStream(fileName));
+					IOUtils.write(sql, new FileOutputStream(file));
 
-					Context.getService(SyncService.class).execGeneratedFile(fileName);
-					item.setResponsefileName(fileName);
+					Context.getService(SyncService.class).execGeneratedFile(file);
+					item.setResponsefileName(file.getName());
 					item.setErrorMessage("Parent data cloned successifully");
 				} catch (FileNotFoundException e) {
-					item.setErrorMessage("Unable to save file(" + fileName
-					        + ")");
-					log.error("Unable to save file(" + fileName
+					item.setErrorMessage("Unable to save file(" + file.getAbsolutePath() + ")");
+					log.error("Unable to save file(" + file.getAbsolutePath()
 					        + ") : Error generated", e);
 				} catch (IOException e) {
-					item.setErrorMessage("Unable to save file(" + fileName
+					item.setErrorMessage("Unable to save file(" + file.getAbsolutePath()
 					        + ")");
-					log.error("Unable to save file(" + fileName
+					log.error("Unable to save file(" + file.getAbsolutePath()
 					        + ") : Error generated", e);
 				}
 			}
@@ -107,12 +116,31 @@ public class DWRSyncService {
 	}
 	
 	/**
-	 * Used by the status.list page to send data to the parent and show the results
+	 * Call this method after initiating {@link #syncToParent()} to get the number
+	 * of objects that the parent is sending to us.  This value is updated mid-method
+	 * for display to the end user.
+	 * 
+	 * @return integer number of records being sent to us (or null if none)
+	 */
+	public Integer getNumberOfObjectsBeingReceived() {
+		return receivingSize.getSize();
+	}
+	
+	/**
+	 * Used by the status.list page to send data to the parent and show the
+	 * results. <br/>
+	 * Use #getNumberOfObjectsBeingReceived() before this method is done to know
+	 * how many objects the parent is sending to our server.
 	 * 
 	 * @return results of the transmission
 	 */
 	public SyncTransmissionResponseItem syncToParent() {
-		SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize();
+		// the doFullSync method updates this 'objectsBeingReceived' so that the
+		// jsp page can know what we're dealing with
+		// before the whole SyncTransmissionsResponse is returned
+		SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(receivingSize);
+		
+		receivingSize.setSize(null); // reset variable
 		
 		if (response != null) {
 			return new SyncTransmissionResponseItem(response);
@@ -124,6 +152,7 @@ public class DWRSyncService {
 			transmissionResponse.setTransmissionState(SyncTransmissionState.FAILED.toString());
 			return transmissionResponse;
 		}
+		
 		
 	}
 	
@@ -160,12 +189,12 @@ public class DWRSyncService {
 	}
 
 	public boolean archiveSyncJournal(boolean clearDir) {
-		return new ZipPackage(org.openmrs.util.OpenmrsUtil.getApplicationDataDirectory(),
+		return new ZipPackage(org.openmrs.util.OpenmrsUtil.getDirectoryInApplicationDataDirectory("sync"),
 		                      "journal").zip(clearDir);
 	}
 
 	public boolean archiveSyncImport(boolean clearDir) {
-		return new ZipPackage(org.openmrs.util.OpenmrsUtil.getApplicationDataDirectory(),
+		return new ZipPackage(org.openmrs.util.OpenmrsUtil.getDirectoryInApplicationDataDirectory("sync"),
 		                      "import").zip(clearDir);
 	}
 	

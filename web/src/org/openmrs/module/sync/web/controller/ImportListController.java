@@ -14,6 +14,7 @@
 package org.openmrs.module.sync.web.controller;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -213,9 +214,9 @@ public class ImportListController extends SimpleFormController {
         if (SyncConstants.CLONE_MESSAGE.equals(contents)) {
 			try {
 				log.info("CLONE MESSAGE RECEIVED, TRYING TO CLONE THE DB");
-				String fileName = Context.getService(SyncService.class).generateDataFile();
+				File file = Context.getService(SyncService.class).generateDataFile();
 				StringWriter writer = new StringWriter();
-				IOUtils.copy(new FileInputStream(fileName), writer);
+				IOUtils.copy(new FileInputStream(file), writer);
 				this.sendCloneResponse(writer.toString(), response, false);
 			} catch (Exception ex) {
 				log.warn(ex.toString());

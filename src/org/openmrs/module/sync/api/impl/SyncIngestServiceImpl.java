@@ -221,13 +221,12 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                         */
                     } else {
                     	//One of SyncItem commits failed, throw to rollback and set failure information.
-                    	log.warn("Error while processing SyncRecord with original ID " + record.getOriginalUuid() + " (" + record.getContainedClasses() + ")");
+                    	log.warn("Error while processing SyncRecord with original uuid " + record.getOriginalUuid() + " (" + record.getContainedClasses() + ")");
                         importRecord.setState(SyncRecordState.FAILED);
-                        SyncIngestException sie = new SyncIngestException(SyncConstants.ERROR_ITEM_NOT_COMMITTED,null,null,importRecord);
-                        throw(sie);
+                        throw new SyncIngestException(SyncConstants.ERROR_ITEM_NOT_COMMITTED,null,null,importRecord);
                     }
                     
-                    syncService.updateSyncImportRecord(importRecord);
+                    //syncService.updateSyncImportRecord(importRecord);
                 }
             }
         } catch (SyncIngestException e) {
@@ -243,9 +242,10 @@ public class SyncIngestServiceImpl implements SyncIngestService {
             //fill in sync import record and rethrow to abort tx
             importRecord.setState(SyncRecordState.FAILED);
             importRecord.setErrorMessage(e.getMessage());
-            SyncIngestException sie = new SyncIngestException(e,SyncConstants.ERROR_RECORD_UNEXPECTED,null,null,importRecord);
-            throw(sie);
+            throw new SyncIngestException(e,SyncConstants.ERROR_RECORD_UNEXPECTED,null,null,importRecord);
         } finally {
+        	syncService.updateSyncImportRecord(importRecord);
+        	
         	//reset the flush mode back to automatic, no matter what
         	syncService.setFlushModeAutomatic();
         }

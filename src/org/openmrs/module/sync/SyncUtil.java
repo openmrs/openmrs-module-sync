@@ -18,6 +18,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -78,16 +79,25 @@ import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.notification.Message;
 import org.openmrs.notification.MessageException;
 import org.openmrs.util.LocaleUtility;
+import org.openmrs.util.OpenmrsUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- *
+ * Collection of helpful methods in sync
  */
 public class SyncUtil {
 
 	private static Log log = LogFactory.getLog(SyncUtil.class);		
-		
+	
+	/**
+	 * Get the sync work directory in the openmrs application data directory
+	 * @return a file pointing to the sync output dir
+	 */
+	public static File getSyncApplicationDir() {
+		return OpenmrsUtil.getDirectoryInApplicationDataDirectory("sync");
+	}
+	
 	public static Object getRootObject(String incoming)
 			throws Exception {
 		
@@ -137,8 +147,15 @@ public class SyncUtil {
 		log.debug("getting setter method");
 		Method m = SyncUtil.getSetterMethod(o.getClass(), propName, propVal.getClass());
 
+		boolean acc = m.isAccessible();
+		m.setAccessible(true);
 		log.debug("about to call " + m.getName());
-        Object voidObj = m.invoke(o, setterParams);
+		try {
+			Object voidObj = m.invoke(o, setterParams);
+		}
+		finally {
+			m.setAccessible(acc);
+		}
 	}
 	
 	public static String getAttribute(NodeList nodes, String attName, ArrayList<Field> allFields ) {
@@ -828,7 +845,7 @@ public class SyncUtil {
 		}	
 		catch (Exception e) {
 			log.error("FormEntry module present but failed to rebuild XSN, see stack for error detail." + msg,e);
-			throw new SyncException("FormEntry module present but failed to rebuild XSN, see stack for error detail" + msg,e);
+			throw new SyncException("FormEntry module present but failed to rebuild XSN, see server log for the stacktrace for error details " + msg, e);
 		}
 		return;
 	}

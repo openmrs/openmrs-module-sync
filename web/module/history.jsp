@@ -102,8 +102,8 @@
 		</tbody>
 	</table>
 	
-	<a href="?firstRecordId=${firstRecordId - size}&size=${size}" disabled="disabled">&larr; <spring:message code="sync.general.newer"/></a>
-	<a href="?firstRecordId=${firstRecordId + size}&size=${size}"><spring:message code="sync.general.older"/> &rarr;</a>
+	<a href="?firstRecordId=${firstRecordId + size}&size=${size}" disabled="disabled">&larr; <spring:message code="sync.general.newer"/></a>
+	<a href="?firstRecordId=${firstRecordId - size}&size=${size}"><spring:message code="sync.general.older"/> &rarr;</a>
 	
 </div>
 

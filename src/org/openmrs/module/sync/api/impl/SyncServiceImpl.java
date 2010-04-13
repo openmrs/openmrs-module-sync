@@ -25,8 +25,10 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.APIException;
+import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.sync.SyncClass;
@@ -35,6 +37,7 @@ import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncServerClass;
 import org.openmrs.module.sync.SyncStatistic;
+import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.api.db.SyncDAO;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
@@ -84,7 +87,7 @@ public class SyncServiceImpl implements SyncService {
 	public void createSyncRecord(SyncRecord record, String originalUuidPassed) throws APIException {
 		
 		if (record != null) {
-			// here is a hack to get around the fact that hibernate decides to commit transaction when it feels like it
+			// here is a hack to get around the fact that hibernate decides to commit transactions when it feels like it
 			// otherwise, we could run this in the ingest methods
 			RemoteServer origin = null;
 			int idx = originalUuidPassed.indexOf("|");
@@ -125,7 +128,6 @@ public class SyncServiceImpl implements SyncService {
 					}
 				}
 				record.setServerRecords(serverRecords);
-				//server.setServerClasses(serverClasses);
 			}
 			
 			getSynchronizationDAO().createSyncRecord(record);
@@ -200,7 +202,7 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
-	 * @see org.openmrs.api.SyncService#getSyncRecords(org.openmrs.module.sync.engine.SyncRecordState)
+	 * @see org.openmrs.module.sync.api.SyncService#getSyncRecords(org.openmrs.module.sync.SyncRecordState[], org.openmrs.module.sync.server.RemoteServer)
 	 */
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, RemoteServer server) throws APIException {
 		List<SyncRecord> temp = null;
@@ -554,10 +556,6 @@ public class SyncServiceImpl implements SyncService {
 		return stats;
 	}
 	
-	public boolean checkUuidsForClass(Class clazz) throws APIException {
-		return getSynchronizationDAO().checkUuidsForClass(clazz);
-	}
-	
 	public <T extends OpenmrsObject> T getOpenmrsObjectByUuid(Class<T> clazz, String uuid) {
 		return dao.getOpenmrsObjectByUuid(clazz, uuid);
 	}
@@ -583,25 +581,44 @@ public class SyncServiceImpl implements SyncService {
 		}
 	}
 
-	public String generateDataFile() throws APIException {
-		String fileName = OpenmrsUtil.getApplicationDataDirectory() + "/"
-		        + SyncConstants.CLONE_IMPORT_FILE_NAME
+	/**
+	 * @see org.openmrs.module.sync.api.SyncService#generateDataFile()
+	 */
+	public File generateDataFile() throws APIException {
+		File dir = SyncUtil.getSyncApplicationDir();
+		String fileName = SyncConstants.CLONE_IMPORT_FILE_NAME
 		        + SyncConstants.SYNC_FILENAME_MASK.format(new Date()) + ".sql";
 		String[] ignoreTables = { "hl7_in_archive", "hl7_in_queue",
 		        "hl7_in_error", "formentry_archive", "formentry_queue",
 		        "formentry_error", "scheduler_task_config",
-		        "scheduler_task_config_property", "synchronization_class",
-		        "synchronization_import", "synchronization_journal",
-		        "synchronization_server", "synchronization_server_class",
-		        "synchronization_server_record" };
-		getSynchronizationDAO().generateDataFile(new File(fileName),
+		        "scheduler_task_config_property", "sync_class",
+		        "sync_import", "sync_record",
+		        "sync_server", "sync_server_class",
+		        "sync_server_record" };
+		
+		File outputFile = new File(dir, fileName);
+		getSynchronizationDAO().generateDataFile(outputFile,
 		                                         ignoreTables);
-		return fileName;
+		return outputFile;
 	}
-
-	public void execGeneratedFile(String fileName) throws APIException {
-		getSynchronizationDAO().execGeneratedFile(new File(fileName));
-		//Delete any data kept into sync journal after clone of the parent DB
+	
+	/**
+	 * @see org.openmrs.module.sync.api.SyncService#execGeneratedFile(java.io.File)
+	 */
+	public void execGeneratedFile(File file) throws APIException {
+		AdministrationService adminService = Context.getAdministrationService();
+		
+		// preserve this server's sync settings
+		List<GlobalProperty> syncGPs = adminService.getGlobalPropertiesByPrefix("sync.");
+		
+		getSynchronizationDAO().execGeneratedFile(file);
+		
+		// save those GPs again
+		for (GlobalProperty gp : syncGPs) {
+			adminService.saveGlobalProperty(gp);
+		}
+		
+		//Delete any data in sync record after import of the parent DB
 		for (SyncRecord record : this.getSynchronizationDAO().getSyncRecords()) {
 			this.getSynchronizationDAO().deleteSyncRecord(record);
 		}

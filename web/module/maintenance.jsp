@@ -158,7 +158,7 @@
 		<tr>
 			<td>&nbsp;</td>
 			<td align="center" valign="middle"><span><spring:message
-				code="sync.changes.goto" /></span> <c:forEach var="p"
+				code="sync.maintenance.goto" />:</span> <c:forEach var="p"
 				begin="${1}" end="${maxPages}" step="${1}">
 		 	--
 			<c:choose>

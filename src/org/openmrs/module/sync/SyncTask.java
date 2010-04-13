@@ -66,7 +66,7 @@ public class SyncTask extends AbstractTask {
 			
 			RemoteServer server = Context.getService(SyncService.class).getRemoteServer(serverId);
 			if ( server != null ) {
-				SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(server);
+				SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(server, null);
 				try {
 					response.createFile(false, SyncConstants.DIR_JOURNAL);
 				} catch ( Exception e ) {

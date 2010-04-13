@@ -80,6 +80,11 @@
 					<td><spring:message code="sync.config.advanced.maxPageRecords.info" /></td>
 				</tr>
 				<tr>
+					<td align="right" nowrap><b><spring:message code="sync.config.advanced.maxRecords" /></b></td>
+					<td><input type="text" size="6" name="maxRecords" id="maxRecords" value="${maxRecords}" /></td>
+					<td><spring:message code="sync.config.advanced.maxRecords.info" /></td>
+				</tr>
+				<tr>
 					<td align="right" nowrap><b><spring:message code="sync.config.advanced.maxRetryCount" /></b></td>
 					<td><input type="text" size="6" name="maxRetryCount" id="maxRetryCount" value="${maxRetryCount}" /></td>
 					<td><spring:message code="sync.config.advanced.maxRetryCount.info" /></td>

@@ -37,13 +37,6 @@
 			return true;
 		}
 
-		/* obsolete
-		function doSubmitWebExport() {
-			document.getElementById("webExportSubmit").disabled = true;
-			return true;
-		}
-		*/
-		
 		function getMessage(code) {
 			<c:forEach items="${transmissionState}" var="state" >
 				if ( code == "${state.key}" ) return '${state.value}';
@@ -77,8 +70,8 @@
 				var messageCell = document.createElement("td");
 				messageCell.id = "message_" + record.uuid;
 				messageCell.className = "centeredColumn";
-				if ( record.state != "COMMITTED" ) {
-					messageCell.innerHTML = record.errorMessage;
+				if ( record.state != "COMMITTED" && record.state != "COMMITTED_AND_CONFIRMATION_SENT" ) {
+					messageCell.innerHTML = "Error was: " + record.errorMessage;
 				}
 				row.appendChild(messageCell);
 
@@ -123,16 +116,28 @@
 				// just show error message
 				DWRUtil.setValue("syncInfo", getMessage(result.transmissionState));
 			}
+			DWRUtil.setValue("syncReceivingSize", "");
 			document.getElementById("webExportButton").disabled = false;
 			
 			// fix the odd/even rows
 			toggleRowVisibilityForClass("syncChangesTable", "someNonexistentClass", false);
 		}
 
+		function displayNumberOfObjectsBeingReceived(num) {
+			// keep checking until we get a response
+			if (!num || num == "") {
+				DWRSyncService.getNumberOfObjectsBeingReceived(displayNumberOfObjectsBeingReceived);
+				return;
+			}
+			
+			DWRUtil.setValue("syncReceivingSize", "<spring:message code="sync.status.export.viaWeb.receiving" />".replace("{0}", num), { escapeHtml: false} );
+		}
+
 		function syncToParent() {
 			document.getElementById("webExportButton").disabled = true;
 			DWRUtil.setValue("syncInfo", "<spring:message code="sync.status.export.viaWeb.sending" arguments="${fn:length(statusCommandObject)}" />", { escapeHtml:false });
 			DWRSyncService.syncToParent(displaySyncResults);
+			DWRSyncService.getNumberOfObjectsBeingReceived(displayNumberOfObjectsBeingReceived);
 		}
 		
 	-->
@@ -173,7 +178,9 @@
 						<c:if test="${empty parent}">
 							<span class="error"><i><spring:message code="sync.status.export.viaWeb.enableViaParentConfig" /></i></span>
 						</c:if>
-						<span id="syncInfo"></span><br><span id="syncDetails" style="display:none;"></span>
+						<span id="syncInfo"></span>
+						<br>
+						<span id="syncReceivingSize"></span>
 					</td>
 				</tr>
 			</c:when>

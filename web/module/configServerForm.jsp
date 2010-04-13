@@ -63,10 +63,13 @@
 			//alert("state is " + result.connectionState + ", errorMessage is " + result.errorMessage + ", payload is " + result.responsePayload);
 		
 			var img = '<img src="${pageContext.request.contextPath}/images/error.gif" border="0" style="margin-bottom: -3px;">';
-			if ( result.connectionState == "OK" ) img = '<img src="${pageContext.request.contextPath}/moduleResources/sync/accept.gif" border="0" style="margin-bottom: -3px;">';
-			
+			if ( result.connectionState == "OK" ) {
+				img = '<img src="${pageContext.request.contextPath}/moduleResources/sync/accept.gif" border="0" style="margin-bottom: -3px;">';
+				img += '&nbsp; The parent server uuid is: ' + result.syncTargetUuid;
+			}
 			
 			var display = getMessage(result.connectionState) + "&nbsp;" + img;
+			display += 
 			DWRUtil.setValue("testInfo", display, { escapeHtml:false });
 			document.getElementById("testConnectionButton").disabled = false;
 		}
@@ -83,14 +86,17 @@
 		function showCloneResult(result) {
 
             var img = '<img src="${pageContext.request.contextPath}/images/error.gif" border="0" style="margin-bottom: -3px;">';
-            if ( result.connectionState == "OK" ) img = '<img src="${pageContext.request.contextPath}/moduleResources/sync/accept.gif" border="0" style="margin-bottom: -3px;">';
             var display = "";
-            if ( result.connectionState != "OK" )
+            if ( result.connectionState == "OK" ) {
+                img = '<img src="${pageContext.request.contextPath}/moduleResources/sync/accept.gif" border="0" style="margin-bottom: -3px;">';
+            }
+            else {
                 display+=getMessage(result.connectionState)+" - " ;
-            if(result.errorMessage!=null)
+            }
+            if(result.errorMessage != null)
                 display+="&nbsp;"+ "&nbsp;"+result.errorMessage;
             display+=img;
-            DWRUtil.setValue("cloneInfo", display);
+            DWRUtil.setValue("cloneInfo", display, {escapeHtml:false});
             if ( result.connectionState == "OK" )
                 document.getElementById("cloneViaWebButton").disabled = false;
         }
@@ -206,6 +212,12 @@
 				<c:if test="${(server.serverType == 'CHILD' || param.type == 'CHILD') && not empty server.serverId}">
 					<!-- Editing a child server -->
 					<input type="hidden" name="action" value="editChild"/>
+					<tr>
+						<td align="right" valign="top" nowrap>
+							<b><spring:message code="sync.config.child.currentusername" /></b>
+						</td>
+						<td align="left" valign="top">${server.childUsername}</td>
+					</tr>
 				</c:if>
 				<c:if test="${(server.serverType == 'CHILD' || param.type == 'CHILD') && empty server.serverId}">
 					<!-- adding a new child server -->
@@ -258,7 +270,11 @@
 					<td align="left" valign="top"><input type="button"
 						onClick="document.location='${pageContext.request.contextPath}/ms/sync/createChildServlet';"
 						value="<spring:message code="sync.settings.server.clone.down" />" />
-					<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.settings.server.clone.down.backup.help" /></span></i></td>
+						<br/>
+						<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.settings.server.clone.down.backup.help" /></span></i>
+						<br/>
+						<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.settings.server.clone.down.backup.help2" /></span></i>
+					</td>
 				</tr>
 				<tr><td colspan="2">&nbsp;</td></tr>
 				</c:if>
@@ -292,6 +308,8 @@
 							&nbsp;&nbsp;
 							<input type="button" id="testConnectionButton" onClick="testConnection();" value="<spring:message code="sync.config.parent.test" />" />
 							<span id="testInfo"></span>
+							<br/>
+							<i><span style="color: #bbbbbb;"><spring:message code="sync.config.parent.login.hint" /></span></i>
 						</td>
 					</tr>
 					<tr>
@@ -414,7 +432,7 @@
 		</div>
 	</form>
 <c:if test="${not (server.serverType == 'CHILD' || param.type == 'CHILD') && not empty server.serverId}">
-<br/><br/>
+<br/>
 <b class="boxHeader"><spring:message code="sync.config.server.clone.parent"/></b>
 <div class="box">
 <table>

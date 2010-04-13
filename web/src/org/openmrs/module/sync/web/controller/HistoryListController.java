@@ -59,7 +59,7 @@ public class HistoryListController {
 			size = Integer.valueOf(max);
 		}
 		
-		log.error("Vewing history page with size: " + size);
+		log.debug("Vewing history page with size: " + size);
 		
 		List<SyncRecord> recordList = null;
 		
@@ -77,6 +77,11 @@ public class HistoryListController {
 		Map<Object, String> itemUuids = new HashMap<Object, String>();
 		Map<String, String> recordText = new HashMap<String, String>();
 		Map<String, String> recordChangeType = new HashMap<String, String>();
+		
+		// for paging to work, set the firstRecordId as the current first item in the list
+		if (recordList.size() > 0) {
+			firstRecordId = recordList.get(0).getRecordId();
+		}
 		
 		for (SyncRecord record : recordList) {
 			

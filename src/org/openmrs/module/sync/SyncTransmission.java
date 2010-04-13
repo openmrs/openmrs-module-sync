@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.sync;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -25,6 +26,7 @@ import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
+import org.openmrs.util.OpenmrsUtil;
 
 /**
  * SyncTransmission a collection of sync records to be sent to the parent.
@@ -140,7 +142,7 @@ public class SyncTransmission implements IItem {
 
     /** Creates a new transmission from records: use org.openmrs.serial to make a file
      *  also, give option to write to a file or not.
-     *  <p> When writeFile is true, files are created in 'journal' dir under Application Data 
+     *  <p> When writeFile is true, files are created in 'record' dir under Application Data 
      *  (see openmrs documentation for more information about setting Application Data).
      *  Files are created using the following mask: sync_tx_yyyy_MM_dd_HH_mm_ss_S_request.xml
      *  
@@ -160,9 +162,9 @@ public class SyncTransmission implements IItem {
             this.save(xml,root);
 
             //now dump to file if needed
-            fileOutput = pkg.savePackage(org.openmrs.util.OpenmrsUtil
-                    .getApplicationDataDirectory()
-                    + "/journal/" + fileName, writeFile);
+            File dir = OpenmrsUtil.getDirectoryInApplicationDataDirectory("sync");
+            File record = new File(dir, "recrd");
+            fileOutput = pkg.savePackage(new File(record, fileName), writeFile);
 
         } catch (Exception e) {
             log.error("Cannot create sync transmission.",e);

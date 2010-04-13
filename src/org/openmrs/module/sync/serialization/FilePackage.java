@@ -66,22 +66,20 @@ public class FilePackage extends Package
             Record r = (Record)me.getValue();
 
             byte bits[] = r.toString().getBytes();
-            writeFile(path + "/" + r.getName() + ".xml", bits, bits.length);
+            writeFile(new File(f, r.getName() + ".xml"), bits, bits.length);
         }
 
         return result;
     }
 
-    public String savePackage(String path, boolean writeFileToo) throws IOException, Exception
+    public String savePackage(File f, boolean writeFileToo) throws IOException, Exception
     {
         String result = null;
 
         if ( writeFileToo ) {
-            File f = new File(path);
             if (!f.isDirectory())
             {
-                File p = new File(path);
-                p.mkdirs();
+                f.mkdirs();
             }
         }
 
@@ -96,27 +94,26 @@ public class FilePackage extends Package
             
             if ( writeFileToo ) {
                 byte bits[] = result.getBytes();
-                writeFile(path + "/" + r.getName() + ".xml", bits, bits.length);
+                writeFile(new File(f, r.getName() + ".xml"), bits, bits.length);
             }
         }
 
         return result;
     }
 
-	private boolean writeFile(String fname, byte bits[], int len)
+	private boolean writeFile(File f, byte bits[], int len)
 	{
 		FileOutputStream fos = null;
 		DataOutputStream dos = null;
 
 		try {
 			// IO time
-			File f = new File(fname);
 			fos = new FileOutputStream(f);
 			dos = new DataOutputStream(fos);
 			dos.write(bits, 0, len);
 		}
 		catch (Exception e) {
-			log.error("Could not write file: " + fname, e);
+			log.error("Could not write file: " + f.getAbsolutePath(), e);
 			return false;
 		}
 		finally {

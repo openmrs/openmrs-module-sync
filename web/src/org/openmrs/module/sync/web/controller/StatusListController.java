@@ -362,6 +362,7 @@ public class StatusListController extends SimpleFormController {
         state.put(SyncTransmissionState.TRANSMISSION_NOT_UNDERSTOOD.toString(), msa.getMessage("sync.status.transmission.corruptTxError"));
         state.put(SyncTransmissionState.OK_NOTHING_TO_DO.toString(), msa.getMessage("sync.status.transmission.okNoSyncNeeded"));
         state.put(SyncTransmissionState.MAX_RETRY_REACHED.toString(), msa.getMessage("sync.status.transmission.maxRetryReached"));
+        state.put(SyncTransmissionState.FAILED_RECORDS.toString(), msa.getMessage("sync.status.transmission.failedRecords"));
         state.put(SyncRecordState.ALREADY_COMMITTED.toString(), msa.getMessage("sync.record.state_ALREADY_COMMITTED"));
         state.put(SyncRecordState.COMMITTED.toString(), msa.getMessage("sync.record.state_COMMITTED"));
         state.put(SyncRecordState.FAILED.toString(), msa.getMessage("sync.record.state_FAILED"));

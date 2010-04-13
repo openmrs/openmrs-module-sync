@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.sync.api;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
@@ -504,8 +505,6 @@ public interface SyncService {
 	 */
 	public Map<RemoteServer, Set<SyncStatistic>> getSyncStatistics(Date fromDate, Date toDate) throws DAOException;
 	
-	public boolean checkUuidsForClass(Class clazz) throws APIException;
-	
 	/**
 	 * Gets any type of OpenmrsObject given a class and a UUID
 	 * 
@@ -526,18 +525,18 @@ public interface SyncService {
 	
 	/**
 	 * Dumps the entire database, much like what you'd get from the mysqldump
-	 * command, and adds a few lines to set the child's GUID, and delete sync
-	 * history
+	 * command, and adds a few insert lines to set the child's UUID, and delete sync
+	 * history.  This is slightly slower than the {@link #generateDataFile()} method but 
+	 * not specific to mysql.
 	 * 
-	 * @param guidForChild if not null, use this as the guid for the child
+	 * @param uuidForChild if not null, use this as the uuid for the child
 	 *        server, otherwise autogenerate one
-	 * @param out write the sql here
+	 * @param out where to write the sql
 	 * @throws APIException
 	 */
 	// @Authorized({"Backup Entire Database"})
 	@Transactional(readOnly = true)
-	public void exportChildDB(String guidForChild, OutputStream os)
-	        throws APIException;
+	public void exportChildDB(String uuidForChild, OutputStream os) throws APIException;
 
 	/**
 	 * imports a synchronization database backup from the parent
@@ -547,10 +546,18 @@ public interface SyncService {
 	public void importParentDB(InputStream in) throws APIException;
 
 	/**
-	 * Dumps the entire database with the mysqldump command
+	 * Dumps the entire database with the mysqldump command to a file.
+	 * @return the file pointer to the database dump
 	 */
-	public String generateDataFile() throws APIException;
+	public File generateDataFile() throws APIException;
 
-	public void execGeneratedFile(String generatedDataFileName)
-	        throws APIException;
+	/**
+	 * Executes a sql file on the database.  <br/>
+	 * The sync global properties and sync records are cleared out after 
+	 * importing the sql.
+	 * 
+	 * @param fileToExec the file to run
+	 * @throws APIException
+	 */
+	public void execGeneratedFile(File fileToExec) throws APIException;
 }

@@ -57,7 +57,7 @@
 							<th style="text-align: center;"><spring:message code="sync.config.server.delete" /></th>
 						</tr>
 					</thead>
-					<tbody id="globalPropsList">
+					<tbody>
 						<c:set var="bgStyle" value="eee" />				
 						<c:set var="bgStyleFile" value="dde" />				
 						<c:set var="bgStyleWebMan" value="ded" />				
@@ -65,15 +65,10 @@
 						<c:forEach var="server" items="${configListBackingObject.serverList}" varStatus="status">
 							<tr>
 								<td nowrap style="background-color: #${bgStyle};">
-									<c:choose>
-										<c:when test="${server.serverType == 'CHILD'}">
-											<a href="configServer.form?serverId=${server.serverId}" disabled><b>${server.nickname}</b></a>
-										</c:when>
-										<c:otherwise>
-											<a href="configServer.form?serverId=${server.serverId}"><b>${server.nickname}</b></a>
-											<%--(${server.address})--%>
-										</c:otherwise>
-									</c:choose>
+									<a href="configServer.form?serverId=${server.serverId}"><b>${server.nickname}</b></a>
+									<c:if test="${empty server.uuid}">
+										<br/><span class="syncStatsWarning"><spring:message code="sync.config.warning.uuid"/></span>
+									</c:if>
 								</td>
 								<td style="background-color: #${bgStyle}; text-align:center;"
 									<c:if test="${server.serverType == 'PARENT'}">class="parent"</c:if>

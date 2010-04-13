@@ -60,6 +60,7 @@ public class SyncConstants {
 
 	// error message codes - at the item/record level
 	public static final String ERROR_ITEM_NOT_COMMITTED = "sync.status.item.notCommitted";
+	public static final String ERROR_ITEM_UUID_NOT_FOUND = "sync.status.item.uuidNotFound";
 	public static final String ERROR_ITEM_NOCLASS = "sync.status.item.noClassFound";
 	public static final String ERROR_ITEM_BADXML_MISSING = "sync.status.item.badXml.missing";
 	public static final String ERROR_ITEM_UNSET_PROPERTY = "sync.status.item.unsetProperty";

@@ -15,6 +15,7 @@ package org.openmrs.module.sync;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Date;
@@ -45,17 +46,16 @@ public class SyncCloneTest extends SyncBaseTest {
 	public void testJDBCClone() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			long checksumOne, checksumTwo;
-			String fileOne;
-			String fileTwo;
+			File fileOne;
+			File fileTwo;
 			SyncService syncService = Context.getService(SyncService.class);
 
 			public void runOnParent() {
 				try {
-					fileOne = OpenmrsUtil.getApplicationDataDirectory()
-					        + "/"
-					        + SyncConstants.CLONE_IMPORT_FILE_NAME
+					File dir = SyncUtil.getSyncApplicationDir();
+					fileOne = new File(dir, SyncConstants.CLONE_IMPORT_FILE_NAME
 					        + SyncConstants.SYNC_FILENAME_MASK.format(new Date())
-					        + "_one.sql";
+					        + "_one.sql");
 					syncService.exportChildDB(null, new FileOutputStream(fileOne));
 					checksumOne = checksum(fileOne);
 				} catch (Exception e) {
@@ -66,11 +66,10 @@ public class SyncCloneTest extends SyncBaseTest {
 			public void runOnChild() {
 				try {
 					syncService.importParentDB(new FileInputStream(fileOne));
-					fileTwo = OpenmrsUtil.getApplicationDataDirectory()
-					        + "/"
-					        + SyncConstants.CLONE_IMPORT_FILE_NAME
+					File dir = SyncUtil.getSyncApplicationDir();
+					fileTwo = new File(dir, SyncConstants.CLONE_IMPORT_FILE_NAME
 					        + SyncConstants.SYNC_FILENAME_MASK.format(new Date())
-					        + "_two.sql";
+					        + "_two.sql");
 					syncService.exportChildDB(null, new FileOutputStream(fileTwo));
 					checksumTwo = checksum(fileTwo);
 				} catch (Exception e) {
@@ -88,8 +87,8 @@ public class SyncCloneTest extends SyncBaseTest {
 		
 		runSyncTest(new SyncTestHelper() {
 			long checksumOne, checksumTwo;
-			String fileOne;
-			String fileTwo;
+			File fileOne;
+			File fileTwo;
 			SyncService syncService = Context.getService(SyncService.class);
 
 			public void runOnParent() {
@@ -124,10 +123,10 @@ public class SyncCloneTest extends SyncBaseTest {
 	 * 
 	 * @throws Exception
 	 */
-	public long checksum(String fileName) throws Exception {
+	public long checksum(File file) throws Exception {
 		long checksum;
 		byte[] buff = new byte[1024];
-		CheckedInputStream cis = new CheckedInputStream(new FileInputStream(fileName),
+		CheckedInputStream cis = new CheckedInputStream(new FileInputStream(file),
 		                                                new Adler32());
 		while (cis.read(buff) >= 0)
 			;

@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.sync.web;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -30,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
+import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.util.OpenmrsUtil;
 import org.openmrs.web.WebConstants;
@@ -75,13 +77,11 @@ public class CreateChildServlet extends HttpServlet {
 			response.sendRedirect(request.getContextPath() + "/login.htm");
 			return;
 		}
-		String fileName = Context.getService(SyncService.class).generateDataFile();
-		String fn = fileName.substring(fileName.replace("\\", "/")
-		                                       .lastIndexOf("/") + 1);
+		File generatedFile = Context.getService(SyncService.class).generateDataFile();
 		response.setContentType("text/sql");
-		response.setHeader("Content-Disposition", "attachment; filename=" + fn);
+		response.setHeader("Content-Disposition", "attachment; filename=" + generatedFile.getName());
 		response.setHeader("Pragma", "no-cache");
-		IOUtils.copy(new FileInputStream(fileName), response.getOutputStream());
+		IOUtils.copy(new FileInputStream(generatedFile), response.getOutputStream());
 		response.getOutputStream().flush();
 		response.getOutputStream().close();
 	}
@@ -91,7 +91,7 @@ public class CreateChildServlet extends HttpServlet {
 
 		HttpSession session = request.getSession();
 		if(!Context.isAuthenticated()){
-			reply(response,"Not loged in, please login and retry again","red");
+			reply(response,"Not logged in, please login and retry again","red");
 			return;
 		}
 		if (!Context.hasPrivilege(SyncConstants.PRIV_BACKUP_ENTIRE_DATABASE)) {
@@ -109,13 +109,13 @@ public class CreateChildServlet extends HttpServlet {
 		MultipartFile mf = multipartRequest.getFile("cloneFile");
 		if (mf != null && !mf.isEmpty()) {
 			try {
-				String fileName = OpenmrsUtil.getApplicationDataDirectory()
-				        + "/" + SyncConstants.CLONE_IMPORT_FILE_NAME
+				File dir = SyncUtil.getSyncApplicationDir();
+				File file = new File(dir, SyncConstants.CLONE_IMPORT_FILE_NAME
 				        + SyncConstants.SYNC_FILENAME_MASK.format(new Date())
-				        + ".sql";
+				        + ".sql");
 				IOUtils.copy(mf.getInputStream(),
-				             new FileOutputStream(fileName));
-				Context.getService(SyncService.class).execGeneratedFile(fileName);
+				             new FileOutputStream(file));
+				Context.getService(SyncService.class).execGeneratedFile(file);
 
 				reply(response,"Child database successifully updated","green");
 			} catch (Exception ex) {

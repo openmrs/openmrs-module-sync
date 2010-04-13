@@ -41,9 +41,11 @@
 					<tr>
 						<td style="font-weight: bold;"><spring:message code="sync.status.LastSync" /></td>
 						<td>
+							<c:if test="${empty parent.lastSync}"><spring:message code="sync.status.LastSync.none"/></c:if>
 							<openmrs:formatDate date="${parent.lastSync}" format="${syncDateDisplayFormat}" />
 						</td>
 					</tr>
+					<c:if test="${not empty parent.lastSyncState}">
 					<tr>
 						<td style="font-weight: bold;"><spring:message code="sync.status.LastSync.result" /></td>
 						<td>
@@ -55,6 +57,7 @@
 							</c:if>
 						</td>
 					</tr>
+					</c:if>
 				</tbody>
 			</table>
 			</c:otherwise>
@@ -155,17 +158,20 @@
 							<tr>
 								<td colspan="8" style="background-color: #${bgStyle};font-weight: bold">
 									<c:choose>
+										<c:when test="${empty server.uuid}">
+											<span class="syncStatsWarning"><spring:message code="sync.overview.warning.uuid" arguments="${server.serverId}"/></span>
+										</c:when>
 										<c:when test="${server.lastSyncState != 'OK'}">
-											<span class="syncStatsWarning">WARNING: Last communication with this server resulted in failure. There are ${recordsPending} pending record(s) for this server.</span>
+											<span class="syncStatsWarning"><spring:message code="sync.overview.warning.lastComm" arguments="${recordsPending}"/></span>
 										</c:when>
 										<c:when test="${recordsOld == true}">
-											<span class="syncStatsWarning">WARNING: There are ${recordsPending} pending record(s) for this server older than 24 hrs.</span>
+											<span class="syncStatsWarning"><spring:message code="sync.overview.warning.pending" arguments="${recordsPending}"/></span>
 										</c:when>
 										<c:when test="${recordsPending > 0}">
-											<span class="syncStatsAttention">There are ${recordsPending} pending record(s) for this server.</span>
+											<span class="syncStatsAttention"><spring:message code="sync.overview.pending" arguments="${recordsPending}"/></span>
 										</c:when>										
 										<c:otherwise>
-											<span class="syncStatsOK">Server is fully synchronized.</span>
+											<span class="syncStatsOK"><spring:message code="sync.overview.fullySyncd"/></span>
 										</c:otherwise>
 									</c:choose>																				
 								</td>

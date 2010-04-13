@@ -326,8 +326,6 @@ public interface SyncDAO {
 	 */
 	public Map<RemoteServer, Set<SyncStatistic>> getSyncStatistics(Date fromDate, Date toDate) throws DAOException;
 	
-	public boolean checkUuidsForClass(Class clazz) throws DAOException;
-	
 	public <T extends OpenmrsObject> T getOpenmrsObjectByUuid(Class<T> clazz, String uuid);
 	
 	/**

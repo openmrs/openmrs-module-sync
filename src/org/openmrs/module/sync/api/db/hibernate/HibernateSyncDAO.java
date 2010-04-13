@@ -100,7 +100,7 @@ public class HibernateSyncDAO implements SyncDAO {
             //TODO: Create Uuid if missing?
             throw new DAOException("SyncRecord must have a UUID");
         }
-        
+
         Session session = sessionFactory.getCurrentSession();
         session.save(record);
     }
@@ -380,17 +380,20 @@ public class HibernateSyncDAO implements SyncDAO {
         if (to != null)
             criteria.add(Restrictions.le("timestamp", to)); // less-than or equal
         
-        if (firstRecordId != null)
-        	criteria.add(Restrictions.gt("recordId", firstRecordId));
-        
         if (numberToReturn != null)
         	criteria.setMaxResults(numberToReturn);
         
         if (oldestToNewest) {
+        	if (firstRecordId != null)
+            	criteria.add(Restrictions.ge("recordId", firstRecordId));
+            
 	        criteria.addOrder(Order.asc("timestamp"));
 	        criteria.addOrder(Order.asc("recordId"));
         }
         else {
+        	if (firstRecordId != null)
+            	criteria.add(Restrictions.le("recordId", firstRecordId));
+            
         	criteria.addOrder(Order.desc("timestamp"));
 	        criteria.addOrder(Order.desc("recordId"));
         }
@@ -637,7 +640,7 @@ public class HibernateSyncDAO implements SyncDAO {
 				map.put(r,props);
 			}
 			else {
-				//for parent servers, get the number of records in sync journal
+				//for parent servers, get the number of records in sync record
 				Query q = sessionFactory.getCurrentSession().createQuery(hqlParent);
 				Long count = (Long)q.uniqueResult();
 				Set<SyncStatistic> props = new HashSet<SyncStatistic>();
@@ -655,7 +658,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	 * called at Openmrs sync parent server: exports the openmrs database to a
 	 * DDL output stream for sending it back to a new child node being created
 	 */
-	public void exportChildDB(String guidForChild, OutputStream os)
+	public void exportChildDB(String uuidForChild, OutputStream os)
 	        throws DAOException {
 		PrintStream out = new PrintStream(os);
 		Set<String> tablesToSkip = new HashSet<String>();
@@ -668,12 +671,12 @@ public class HibernateSyncDAO implements SyncDAO {
 			tablesToSkip.add("formentry_error");
 			tablesToSkip.add("scheduler_task_config");
 			tablesToSkip.add("scheduler_task_config_property");
-			tablesToSkip.add("synchronization_class");
-			tablesToSkip.add("synchronization_import");
-			tablesToSkip.add("synchronization_journal");
-			tablesToSkip.add("synchronization_server");
-			tablesToSkip.add("synchronization_server_class");
-			tablesToSkip.add("synchronization_server_record");
+			tablesToSkip.add("sync_class");
+			tablesToSkip.add("sync_import");
+			tablesToSkip.add("sync_record");
+			tablesToSkip.add("sync_server");
+			tablesToSkip.add("sync_server_class");
+			tablesToSkip.add("sync_server_record");
 			// TODO: figure out which other tables to skip
 			// tablesToSkip.add("obs");
 			// tablesToSkip.add("concept");
@@ -875,10 +878,10 @@ public class HibernateSyncDAO implements SyncDAO {
 
 			// Now we mark this as a child
 			out.println("-- Now mark this as a child database");
-			if (guidForChild == null)
-				guidForChild = SyncUtil.generateUuid();
+			if (uuidForChild == null)
+				uuidForChild = SyncUtil.generateUuid();
 			out.println("update global_property set property_value = '"
-			        + guidForChild + "' where property = '"
+			        + uuidForChild + "' where property = '"
 			        + SyncConstants.PROPERTY_SERVER_UUID + "';");
 
 			// Write the footer of the DDL script
@@ -1107,69 +1110,6 @@ public class HibernateSyncDAO implements SyncDAO {
 		}
 	}
 	
-	public boolean checkUuidsForClass(Class clazz) {
-		
-		//TODO: work in progres
-
-		boolean ret = false;
-		/*
-		try {
-			//now build the sql based on the hibernate mappings; to do this we need to load (at least once) the config
-			if (HibernateSyncDAO.configuration == null) {
-				synchronized (configurationLock) {
-					HibernateSyncDAO.configuration = new org.hibernate.cfg.Configuration().configure();
-				}
-			}
-			
-			String selectSql = null;
-			String columnName = null;
-			String tableName = null;
-			String catalogName = null;
-	
-			org.hibernate.mapping.PersistentClass pc = HibernateSyncDAO.configuration.getClassMapping(clazz.getName());
-			
-			if (pc == null) {
-				log.error("cannot get hibernate class mapping for " + clazz.getName());
-				return ret;
-			}
-			
-			tableName = pc.getTable().getName();
-			org.hibernate.mapping.Property p = pc.getProperty("uuid");
-			if (p == null) {
-				log.error("cannot get hibernate uuid column mapping for " + clazz.getName());
-				return ret;			
-			}
-			
-			java.util.Iterator<org.hibernate.mapping.Column> columns = p.getColumnIterator();
-			if (columns.hasNext()) {
-				columnName = columns.next().getName();
-			} else {
-				log.info("column mapping not found for property uuid.");
-				return ret;
-			}
-			
-			//now compare this to database metadata
-			java.sql.DatabaseMetaData meta = sessionFactory.getCurrentSession().connection().getMetaData();
-			java.sql.ResultSet rs = meta.getColumns(null, null,tableName, columnName);
-			ResultSetMetaData rmd = rs.getMetaData();
-			
-			if (!rs.first()) {
-				log.error("didn't find uuid in database!");
-				return ret;
-			}
-			
-			log.debug("done");
-		}
-		catch (Exception e) {
-			//TODO
-			log.error("Ouch: ", e);
-			ret = false;
-		} */
-		
-		return ret;
-
-	}
-
 	public <T extends OpenmrsObject> T getOpenmrsObjectByUuid(Class<T> clazz, String uuid) {
 		Criteria crit = sessionFactory.getCurrentSession().createCriteria(clazz);
 		crit.add(Restrictions.eq("uuid", uuid));
@@ -1311,20 +1251,23 @@ public class HibernateSyncDAO implements SyncDAO {
 				Object entry = SyncUtil.getOpenmrsObj(entryClassName, entryUuid);
 				
 				if (entry == null) {
-					//the object not found: most likely cause here is data collision
-		    		log.error("Was not able to retrieve reference to the collection entry object.");
-		    		log.error("Entry info: " +
-		    				"\nentryClassName:" + entryClassName + 
-		    				"\nentryUuid:" + entryUuid +
-		    				"\nentryAction:" + entryAction);
-					throw new SyncIngestException(SyncConstants.ERROR_ITEM_NOT_COMMITTED, ownerClassName, incoming,null);					
+					// blindly ignore this entry if it doesn't exist and we're trying to delete it
+					if (!"delete".equals(entryAction)) {
+						//the object not found: most likely cause here is data collision
+			    		log.error("Was not able to retrieve reference to the collection entry object by uuid.");
+			    		log.error("Entry info: " +
+			    				"\nentryClassName: " + entryClassName + 
+			    				"\nentryUuid: " + entryUuid +
+			    				"\nentryAction: " + entryAction);
+						throw new SyncIngestException(SyncConstants.ERROR_ITEM_UUID_NOT_FOUND, ownerClassName + "," + entryUuid, incoming, null);
+					}
 				} else if ("update".equals(entryAction)) {				
 					if (!OpenmrsUtil.collectionContains(entries, entry)) {
 						entries.add(entry);
 					}
 				} else if ("delete".equals(entryAction)) {
 					OpenmrsUtil.collectionContains(entries, entry);
-					entries.contains(entry);					
+					
 					if (!entries.remove(entry)) {
 						//couldn't find entry in collection: hmm, bad implementation of equals?
 						//fall back to trying to find the item in entries by uuid

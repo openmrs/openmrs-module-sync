@@ -60,6 +60,7 @@ public class ConfigCurrentServerFormController {
 	                                @RequestParam("serverUuid") String serverUuid,
 	                                @RequestParam(value = "serverAdminEmail", required = false) String serverAdminEmail,
 	                                @RequestParam(value = "maxPageRecords", required = false) Integer maxPageRecords,
+	                                @RequestParam(value = "maxRecords", required = false) Integer maxRecords,
 	                                @RequestParam(value = "maxRetryCount", required = false) Integer maxRetryCount,
 	                                HttpSession httpSession) throws Exception {
 		
@@ -77,6 +78,8 @@ public class ConfigCurrentServerFormController {
 		AdministrationService as = Context.getAdministrationService();
 		if (maxRetryCount != null) {
 			GlobalProperty gp = as.getGlobalPropertyObject(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT);
+			if (gp == null)
+				gp = new GlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT);
 			if (!maxRetryCount.toString().equals(gp.getPropertyValue())) {
 				gp.setPropertyValue(maxRetryCount.toString());
 				as.saveGlobalProperty(gp);
@@ -85,8 +88,20 @@ public class ConfigCurrentServerFormController {
 		
 		if (maxPageRecords != null) {
 			GlobalProperty gp = as.getGlobalPropertyObject(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS);
+			if (gp == null)
+				gp = new GlobalProperty(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS);
 			if (!maxPageRecords.toString().equals(gp.getPropertyValue())) {
 				gp.setPropertyValue(maxPageRecords.toString());
+				as.saveGlobalProperty(gp);
+			}
+		}
+		
+		if (maxRecords != null) {
+			GlobalProperty gp = as.getGlobalPropertyObject(SyncConstants.PROPERTY_NAME_MAX_RECORDS);
+			if (gp == null)
+				gp = new GlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS);
+			if (!maxRecords.toString().equals(gp.getPropertyValue())) {
+				gp.setPropertyValue(maxRecords.toString());
 				as.saveGlobalProperty(gp);
 			}
 		}
@@ -216,7 +231,8 @@ public class ConfigCurrentServerFormController {
 			modelMap.put("localServerUuid", syncService.getServerUuid());
 			modelMap.put("localServerName", syncService.getServerName());
 			modelMap.put("localServerAdminEmail", syncService.getAdminEmail());
-			modelMap.put("maxPageRecords", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS, SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT_DEFAULT));
+			modelMap.put("maxPageRecords", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS, SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT));
+			modelMap.put("maxRecords", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS, SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT));
 			modelMap.put("maxRetryCount", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT, SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT_DEFAULT));
 
 			// advanced section
