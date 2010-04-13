@@ -405,8 +405,8 @@ public class SyncUtilTransmission {
                 log.warn("STILL UNABLE TO GET ORIGIN WITH username " + username + " and sourceuuid " + sourceUuid);
             }
         } else {
-            if ( origin != null ) log.warn("ORIGIN SERVER IS " + origin.getNickname());
-            else log.warn("ORIGIN SERVER IS STILL NULL");
+            if ( origin != null ) log.debug("ORIGIN SERVER IS " + origin.getNickname());
+            else log.debug("ORIGIN SERVER IS STILL NULL");
         }
         
         //update timestamp for origin server, set the status to processing

@@ -110,7 +110,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                 //log.warn("\nINGESTING ALL CLASSES: " + recordClasses + " BECAUSE SERVER IS READY TO ACCEPT ALL");
                 // second, let's see if this SyncRecord has already been imported
                 // use the original record id to locate import_record copy
-                log.warn("AT THIS POINT, ORIGINALUUID FOR RECORD IS " + record.getOriginalUuid());
+                log.debug("AT THIS POINT, ORIGINALUUID FOR RECORD IS " + record.getOriginalUuid());
                 importRecord = syncService.getSyncImportRecord(record.getOriginalUuid());
                 boolean isUpdateNeeded = false;
                 

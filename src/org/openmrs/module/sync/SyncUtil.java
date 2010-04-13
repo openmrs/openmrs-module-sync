@@ -846,25 +846,47 @@ public class SyncUtil {
 		}
 		
 		try {
+			msg = "Processing form with id: " + form.getFormId().toString();
+			
+			boolean rebuildXsn = true;
 			try {
-				msg = "Processing form with id: " + form.getFormId().toString();
-				c = Context.loadClass("org.openmrs.module.formentry.FormEntryUtil");
+				c = Context.loadClass("org.openmrs.module.formentry.FormEntryService");
 			} catch(Exception e){}
 			if (c==null) {
-				log.warn("Failed to retrieve handle to FormEntryUtil in formentry module; is module loaded? " + msg);
+				log.warn("Failed to find FormEntryService in formentry module; is module loaded? " + msg);
 				return;
 			}
-			
 			try {
-			    m = c.getDeclaredMethod("rebuildXSN", new Class[]{form.getClass()});
-			} catch(Exception e) {}
-		    if (m==null) {
-		    	log.warn("Failed to retrieve handle to rebuildXSN method in FormEntryUtil; is module loaded? " + msg);
-		    	return;
-		    }
-		    
-		    //finally execute it
-		    m.invoke(null, form);
+				Object formentryservice = Context.getService(c);
+				m = formentryservice.getClass().getDeclaredMethod("getFormEntryXsn", new Class[]{form.getClass()});
+				Object xsn = m.invoke(formentryservice, form);
+				if (xsn == null)
+					rebuildXsn = false;
+			}
+			catch (Exception e) {
+				log.warn("Failed to test for formentry xsn existance");
+			}
+			
+			if (rebuildXsn) {
+				try {
+					c = Context.loadClass("org.openmrs.module.formentry.FormEntryUtil");
+				} catch(Exception e){}
+				if (c==null) {
+					log.warn("Failed to retrieve handle to FormEntryUtil in formentry module; is module loaded? " + msg);
+					return;
+				}
+				
+				try {
+				    m = c.getDeclaredMethod("rebuildXSN", new Class[]{form.getClass()});
+				} catch(Exception e) {}
+			    if (m==null) {
+			    	log.warn("Failed to retrieve handle to rebuildXSN method in FormEntryUtil; is module loaded? " + msg);
+			    	return;
+			    }
+			    
+			    //finally execute it
+			    m.invoke(null, form);
+			}
 					
 		}	
 		catch (Exception e) {
