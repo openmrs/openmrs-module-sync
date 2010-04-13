@@ -222,7 +222,7 @@
 		</description>
 		<sql>
 			INSERT INTO scheduler_task_config (name, description, schedulable_class, start_time, start_time_pattern, repeat_interval, start_on_startup, started, created_by, date_created, changed_by, date_changed, uuid) VALUES ('Cleanup Old Sync Records', 'This task deletes old rows in the sync_record and sync_server_record tables.  The default settings work on all servers, but for advanced users, you can change the properties to suit your needs.', 'org.openmrs.module.sync.scheduler.CleanupSyncTablesTask', '2009-12-18 17:26:31', 'MM/dd/yyyy HH:mm:ss', '604800', '1', '0', '1', '2009-12-18 17:28:39', null, null, 'd3122955-00d7-454c-b17f-e3f87206c74b');
-			INSERT INTO scheduler_task_config_property (name, value, task_config_id) VALUES ('delete_entries_files_older_than_x_days', '28', (select max(task_config_id) from scheduler_task_config where name = 'Cleanup Old Sync Records'));
+			INSERT INTO scheduler_task_config_property (name, value, task_config_id) VALUES ('delete_entries_files_older_than_x_days', '90', (select max(task_config_id) from scheduler_task_config where name = 'Cleanup Old Sync Records'));
 			INSERT INTO scheduler_task_config_property (name, value, task_config_id) VALUES ('sync_record_states_to_delete', '', (select max(task_config_id) from scheduler_task_config where name = 'Cleanup Old Sync Records'));
 		</sql>
 	</diff>

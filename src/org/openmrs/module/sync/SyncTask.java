@@ -45,10 +45,12 @@ public class SyncTask extends AbstractTask {
 	}
 
 	/**
-	 * Runs 'full' data synchronization (i.e. both send local changes and receive changes from the remote server as identified 
-	 * in the task setup). 
-	 * <p> NOTE: Any exception (outside of session open/close) is caughted and reported in the error log thus creating retry
-	 * behavior based on the scheduled frequency.
+	 * Runs 'full' data synchronization (i.e. both send local changes and
+	 * receive changes from the remote server as identified in the task setup).
+	 * <p>
+	 * NOTE: Any exception (outside of session open/close) is caught and
+	 * reported in the error log thus creating retry behavior based on the
+	 * scheduled frequency.
 	 */
 	public void execute() {
 		Context.openSession();

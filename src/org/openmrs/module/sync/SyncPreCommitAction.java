@@ -30,8 +30,7 @@ public class SyncPreCommitAction {
 	 */
 	public enum PreCommitActionName {
 		REBUILDXSN,
-		UPDATECONCEPTWORDS,
-		CHANGEOBSVOIDEDREASONUUID, 
+		UPDATECONCEPTWORDS
 	}
 	
 	public SyncPreCommitAction(PreCommitActionName actionName,Object actionParam) {

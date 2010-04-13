@@ -57,7 +57,8 @@
 			if (document.getElementById("state_" + record.uuid) == null) {
 				var row = document.createElement("tr");
 				var nameCell = document.createElement("td");
-				nameCell.innerHTML = record.syncImportItems[0].key;
+				nameCell.innerHTML = record.description;
+				nameCell.innerHTML += "<div style='color: #bbb'>" + record.state + " - " + record.timestampDisplay + "</div>";
 				row.appendChild(nameCell);
 				var stateCell = document.createElement("td");
 				stateCell.id = "state_" + record.uuid;
@@ -122,22 +123,29 @@
 			// fix the odd/even rows
 			toggleRowVisibilityForClass("syncChangesTable", "someNonexistentClass", false);
 		}
-
+		
+		var getReceivedNumberAttempts = 0;
+		
 		function displayNumberOfObjectsBeingReceived(num) {
 			// keep checking until we get a response
-			if (!num || num == "") {
-				DWRSyncService.getNumberOfObjectsBeingReceived(displayNumberOfObjectsBeingReceived);
+			getReceivedNumberAttempts += 1;
+			if (getReceivedNumberAttempts < 60 && !num || num == "") {
+				setTimeout("getNumberOfObjectsBeingReceived()", 500); // fire this off again in half a second
 				return;
 			}
 			
 			DWRUtil.setValue("syncReceivingSize", "<spring:message code="sync.status.export.viaWeb.receiving" />".replace("{0}", num), { escapeHtml: false} );
 		}
 
+		function getNumberOfObjectsBeingReceived() {
+			DWRSyncService.getNumberOfObjectsBeingReceived(displayNumberOfObjectsBeingReceived);
+		}
+
 		function syncToParent() {
 			document.getElementById("webExportButton").disabled = true;
 			DWRUtil.setValue("syncInfo", "<spring:message code="sync.status.export.viaWeb.sending" arguments="${fn:length(statusCommandObject)}" />", { escapeHtml:false });
 			DWRSyncService.syncToParent(displaySyncResults);
-			DWRSyncService.getNumberOfObjectsBeingReceived(displayNumberOfObjectsBeingReceived);
+			getNumberOfObjectsBeingReceived();
 		}
 		
 	-->

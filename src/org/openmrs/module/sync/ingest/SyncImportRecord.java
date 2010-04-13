@@ -24,6 +24,7 @@ import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
+import org.springframework.util.StringUtils;
 
 /**
  * {@link SyncImportRecord}s are kept on this server for every transactional unit that
@@ -49,6 +50,9 @@ public class SyncImportRecord implements Serializable, IItem {
     private SyncRecordState state = SyncRecordState.NEW;
     private String errorMessage;
     private List<SyncImportItem> items = null;
+    
+    // convenience string describing the content of this import record
+    private transient String description = null;
 
 	// Constructors
     /** default constructor */
@@ -64,6 +68,10 @@ public class SyncImportRecord implements Serializable, IItem {
     		this.timestamp = record.getTimestamp();
     		this.retryCount = record.getRetryCount();
     		this.state = record.getState();
+    		
+    		if (StringUtils.hasLength(record.getContainedClasses())) {
+    			this.description = record.getContainedClasses().split(",")[0];
+    		}
     	}
     }
 
@@ -223,5 +231,16 @@ public class SyncImportRecord implements Serializable, IItem {
 	public void addItem(SyncImportItem item) {
 		if ( this.items == null ) this.items = new ArrayList<SyncImportItem>();
 		this.items.add(item);
+	}
+
+	/**
+	 * @return the contained type of this import or the first uuid if no
+	 *         description is set
+	 */
+	public String getDescription() {
+		if (description != null)
+			return description;
+		else
+			return uuid;
 	}
 }

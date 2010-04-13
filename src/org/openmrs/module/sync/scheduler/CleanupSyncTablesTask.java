@@ -39,7 +39,7 @@ public class CleanupSyncTablesTask extends AbstractTask {
 	
 	protected static final String PROPERTY_DAYS_BACK = "delete_entries_files_older_than_x_days";
 	
-	private Integer DEFAULT_DAYS_BACK_TO_START_DELETE = 28;
+	private Integer DEFAULT_DAYS_BACK_TO_START_DELETE = 90;
 	
 	/**
 	 * Comma delimited list of {@link SyncRecordState} names that will be deleted. These states on

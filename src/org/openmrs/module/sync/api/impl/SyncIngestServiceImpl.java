@@ -382,8 +382,8 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         	SyncUtil.deleteOpenmrsObject(o);
         }else if (!alreadyExists && isDelete) { 
         	log.warn("Object to be deleted was not found in the database. skipping delete operation:");
-        	log.warn("-object type:" + o.getClass().toString());
-        	log.warn("-object uuid:" + uuid);
+        	log.warn("-object type: " + o.getClass().toString());
+        	log.warn("-object uuid: " + uuid);
         } else {
             //if we are doing insert/update:
             //1. set serialized props state
@@ -400,11 +400,12 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         	        
 	        // now try to commit this fully inflated object
 	        try {
-	        	log.warn("About to update or create a " + className + " object, uuid: '" + uuid + "'");
+	        	log.debug("About to update or create a " + className + " object, uuid: '" + uuid + "'");
 	            SyncUtil.updateOpenmrsObject(o, className, uuid, preCommitRecordActions);
 	            Context.getService(SyncService.class).flushSession();
 	        } catch ( Exception e ) {
-	        	log.error("Unexpected exception occurred while saving openmrsobject: " + className + ", uuid '" + uuid + "'", e);
+	        	// don't include stacktrace here because the parent classes log it sufficiently
+	        	log.error("Unexpected exception occurred while saving openmrsobject: " + className + ", uuid '" + uuid + "'");
 	            throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_NOT_COMMITTED, className, itemContent, null);
 	        }
         }

@@ -32,6 +32,7 @@ public class SyncImportRecordItem {
     private String state;
     private String errorMessage;
     private Vector<SyncImportItemItem> syncImportItems;
+    private String description;
 
 	public SyncImportRecordItem() {}
     
@@ -59,6 +60,9 @@ public class SyncImportRecordItem {
     				this.syncImportItems.add(new SyncImportItemItem(item));
     			}
     		}
+    		
+    		this.description = importRecord.getDescription();
+    		
     	} else {
     		this.state = SyncRecordState.FAILED.toString();
     	}
@@ -120,4 +124,7 @@ public class SyncImportRecordItem {
     	this.timestampRaw = timestampRaw;
     }
     
+    public String getDescription() {
+    	return description;
+    }
 }

@@ -102,12 +102,14 @@
         }
 
         function cloneParent() {
-            document.getElementById("cloneViaWebButton").disabled = true;
-            DWRUtil.setValue("cloneInfo", "Cloning parent data ..."+'<img src="${pageContext.request.contextPath}/moduleResources/sync/connectionTest.gif" border="0" style="margin-bottom: -3px;">', { escapeHtml:false });
-            var address = DWRUtil.getValue("address");
-            var username = DWRUtil.getValue("username");
-            var password = DWRUtil.getValue("password");
-            DWRSyncService.cloneParentDB(address, username, password, showCloneResult);
+            if (confirm("<spring:message code="sync.settings.server.clone.now.warning"/>")) {
+	            document.getElementById("cloneViaWebButton").disabled = true;
+	            DWRUtil.setValue("cloneInfo", "Cloning parent data ..."+'<img src="${pageContext.request.contextPath}/moduleResources/sync/connectionTest.gif" border="0" style="margin-bottom: -3px;">', { escapeHtml:false });
+	            var address = DWRUtil.getValue("address");
+	            var username = DWRUtil.getValue("username");
+	            var password = DWRUtil.getValue("password");
+	            DWRSyncService.cloneParentDB(address, username, password, showCloneResult);
+            }
         }
 
         var cloneStatus='<strong><spring:message code="sync.sending.parent.clone" /></strong>';
@@ -313,7 +315,7 @@
 						</td>
 					</tr>
 					<tr>
-						<td align="right" valign="middle" nowrap>
+						<td align="right" valign="top" nowrap>
 							<b><spring:message code="sync.config.parent.scheduled" /></b>
 						</td>
 						<td align="left" valign="top">
@@ -330,6 +332,11 @@
 											<input type="text" size="3" maxlength="3" id="repeatInterval" name="repeatInterval" value="${repeatInterval}" />
 											<spring:message code="sync.config.parent.scheduled.minutes" />
 										</div>
+									</td>
+								</tr>
+								<tr>
+									<td colspan="2">
+										<i><span style="color: #bbbbbb;"><spring:message code="sync.config.parent.scheduled.info"/></span></i>
 									</td>
 								</tr>
 							</table>
@@ -460,8 +467,7 @@
 						code="sync.settings.server.clone.parent.web" /></b></td>
 					<td><input type="button" name="cloneViaWebButton"
 						id="cloneViaWebButton" onClick="cloneParent();"
-						value="<spring:message
-                                                       code="sync.settings.server.clone.now" />" />
+						value="<spring:message code="sync.settings.server.clone.now" />" />
 					<span style="color: #555555;"> <spring:message
 						code="sync.settings.server.clone.expl" /> </span></td>
 				</tr>

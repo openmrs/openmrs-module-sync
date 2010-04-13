@@ -69,6 +69,7 @@ import org.openmrs.ProgramWorkflowState;
 import org.openmrs.Relationship;
 import org.openmrs.RelationshipType;
 import org.openmrs.api.context.Context;
+import org.openmrs.api.db.LoginCredential;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.FilePackage;
 import org.openmrs.module.sync.serialization.IItem;
@@ -80,6 +81,7 @@ import org.openmrs.notification.Message;
 import org.openmrs.notification.MessageException;
 import org.openmrs.util.LocaleUtility;
 import org.openmrs.util.OpenmrsUtil;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -533,7 +535,36 @@ public class SyncUtil {
     		String className, 
     		String Uuid, 
     		List<SyncPreCommitAction> preCommitRecordActions) {
-
+    	
+    	// TODO allow this to be done by modules somehow
+    	// some pre-flush modifications
+    	// if an obs comes through with a non-null voidReason, make sure we change it back to using a PK
+    	if ("org.openmrs.Obs".equals(className)) {
+    		Obs obs = (Obs)o;
+			String voidReason = obs.getVoidReason();
+			if (StringUtils.hasLength(voidReason)) {
+	    		int start = voidReason.lastIndexOf(" ") + 1; // assumes uuids don't have spaces 
+				int end = voidReason.length() - 1;
+				String uuid = voidReason.substring(start, end);
+				try {
+					OpenmrsObject openmrsObject = getOpenmrsObj("org.openmrs.Obs", uuid);
+					Integer obsId = openmrsObject.getId();
+					obs.setVoidReason(voidReason.substring(0, start) + obsId + ")");
+				}
+				catch (Exception e) {
+					log.trace("unable to get uuid from obs uuid: " + uuid, e);
+				}
+			}
+    	}
+    	else if ("org.openmrs.api.db.LoginCredential".equals(className)) {
+    		LoginCredential login = (LoginCredential)o;
+			OpenmrsObject openmrsObject = getOpenmrsObj("org.openmrs.User", login.getUuid());
+			Integer userId = openmrsObject.getId();
+			login.setUserId(userId);
+    	}
+    	
+    	// now do the save
+    	
     	if ( o != null ) {
 			Context.getService(SyncService.class).saveOrUpdate(o);
 		} else {
@@ -558,13 +589,6 @@ public class SyncUtil {
 //    			preCommitRecordActions.add(new SyncPreCommitAction(SyncPreCommitAction.PreCommitActionName.UPDATECONCEPTWORDS, o));
 //    		}
 //    	}
-    	// if an obs comes through with a non-null voidReason, make sure we change it back to using a PK
-    	else if ("org.openmrs.Obs".equals(className)) {
-    		if (preCommitRecordActions != null && o != null) {
-    			if (((Obs)o).getVoidReason() != null)
-    				preCommitRecordActions.add(new SyncPreCommitAction(SyncPreCommitAction.PreCommitActionName.CHANGEOBSVOIDEDREASONUUID, o));
-    		}
-    	}
     	
     }  
 	
@@ -894,28 +918,6 @@ public class SyncUtil {
 				} else {
 					//error: action was scheduled as updateconceptwords but param passed was not form
 					throw new SyncException("UPDATECONCEPTWORDS action was scheduled for 'PreCommitRecordActions' exection but param passed was not Concept, param passed was:" + action.getParam() );					
-				}
-			}
-			else if (action.getName().equals(SyncPreCommitAction.PreCommitActionName.CHANGEOBSVOIDEDREASONUUID)) {
-				
-				Object o = action.getParam();
-				if (o != null && (o instanceof Obs) ) {
-					Obs obs = (Obs)o;
-					String voidReason = obs.getVoidReason();
-		    		int start = voidReason.lastIndexOf(" ") + 1; // assumes uuids don't have spaces 
-					int end = voidReason.length() - 1;
-					String uuid = voidReason.substring(start, end);
-					try {
-						OpenmrsObject openmrsObject = getOpenmrsObj("org.openmrs.Obs", uuid);
-						Integer obsId = openmrsObject.getId();
-						obs.setVoidReason(voidReason.substring(0, start) + obsId + ")");
-					}
-					catch (Exception e) {
-						log.trace("unable to get uuid from obs uuid: " + uuid, e);
-					}
-				} else {
-					//error: action was scheduled as fix void reason but param passed was not obs
-					throw new SyncException("CHANGEOBSVOIDEDREASONUUID action was scheduled for 'PreCommitRecordActions' exection but param passed was not Obs, param passed was:" + action.getParam() );					
 				}
 			}
 			else {
