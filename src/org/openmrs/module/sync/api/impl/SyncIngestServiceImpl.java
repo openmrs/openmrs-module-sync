@@ -307,7 +307,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
     /**
      * Processes serialized SyncItem state by attempting to hydrate the object SyncItem represents and then using OpenMRS service layer to
      * update the hydrated instance of OpenmrsObject object.
-     * <p/>Remarks: This implementation relies on internal knowledge of how SyncItems are serialized: it itterates over direct child nodes of the root xml
+     * <p/>Remarks: This implementation relies on internal knowledge of how SyncItems are serialized: it iterates over direct child nodes of the root xml
      * node in incoming assuming they are serialized public properties of the object that is being hydrated. Consequently, for each child node, 
      * property setter is determined and then called. After setting all properties, OpenMRS service layer API is used to actually save 
      * the object into persistent store. The details of how property setters are determined and how appropriate service layer methods

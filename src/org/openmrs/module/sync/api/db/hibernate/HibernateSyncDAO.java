@@ -669,8 +669,6 @@ public class HibernateSyncDAO implements SyncDAO {
 			tablesToSkip.add("formentry_archive");
 			tablesToSkip.add("formentry_queue");
 			tablesToSkip.add("formentry_error");
-			tablesToSkip.add("scheduler_task_config");
-			tablesToSkip.add("scheduler_task_config_property");
 			tablesToSkip.add("sync_class");
 			tablesToSkip.add("sync_import");
 			tablesToSkip.add("sync_record");

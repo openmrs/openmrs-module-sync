@@ -590,8 +590,7 @@ public class SyncServiceImpl implements SyncService {
 		        + SyncConstants.SYNC_FILENAME_MASK.format(new Date()) + ".sql";
 		String[] ignoreTables = { "hl7_in_archive", "hl7_in_queue",
 		        "hl7_in_error", "formentry_archive", "formentry_queue",
-		        "formentry_error", "scheduler_task_config",
-		        "scheduler_task_config_property", "sync_class",
+		        "formentry_error", "sync_class",
 		        "sync_import", "sync_record",
 		        "sync_server", "sync_server_class",
 		        "sync_server_record" };
