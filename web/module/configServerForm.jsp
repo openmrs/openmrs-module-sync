@@ -198,7 +198,12 @@
 					<td align="left" valign="top">
 						<input type="text" size="25" maxlength="250" id="nickname" name="nickname" value="${server.nickname}" />
 						<br>
-						<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.config.server.nickname.hint" /></span></i>
+							<c:if test="${(server.serverType == 'CHILD' || param.type == 'CHILD')}">
+								<i><span class="syncHint"><spring:message code="sync.config.server.nickname.hint.child" /></span></i>
+							</c:if>
+							<c:if test="${(server.serverType == 'PARENT' || param.type == 'PARENT')}">
+								<i><span class="syncHint"><spring:message code="sync.config.server.nickname.hint.parent" /></span></i>
+							</c:if>
 					</td>
 				</tr>
 				<tr>
@@ -208,7 +213,12 @@
 					<td align="left" valign="top">
 						<input type="text" size="48" maxlength="250" id="uuid" name="uuid" value="${server.uuid}" />
 						<br>
-						<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.config.server.uuid.hint" /></span></i>
+						<c:if test="${(server.serverType == 'CHILD' || param.type == 'CHILD')}">
+							<i><span class="syncHint"><spring:message code="sync.config.server.uuid.hint.child" /></span></i>
+						</c:if>
+						<c:if test="${(server.serverType == 'PARENT' || param.type == 'PARENT')}">
+							<i><span class="syncHint"><spring:message code="sync.config.server.uuid.hint.parent" /></span></i>
+						</c:if>
 					</td>
 				</tr>
 				<c:if test="${(server.serverType == 'CHILD' || param.type == 'CHILD') && not empty server.serverId}">
@@ -250,7 +260,7 @@
 						<td align="left" valign="top">
 							<input type="password" size="25" maxlength="250" id="passwordRetype" name="passwordRetype" value="" />
 							<br>
-							<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.config.server.option.login" /></span></i>
+							<i><span class="syncHint"><spring:message code="sync.config.server.option.login" /></span></i>
 						</td>
 					</tr>
 					<tr><td colspan="2">&nbsp;</td></tr>
@@ -263,7 +273,7 @@
 							&nbsp;<spring:message code="sync.config.server.adminEmail.address" />
 							<input type="text" size="25" maxlength="250" id="adminEmail" name="adminEmail" value="${localServerAdminEmail}" />
 							<br />
-							<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.config.server.adminEmail.instructions" /></span></i>
+							<i><span class="syncHint"><spring:message code="sync.config.server.adminEmail.instructions" /></span></i>
 						</td>
 					</tr>
 					<tr><td colspan="2">&nbsp;</td></tr>
@@ -273,9 +283,9 @@
 						onClick="document.location='${pageContext.request.contextPath}/ms/sync/createChildServlet';"
 						value="<spring:message code="sync.settings.server.clone.down" />" />
 						<br/>
-						<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.settings.server.clone.down.backup.help" /></span></i>
+						<i><span class="syncHint"><spring:message code="sync.settings.server.clone.down.backup.help" /></span></i>
 						<br/>
-						<i><span style="color: #bbbbbb; font-size: 0.9em;"><spring:message code="sync.settings.server.clone.down.backup.help2" /></span></i>
+						<i><span class="syncHint"><spring:message code="sync.settings.server.clone.down.backup.help2" /></span></i>
 					</td>
 				</tr>
 				<tr><td colspan="2">&nbsp;</td></tr>
@@ -290,7 +300,7 @@
 						<td align="left" valign="top">
 							<input type="text" size="70" maxlength="250" id="address" name="address" value="${server.address}" />
 							<br>
-							<i><span style="color: #bbbbbb;"><spring:message code="sync.config.parent.address.hint" /></span></i>
+							<i><span class="syncHint"><spring:message code="sync.config.parent.address.hint" /></span></i>
 						</td>
 					</tr>
 					<tr>
@@ -311,7 +321,7 @@
 							<input type="button" id="testConnectionButton" onClick="testConnection();" value="<spring:message code="sync.config.parent.test" />" />
 							<span id="testInfo"></span>
 							<br/>
-							<i><span style="color: #bbbbbb;"><spring:message code="sync.config.parent.login.hint" /></span></i>
+							<i><span class="syncHint"><spring:message code="sync.config.parent.login.hint" /></span></i>
 						</td>
 					</tr>
 					<tr>
@@ -336,7 +346,7 @@
 								</tr>
 								<tr>
 									<td colspan="2">
-										<i><span style="color: #bbbbbb;"><spring:message code="sync.config.parent.scheduled.info"/></span></i>
+										<i><span class="syncHint"><spring:message code="sync.config.parent.scheduled.info"/></span></i>
 									</td>
 								</tr>
 							</table>

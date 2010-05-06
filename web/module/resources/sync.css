@@ -181,3 +181,8 @@ table td#syncChangesTable,table td#syncStatus {
     font-size:12px;
 	vertical-align:middle;
 }
+
+.syncHint{
+	color: #757575;
+	font-size: 0.9em;	
+}
