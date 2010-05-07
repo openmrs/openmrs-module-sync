@@ -287,7 +287,7 @@ public class SyncUtil {
 					OpenmrsObject obj = getOpenmrsObj(nodeDefinedClassName, fieldVal);
 					o = obj.getId();
 				}
-				else if ("java.lang.String".equals(className) && !("string".equals(nodeDefinedClassName) || "java.lang.String".equals(nodeDefinedClassName))) {
+				else if ("java.lang.String".equals(className) && !("string".equals(nodeDefinedClassName) || "java.lang.String".equals(nodeDefinedClassName) || "integer".equals(nodeDefinedClassName) || "java.lang.Integer".equals(nodeDefinedClassName) || fieldVal.isEmpty())) {
 					// if we're dealing with a field like PersonAttribute.value, the actual value was changed from
 					// a string to a uuid by the HibernateSyncInterceptor.  The nodeDefinedClassName is the node.type which is the 
 					// actual classname as defined by the PersonAttributeType.format.  However, the field.getClassName is 

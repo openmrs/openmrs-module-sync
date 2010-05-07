@@ -69,4 +69,59 @@ public class SyncPersonTest extends SyncBaseTest {
 		});
 	}
 	
+	@Test
+	@NotTransactional
+	public void shouldSaveSimpleStringPersonAttribute() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			
+			public void runOnChild() throws Exception {
+				PersonService ps = Context.getPersonService();
+				
+				PersonAttributeType type = ps.getPersonAttributeType(1);
+				
+				Person person = ps.getPerson(4);
+				person.addAttribute(new PersonAttribute(type, "name")); // assign an arbitrary string value to this attribute 
+				ps.savePerson(person);
+				
+			}
+			
+			public void runOnParent() throws Exception {
+				PersonService ps = Context.getPersonService();
+				
+				// test to make sure that the value has been synced
+				Person person = ps.getPerson(4);
+				PersonAttribute attribute = person.getAttribute(1);
+				Assert.assertEquals("name", attribute.getValue());
+			}
+		});
+	}
+	
+	@Test
+	@NotTransactional
+	public void shouldSaveSimpleIntegerPersonAttribute() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			
+			public void runOnChild() throws Exception {
+				PersonService ps = Context.getPersonService();
+				
+				PersonAttributeType type = ps.getPersonAttributeType(8);
+				
+				Person person = ps.getPerson(4);
+				person.addAttribute(new PersonAttribute(type, "368")); // assign an arbitrary Integer value to this attribute 
+				ps.savePerson(person);
+				
+			}
+			
+			public void runOnParent() throws Exception {
+				PersonService ps = Context.getPersonService();
+				
+				// test to make sure that the value has been synced
+				Person person = ps.getPerson(4);
+				PersonAttribute attribute = person.getAttribute(8);
+				Assert.assertEquals("368", attribute.getValue());
+			}
+		});
+	}
+	
+	
 }

@@ -963,12 +963,14 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	    	String className = attr.getAttributeType().getFormat();
 	    	try {
     			Class c = Context.loadClass(className);
-    			String valueObjectUuid = fetchUuid(c, Integer.valueOf(data));
-    			
-    			// set the class name on this to be the uuid-ized type instead of java.lang.Integer.
-    			// the SyncUtil.valForField method will handle changing this back to an integer
     			item.setAttribute("type", className);
-    			return valueObjectUuid;
+    			
+    			// only convert to uuid if this is an OpenMrs object
+    			// otherwise, we are just storing a simple String or Integer value
+    			if(OpenmrsObject.class.isAssignableFrom(c)) {
+    				String valueObjectUuid = fetchUuid(c, Integer.valueOf(data));
+    				return valueObjectUuid;
+    			}
     		}
     		catch (Throwable t) {
     			log.warn("Unable to get class of type: " + className + " for sync'ing attribute.value column", t);
