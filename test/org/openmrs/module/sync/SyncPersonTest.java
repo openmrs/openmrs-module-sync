@@ -98,6 +98,33 @@ public class SyncPersonTest extends SyncBaseTest {
 	
 	@Test
 	@NotTransactional
+	public void shouldSaveSimpleStringPersonAttributeWithNumericalValue() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			
+			public void runOnChild() throws Exception {
+				PersonService ps = Context.getPersonService();
+				
+				PersonAttributeType type = ps.getPersonAttributeType(1);
+				
+				Person person = ps.getPerson(4);
+				person.addAttribute(new PersonAttribute(type, "123")); // set the string to a number, since this is what was giving us the problem 
+				ps.savePerson(person);
+				
+			}
+			
+			public void runOnParent() throws Exception {
+				PersonService ps = Context.getPersonService();
+				
+				// test to make sure that the value has been synced
+				Person person = ps.getPerson(4);
+				PersonAttribute attribute = person.getAttribute(1);
+				Assert.assertEquals("123", attribute.getValue());
+			}
+		});
+	}
+	
+	@Test
+	@NotTransactional
 	public void shouldSaveSimpleIntegerPersonAttribute() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
