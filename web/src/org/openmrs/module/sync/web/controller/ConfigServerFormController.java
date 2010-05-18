@@ -79,11 +79,10 @@ public class ConfigServerFormController {
 		if (!StringUtils.hasLength(username))
 			errors.rejectValue("username", "sync.config.server.error.usernameRequired");
 		
-		if (!StringUtils.hasLength(password))
+		if (!StringUtils.hasLength(password) || !StringUtils.hasLength(passwordRetype)) {
 			errors.rejectValue("password", "sync.config.server.error.passwordRequired");
-		
-		if (!password.equals(passwordRetype))
-			errors.rejectValue("passwordRetype", "error.password.match");
+		} else if (!password.equals(passwordRetype))
+			errors.rejectValue("password", "error.password.match");
 		
 		if (!StringUtils.hasLength(nickname))
 			errors.rejectValue("nickname", "sync.config.server.error.nicknameRequired");
