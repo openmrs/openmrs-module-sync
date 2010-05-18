@@ -21,6 +21,7 @@ import java.util.Date;
 
 import org.junit.Test;
 import org.openmrs.GlobalProperty;
+import org.openmrs.Person;
 import org.openmrs.PersonName;
 import org.openmrs.Privilege;
 import org.openmrs.Role;
@@ -48,9 +49,10 @@ public class SyncUserTest extends SyncBaseTest {
 			UserService us = Context.getUserService();
 			public void runOnChild() {
 				User u = new User();
+				u.setPerson(new Person());
 				u.setUsername("djazayeri");
 				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
-				u.setGender("M");
+				u.getPerson().setGender("M");
 				u.addRole(us.getRole("Administrator"));
 				u.addRole(us.getRole("Provider"));
 				us.saveUser(u, "test");
@@ -92,7 +94,7 @@ public class SyncUserTest extends SyncBaseTest {
 			int numRolesBefore;
 			public void runOnChild() {
 				User u = us.getUser(1);
-				u.setBirthdate(d);
+				u.getPerson().setBirthdate(d);
 				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
 				numRolesBefore = u.getRoles().size();
 				u.addRole(us.getRole("Provider"));
@@ -102,7 +104,7 @@ public class SyncUserTest extends SyncBaseTest {
 				User u = us.getUser(1);
 				assertEquals("Failed to create person name", u.getNames().size(), 2);
 				assertEquals("Failed to assign roles", u.getRoles().size(), numRolesBefore + 1);
-				assertEquals("Failed to set birthdate", OpenmrsUtil.compare(u.getBirthdate(), d), 0);
+				assertEquals("Failed to set birthdate", OpenmrsUtil.compare(u.getPerson().getBirthdate(), d), 0);
 			}
 		});
 	}
@@ -167,9 +169,10 @@ public class SyncUserTest extends SyncBaseTest {
 			UserService us = Context.getUserService();
 			public void runOnChild() {
 				User u = new User();
+				u.setPerson(new Person());
 				u.setUsername("djazayeri");
 				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
-				u.setGender("M");
+				u.getPerson().setGender("M");
 				us.saveUser(u, "test");
 				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
 			}
@@ -198,9 +201,10 @@ public class SyncUserTest extends SyncBaseTest {
 				Context.getAdministrationService().saveGlobalProperty(new GlobalProperty(SyncConstants.PROPERTY_SERVER_NAME, ""));
 				
 				User u = new User();
+				u.setPerson(new Person());
 				u.setUsername("djazayeri");
 				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
-				u.setGender("M");
+				u.getPerson().setGender("M");
 				us.saveUser(u, "test");
 				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
 			}

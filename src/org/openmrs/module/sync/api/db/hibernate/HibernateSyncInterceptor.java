@@ -38,6 +38,7 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.engine.ForeignKeys;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.proxy.HibernateProxy;
+import org.hibernate.type.EmbeddedComponentType;
 import org.hibernate.type.Type;
 import org.openmrs.Obs;
 import org.openmrs.OpenmrsObject;
@@ -77,15 +78,15 @@ import org.springframework.util.StringUtils;
  * 
  * @see org.hibernate.EmptyInterceptor
  */
-public class HibernateSyncInterceptor extends EmptyInterceptor
-        implements ApplicationContextAware {
+public class HibernateSyncInterceptor extends EmptyInterceptor implements
+		ApplicationContextAware {
 
 	/**
 	 * Helper container class to store type/value tuple for a given object
 	 * property. Utilized during serialization of intercepted entity changes.
 	 * 
-	 * @see HibernateSyncInterceptor#packageObject(OpenmrsObject,
-	 *      Object[], String[], Type[], SyncItemState)
+	 * @see HibernateSyncInterceptor#packageObject(OpenmrsObject, Object[],
+	 *      String[], Type[], SyncItemState)
 	 */
 	protected class PropertyClassValue {
 		String clazz, value;
@@ -194,7 +195,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	public void afterTransactionBegin(Transaction tx) {
 		if (log.isTraceEnabled())
 			log.trace("afterTransactionBegin: " + tx + " deactivated: "
-			        + deactivated.get());
+					+ deactivated.get());
 
 		if (syncRecordHolder.get() != null) {
 			log.warn("Replacing existing SyncRecord in SyncRecord holder");
@@ -215,7 +216,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	public void beforeTransactionCompletion(Transaction tx) {
 		if (log.isDebugEnabled())
 			log.debug("beforeTransactionCompletion: " + tx + " deactivated: "
-			        + deactivated.get());
+					+ deactivated.get());
 
 		try {
 			// If synchronization is NOT deactivated
@@ -228,7 +229,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 
 					if (log.isDebugEnabled())
 						log.debug(record.getItems().size()
-						        + " SyncItems in SyncRecord, saving!");
+								+ " SyncItems in SyncRecord, saving!");
 
 					// Grab user if we have one, and use the UUID of the user as
 					// creator of this SyncRecord
@@ -238,18 +239,21 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 					}
 
 					// Grab database version
-					record.setDatabaseVersion(OpenmrsConstants.OPENMRS_VERSION_SHORT);
+					record
+							.setDatabaseVersion(OpenmrsConstants.OPENMRS_VERSION_SHORT);
 
 					// Complete the record
 					record.setUuid(SyncUtil.generateUuid());
 					if (record.getOriginalUuid() == null) {
 						if (log.isInfoEnabled())
-							log.info("OriginalUuid is null, so assigning a new UUID: " + record.getUuid());
+							log
+									.info("OriginalUuid is null, so assigning a new UUID: "
+											+ record.getUuid());
 						record.setOriginalUuid(record.getUuid());
 					} else {
 						if (log.isInfoEnabled())
 							log.info("OriginalUuid is: "
-							        + record.getOriginalUuid());
+									+ record.getOriginalUuid());
 					}
 					record.setState(SyncRecordState.NEW);
 					record.setTimestamp(new Date());
@@ -257,29 +261,32 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 
 					// Save SyncRecord
 					getSyncService().createSyncRecord(record,
-					                                        record.getOriginalUuid());
+							record.getOriginalUuid());
 				} else {
 					// note: this will happen all the time with read-only
 					// transactions
 					if (log.isTraceEnabled())
-						log.trace("No SyncItems in SyncRecord, save discarded (note: maybe a read-only transaction)!");
+						log
+								.trace("No SyncItems in SyncRecord, save discarded (note: maybe a read-only transaction)!");
 				}
 			}
 		} catch (Exception ex) {
 			log.error("Journal error\n", ex);
-			throw (new SyncException("Error in interceptor, see log messages and callstack.", ex));
+			throw (new SyncException(
+					"Error in interceptor, see log messages and callstack.", ex));
 		}
 	}
-	
+
 	/**
-	 * Convenience method to get the {@link SyncService} from the {@link Context}.
+	 * Convenience method to get the {@link SyncService} from the
+	 * {@link Context}.
 	 * 
 	 * @return the syncService (may be cached)
 	 */
 	private SyncService getSyncService() {
 		if (syncService == null)
 			syncService = Context.getService(SyncService.class);
-		
+
 		return syncService;
 	}
 
@@ -293,8 +300,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	public void afterTransactionCompletion(Transaction tx) {
 		if (log.isTraceEnabled())
 			log.trace("afterTransactionCompletion: " + tx + " committed: "
-			        + tx.wasCommitted() + " rolledback: " + tx.wasRolledBack()
-			        + " deactivated: " + deactivated.get());
+					+ tx.wasCommitted() + " rolledback: " + tx.wasRolledBack()
+					+ " deactivated: " + deactivated.get());
 
 		// clean out SyncRecord in case of rollback:
 		syncRecordHolder.remove();
@@ -311,7 +318,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 */
 	@Override
 	public void onDelete(Object entity, Serializable id, Object[] state,
-	        String[] propertyNames, Type[] types) {
+			String[] propertyNames, Type[] types) {
 
 		if (log.isInfoEnabled()) {
 			log.info("onDelete: " + entity.getClass().getName());
@@ -320,7 +327,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
 			if (log.isDebugEnabled())
-				log.debug("Determined entity not to be journaled, exiting onDelete.");
+				log
+						.debug("Determined entity not to be journaled, exiting onDelete.");
 			return;
 		}
 
@@ -329,19 +337,15 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			pendingFlushHolder.set(new HashSet<Object>());
 		}
 
-		//add to flush holder: i.e. indicate there is something to be processed
+		// add to flush holder: i.e. indicate there is something to be processed
 		if (!pendingFlushHolder.get().contains(entity)) {
 			pendingFlushHolder.get().add(entity);
 		}
-		
-		//now package
-		packageObject((OpenmrsObject) entity,
-			              state,
-			              propertyNames,
-			              types,
-			              id,
-			              SyncItemState.DELETED);
-		
+
+		// now package
+		packageObject((OpenmrsObject) entity, state, propertyNames, types, id,
+				SyncItemState.DELETED);
+
 		return;
 
 	}
@@ -361,36 +365,33 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 */
 	@Override
 	public boolean onSave(Object entity, Serializable id, Object[] state,
-	        String[] propertyNames, Type[] types) {
+			String[] propertyNames, Type[] types) {
 		if (log.isDebugEnabled())
 			log.debug("onSave: " + state.toString());
 
-		// Set the originating uuid for the sync record 
-	 	setOriginalUuid(entity);
-	 	
+		// Set the originating uuid for the sync record
+		setOriginalUuid(entity);
+
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
 			if (log.isDebugEnabled()) {
-				log.debug("Determined entity not to be journaled, exiting onSave.");
+				log
+						.debug("Determined entity not to be journaled, exiting onSave.");
 			}
 		} else {
 
 			// create new flush holder if needed
 			if (pendingFlushHolder.get() == null)
 				pendingFlushHolder.set(new HashSet<Object>());
-	
+
 			if (!pendingFlushHolder.get().contains(entity)) {
 				pendingFlushHolder.get().add(entity);
 			}
-		
-			packageObject((OpenmrsObject) entity,
-					                     state,
-					                     propertyNames,
-					                     types,
-					                     id,
-					                     SyncItemState.NEW);
+
+			packageObject((OpenmrsObject) entity, state, propertyNames, types,
+					id, SyncItemState.NEW);
 		}
-		
+
 		// we didn't modify the object, so return false
 		return false;
 	}
@@ -410,30 +411,31 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 */
 	@Override
 	public boolean onFlushDirty(Object entity, Serializable id,
-	        Object[] currentState, Object[] previousState,
-	        String[] propertyNames, Type[] types) {
+			Object[] currentState, Object[] previousState,
+			String[] propertyNames, Type[] types) {
 		if (log.isDebugEnabled())
 			log.debug("onFlushDirty: " + entity.getClass().getName());
 
-		// Set the originating uuid for the sync record 
-	 	setOriginalUuid(entity);
+		// Set the originating uuid for the sync record
+		setOriginalUuid(entity);
 
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
 			if (log.isDebugEnabled())
-				log.debug("Determined entity not to be journaled, exiting onFlushDirty.");
+				log
+						.debug("Determined entity not to be journaled, exiting onFlushDirty.");
 		} else {
 			/*
 			 * NOTE: Accomodate Hibernate auto-flush semantics (as best as we
-			 * understand them): In case of sync ingest: When processing SyncRecord
-			 * with >1 sync item via ProcessSyncRecord() on parent, calls to get
-			 * object/update object by uuid may cause auto-flush of pending updates;
-			 * this would result in redundant sync items within a sync record. Use
-			 * threadLocal HashSet to only keep one instance of dirty object for
-			 * single hibernate flush. Note that this is (i.e. incurring
-			 * autoflush()) is not normally observed in rest of openmrs service
-			 * layer since most of the data change calls are encapsulated in single
-			 * transactions.
+			 * understand them): In case of sync ingest: When processing
+			 * SyncRecord with >1 sync item via ProcessSyncRecord() on parent,
+			 * calls to get object/update object by uuid may cause auto-flush of
+			 * pending updates; this would result in redundant sync items within
+			 * a sync record. Use threadLocal HashSet to only keep one instance
+			 * of dirty object for single hibernate flush. Note that this is
+			 * (i.e. incurring autoflush()) is not normally observed in rest of
+			 * openmrs service layer since most of the data change calls are
+			 * encapsulated in single transactions.
 			 */
 
 			// create new holder if needed
@@ -443,16 +445,12 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			if (!pendingFlushHolder.get().contains(entity)) {
 				pendingFlushHolder.get().add(entity);
 			}
-			
-			packageObject((OpenmrsObject) entity,
-		                     currentState,
-		                     propertyNames,
-		                     types,
-		                     id,
-		                     SyncItemState.UPDATED);
-			
+
+			packageObject((OpenmrsObject) entity, currentState, propertyNames,
+					types, id, SyncItemState.UPDATED);
+
 		}
-		
+
 		// we didn't modify anything, so return false
 		return false;
 	}
@@ -501,7 +499,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 */
 	@Override
 	public void onCollectionRemove(Object collection, Serializable key)
-	        throws CallbackException {
+			throws CallbackException {
 		if (log.isDebugEnabled()) {
 			log.debug("COLLECTION remove with key: " + key);
 		}
@@ -523,14 +521,15 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 */
 	@Override
 	public void onCollectionRecreate(Object collection, Serializable key)
-	        throws CallbackException {
+			throws CallbackException {
 		if (log.isDebugEnabled()) {
 			log.debug("COLLECTION recreate with key: " + key);
 		}
 
 		if (!(collection instanceof org.hibernate.collection.PersistentSet)) {
-			log.info("Cannot process collection that is not instance of PersistentSet, collection type was:"
-			        + collection.getClass().getName());
+			log
+					.info("Cannot process collection that is not instance of PersistentSet, collection type was:"
+							+ collection.getClass().getName());
 			return;
 		}
 
@@ -549,27 +548,28 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 */
 	@Override
 	public void onCollectionUpdate(Object collection, Serializable key)
-	        throws CallbackException {
+			throws CallbackException {
 		if (log.isDebugEnabled()) {
 			log.debug("COLLECTION update with key: " + key);
 		}
 
 		if (!(collection instanceof org.hibernate.collection.PersistentSet)) {
-			log.info("Cannot process collection that is not instance of PersistentSet, collection type was:"
-			        + collection.getClass().getName());
+			log
+					.info("Cannot process collection that is not instance of PersistentSet, collection type was:"
+							+ collection.getClass().getName());
 			return;
 		}
 
 		this.processPersistentSet((PersistentSet) collection, key, "update");
 	}
-	
+
 	/**
 	 * Serializes and packages an intercepted change in object state.
 	 * <p>
 	 * IMPORTANT serialization notes:
 	 * <p>
-	 * Transient Properties. Transients are not serialized/journalled. Marking an
-	 * object property as transient is the supported way of designating it as
+	 * Transient Properties. Transients are not serialized/journalled. Marking
+	 * an object property as transient is the supported way of designating it as
 	 * something not to be recorded into the journal.
 	 * <p/>
 	 * Hibernate Identity property. A property designated in Hibernate as
@@ -578,19 +578,25 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 * custom uuid property is used. This allows us to continue to use native
 	 * types for 'traditional' entity relationships.
 	 * 
-	 * @param entity The object changed.
-	 * @param currentState Array containing data for each field in the object as
-	 *        they will be saved.
-	 * @param propertyNames Array containing name for each field in the object,
-	 *        corresponding to currentState.
-	 * @param types Array containing Type of the field in the object,
-	 *        corresponding to currentState.
-	 * @param state SyncItemState, e.g. NEW, UPDATED, DELETED
-	 * @param id Value of the identifier for this entity
+	 * @param entity
+	 *            The object changed.
+	 * @param currentState
+	 *            Array containing data for each field in the object as they
+	 *            will be saved.
+	 * @param propertyNames
+	 *            Array containing name for each field in the object,
+	 *            corresponding to currentState.
+	 * @param types
+	 *            Array containing Type of the field in the object,
+	 *            corresponding to currentState.
+	 * @param state
+	 *            SyncItemState, e.g. NEW, UPDATED, DELETED
+	 * @param id
+	 *            Value of the identifier for this entity
 	 */
-	protected void packageObject(OpenmrsObject entity,
-	        Object[] currentState, String[] propertyNames, Type[] types,
-	        Serializable id, SyncItemState state) throws SyncException {
+	protected void packageObject(OpenmrsObject entity, Object[] currentState,
+			String[] propertyNames, Type[] types, Serializable id,
+			SyncItemState state) throws SyncException {
 
 		String objectUuid = null;
 		String originalRecordUuid = null;
@@ -608,8 +614,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		HashMap<String, PropertyClassValue> values = new HashMap<String, PropertyClassValue>();
 
 		try {
-			
-			//boolean isUuidAssigned = assignUUID(entity, currentState, propertyNames, state);
+
+			// boolean isUuidAssigned = assignUUID(entity, currentState,
+			// propertyNames, state);
 			objectUuid = entity.getUuid();
 
 			// pull-out sync-network wide change id for the sync *record* (not
@@ -619,7 +626,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			if (this.syncRecordHolder.get() != null) {
 				originalRecordUuid = this.syncRecordHolder.get()
 						.getOriginalUuid();
-			} 
+			}
 
 			// build up a starting msg for all logging:
 			StringBuilder sb = new StringBuilder();
@@ -641,7 +648,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 					transientProps.add(f.getName());
 					if (log.isInfoEnabled())
 						log.info("The field " + f.getName()
-						        + " is transient - so we won't serialize it");
+								+ " is transient - so we won't serialize it");
 				}
 			}
 
@@ -661,14 +668,27 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			data = factory.getClassMetadata(entity.getClass());
 			if (data.hasIdentifierProperty()) {
 				idPropertyName = data.getIdentifierPropertyName();
-				idPropertyObj = ((org.hibernate.persister.entity.AbstractEntityPersister) data).getEntityMetamodel()
-				                                                                               .getIdentifierProperty();
-				if (id != null && idPropertyObj.getIdentifierGenerator() != null
-				        && (idPropertyObj.getIdentifierGenerator() instanceof org.hibernate.id.Assigned)) {
+				idPropertyObj = ((org.hibernate.persister.entity.AbstractEntityPersister) data)
+						.getEntityMetamodel().getIdentifierProperty();
+				if (id != null
+						&& idPropertyObj.getIdentifierGenerator() != null
+						&& (idPropertyObj.getIdentifierGenerator() instanceof org.hibernate.id.Assigned)) {
 					// serialize value as string
-					values.put(idPropertyName,
-					           new PropertyClassValue(id.getClass().getName(),
-					                                  id.toString()));
+					values.put(idPropertyName, new PropertyClassValue(id
+							.getClass().getName(), id.toString()));
+				}
+			} else if (data.getIdentifierType() instanceof EmbeddedComponentType) {
+				// if we have a component identifier type (like AlertRecipient),
+				// make
+				// sure we include those properties
+				EmbeddedComponentType type = (EmbeddedComponentType) data
+						.getIdentifierType();
+				for (int i = 0; i < type.getPropertyNames().length; i++) {
+					String propertyName = type.getPropertyNames()[i];
+					Object propertyValue = type.getPropertyValue(entity,
+							i, org.hibernate.EntityMode.POJO);
+					addProperty(values, entity, type.getSubtypes()[i], propertyName,
+							propertyValue, infoMsg);
 				}
 			}
 
@@ -680,132 +700,38 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 				String typeName = types[i].getName();
 				if (log.isDebugEnabled())
 					log.debug("Processing, type: " + typeName + " Field: "
-					        + propertyNames[i]);
+							+ propertyNames[i]);
 
 				if (propertyNames[i].equals(idPropertyName)
-				        && log.isInfoEnabled())
+						&& log.isInfoEnabled())
 					log.info(infoMsg + ", Id for this class: " + idPropertyName
-					        + " , value:" + currentState[i]);
+							+ " , value:" + currentState[i]);
 
 				if (currentState[i] != null) {
 					// is this the primary key or transient? if so, we don't
 					// want to serialize
 					if (propertyNames[i].equals(idPropertyName)
-					        || ("personId".equals(idPropertyName) && "patientId".equals(propertyNames[i]))
-					        || ("personId".equals(idPropertyName) && "userId".equals(propertyNames[i]))
-					        || transientProps.contains(propertyNames[i])) {
+							|| ("personId".equals(idPropertyName) && "patientId"
+									.equals(propertyNames[i]))
+							|| ("personId".equals(idPropertyName) && "userId"
+									.equals(propertyNames[i]))
+							|| transientProps.contains(propertyNames[i])) {
 						// if (log.isInfoEnabled())
-						log.info("Skipping property ("
-						        + propertyNames[i]
-						        + ") because it's either the primary key or it's transient.");
+						log
+								.info("Skipping property ("
+										+ propertyNames[i]
+										+ ") because it's either the primary key or it's transient.");
 
 					} else {
 
-						Normalizer n;
-						if ((n = safetypes.get(typeName)) != null) {
-							// Handle safe types like
-							// boolean/String/integer/timestamp via Normalizers
-							values.put(propertyNames[i],
-							           new PropertyClassValue(typeName,
-							                                  n.toString(currentState[i])));
-						}
-						else if (types[i].isCollectionType() && (n = isCollectionOfSafeTypes(entity, propertyNames[i])) != null) {
-							// if the property is a list/set/collection AND the members of that collection are a "safe type",
-							// then we put the values into the xml
-							values.put(propertyNames[i],
-						           new PropertyClassValue(typeName,
-						                                  n.toString(currentState[i])));
-						}
-						
-						/*
-						 * Not a safe type, check if the object implements the
-						 * OpenmrsObject interface
-						 */
-						else if (currentState[i] instanceof OpenmrsObject) {
-							OpenmrsObject childObject = (OpenmrsObject) currentState[i];
-							// child objects are not always loaded if not
-							// needed, so let's surround this with try/catch,
-							// package only if need to
-							String childUuid = null;
-							try {
-								childUuid = childObject.getUuid();
-							} catch (LazyInitializationException e) {
-								if (log.isWarnEnabled())
-									log.warn("Attempted to package/serialize child object, but child object was not yet initialized (and thus was null)");
-								if (types[i].getReturnedClass()
-								            .equals(User.class)) {
-									// Wait - do we still need to do this, now
-									// that we have sync bidirectional?
-									// If User objects are sync'ing, then why
-									// can't these just be uuids?
-									// IS THIS RELIABLE??!?
-									log.warn("SUBSTITUTED AUTHENTICATED USER FOR ACTUAL USER");
-									childUuid = Context.getAuthenticatedUser()
-									                   .getUuid();
-									
-									// adding this in to test if this ever gets hit and/or shoulld be removed now in the bi-sync world
-									throw new APIException("SHOULD NOT BE HERE");
-								} else {
-									// TODO: abort here also?
-									log.error("COULD NOT SUBSTITUTE AUTHENTICATED USER FOR ACTUAL USER");
-								}
-							} catch (Exception e) {
-								log.error(infoMsg
-								        + ", Could not find child object - object is null, therefore uuid is null");
-								throw (e);
-							}
-
-							/*
-							 * child object is OpenmrsObject but its uuid is
-							 * null, final attempt: load via PK if PK value
-							 * available common scenario: this can happen when
-							 * people are saving object graphs that are (at
-							 * least partially) manually constructed (i.e.
-							 * setting concept on obs just by filling in
-							 * conceptid without first fetching the full concept
-							 * state from DB for perf. reasons
-							 */
-							if (childUuid == null) {
-								childUuid = fetchUuid(childObject);
-								if (log.isDebugEnabled()) {
-									log.debug(infoMsg
-									        + "Field was null, attempted to fetch uuid with the following results");
-									log.debug("Field type:"
-									        + childObject.getClass().getName()
-									        + ",uuid:" + childUuid);
-								}
-							}
-
-							if (childUuid != null) {
-								values.put(propertyNames[i],
-								           new PropertyClassValue(typeName,
-								                                  childUuid));
-							} else {
-								String msg = infoMsg
-								        + ", Field value should be synchronized, but uuid is null.  Field Type: "
-								        + typeName + " Field Name: "
-								        + propertyNames[i];
-								log.error(msg);
-								throw (new SyncException(msg));
-							}
-						} else {
-							// state != null but it is not safetype or
-							// implements OpenmrsObject: do not package and log
-							// as info
-							if (log.isInfoEnabled())
-								log.info(infoMsg
-								        + ", Field Type: "
-								        + typeName
-								        + " Field Name: "
-								        + propertyNames[i]
-								        + " is not safe or OpenmrsObject, skipped!");
-						}
+						addProperty(values, entity, types[i], propertyNames[i],
+								currentState[i], infoMsg);
 					}
 				} else {
 					// current state null -- skip
 					if (log.isDebugEnabled())
 						log.debug("Field Type: " + typeName + " Field Name: "
-						        + propertyNames[i] + " is null, skipped");
+								+ propertyNames[i] + " is null, skipped");
 				}
 			}
 
@@ -824,31 +750,28 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 
 				// if we are processing onDelete event all we need is uuid
 				if ((state == SyncItemState.DELETED)
-				        && (!"uuid".equals(property))) {
+						&& (!"uuid".equals(property))) {
 					continue;
 				}
 
 				try {
 					PropertyClassValue pcv = me.getValue();
-					appendRecord(xml,
-					             entity,
-					             entityItem,
-					             property,
-					             pcv.getClazz(),
-					             pcv.getValue());
+					appendRecord(xml, entity, entityItem, property, pcv
+							.getClazz(), pcv.getValue());
 				} catch (Exception e) {
 					String msg = "Could not append attribute. Error while processing property: "
-					        + property;
+							+ property;
 					log.error(msg, e);
 					throw (new SyncException(msg));
 				}
 			}
 
 			values.clear(); // Be nice to GC
-			
-			if (objectUuid == null) 
-				throw new SyncException("uuid is null for: " + className + " with id: " + id);
-			
+
+			if (objectUuid == null)
+				throw new SyncException("uuid is null for: " + className
+						+ " with id: " + id);
+
 			/*
 			 * Create SyncItem and store change in SyncRecord kept in
 			 * ThreadLocal.
@@ -863,13 +786,13 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 				log.debug("Adding SyncItem to SyncRecord");
 
 			syncRecordHolder.get().addItem(syncItem);
-			syncRecordHolder.get().addContainedClass(entity.getClass()
-			                                               .getName());
+			syncRecordHolder.get().addContainedClass(
+					entity.getClass().getName());
 
 			// set the originating uuid for the record: do this once per Tx;
 			// else we may end up with empty string
 			if (syncRecordHolder.get().getOriginalUuid() == null
-			        || "".equals(syncRecordHolder.get().getOriginalUuid())) {
+					|| "".equals(syncRecordHolder.get().getOriginalUuid())) {
 				syncRecordHolder.get().setOriginalUuid(originalRecordUuid);
 			}
 		} catch (SyncException ex) {
@@ -877,10 +800,123 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			throw (ex);
 		} catch (Exception e) {
 			log.error("Journal error\n", e);
-			throw (new SyncException("Error in interceptor, see log messages and callstack.", e));
+			throw (new SyncException(
+					"Error in interceptor, see log messages and callstack.", e));
 		}
 
 		return;
+	}
+
+	/**
+	 * Convenience method to add a property to the given list of values to turn
+	 * into xml
+	 * 
+	 * @param values
+	 * @param entity
+	 * @param propertyType
+	 * @param propertyName
+	 * @param propertyValue
+	 * @param infoMsg
+	 * @throws Exception
+	 */
+	private void addProperty(HashMap<String, PropertyClassValue> values,
+			OpenmrsObject entity, Type propertyType, String propertyName,
+			Object propertyValue, String infoMsg) throws Exception {
+		Normalizer n;
+		String propertyTypeName = propertyType.getName();
+		if ((n = safetypes.get(propertyTypeName)) != null) {
+			// Handle safe types like
+			// boolean/String/integer/timestamp via Normalizers
+			values.put(propertyName, new PropertyClassValue(propertyTypeName, n
+					.toString(propertyValue)));
+		} else if (propertyType.isCollectionType()
+				&& (n = isCollectionOfSafeTypes(entity, propertyName)) != null) {
+			// if the property is a list/set/collection AND the members of that
+			// collection are a "safe type",
+			// then we put the values into the xml
+			values.put(propertyName, new PropertyClassValue(propertyTypeName, n
+					.toString(propertyValue)));
+		}
+
+		/*
+		 * Not a safe type, check if the object implements the OpenmrsObject
+		 * interface
+		 */
+		else if (propertyValue instanceof OpenmrsObject) {
+			OpenmrsObject childObject = (OpenmrsObject) propertyValue;
+			// child objects are not always loaded if not
+			// needed, so let's surround this with try/catch,
+			// package only if need to
+			String childUuid = null;
+			try {
+				childUuid = childObject.getUuid();
+			} catch (LazyInitializationException e) {
+				if (log.isWarnEnabled())
+					log
+							.warn("Attempted to package/serialize child object, but child object was not yet initialized (and thus was null)");
+				if (propertyType.getReturnedClass().equals(User.class)) {
+					// Wait - do we still need to do this, now
+					// that we have sync bidirectional?
+					// If User objects are sync'ing, then why
+					// can't these just be uuids?
+					// IS THIS RELIABLE??!?
+					log.warn("SUBSTITUTED AUTHENTICATED USER FOR ACTUAL USER");
+					childUuid = Context.getAuthenticatedUser().getUuid();
+
+					// adding this in to test if this ever gets hit and/or
+					// should be removed now in the bi-sync world
+					throw new APIException("SHOULD NOT BE HERE");
+				} else {
+					// TODO: abort here also?
+					log
+							.error("COULD NOT SUBSTITUTE AUTHENTICATED USER FOR ACTUAL USER");
+				}
+			} catch (Exception e) {
+				log
+						.error(infoMsg
+								+ ", Could not find child object - object is null, therefore uuid is null");
+				throw (e);
+			}
+
+			/*
+			 * child object is OpenmrsObject but its uuid is null, final
+			 * attempt: load via PK if PK value available common scenario: this
+			 * can happen when people are saving object graphs that are (at
+			 * least partially) manually constructed (i.e. setting concept on
+			 * obs just by filling in conceptid without first fetching the full
+			 * concept state from DB for perf. reasons
+			 */
+			if (childUuid == null) {
+				childUuid = fetchUuid(childObject);
+				if (log.isDebugEnabled()) {
+					log
+							.debug(infoMsg
+									+ "Field was null, attempted to fetch uuid with the following results");
+					log.debug("Field type:" + childObject.getClass().getName()
+							+ ",uuid:" + childUuid);
+				}
+			}
+
+			if (childUuid != null) {
+				values.put(propertyName, new PropertyClassValue(
+						propertyTypeName, childUuid));
+			} else {
+				String msg = infoMsg
+						+ ", Field value should be synchronized, but uuid is null.  Field Type: "
+						+ propertyType + " Field Name: " + propertyName;
+				log.error(msg);
+				throw (new SyncException(msg));
+			}
+		} else {
+			// state != null but it is not safetype or
+			// implements OpenmrsObject: do not package and log
+			// as info
+			if (log.isInfoEnabled())
+				log.info(infoMsg + ", Field Type: " + propertyType
+						+ " Field Name: " + propertyName
+						+ " is not safe or OpenmrsObject, skipped!");
+		}
+
 	}
 
 	/**
@@ -889,24 +925,29 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 * @param object
 	 * @param propertyName
 	 * @return a Normalizer for the given type or null if not a safe type
-	 * @throws NoSuchFieldException 
-	 * @throws SecurityException 
+	 * @throws NoSuchFieldException
+	 * @throws SecurityException
 	 */
-	private Normalizer isCollectionOfSafeTypes(OpenmrsObject object, String propertyName) throws SecurityException, NoSuchFieldException {
+	private Normalizer isCollectionOfSafeTypes(OpenmrsObject object,
+			String propertyName) throws SecurityException, NoSuchFieldException {
 		try {
-			java.lang.reflect.Type collectionType = ((java.lang.reflect.ParameterizedType)object.getClass().getDeclaredField(propertyName).getGenericType()).getActualTypeArguments()[0];
-			
-			Class collectionTypeClass = (Class)collectionType;
-			String possibleSafeType = collectionTypeClass.getSimpleName().toLowerCase();
-			
+			java.lang.reflect.Type collectionType = ((java.lang.reflect.ParameterizedType) object
+					.getClass().getDeclaredField(propertyName).getGenericType())
+					.getActualTypeArguments()[0];
+
+			Class collectionTypeClass = (Class) collectionType;
+			String possibleSafeType = collectionTypeClass.getSimpleName()
+					.toLowerCase();
+
 			return safetypes.get(possibleSafeType);
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			// might get here if the property is on a superclass to the object
-			
-			log.trace("Unable to get collection field: " + propertyName + " from object " + object.getClass() + " for some reason", t);
+
+			log.trace("Unable to get collection field: " + propertyName
+					+ " from object " + object.getClass() + " for some reason",
+					t);
 		}
-		
+
 		// on errors just return null
 		return null;
 	}
@@ -914,23 +955,29 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	/**
 	 * Adds a property value to the existing serialization record as a string.
 	 * <p>
-	 * If data is null it will be skipped, no empty serialization items are 
+	 * If data is null it will be skipped, no empty serialization items are
 	 * written. In case of xml serialization, the data will be serialized as:
-	 *  &lt;property type='classname'&gt;data&lt;/property&gt;
+	 * &lt;property type='classname'&gt;data&lt;/property&gt;
 	 * 
-	 * @param xml record node to append to
-	 * @param entity the object holding the given property
-	 * @param parent the pointer to the root parent node
-	 * @param property new item name (in case of xml serialization this will be
-	 *        child element name)
-	 * @param classname type of the property, will be recorded as attribute
-	 *        named 'type' on the child item
-	 * @param data String content, in case of xml serialized as text node (i.e.
-	 *        not CDATA)
+	 * @param xml
+	 *            record node to append to
+	 * @param entity
+	 *            the object holding the given property
+	 * @param parent
+	 *            the pointer to the root parent node
+	 * @param property
+	 *            new item name (in case of xml serialization this will be child
+	 *            element name)
+	 * @param classname
+	 *            type of the property, will be recorded as attribute named
+	 *            'type' on the child item
+	 * @param data
+	 *            String content, in case of xml serialized as text node (i.e.
+	 *            not CDATA)
 	 * @throws Exception
 	 */
-	protected void appendRecord(Record xml, OpenmrsObject entity, Item parent, String property,
-	        String classname, String data) throws Exception {
+	protected void appendRecord(Record xml, OpenmrsObject entity, Item parent,
+			String property, String classname, String data) throws Exception {
 		// if (data != null && data.length() > 0) {
 		// this will break if we don't allow data.length==0 - some string values
 		// are required NOT NULL, but can be blank
@@ -941,92 +988,114 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			xml.createText(item, data);
 		}
 	}
-	
+
 	/**
-	 * Called while saving a SyncRecord to allow for manipulating what is stored. The impl of this
-	 * method transforms the {@link PersonAttribute#getValue()} and {@link Obs#getVoidReason()}
-	 * methods to not reference primary keys.  (Instead the uuid is referenced and then dereferenced
-	 * before being saved).  If no transformation is to take place, the data is returned as given.
+	 * Called while saving a SyncRecord to allow for manipulating what is
+	 * stored. The impl of this method transforms the
+	 * {@link PersonAttribute#getValue()} and {@link Obs#getVoidReason()}
+	 * methods to not reference primary keys. (Instead the uuid is referenced
+	 * and then dereferenced before being saved). If no transformation is to
+	 * take place, the data is returned as given.
 	 * 
-	 * @param item the serialized sync item associated with this record
-	 * @param entity the OpenmrsObject containing the property
-	 * @param property the property name
-	 * @param data the current value for the 
+	 * @param item
+	 *            the serialized sync item associated with this record
+	 * @param entity
+	 *            the OpenmrsObject containing the property
+	 * @param property
+	 *            the property name
+	 * @param data
+	 *            the current value for the
 	 * @return the transformed (or unchanged) data to save in the SyncRecord
 	 */
-	public String transformItemForSyncRecord(Item item, OpenmrsObject entity, String property, String data) {
+	public String transformItemForSyncRecord(Item item, OpenmrsObject entity,
+			String property, String data) {
 		// data will not be null here, so NPE checks are not needed
-		
-	    if (entity instanceof PersonAttribute && "value".equals(property)) {
-	    	PersonAttribute attr = (PersonAttribute)entity;
-	    	// use PersonAttributeType.format to get the uuid
-	    	String className = attr.getAttributeType().getFormat();
-	    	try {
-    			Class c = Context.loadClass(className);
-    			item.setAttribute("type", className);
-    			
-    			// only convert to uuid if this is an OpenMrs object
-    			// otherwise, we are just storing a simple String or Integer value
-    			if(OpenmrsObject.class.isAssignableFrom(c)) {
-    				String valueObjectUuid = fetchUuid(c, Integer.valueOf(data));
-    				return valueObjectUuid;
-    			}
-    		}
-    		catch (Throwable t) {
-    			log.warn("Unable to get class of type: " + className + " for sync'ing attribute.value column", t);
-    		}
-	    }
-	    else if (entity instanceof PersonAttributeType  && "foreignKey".equals(property)) {
-	    	if (StringUtils.hasLength(data)) {
-	    		PersonAttributeType attrType = (PersonAttributeType)entity;
-	    		String className = attrType.getFormat();
+
+		if (entity instanceof PersonAttribute && "value".equals(property)) {
+			PersonAttribute attr = (PersonAttribute) entity;
+			// use PersonAttributeType.format to get the uuid
+			String className = attr.getAttributeType().getFormat();
+			try {
+				Class c = Context.loadClass(className);
+				item.setAttribute("type", className);
+
+				// only convert to uuid if this is an OpenMrs object
+				// otherwise, we are just storing a simple String or Integer
+				// value
+				if (OpenmrsObject.class.isAssignableFrom(c)) {
+					String valueObjectUuid = fetchUuid(c, Integer.valueOf(data));
+					return valueObjectUuid;
+				}
+			} catch (Throwable t) {
+				log.warn("Unable to get class of type: " + className
+						+ " for sync'ing attribute.value column", t);
+			}
+		} else if (entity instanceof PersonAttributeType
+				&& "foreignKey".equals(property)) {
+			if (StringUtils.hasLength(data)) {
+				PersonAttributeType attrType = (PersonAttributeType) entity;
+				String className = attrType.getFormat();
 				try {
-	    			Class c = Context.loadClass(className);
-	    			String foreignKeyObjectUuid = fetchUuid(c, Integer.valueOf(data));
-	    			
-	    			// set the class name on this to be the uuid-ized type instead of java.lang.Integer.
-	    			// the SyncUtil.valForField method will handle changing this back to an integer
-	    			item.setAttribute("type", className);
-	    			return foreignKeyObjectUuid;
-	    		}
-	    		catch (Throwable t) {
-	    			log.warn("Unable to get class of type: " + className + " for sync'ing foreignKey column", t);
-	    		}
-	    	}
-	    }
-	    else if (entity instanceof Obs && "voidReason".equals(property)) {
-	    	if (data.contains("(new obsId: ")) {
-	    		// rip out the obs id and replace it with a uuid
-	    		String voidReason = String.copyValueOf(data.toCharArray()); // copy the string so that we're operating on a new object
-	    		int start = voidReason.lastIndexOf(" ") + 1;
+					Class c = Context.loadClass(className);
+					String foreignKeyObjectUuid = fetchUuid(c, Integer
+							.valueOf(data));
+
+					// set the class name on this to be the uuid-ized type
+					// instead of java.lang.Integer.
+					// the SyncUtil.valForField method will handle changing this
+					// back to an integer
+					item.setAttribute("type", className);
+					return foreignKeyObjectUuid;
+				} catch (Throwable t) {
+					log.warn("Unable to get class of type: " + className
+							+ " for sync'ing foreignKey column", t);
+				}
+			}
+		} else if (entity instanceof Obs && "voidReason".equals(property)) {
+			if (data.contains("(new obsId: ")) {
+				// rip out the obs id and replace it with a uuid
+				String voidReason = String.copyValueOf(data.toCharArray()); // copy
+				// the
+				// string
+				// so
+				// that
+				// we're
+				// operating
+				// on
+				// a
+				// new
+				// object
+				int start = voidReason.lastIndexOf(" ") + 1;
 				int end = voidReason.length() - 1;
 				String obsId = voidReason.substring(start, end);
 				try {
-					String newObsUuid = fetchUuid(Obs.class, Integer.valueOf(obsId));
-					return data.substring(0, data.lastIndexOf(" ")) + " " + newObsUuid + ")";
-				}
-				catch (Exception e) {
+					String newObsUuid = fetchUuid(Obs.class, Integer
+							.valueOf(obsId));
+					return data.substring(0, data.lastIndexOf(" ")) + " "
+							+ newObsUuid + ")";
+				} catch (Exception e) {
 					log.trace("unable to get uuid from obs pk: " + obsId, e);
 				}
-	    	}
-	    }
-	    
-	    return data;
-    }
+			}
+		}
+
+		return data;
+	}
 
 	/**
-	 * Determines if entity is to be 'synchronized'. There are two ways this
-	 * can happen:
+	 * Determines if entity is to be 'synchronized'. There are two ways this can
+	 * happen:
 	 * <p>
 	 * 1. Entity implements OpenmrsObject interface.
 	 * <p>
-	 * 2. Interceptor supports manual override to suspend
-	 * synchronization by setting the deactivated bit (see
+	 * 2. Interceptor supports manual override to suspend synchronization by
+	 * setting the deactivated bit (see
 	 * {@link #deactivateTransactionSerialization()}). This option is provided
 	 * only for rare occasions when previous methods are not sufficient (i.e
 	 * suspending interception in case of inline sql).
 	 * 
-	 * @param entity Object to examine.
+	 * @param entity
+	 *            Object to examine.
 	 * @return true if entity should be synchronized, else false.
 	 * @see org.openmrs.synchronization.OpenmrsObject
 	 * @see org.openmrs.synchronization.OpenmrsObjectInstance
@@ -1036,12 +1105,13 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		// OpenmrsObject *only*.
 		if (!(entity instanceof OpenmrsObject)) {
 			if (log.isDebugEnabled())
-				log.debug("Do nothing. Flush with type that does not implement OpenmrsObject, type is:"
-				        + entity.getClass().getName());
+				log
+						.debug("Do nothing. Flush with type that does not implement OpenmrsObject, type is:"
+								+ entity.getClass().getName());
 			return false;
 		}
-		
-		//do not sync global properties
+
+		// do not sync global properties
 		if (entity instanceof org.openmrs.GlobalProperty) {
 			return false;
 		}
@@ -1057,7 +1127,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
 	 */
 	public void setApplicationContext(ApplicationContext context)
-	        throws BeansException {
+			throws BeansException {
 		this.context = context;
 	}
 
@@ -1066,22 +1136,23 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 * identity value (i.e. PK).
 	 * 
 	 * <p>
-	 * Remarks: It is important for the implementation to
-	 * avoid loading obj into session while trying to determine its uuid.
-	 * As a result, the implementation uses the combination of reflection to determine
-	 * the object's identifier value and Hibernate criteria in order to build
-	 * select statement for getting the uuid.
+	 * Remarks: It is important for the implementation to avoid loading obj into
+	 * session while trying to determine its uuid. As a result, the
+	 * implementation uses the combination of reflection to determine the
+	 * object's identifier value and Hibernate criteria in order to build select
+	 * statement for getting the uuid.
 	 * 
-	 * The reason to avoid fetching the obj is because doing it causes an error 
-	 * in hibernate when processing disconnected proxies. 
-	 * Specifically, during obs edit, several properties are are
-	 * disconnected as the form controller uses Criteria object to construct select
-	 * queury session.clear() and then session.merge(). 
+	 * The reason to avoid fetching the obj is because doing it causes an error
+	 * in hibernate when processing disconnected proxies. Specifically, during
+	 * obs edit, several properties are are disconnected as the form controller
+	 * uses Criteria object to construct select queury session.clear() and then
+	 * session.merge().
 	 * 
 	 * Finally, implementation suspends any state flushing to avoid any weird
 	 * auto-flush events being triggered while select is being executed.
 	 * 
-	 * @param obj Instance of OpenmrsObject for which to retrieve uuid for.
+	 * @param obj
+	 *            Instance of OpenmrsObject for which to retrieve uuid for.
 	 * @return uuid from storage if obj identity value is set, else null.
 	 * @see ForeignKeys
 	 */
@@ -1095,28 +1166,32 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			return null;
 
 		try {
-			
-			SessionFactory factory = (SessionFactory) this.context.getBean("sessionFactory");
+
+			SessionFactory factory = (SessionFactory) this.context
+					.getBean("sessionFactory");
 			Class objTrueType = null;
 			if (obj instanceof HibernateProxy) {
-				objTrueType = org.hibernate.proxy.HibernateProxyHelper.getClassWithoutInitializingProxy(obj);
+				objTrueType = org.hibernate.proxy.HibernateProxyHelper
+						.getClassWithoutInitializingProxy(obj);
 			} else {
 				objTrueType = obj.getClass();
 			}
-			
+
 			try {
 				idPropertyValue = obj.getId();
-			}
-			catch (Throwable t) {
-				log.debug("Unable to get internal identifier for obj: " + obj, t);
-				
-				// ClassMetadata is only available for entities configured in hibernate
+			} catch (Throwable t) {
+				log.debug("Unable to get internal identifier for obj: " + obj,
+						t);
+
+				// ClassMetadata is only available for entities configured in
+				// hibernate
 				ClassMetadata data = factory.getClassMetadata(objTrueType);
 				if (data != null) {
 					String idPropertyName = data.getIdentifierPropertyName();
 					if (idPropertyName != null) {
 
-						m = SyncUtil.getGetterMethod(objTrueType, idPropertyName);
+						m = SyncUtil.getGetterMethod(objTrueType,
+								idPropertyName);
 						if (m != null) {
 							idPropertyValue = m.invoke(obj, (Object[]) null);
 						}
@@ -1125,7 +1200,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			}
 
 			uuid = fetchUuid(objTrueType, idPropertyValue);
-			
+
 		} catch (Exception ex) {
 			// something went wrong - no matter just return null
 			uuid = null;
@@ -1134,7 +1209,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 
 		return uuid;
 	}
-	
+
 	/**
 	 * See {@link #fetchUuid(OpenmrsObject)}
 	 * 
@@ -1144,33 +1219,37 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 */
 	protected String fetchUuid(Class objTrueType, Object idPropertyValue) {
 		String uuid = null;
-		
-		//for time being, suspend any flushing
-		SessionFactory factory = (SessionFactory) this.context.getBean("sessionFactory");
-		org.hibernate.FlushMode flushMode = factory.getCurrentSession().getFlushMode();
-		factory.getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
-		
+
+		// for time being, suspend any flushing
+		SessionFactory factory = (SessionFactory) this.context
+				.getBean("sessionFactory");
+		org.hibernate.FlushMode flushMode = factory.getCurrentSession()
+				.getFlushMode();
+		factory.getCurrentSession()
+				.setFlushMode(org.hibernate.FlushMode.MANUAL);
+
 		try {
 			// try to fetch the instance and get its uuid
 			if (idPropertyValue != null) {
-				//build sql to fetch uuid -  avoid loading obj into session
-				org.hibernate.Criteria criteria = factory.getCurrentSession().createCriteria(objTrueType);
+				// build sql to fetch uuid - avoid loading obj into session
+				org.hibernate.Criteria criteria = factory.getCurrentSession()
+						.createCriteria(objTrueType);
 				criteria.add(Expression.idEq(idPropertyValue));
 				criteria.setProjection(Projections.property("uuid"));
-				uuid = (String)criteria.uniqueResult();
-				
+				uuid = (String) criteria.uniqueResult();
+
 				if (uuid == null)
-					log.warn("Unable to find obj of type: " + objTrueType + " with primary key: " + idPropertyValue);
-				
+					log.warn("Unable to find obj of type: " + objTrueType
+							+ " with primary key: " + idPropertyValue);
+
 				return uuid;
 			}
-		}
-		finally {
+		} finally {
 			if (factory != null) {
 				factory.getCurrentSession().setFlushMode(flushMode);
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -1183,26 +1262,34 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 	 * <p>
 	 * Xml 'schema' for the sync item content for the persisted set follows.
 	 * Note that for persisted sets syncItemKey is a composite of owner object
-	 * uuid and the property name that contains the collection.
-	 * <br/>&lt;persistent-set&gt; element: wrapper element <br/>&lt;owner
-	 * uuid='' propertyName='' type='' action='recreate|update' &gt; element:
-	 * this captures the information about the object that holds reference to
-	 * the collection being processed <br/>-uuid: owner object uuid
-	 * <br/>-properyName: names of the property on owner object that holds this
-	 * collection <br/>-type: owner class name <br/>-action: recreate, update --
-	 * these are collection events defined by hibernate interceptor
-	 * <br/>&lt;entry action='update|delete' uuid='' type='' &gt; element: this
-	 * captures info about individual collection entries: <br/>-action: what is
-	 * being done to this item of the collection: delete (item was removed from
-	 * the collection) or update (item was added to the collection) <br/>-uuid:
-	 * entry's uuid <br/>-type: class name
+	 * uuid and the property name that contains the collection. <br/>
+	 * &lt;persistent-set&gt; element: wrapper element <br/>
+	 * &lt;owner uuid='' propertyName='' type='' action='recreate|update' &gt;
+	 * element: this captures the information about the object that holds
+	 * reference to the collection being processed <br/>
+	 * -uuid: owner object uuid <br/>
+	 * -properyName: names of the property on owner object that holds this
+	 * collection <br/>
+	 * -type: owner class name <br/>
+	 * -action: recreate, update -- these are collection events defined by
+	 * hibernate interceptor <br/>
+	 * &lt;entry action='update|delete' uuid='' type='' &gt; element: this
+	 * captures info about individual collection entries: <br/>
+	 * -action: what is being done to this item of the collection: delete (item
+	 * was removed from the collection) or update (item was added to the
+	 * collection) <br/>
+	 * -uuid: entry's uuid <br/>
+	 * -type: class name
 	 * 
-	 * @param set Instance of Hibernate PersistentSet to process.
-	 * @param key key of owner for the set.
-	 * @param action action being performed on the set: update, recreate
+	 * @param set
+	 *            Instance of Hibernate PersistentSet to process.
+	 * @param key
+	 *            key of owner for the set.
+	 * @param action
+	 *            action being performed on the set: update, recreate
 	 */
 	protected void processPersistentSet(PersistentSet set, Serializable key,
-	        String action) {
+			String action) {
 		OpenmrsObject owner = null;
 		String originalRecordUuid = null;
 		SessionFactory factory = null;
@@ -1210,19 +1297,24 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 
 		// we only process recreate and update
 		if (!"update".equals(action) && !"recreate".equals(action)) {
-			log.error("Unexpected 'action' supplied, valid values: recreate, update. value provided: "
-			        + action);
-			throw new CallbackException("Unexpected 'action' supplied while processing a persistent set.");
+			log
+					.error("Unexpected 'action' supplied, valid values: recreate, update. value provided: "
+							+ action);
+			throw new CallbackException(
+					"Unexpected 'action' supplied while processing a persistent set.");
 		}
 
 		// retrieve owner and original uuid if there is one
 		if (set.getOwner() instanceof OpenmrsObject) {
 			owner = (OpenmrsObject) set.getOwner();
-			if (this.syncRecordHolder.get() != null) { 
-				originalRecordUuid = this.syncRecordHolder.get().getOriginalUuid(); 
-			};
+			if (this.syncRecordHolder.get() != null) {
+				originalRecordUuid = this.syncRecordHolder.get()
+						.getOriginalUuid();
+			}
+			;
 		} else {
-			log.info("Cannot process PersistentSet where owner is not OpenmrsObject.");
+			log
+					.info("Cannot process PersistentSet where owner is not OpenmrsObject.");
 			return;
 		}
 
@@ -1238,24 +1330,29 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			process = true;
 		} else {
 			if (set.isDirty()) {
-				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) factory).getCollectionPersister(set.getRole());
-                Object ss = null;
-                try { //code around hibernate bug: http://opensource.atlassian.com/projects/hibernate/browse/HHH-2937
-                      ss = set.getSnapshot(persister);
-                } catch (NullPointerException ex) { }
-                if (ss == null) {
-                	log.debug("snapshot is null");
-                	if (set.isEmpty())
-                		process = false;
-                	else
-                		process = true;
-                } else if (!set.equalsSnapshot(persister)) {
+				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) factory)
+						.getCollectionPersister(set.getRole());
+				Object ss = null;
+				try { // code around hibernate bug:
+					// http://opensource.atlassian.com/projects/hibernate/browse/HHH-2937
+					ss = set.getSnapshot(persister);
+				} catch (NullPointerException ex) {
+				}
+				if (ss == null) {
+					log.debug("snapshot is null");
+					if (set.isEmpty())
+						process = false;
+					else
+						process = true;
+				} else if (!set.equalsSnapshot(persister)) {
 					process = true;
-				};
+				}
+				;
 			}
-			
+
 			if (!process) {
-				log.info("set processing, no update needed: not dirty or current state and snapshots are same");
+				log
+						.info("set processing, no update needed: not dirty or current state and snapshots are same");
 			}
 		}
 		if (!process)
@@ -1266,12 +1363,11 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 		ClassMetadata data = factory.getClassMetadata(owner.getClass());
 		String[] propNames = data.getPropertyNames();
 		String ownerPropertyName = null; // this is the name of the property
-											// on owner object that contains the
-											// set
+		// on owner object that contains the
+		// set
 		for (String propName : propNames) {
-			Object propertyVal = data.getPropertyValue(owner,
-			                                           propName,
-			                                           org.hibernate.EntityMode.POJO);
+			Object propertyVal = data.getPropertyValue(owner, propName,
+					org.hibernate.EntityMode.POJO);
 			// note: test both with equals() and == because
 			// PersistentSet.equals()
 			// actually does not handle equality of two persistent sets well
@@ -1281,16 +1377,18 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			}
 		}
 		if (ownerPropertyName == null) {
-			log.error("Could not find the property on owner object that corresponds to the set being processed.");
+			log
+					.error("Could not find the property on owner object that corresponds to the set being processed.");
 			log.error("owner info: \ntype: " + owner.getClass().getName()
-			        + ", \nuuid: " + owner.getUuid()
-			        + ",\n property name for collection: " + ownerPropertyName);
-			throw new CallbackException("Could not find the property on owner object that corresponds to the set being processed.");
+					+ ", \nuuid: " + owner.getUuid()
+					+ ",\n property name for collection: " + ownerPropertyName);
+			throw new CallbackException(
+					"Could not find the property on owner object that corresponds to the set being processed.");
 		}
 
 		// Setup the serialization data structures to hold the state
 		Package pkg = new Package();
-		entriesHolder = new LinkedHashMap<String,OpenmrsObject>();
+		entriesHolder = new LinkedHashMap<String, OpenmrsObject>();
 		try {
 
 			// find out what entries need to be serialized
@@ -1303,32 +1401,39 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 					if (entryUuid == null) {
 						entryUuid = fetchUuid(obj);
 						if (log.isDebugEnabled()) {
-							log.debug("Entry uuid was null, attempted to fetch uuid with the following results");
+							log
+									.debug("Entry uuid was null, attempted to fetch uuid with the following results");
 							log.debug("Entry type:" + obj.getClass().getName()
-							        + ",uuid:" + entryUuid);
+									+ ",uuid:" + entryUuid);
 						}
 					}
 					// well, this is messed up: have an instance of
 					// OpenmrsObject but has no uuid
 					if (entryUuid == null) {
-						log.error("Cannot handle set entries where uuid is null.");
-						throw new CallbackException("Cannot handle set entries where uuid is null.");
+						log
+								.error("Cannot handle set entries where uuid is null.");
+						throw new CallbackException(
+								"Cannot handle set entries where uuid is null.");
 					}
-					
-					//add it to the holder to avoid possible duplicates: key = uuid + action
-					entriesHolder.put(entryUuid + "|update",obj);
+
+					// add it to the holder to avoid possible duplicates: key =
+					// uuid + action
+					entriesHolder.put(entryUuid + "|update", obj);
 				} else {
 					// TODO: more debug info
-					log.warn("Cannot handle sets where entries are not OpenmrsObject!");
-					// skip out early because we don't want to write any xml for it.  it
+					log
+							.warn("Cannot handle sets where entries are not OpenmrsObject!");
+					// skip out early because we don't want to write any xml for
+					// it. it
 					// was handled by the normal property writer hopefully
-					return; 
+					return;
 				}
 			}
 
 			// add on deletes
 			if (!"recreate".equals(action) && set.getRole() != null) {
-				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) factory).getCollectionPersister(set.getRole());
+				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) factory)
+						.getCollectionPersister(set.getRole());
 				Iterator it = set.getDeletes(persister, false);
 				if (it != null) {
 					while (it.hasNext()) {
@@ -1340,27 +1445,36 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 							if (entryDeleteUuid == null) {
 								entryDeleteUuid = fetchUuid(objDelete);
 								if (log.isDebugEnabled()) {
-									log.debug("Entry uuid was null, attempted to fetch uuid with the following results");
+									log
+											.debug("Entry uuid was null, attempted to fetch uuid with the following results");
 									log.debug("Entry type:"
-									        + entryDeleteUuid.getClass().getName()
-									        + ",uuid:" + entryDeleteUuid);
+											+ entryDeleteUuid.getClass()
+													.getName() + ",uuid:"
+											+ entryDeleteUuid);
 								}
 							}
 							// well, this is messed up: have an instance of
 							// OpenmrsObject but has no uuid
 							if (entryDeleteUuid == null) {
-								log.error("Cannot handle set delete entries where uuid is null.");
-								throw new CallbackException("Cannot handle set delete entries where uuid is null.");
+								log
+										.error("Cannot handle set delete entries where uuid is null.");
+								throw new CallbackException(
+										"Cannot handle set delete entries where uuid is null.");
 							}
 
-							//add it to the holder to avoid possible duplicates: key = uuid + action
-							entriesHolder.put(entryDeleteUuid + "|delete",objDelete);
-							
+							// add it to the holder to avoid possible
+							// duplicates: key = uuid + action
+							entriesHolder.put(entryDeleteUuid + "|delete",
+									objDelete);
+
 						} else {
 							// TODO: more debug info
-							log.warn("Cannot handle sets where entries are not OpenmrsObject!");
-							// skip out early because we don't want to write any xml for it.  it
-							// was handled by the normal property writer hopefully
+							log
+									.warn("Cannot handle sets where entries are not OpenmrsObject!");
+							// skip out early because we don't want to write any
+							// xml for it. it
+							// was handled by the normal property writer
+							// hopefully
 							return;
 						}
 					}
@@ -1374,7 +1488,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			 * parent object or updates to more than one collection on same
 			 * owner
 			 */
-			
+
 			// Setup the serialization data structures to hold the state
 			Record xml = pkg.createRecordForWrite(set.getClass().getName());
 			Item entityItem = xml.getRootItem();
@@ -1386,58 +1500,67 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 			item.setAttribute("properyName", ownerPropertyName);
 			item.setAttribute("action", action);
 			item.setAttribute("uuid", owner.getUuid());
-			
-			//build out the xml for the item content
-			for( String entryKey : entriesHolder.keySet()) {
+
+			// build out the xml for the item content
+			for (String entryKey : entriesHolder.keySet()) {
 				OpenmrsObject entryObject = entriesHolder.get(entryKey);
-				
+
 				Item temp = xml.createItem(entityItem, "entry");
 				temp.setAttribute("type", this.getType(entryObject));
-				temp.setAttribute("action", entryKey.substring(entryKey.indexOf('|') + 1));
-				temp.setAttribute("uuid", entryObject.getUuid());				
+				temp.setAttribute("action", entryKey.substring(entryKey
+						.indexOf('|') + 1));
+				temp.setAttribute("uuid", entryObject.getUuid());
 			}
-			
+
 			SyncItem syncItem = new SyncItem();
 			syncItem.setKey(new SyncItemKey<String>(owner.getUuid() + "|"
-			        + ownerPropertyName, String.class));
+					+ ownerPropertyName, String.class));
 			syncItem.setState(SyncItemState.UPDATED);
 			syncItem.setContainedType(set.getClass());
 			syncItem.setContent(xml.toStringAsDocumentFragement());
 
 			syncRecordHolder.get().addOrRemoveAndAddItem(syncItem);
-			syncRecordHolder.get().addContainedClass(owner.getClass()
-			                                              .getName());
+			syncRecordHolder.get()
+					.addContainedClass(owner.getClass().getName());
 
 			// do the original uuid dance, same as in packageObject
 			if (syncRecordHolder.get().getOriginalUuid() == null
-			        || "".equals(syncRecordHolder.get().getOriginalUuid())) {
+					|| "".equals(syncRecordHolder.get().getOriginalUuid())) {
 				syncRecordHolder.get().setOriginalUuid(originalRecordUuid);
 			}
 		} catch (Exception ex) {
-			log.error("Error processing Persistent set, see callstack and inner expection",
-			          ex);
-			throw new CallbackException("Error processing Persistent set, see callstack and inner expection.", ex);
+			log
+					.error(
+							"Error processing Persistent set, see callstack and inner expection",
+							ex);
+			throw new CallbackException(
+					"Error processing Persistent set, see callstack and inner expection.",
+					ex);
 		}
 	}
 
 	/**
-	 * Returns string representation of type for given object. The main idea is to strip off the hibernate proxy info, if it happens to be present.
+	 * Returns string representation of type for given object. The main idea is
+	 * to strip off the hibernate proxy info, if it happens to be present.
 	 * 
-	 * @param obj object 
+	 * @param obj
+	 *            object
 	 * @return
 	 */
 	private String getType(Object obj) {
-		
-		//be defensive about it
+
+		// be defensive about it
 		if (obj == null) {
-			throw new CallbackException("Error trying to determine type for object; object is null.");
+			throw new CallbackException(
+					"Error trying to determine type for object; object is null.");
 		}
-		
+
 		Object concreteObj = obj;
 		if (obj instanceof org.hibernate.proxy.HibernateProxy) {
-			concreteObj = ((HibernateProxy)obj).getHibernateLazyInitializer().getImplementation();
+			concreteObj = ((HibernateProxy) obj).getHibernateLazyInitializer()
+					.getImplementation();
 		}
-	
+
 		return concreteObj.getClass().getName();
 	}
 
@@ -1487,6 +1610,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor
 				}
 			}
 		}
-	} 	
+	}
 
 }

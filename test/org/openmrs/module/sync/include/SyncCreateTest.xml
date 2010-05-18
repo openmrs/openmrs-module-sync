@@ -134,16 +134,14 @@
   <person_address person_address_id="7" person_id="3" preferred="false" address1="" address2="" city_village="Kapina" state_province="" postal_code="" country="" latitude="" longitude="" creator="1" date_created="2006-01-18 00:00:00.0" voided="false" void_reason="" uuid="196bef28-168c-102b-8d9c-e44ed545d222"/>
   <person_address person_address_id="8" person_id="4" preferred="false" address1="" address2="" city_village="Youngstown" state_province="" postal_code="" country="" latitude="" longitude="" creator="1" date_created="2006-01-18 00:00:00.0" voided="false" void_reason="" uuid="196bef28-168c-102b-8d9c-e44ed545d223"/>
 
-  <person_attribute/>
-
-  <person_attribute_type retired="false" person_attribute_type_id="1" name="Race" description="Group of persons related by common descent or heredity" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322aa53b-144e-102b-8d9c-e44ed545d86c"/>
-  <person_attribute_type retired="false" person_attribute_type_id="2" name="Birthplace" description="Location of persons birth" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322aa923-144e-102b-8d9c-e44ed545d86c"/>
-  <person_attribute_type retired="false" person_attribute_type_id="3" name="Citizenship" description="Country of which this person is a member" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322aab60-144e-102b-8d9c-e44ed545d86c"/>
-  <person_attribute_type retired="false" person_attribute_type_id="4" name="Mother&apos;s Name" description="First or last name of this person&apos;s mother" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322aad91-144e-102b-8d9c-e44ed545d86c"/>
-  <person_attribute_type retired="false" person_attribute_type_id="5" name="Civil Status" description="Marriage status of this person" format="org.openmrs.Concept" foreign_key="12" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322aafb8-144e-102b-8d9c-e44ed545d86c"/>
-  <person_attribute_type retired="false" person_attribute_type_id="6" name="Health District" description="District/region in which this patient&apos; home health center resides" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322ab1f4-144e-102b-8d9c-e44ed545d86c"/>
-  <person_attribute_type retired="false" person_attribute_type_id="7" name="Health Center" description="Specific Location of this person&apos;s home health center." format="org.openmrs.Location" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322ab426-144e-102b-8d9c-e44ed545d86c"/>
-  <person_attribute_type retired="false" person_attribute_type_id="8" name="Favorite Number" description="Favorite Number" format="java.lang.Integer" searchable="0" creator="1" date_created="2007-05-04 9:59:23.0" uuid="322ab426-144e-102b-8d9c-e44ed545d86d"/>
+  <person_attribute_type retired="false" person_attribute_type_id="1" name="Race" description="Group of persons related by common descent or heredity" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322aa53b-144e-102b-8d9c-e44ed545d86c" sort_weight="1"/>
+  <person_attribute_type retired="false" person_attribute_type_id="2" name="Birthplace" description="Location of persons birth" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322aa923-144e-102b-8d9c-e44ed545d86c" sort_weight="7"/>
+  <person_attribute_type retired="false" person_attribute_type_id="3" name="Citizenship" description="Country of which this person is a member" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322aab60-144e-102b-8d9c-e44ed545d86c" sort_weight="6"/>
+  <person_attribute_type retired="false" person_attribute_type_id="4" name="Mother&apos;s Name" description="First or last name of this person&apos;s mother" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322aad91-144e-102b-8d9c-e44ed545d86c" sort_weight="5"/>
+  <person_attribute_type retired="false" person_attribute_type_id="5" name="Civil Status" description="Marriage status of this person" format="org.openmrs.Concept" foreign_key="12" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322aafb8-144e-102b-8d9c-e44ed545d86c" sort_weight="4"/>
+  <person_attribute_type retired="false" person_attribute_type_id="6" name="Health District" description="District/region in which this patient&apos; home health center resides" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322ab1f4-144e-102b-8d9c-e44ed545d86c" sort_weight="3"/>
+  <person_attribute_type retired="false" person_attribute_type_id="7" name="Health Center" description="Specific Location of this person&apos;s home health center." format="org.openmrs.Location" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322ab426-144e-102b-8d9c-e44ed545d86c" sort_weight="2"/>
+  <person_attribute_type retired="false" person_attribute_type_id="8" name="Favorite Number" description="Favorite Number" format="java.lang.Integer" searchable="0" creator="1" date_created="2007-05-04 9:59:23.0" uuid="322ab426-144e-102b-8d9c-e44ed545d86d" sort_weight="8"/>
 
   <person_name person_name_id="1" preferred="true" person_id="1" given_name="Super" middle_name="" family_name="User" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="3272ce85-144e-102b-8d9c-e44ed545d86c"/>
   <person_name person_name_id="2" preferred="true" person_id="2" given_name="Clark" middle_name="" family_name="Kent" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="5446aa86-15a6-102b-8d9c-e44ed545d86c"/>
@@ -244,10 +242,10 @@
 
   <relationship/>
 
-  <relationship_type relationship_type_id="1" a_is_to_b="Doctor" b_is_to_a="Patient" preferred="0" weight="0" description="Relationship from a primary care provider to the patient" creator="1" date_created="2007-05-04 09:59:22.0" uuid="33da8d6d-144e-102b-8d9c-e44ed545d86c"/>
-  <relationship_type relationship_type_id="2" a_is_to_b="Sibling" b_is_to_a="Sibling" preferred="0" weight="0" description="Relationship between brother/sister, brother/brother, and sister/sister" creator="1" date_created="2007-05-04 09:59:22.0" uuid="33da91ca-144e-102b-8d9c-e44ed545d86c"/>
-  <relationship_type relationship_type_id="3" a_is_to_b="Parent" b_is_to_a="Child" preferred="0" weight="0" description="Relationship from a mother/father to the child" creator="1" date_created="2007-05-04 09:59:22.0" uuid="33da93dd-144e-102b-8d9c-e44ed545d86c"/>
-  <relationship_type relationship_type_id="4" a_is_to_b="Aunt/Uncle" b_is_to_a="Niece/Nephew" preferred="0" weight="0" description="" creator="1" date_created="2007-05-04 09:59:22.0" uuid="33da95d7-144e-102b-8d9c-e44ed545d86c"/>
+  <relationship_type relationship_type_id="1" a_is_to_b="Doctor" b_is_to_a="Patient" preferred="0" weight="0" description="Relationship from a primary care provider to the patient" creator="1" date_created="2007-05-04 09:59:22.0" uuid="33da8d6d-144e-102b-8d9c-e44ed545d86c" retired="false"/>
+  <relationship_type relationship_type_id="2" a_is_to_b="Sibling" b_is_to_a="Sibling" preferred="0" weight="0" description="Relationship between brother/sister, brother/brother, and sister/sister" creator="1" date_created="2007-05-04 09:59:22.0" uuid="33da91ca-144e-102b-8d9c-e44ed545d86c" retired="false"/>
+  <relationship_type relationship_type_id="3" a_is_to_b="Parent" b_is_to_a="Child" preferred="0" weight="0" description="Relationship from a mother/father to the child" creator="1" date_created="2007-05-04 09:59:22.0" uuid="33da93dd-144e-102b-8d9c-e44ed545d86c" retired="false"/>
+  <relationship_type relationship_type_id="4" a_is_to_b="Aunt/Uncle" b_is_to_a="Niece/Nephew" preferred="0" weight="0" description="" creator="1" date_created="2007-05-04 09:59:22.0" uuid="33da95d7-144e-102b-8d9c-e44ed545d86c" retired="false"/>
 
   <role role="Anonymous" description="Privileges for non-authenticated users." uuid="34b48ab4-144e-102b-8d9c-e44ed545d86c"/>
   <role role="Authenticated" description="Privileges gained once authentication has been established." uuid="34b48e9c-144e-102b-8d9c-e44ed545d86c"/>
@@ -255,14 +253,10 @@
   <role role="Administrator" description="Developers of the OpenMRS .. have additional access to change fundamental structure of the database model." uuid="34b49350-144e-102b-8d9c-e44ed545d86c"/>
   <role role="System Developer" description="Developers of the OpenMRS .. have additional access to change fundamental structure of the database model." uuid="11119350-144e-102b-8d9c-e44ed545d222"/>
   
-  <role_privilege/>
-
-  <role_role/>
-
   <user_role user_id="1" role="Administrator"/> <!-- uuid="35a05ac6-144e-102b-8d9c-e44ed545d86c" -->
   <user_role user_id="1" role="System Developer"/> <!-- uuid="35a05ac6-144e-102b-8d9c-e44ed545d86c" -->
   
-  <users user_id="1" system_id="admin" username="" password="4a1750c8607dfa237de36c6305715c223415189" salt="c788c6ad82a157b712392ca695dfcf2eed193d7f" creator="1" date_created="2005-01-01 00:00:00.0" voided="false"/>  
+  <users user_id="1" person_id="1" system_id="admin" username="" password="4a1750c8607dfa237de36c6305715c223415189" salt="c788c6ad82a157b712392ca695dfcf2eed193d7f" creator="1" date_created="2005-01-01 00:00:00.0" retired="false" uuid="22a05ac6-144e-102b-8d9c-e44ed545d86c"/>  
 
   <field_type field_type_id="1" name="Concept" description="" is_set="false" creator="2" date_created="2005-02-22 12:43:00.0" uuid="a4fb1158-fb9e-102a-b4cd-d5399a5cfee6"/>
   <field_type field_type_id="2" name="Database element" description="" is_set="false" creator="2" date_created="2005-02-22 12:43:00.0" uuid="a4fb1503-fb9e-102a-b4cd-d5399a5cfee6"/>
