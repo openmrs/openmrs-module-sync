@@ -31,6 +31,7 @@ import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
+import org.openmrs.module.sync.server.SyncServerRecord;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -88,7 +89,13 @@ public class ViewRecordController {
         				SyncRecord rec=recordList.get(i);
         				rec.setRetryCount(0);
         				rec.setState(SyncRecordState.NEW);
+        				
+        				for(SyncServerRecord serverRecord : rec.getServerRecords()){
+        					serverRecord.setState(SyncRecordState.NEW);
+        				}        				
+        				
         				syncService.updateSyncRecord(rec);
+        				
         				resultMap.put("record", rec);
         				resultMap.put("hasNext",hasNext);
             			resultMap.put("hasPrevious",hasPrevious);
@@ -97,7 +104,13 @@ public class ViewRecordController {
         				SyncRecord rec=recordList.get(i);
         				rec.setRetryCount(0);
         				rec.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
+        				
+        				for(SyncServerRecord serverRecord : rec.getServerRecords()){
+        					serverRecord.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
+        				}
+        				
         				syncService.updateSyncRecord(rec);
+        				
         				resultMap.put("record", rec);
         				resultMap.put("hasNext",hasNext);
             			resultMap.put("hasPrevious",hasPrevious);
