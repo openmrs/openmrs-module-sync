@@ -31,7 +31,6 @@ import org.openmrs.Person;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.EncounterService;
 import org.openmrs.api.context.Context;
-import org.openmrs.test.TestUtil;
 import org.springframework.test.annotation.NotTransactional;
 import org.springframework.test.annotation.Rollback;
 
@@ -182,27 +181,12 @@ public class SyncEncounterTest extends SyncBaseTest {
 				Context.getEncounterService().saveEncounter(e);
 				
 				encUuid = e.getUuid();
-				try {
-	                TestUtil.printOutTableContents(getConnection(), "encounter", "obs");
-                }
-                catch (Exception e1) {
-	                // TODO Auto-generated catch block
-	                log.error("Error generated", e1);
-                }
-				
 			}
 			public void runOnParent() {
 				Context.clearSession();
 				
 				Encounter e = Context.getEncounterService().getEncounterByUuid(encUuid);
 				assertNotNull(e);
-				try {
-	                TestUtil.printOutTableContents(getConnection(), "encounter", "obs");
-                }
-                catch (Exception e1) {
-	                // TODO Auto-generated catch block
-	                log.error("Error generated", e1);
-                }
 				Assert.assertTrue("No obs were found", e.getObs().size() > 0);
 			}
 		});

@@ -22,96 +22,71 @@ import java.util.Date;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedInputStream;
 
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.api.SyncService;
-import org.openmrs.util.OpenmrsUtil;
-import org.springframework.test.annotation.NotTransactional;
+import org.openmrs.test.BaseContextSensitiveTest;
 
 /**
  * 
  */
-public class SyncCloneTest extends SyncBaseTest {
-
+@Ignore
+public class SyncCloneTest extends BaseContextSensitiveTest {
+	
+	@Override
+	public Boolean useInMemoryDatabase() {
+		return false;
+	}
+	
 	/**
 	 * @see org.openmrs.synchronization.engine.SyncBaseTest#getInitialDataset()
 	 */
-	@Override
-	public String getInitialDataset() {
-		return "org/openmrs/module/sync/include/SyncCreateTest.xml";
+	@Before
+	public void setupInitialDataset() throws Exception {
+		executeDataSet("org/openmrs/module/sync/include/SyncCreateTest.xml");
 	}
 
 	@Test
-	@NotTransactional
 	public void testJDBCClone() throws Exception {
-		runSyncTest(new SyncTestHelper() {
-			long checksumOne, checksumTwo;
-			File fileOne;
-			File fileTwo;
-			SyncService syncService = Context.getService(SyncService.class);
+		SyncService syncService = Context.getService(SyncService.class);
 
-			public void runOnParent() {
-				try {
-					File dir = SyncUtil.getSyncApplicationDir();
-					fileOne = new File(dir, SyncConstants.CLONE_IMPORT_FILE_NAME
-					        + SyncConstants.SYNC_FILENAME_MASK.format(new Date())
-					        + "_one.sql");
-					syncService.exportChildDB(null, new FileOutputStream(fileOne));
-					checksumOne = checksum(fileOne);
-				} catch (Exception e) {
-					log.error("Sync clone JDBC test export error", e);
-				}
-			}
-
-			public void runOnChild() {
-				try {
-					syncService.importParentDB(new FileInputStream(fileOne));
-					File dir = SyncUtil.getSyncApplicationDir();
-					fileTwo = new File(dir, SyncConstants.CLONE_IMPORT_FILE_NAME
-					        + SyncConstants.SYNC_FILENAME_MASK.format(new Date())
-					        + "_two.sql");
-					syncService.exportChildDB(null, new FileOutputStream(fileTwo));
-					checksumTwo = checksum(fileTwo);
-				} catch (Exception e) {
-					log.error("Sync clone JDBC test import error", e);
-				}
-				assertTrue("Failed to validate the checksum for the two sync clonedumps",
-				           checksumOne == checksumTwo);
-			}
-		});
+		File dir = SyncUtil.getSyncApplicationDir();
+		File fileOne = new File(dir, SyncConstants.CLONE_IMPORT_FILE_NAME
+		        + SyncConstants.SYNC_FILENAME_MASK.format(new Date())
+		        + "_one.sql");
+		syncService.exportChildDB(null, new FileOutputStream(fileOne));
+		long checksumOne = checksum(fileOne);
+		
+		deleteAllData();
+		
+		syncService.importParentDB(new FileInputStream(fileOne));
+		File fileTwo = new File(dir, SyncConstants.CLONE_IMPORT_FILE_NAME
+		        + SyncConstants.SYNC_FILENAME_MASK.format(new Date())
+		        + "_two.sql");
+		syncService.exportChildDB(null, new FileOutputStream(fileTwo));
+		long checksumTwo = checksum(fileTwo);
+		
+		assertTrue("Failed to validate the checksum for the two sync clonedumps",
+		           checksumOne == checksumTwo);
 	}
 
 	@Test
-	@NotTransactional
 	public void testMySqlDump() throws Exception {
+		SyncService syncService = Context.getService(SyncService.class);
+		File fileOne = syncService.generateDataFile();
+		long checksumOne = checksum(fileOne);
 		
-		runSyncTest(new SyncTestHelper() {
-			long checksumOne, checksumTwo;
-			File fileOne;
-			File fileTwo;
-			SyncService syncService = Context.getService(SyncService.class);
-
-			public void runOnParent() {
-				try {
-					fileOne = syncService.generateDataFile();
-					checksumOne = checksum(fileOne);
-				} catch (Exception e) {
-					log.error("Sync clone MYSQL test export error", e);
-				}
-			}
-
-			public void runOnChild() {
-				try {
-					syncService.execGeneratedFile(fileOne);
-					fileTwo =syncService.generateDataFile();
-					checksumTwo = checksum(fileTwo);
-				} catch (Exception e) {
-					log.error("Sync clone MYSQL test import error", e);
-				}
-				assertTrue("Failed to validate the checksum for the two sync clone dumps",
-				           checksumOne == checksumTwo);
-			}
-		});
+		deleteAllData();
+		
+		syncService.execGeneratedFile(fileOne);
+		File fileTwo =syncService.generateDataFile();
+		long checksumTwo = checksum(fileTwo);
+		
+		assertTrue("Failed to validate the checksum for the two sync clone dumps",
+		           checksumOne == checksumTwo);
+		
 	}
 
 	/*

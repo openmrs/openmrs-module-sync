@@ -23,7 +23,6 @@ import org.openmrs.Obs;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.hl7.handler.ORUR01Handler;
-import org.openmrs.test.TestUtil;
 import org.springframework.test.annotation.NotTransactional;
 
 import ca.uhn.hl7v2.app.MessageTypeRouter;
@@ -71,7 +70,6 @@ public class SyncORUR01HandlerTest extends SyncBaseTest {
 				List<Obs> obsForPatient = Context.getObsService().getObservationsByPersonAndConcept(patient, question);
 				assertEquals(1, obsForPatient.size()); // there should be one more obs now for this patient
 				assertEquals(88.87, obsForPatient.get(0).getValueNumeric(), 0);
-				TestUtil.printOutTableContents(getConnection(), "obs");
 			}
 		});
 	}
