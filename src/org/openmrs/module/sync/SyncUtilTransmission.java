@@ -306,7 +306,7 @@ public class SyncUtilTransmission {
                                 syncService.saveRemoteServer(parent);
                             }
                             
-                            if (initialTxFromParent.getSyncRecords() != null)
+                            if (size != null && initialTxFromParent.getSyncRecords() != null)
                             	size.setSize(initialTxFromParent.getSyncRecords().size());
                             
                             // process syncTx from parent, and generate response
