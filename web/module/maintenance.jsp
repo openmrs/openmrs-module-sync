@@ -127,7 +127,7 @@
 				onclick="location='viewrecord.form?uuid=${syncRecord.uuid}'"
 				height="25">
 				<td align="left" valign="middle" style="padding: 8px;"><b><a
-					href="synchronizationViewRecord.list?uuid=${syncRecord.uuid}">${recordTypes[syncRecord.uuid]}</a></b></td>
+					href="viewrecord.list?uuid=${syncRecord.uuid}">${recordTypes[syncRecord.uuid]}</a></b></td>
 				<td align="left" valign="middle" style="padding: 8px;"><c:if
 					test="${not empty recordText[syncRecord.uuid]}">${recordText[syncRecord.uuid]}</c:if>
 				</td>
