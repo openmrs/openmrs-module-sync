@@ -86,7 +86,7 @@ public class SyncAdminTest extends SyncBaseTest {
 			public void runOnParent() {
 				assertEquals("Failed to create program", numBefore + 1, Context.getProgramWorkflowService().getPrograms().size());
 				Program p = Context.getProgramWorkflowService().getProgram("TB PROGRAM");
-				System.out.println("TB Program = " + p);
+				log.info("TB Program = " + p);
 				assertNotNull("Workflows is null", p.getWorkflows());
 				assertEquals("Wrong number of workflows", 1, p.getWorkflows().size());
 

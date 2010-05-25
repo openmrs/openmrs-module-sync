@@ -27,13 +27,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Vector;
@@ -47,7 +46,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Concept;
-import org.openmrs.ConceptName;
 import org.openmrs.Drug;
 import org.openmrs.DrugOrder;
 import org.openmrs.Encounter;
@@ -71,15 +69,18 @@ import org.openmrs.RelationshipType;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.LoginCredential;
 import org.openmrs.module.sync.api.SyncService;
+import org.openmrs.module.sync.serialization.BinaryNormalizer;
+import org.openmrs.module.sync.serialization.DefaultNormalizer;
 import org.openmrs.module.sync.serialization.FilePackage;
 import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.serialization.Item;
+import org.openmrs.module.sync.serialization.LocaleNormalizer;
+import org.openmrs.module.sync.serialization.Normalizer;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.notification.Message;
 import org.openmrs.notification.MessageException;
-import org.openmrs.util.LocaleUtility;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Node;
@@ -91,6 +92,64 @@ import org.w3c.dom.NodeList;
 public class SyncUtil {
 
 	private static Log log = LogFactory.getLog(SyncUtil.class);		
+	
+	// safetypes are *hibernate* types that we know how to serialize with help
+	// of Normalizers
+	public static final Map<String, Normalizer> safetypes;
+	static {
+		DefaultNormalizer defN = new DefaultNormalizer();
+		TimestampNormalizer dateN = new TimestampNormalizer();
+		BinaryNormalizer byteN = new BinaryNormalizer();
+		
+		safetypes = new HashMap<String, Normalizer>();
+		// safetypes.put("binary", defN);
+		// blob
+		safetypes.put("boolean", defN);
+		// safetypes.put("big_integer", defN);
+		// safetypes.put("big_decimal", defN);
+		safetypes.put("binary", byteN);
+		safetypes.put("byte[]", byteN);
+		// calendar
+		// calendar_date
+		// character
+		// clob
+		// currency
+		safetypes.put("date", dateN);
+		// dbtimestamp
+		safetypes.put("double", defN);
+		safetypes.put("float", defN);
+		safetypes.put("integer", defN);
+		safetypes.put("locale", new LocaleNormalizer());
+		safetypes.put("long", defN);
+		safetypes.put("short", defN);
+		safetypes.put("string", defN);
+		safetypes.put("text", defN);
+		safetypes.put("timestamp", dateN);
+		// time
+		// timezone
+	}
+	
+	/**
+	 * Convenience method to get the normalizer (see {@link #safetypes}) for the given class.
+	 * 
+	 * @param c class to normalize
+	 * @return the {@link Normalizer} to use
+	 * @see #getNormalizer(String)
+	 */
+	public static Normalizer getNormalizer(Class c) {
+		String simpleClassName = c.getSimpleName().toLowerCase();
+		return getNormalizer(simpleClassName);
+	}
+	
+	/**
+	 * Convenience method to get the normalizer (see {@link #safetypes}) for the given class.
+	 * 
+	 * @param simpleClassName the lowercase key for the {@link #safetypes} map
+	 * @return the {@link Normalizer} for the given key
+	 */
+	public static Normalizer getNormalizer(String simpleClassName) {
+		return safetypes.get(simpleClassName);
+	}
 	
 	/**
 	 * Get the sync work directory in the openmrs application data directory
@@ -295,9 +354,6 @@ public class SyncUtil {
 					OpenmrsObject obj = getOpenmrsObj(nodeDefinedClassName, fieldVal);
 					o = obj.getId().toString(); // call toString so the class types match when looking up the setter
 				}
-				else if ((o = convertStringToObject(fieldVal, className)) != null) {
-					log.trace("Converted " + fieldVal + " into " + className);
-				}
 				else if (Collection.class.isAssignableFrom(classType)) {
 					// this is a collection of items. this is intentionally not in the convertStringToObject method
 					
@@ -319,7 +375,7 @@ public class SyncUtil {
 					for (String eachFieldVal : fieldVal.split(",")) {
 						eachFieldVal = eachFieldVal.trim(); // take out whitespace
 						// convert to a simple object
-						Object tmpObject = convertStringToObject(eachFieldVal, collectionTypeClassName);
+						Object tmpObject = convertStringToObject(eachFieldVal, (Class)collectionType);
 						if (tmpObject == null)
 							log.error("Unable to convert: " + eachFieldVal + " to a " + collectionTypeClassName);
 						else
@@ -327,6 +383,9 @@ public class SyncUtil {
 					}
 					
 					o = tmpCollection;
+				}
+				else if ((o = convertStringToObject(fieldVal, classType)) != null) {
+					log.trace("Converted " + fieldVal + " into " + classType.getName());
 				}
 				else {
 					log.debug("Don't know how to deserialize class: " + className);
@@ -345,68 +404,21 @@ public class SyncUtil {
      * Integer, Long, Float, Double, Boolean, Date, and Locale. 
      * 
      * @param fieldVal the string object representation
-     * @param className the name of the class that is represented by this string. e.g. "java.lang.Integer"
-     * @return object of type "className"
+     * @param clazz the {@link Class} to turn this string into
+     * @return object of type "clazz" or null if unable to convert it
+     * @see SyncUtil#getNormalizer(Class)
      */
-    private static Object convertStringToObject(String fieldVal, String className) {
+    private static Object convertStringToObject(String fieldVal, Class clazz) {
     	
-    	Object o = null; // the object to return
+    	Normalizer normalizer = getNormalizer(clazz);
     	
-    	if ( "java.lang.String".equals(className) ) {
-    		o = (Object)(new String(fieldVal));
-        } else if ( "java.lang.Short".equals(className) ) {
-            try {
-                o = (Object)(Short.valueOf(fieldVal));
-            } catch (NumberFormatException nfe) {
-                log.debug("NumberFormatException trying to turn " + fieldVal + " into a Short");
-            }
-    	} else if ( "java.lang.Integer".equals(className) ) {
-    		try {
-    			o = (Object)(Integer.valueOf(fieldVal));
-    		} catch (NumberFormatException nfe) {
-    			log.debug("NumberFormatException trying to turn " + fieldVal + " into a Integer");
-    		}
-    	} else if ( "java.lang.Long".equals(className) ) {
-    		try {
-    			o = (Object)(Long.valueOf(fieldVal));
-    		} catch (NumberFormatException nfe) {
-    			log.debug("NumberFormatException trying to turn " + fieldVal + " into a Long");
-    		}
-    	} else if ( "java.lang.Float".equals(className) ) {
-    		try {
-    			o = (Object)(Float.valueOf(fieldVal));
-    		} catch (NumberFormatException nfe) {
-    			log.debug("NumberFormatException trying to turn " + fieldVal + " into a Float");
-    		}
-    	} else if ( "java.lang.Double".equals(className) ) {
-    		try {
-    			o = (Object)(Double.valueOf(fieldVal));
-    		} catch (NumberFormatException nfe) {
-    			log.debug("NumberFormatException trying to turn " + fieldVal + " into a Double");
-    		}
-    	} else if ( "java.lang.Boolean".equals(className) ) {
-    		o = (Object)(Boolean.valueOf(fieldVal));
-    	} else if ( "java.util.Date".equals(className) ) {
-    		SimpleDateFormat sdf = new SimpleDateFormat(TimestampNormalizer.DATETIME_MASK);
-    		Date d;
-    		try {
-    			d = sdf.parse(fieldVal);
-    			o = (Object)(d);
-    		} catch (ParseException e) {
-    			log.debug("DateParsingException trying to turn " + fieldVal + " into a date, so retrying with backup mask");
-    			try {
-    				SimpleDateFormat sdfBackup = new SimpleDateFormat(TimestampNormalizer.DATETIME_MASK_BACKUP);
-    				d = sdfBackup.parse(fieldVal);
-    				o = (Object)(d);
-    			} catch (ParseException pee) {
-    				log.debug("Still getting DateParsingException trying to turn " + fieldVal + " into a date, so retrying with backup mask");
-    			}
-    		}
-    	} else if ( "java.util.Locale".equals(className) ) {
-    		o = LocaleUtility.fromSpecification(fieldVal);
+    	if (normalizer == null) {
+    		log.error("Unable to parse value: " + fieldVal + " into object of class: " + clazz.getName());
+    		return null;
     	}
-    	
-    	return o;
+    	else {
+    		return normalizer.fromString(clazz, fieldVal);
+    	}
     }
 
 	/**
@@ -522,19 +534,12 @@ public class SyncUtil {
     
     /**
      * Uses the generic hibernate API to perform the save<br/>
-     * Possible exceptions that need post-processing:<br/>
-     * <br />Form - may need rebuild XSN  
      *  
      * @param o object to save
      * @param className type
      * @param Uuid unique id of the object that is being saved
-     * @param preCommitRecordActions actions set to be added to if needed, also SyncIngestServiceImpl.processOpenmrsObject 
-     * 
      */
-    public static synchronized void updateOpenmrsObject(OpenmrsObject o, 
-    		String className, 
-    		String Uuid, 
-    		List<SyncPreCommitAction> preCommitRecordActions) {
+	public static synchronized void updateOpenmrsObject(OpenmrsObject o, String className, String Uuid) {
     	
     	// TODO allow this to be done by modules somehow
     	// some pre-flush modifications
@@ -570,25 +575,6 @@ public class SyncUtil {
 		} else {
 			log.warn("Will not update OpenMRS object that is NULL");
 		}
-    	
-    	// for forms, we need signal to rebuild XSN, do it here
-    	if ("org.openmrs.Form".equals(className)) {
-    		if (preCommitRecordActions != null)
-    			preCommitRecordActions.add(new SyncPreCommitAction(SyncPreCommitAction.PreCommitActionName.REBUILDXSN, o));
-    	}
-    	// if conceptName change comes on its own, trigger clean up of related concept words also
-    	else if ("org.openmrs.ConceptName".equals(className)) {
-    		if (preCommitRecordActions != null && o != null) {
-    			Concept c = ((ConceptName)o).getConcept();
-    			c.addName((ConceptName)o);
-    			preCommitRecordActions.add(new SyncPreCommitAction(SyncPreCommitAction.PreCommitActionName.UPDATECONCEPTWORDS, c));
-    		}
-    	}
-//    	else if (Concept.class.isAssignableFrom(o.getClass())) {
-//    		if (preCommitRecordActions != null && o != null) {
-//    			preCommitRecordActions.add(new SyncPreCommitAction(SyncPreCommitAction.PreCommitActionName.UPDATECONCEPTWORDS, o));
-//    		}
-//    	}
     	
     }  
 	
@@ -828,126 +814,77 @@ public class SyncUtil {
 	}
 	
 	/**
-	 * Rebuilds XSN form. This is needed for ingest when form is received from remote server; template files that are contained in xsn
-	 * in fromentry_xsn table need to be updated. Supported way to do this is to ask formentry module to rebuild XSN. Invoking method via
-	 * reflection is temporary workaround until sync is in trunk: at that point advice point should be registered on sync service that 
-	 * formentry could respond to by calling rebuild. 
+	 * Rebuilds XSN form. This is needed for ingest when form is received from
+	 * remote server; template files that are contained in xsn in fromentry_xsn
+	 * table need to be updated. Supported way to do this is to ask formentry
+	 * module to rebuild XSN. Invoking method via reflection is temporary
+	 * workaround until sync is in trunk: at that point advice point should be
+	 * registered on sync service that formentry could respond to by calling
+	 * rebuild.
 	 * 
-	 * @param form form to rebuild xsn for
+	 * @param xsn
+	 *            the xsn to be rebuilt.
 	 */
-	private static void rebuildXSN(Form form) {
-		Object o = null;
+	public static void rebuildXSN(OpenmrsObject xsn) {
 		Class c = null;
 		Method m = null;
 		String msg = null;
-		
-		if (form == null) {
+
+		if (xsn == null) {
 			return;
 		}
-		
+
 		try {
-			msg = "Processing form with id: " + form.getFormId().toString();
-			
-			boolean rebuildXsn = true;
+			// only rebuild non-archived xsns
 			try {
-				c = Context.loadClass("org.openmrs.module.formentry.FormEntryService");
-			} catch(Exception e){}
-			if (c==null) {
-				log.warn("Failed to find FormEntryService in formentry module; is module loaded? " + msg);
+				m = xsn.getClass().getDeclaredMethod("getArchived");
+			} catch (Exception e) { }
+			if (m == null) {
+				log.warn("Failed to retrieve handle to getArchived method; is formentry module loaded?");
 				return;
 			}
-			try {
-				Object formentryservice = Context.getService(c);
-				m = formentryservice.getClass().getDeclaredMethod("getFormEntryXsn", new Class[]{form.getClass()});
-				Object xsn = m.invoke(formentryservice, form);
-				if (xsn == null)
-					rebuildXsn = false;
-			}
-			catch (Exception e) {
-				log.warn("Failed to test for formentry xsn existance");
-			}
+			Boolean isArchived = (Boolean) m.invoke(xsn, null);
 			
-			if (rebuildXsn) {
-				try {
-					c = Context.loadClass("org.openmrs.module.formentry.FormEntryUtil");
-				} catch(Exception e){}
-				if (c==null) {
-					log.warn("Failed to retrieve handle to FormEntryUtil in formentry module; is module loaded? " + msg);
-					return;
-				}
-				
-				try {
-				    m = c.getDeclaredMethod("rebuildXSN", new Class[]{form.getClass()});
-				} catch(Exception e) {}
-			    if (m==null) {
-			    	log.warn("Failed to retrieve handle to rebuildXSN method in FormEntryUtil; is module loaded? " + msg);
-			    	return;
-			    }
-			    
-			    //finally execute it
-			    m.invoke(null, form);
+			if (isArchived)
+				return;
+			
+			// get the form id of the xsn
+			try {
+				m = xsn.getClass().getDeclaredMethod("getForm");
+			} catch (Exception e) { }
+			if (m == null) {
+				log.warn("Failed to retrieve handle to getForm method in FormEntryXsn; is formentry module loaded?");
+				return;
 			}
-					
-		}	
-		catch (Exception e) {
-			log.error("FormEntry module present but failed to rebuild XSN, see stack for error detail." + msg,e);
+			Form form = (Form) m.invoke(xsn, null);
+
+			msg = "Processing form with id: " + form.getFormId();
+			
+			
+			// now get methods to rebuild the form
+			try {
+				c = Context.loadClass("org.openmrs.module.formentry.FormEntryUtil");
+			} catch (Exception e) { }
+			if (c == null) {
+				log.warn("Failed to retrieve handle to FormEntryUtil in formentry module; is formentry module loaded? " + msg);
+				return;
+			}
+
+			try {
+				m = c.getDeclaredMethod("rebuildXSN", new Class[] { Form.class });
+			} catch (Exception e) { }
+			if (m == null) {
+				log.warn("Failed to retrieve handle to rebuildXSN method in FormEntryUtil; is formentry module loaded? " + msg);
+				return;
+			}
+
+			// finally actually do the rebuilding
+			m.invoke(null, form);
+
+		} catch (Exception e) {
+			log.error("FormEntry module present but failed to rebuild XSN, see stack for error detail." + msg, e);
 			throw new SyncException("FormEntry module present but failed to rebuild XSN, see server log for the stacktrace for error details " + msg, e);
 		}
-		return;
-	}
-	
-	/**
-	 * Applies the 'actions' identified during the processing of the record that need to be 
-	 * processed (for whatever reason) just before the sync record is to be committed.
-	 * 
-	 * The actions understood by this method are those listed in SyncUtil.PreCommitActionName enum:
-	 * <br/>REBUILDXSN 
-	 * <br/>- call to formentry module and attempt to rebuild XSN, 
-	 * <br/>- HashMap object will contain instance of Form object to be rebuilt
-	 * <br/>UPDATECONCEPTWORDS 
-	 * <br/>- call to concept service to update concept words for given concept 
-	 * <br/>- HashMap object will contain instance of Concept object which concept words are to be rebuilt
-	 * 
-	 * @param preCommitRecordActions actions to be applied
-	 * 
-	 */
-	public static void applyPreCommitRecordActions(List<SyncPreCommitAction> preCommitRecordActions) {
-		
-		if(preCommitRecordActions == null)
-			return;
-		
-		for(SyncPreCommitAction action : preCommitRecordActions) {
-			if(action ==null)
-				break; //this should never happen
-			
-			//actions.
-			//now process actions
-			if (action.getName().equals(SyncPreCommitAction.PreCommitActionName.REBUILDXSN)) {
-				
-				Object o = action.getParam();
-				if (o != null && (o instanceof Form) ) {
-					SyncUtil.rebuildXSN((Form)action.getParam());
-				} else {
-					//error: action was scheduled as rebuild XSN but param passed was not form
-					throw new SyncException("REBUILDXSN action was scheduled for 'PreCommitRecordActions' exection but param passed was not From, param passed was:" + action.getParam() );					
-				}
-			}
-			else if (action.getName().equals(SyncPreCommitAction.PreCommitActionName.UPDATECONCEPTWORDS)) {
-				
-				Object o = action.getParam();
-				if (o != null && Concept.class.isAssignableFrom(o.getClass()) ) {
-					Context.getConceptService().updateConceptWord((Concept)o);
-				} else {
-					//error: action was scheduled as updateconceptwords but param passed was not form
-					throw new SyncException("UPDATECONCEPTWORDS action was scheduled for 'PreCommitRecordActions' exection but param passed was not Concept, param passed was:" + action.getParam() );					
-				}
-			}
-			else {
-				//error: action was scheduled for execution that is not understood by this method, throw exception
-				throw new SyncException("Action was scheduled for 'PreCommitRecordActions' exection that is not understood, action name:" + action.getName().toString() );
-			}
-		}
-		
 		return;
 	}
 }

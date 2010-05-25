@@ -56,12 +56,10 @@ import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
-import org.openmrs.module.sync.serialization.DefaultNormalizer;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Normalizer;
 import org.openmrs.module.sync.serialization.Package;
 import org.openmrs.module.sync.serialization.Record;
-import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.util.OpenmrsConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -125,41 +123,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 	 */
 	private ApplicationContext context;
 
-	static DefaultNormalizer defN = new DefaultNormalizer();
-	static TimestampNormalizer tsN = new TimestampNormalizer();
-
 	static final String sp = "_";
-
-	// safetypes are *hibernate* types that we know how to serialize with help
-	// of Normalizers
-	static final Map<String, Normalizer> safetypes;
-	static {
-		safetypes = new HashMap<String, Normalizer>();
-		// safetypes.put("binary", defN);
-		// blob
-		safetypes.put("boolean", defN);
-		// safetypes.put("big_integer", defN);
-		// safetypes.put("big_decimal", defN);
-		// safetypes.put("byte", defN);
-		// celendar
-		// calendar_date
-		// character
-		// clob
-		// currency
-		// date
-		// dbtimestamp
-		safetypes.put("double", defN);
-		safetypes.put("float", defN);
-		safetypes.put("integer", defN);
-		safetypes.put("locale", defN);
-		safetypes.put("long", defN);
-		safetypes.put("short", defN);
-		safetypes.put("string", defN);
-		safetypes.put("text", defN);
-		safetypes.put("timestamp", tsN);
-		// time
-		// timezone
-	}
 
 	private ThreadLocal<SyncRecord> syncRecordHolder = new ThreadLocal<SyncRecord>();
 	private ThreadLocal<Boolean> deactivated = new ThreadLocal<Boolean>();
@@ -824,7 +788,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 			Object propertyValue, String infoMsg) throws Exception {
 		Normalizer n;
 		String propertyTypeName = propertyType.getName();
-		if ((n = safetypes.get(propertyTypeName)) != null) {
+		if ((n = SyncUtil.getNormalizer(propertyTypeName)) != null) {
 			// Handle safe types like
 			// boolean/String/integer/timestamp via Normalizers
 			values.put(propertyName, new PropertyClassValue(propertyTypeName, n
@@ -935,11 +899,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 					.getClass().getDeclaredField(propertyName).getGenericType())
 					.getActualTypeArguments()[0];
 
-			Class collectionTypeClass = (Class) collectionType;
-			String possibleSafeType = collectionTypeClass.getSimpleName()
-					.toLowerCase();
-
-			return safetypes.get(possibleSafeType);
+			return SyncUtil.getNormalizer((Class)collectionType);
 		} catch (Throwable t) {
 			// might get here if the property is on a superclass to the object
 
@@ -1311,7 +1271,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 				originalRecordUuid = this.syncRecordHolder.get()
 						.getOriginalUuid();
 			}
-			;
+			
 		} else {
 			log
 					.info("Cannot process PersistentSet where owner is not OpenmrsObject.");
@@ -1351,20 +1311,18 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 			}
 
 			if (!process) {
-				log
-						.info("set processing, no update needed: not dirty or current state and snapshots are same");
+				log.info("set processing, no update needed: not dirty or current state and snapshots are same");
 			}
 		}
 		if (!process)
 			return;
 
-		// pull out the property name on owner that corresponds to the
-		// collection
+		// pull out the property name on owner that corresponds to the collection
 		ClassMetadata data = factory.getClassMetadata(owner.getClass());
 		String[] propNames = data.getPropertyNames();
-		String ownerPropertyName = null; // this is the name of the property
-		// on owner object that contains the
-		// set
+		// this is the name of the property on owner object that contains the set
+		String ownerPropertyName = null; 
+
 		for (String propName : propNames) {
 			Object propertyVal = data.getPropertyValue(owner, propName,
 					org.hibernate.EntityMode.POJO);
@@ -1410,8 +1368,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 					// well, this is messed up: have an instance of
 					// OpenmrsObject but has no uuid
 					if (entryUuid == null) {
-						log
-								.error("Cannot handle set entries where uuid is null.");
+						log.error("Cannot handle set entries where uuid is null.");
 						throw new CallbackException(
 								"Cannot handle set entries where uuid is null.");
 					}
@@ -1419,13 +1376,14 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 					// add it to the holder to avoid possible duplicates: key =
 					// uuid + action
 					entriesHolder.put(entryUuid + "|update", obj);
-				} else {
-					// TODO: more debug info
-					log
-							.warn("Cannot handle sets where entries are not OpenmrsObject!");
-					// skip out early because we don't want to write any xml for
-					// it. it
-					// was handled by the normal property writer hopefully
+				} else if (SyncUtil.getNormalizer(entry.getClass()) == null){
+					log.warn("Cannot handle sets where entries are not OpenmrsObject here. Type was " + entry.getClass() + " in property " + ownerPropertyName + " in class " + owner.getClass());
+					// skip out early because we don't want to write any xml for it
+					// it was handled by the normal property writer hopefully
+					return;
+				}
+				else {
+					// don't do anything else (recreating/packaging) with these sets
 					return;
 				}
 			}
@@ -1469,8 +1427,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 
 						} else {
 							// TODO: more debug info
-							log
-									.warn("Cannot handle sets where entries are not OpenmrsObject!");
+							log.warn("Cannot handle sets where entries are not OpenmrsObject!");
 							// skip out early because we don't want to write any
 							// xml for it. it
 							// was handled by the normal property writer

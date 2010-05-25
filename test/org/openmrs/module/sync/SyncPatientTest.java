@@ -358,7 +358,7 @@ public class SyncPatientTest extends SyncBaseTest {
 				if (pit.getUuid() == null)
 					throw new RuntimeException("pit.uuid is null! " + pit);
 				else
-					System.out.println("pit.uuid = " + pit.getUuid() + " , pit = " + pit);
+					log.info("pit.uuid = " + pit.getUuid() + " , pit = " + pit);
 				Patient p = new Patient();
 				p.addName(new PersonName("Darius", "Graham", "Jazayeri"));
 				p.addIdentifier(new PatientIdentifier("999", pit, loc));
@@ -369,10 +369,10 @@ public class SyncPatientTest extends SyncBaseTest {
 				assertNotNull(ids);
 				if (ids.size() != 1)
 					assertFalse("Can't find patient we just created. ids.size()==" + ids.size(), true);
-				System.out.println("Patients at end " + Context.getPatientService().findPatients("Darius", false).size());
+				log.info("Patients at end " + Context.getPatientService().findPatients("Darius", false).size());
 			}
 			public void runOnParent() {
-				System.out.println("Patients at beginning " + Context.getPatientService().findPatients("Darius", false).size());
+				log.info("Patients at beginning " + Context.getPatientService().findPatients("Darius", false).size());
 				Location loc = Context.getLocationService().getLocation("Someplace");
 				PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierType(2);
 				PersonName name = new PersonName("Darius", "Graham", "Jazayeri");
@@ -382,9 +382,15 @@ public class SyncPatientTest extends SyncBaseTest {
 				assertNotNull(ids);
 				if (ids.size() != 1)
 					assertFalse("Should only find one patient, not " + ids.size(), true);
+				
+				// check the name
 				Patient p = ids.get(0).getPatient();				
 				assertEquals(p.getPersonName().toString(), name.toString());
-				assertEquals(p.getIdentifiers().iterator().next(), id);
+				
+				// check the identifier
+				PatientIdentifier firstpid = p.getIdentifiers().iterator().next();
+				assertEquals(firstpid.getIdentifier(), id.getIdentifier());
+				assertEquals(firstpid.getIdentifierType(), id.getIdentifierType());
 			}
 		});
 	}

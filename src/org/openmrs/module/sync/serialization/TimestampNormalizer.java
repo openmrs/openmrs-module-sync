@@ -13,8 +13,11 @@
  */
 package org.openmrs.module.sync.serialization;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import org.apache.commons.lang.StringUtils;
 
 public class TimestampNormalizer extends Normalizer
 {
@@ -58,20 +61,23 @@ public class TimestampNormalizer extends Normalizer
     
     @Override
     public Object fromString(Class clazz, String s) {
-        //TODO - this needs work
 
-        if (s == null || "".equals(s)) return null;
+        if (StringUtils.isBlank(s)) return null;
         
         if ("java.util.Date".equals(clazz.getName())) {
             //result = d.toString() + ' ' + t.toString();
             Date result = null;                          
-            SimpleDateFormat dfm = new SimpleDateFormat(TimestampNormalizer.DATETIME_MASK);
+            SimpleDateFormat dfm = new SimpleDateFormat(DATETIME_MASK);
             try {
                 result = dfm.parse(s.trim());
-            }
-            catch(Exception e) {
-                log.error("Failed to parse timestamp. Mask is: " + dfm.toPattern() + " and value: " + s, e);
-                //TODO throw e;
+            } catch (ParseException e) {
+    			log.debug("DateParsingException trying to turn " + s + " into a date with pattern: " + dfm.toPattern() + " , so retrying with backup mask");
+    			try {
+    				dfm = new SimpleDateFormat(DATETIME_MASK_BACKUP);
+    				result = dfm.parse(s.trim());
+    			} catch (ParseException pee) {
+    				log.debug("Still getting DateParsingException trying to turn " + s + " into a date using backup pattern: " + dfm.toPattern());
+    			}
             }
             return result;
         }

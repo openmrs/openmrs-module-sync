@@ -15,11 +15,26 @@ package org.openmrs.module.sync.serialization;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.module.sync.api.db.hibernate.HibernateSyncInterceptor;
 
-public abstract class Normalizer
-{
-    protected final Log log = LogFactory.getLog(Normalizer.class);
+/**
+ * Used by {@link HibernateSyncInterceptor} to convert objects to/from a string
+ */
+public abstract class Normalizer {
+	protected final Log log = LogFactory.getLog(Normalizer.class);
 
-    public abstract String toString(Object o);
-    public abstract Object fromString(Class clazz, String s);
+	/**
+	 * @param o the object to serialize
+	 * @return a string representation of the object
+	 */
+	public abstract String toString(Object o);
+
+	/**
+	 * Convert the given string into the given object
+	 * 
+	 * @param clazz the class of object to return
+	 * @param s the value of the serialized object
+	 * @return object of class <code>clazz</code> given by <code>s</code>
+	 */
+	public abstract Object fromString(Class clazz, String s);
 }

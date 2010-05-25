@@ -69,7 +69,7 @@ public class SyncConceptTest extends SyncBaseTest {
 			public void runOnParent() throws Exception {
 				ConceptService cs = Context.getConceptService();
 				
-				log.error("The current locale: " + Context.getLocale());
+				log.info("The current locale: " + Context.getLocale());
 				
 				Concept c = cs.getConceptByName(conceptName);
 				assertNotNull("Failed to create the concept", c);
@@ -108,7 +108,7 @@ public class SyncConceptTest extends SyncBaseTest {
 				
 				ConceptService cs = Context.getConceptService();
 				
-				log.error("The current locale: " + Context.getLocale());
+				log.info("The current locale: " + Context.getLocale());
 				
 				Concept c = cs.getConceptByName("CODED");
 				assertNotNull("Failed to create CODED concept", c);
@@ -117,7 +117,7 @@ public class SyncConceptTest extends SyncBaseTest {
 				try {
 					Field field = Concept.class.getDeclaredField("names");
 					field.setAccessible(true);
-					log.warn("concept names list via reflection: " + field.get(c));
+					log.info("concept names list via reflection: " + field.get(c));
 				}
 				catch (IllegalArgumentException e) {
 					// TODO Auto-generated catch block
@@ -173,7 +173,7 @@ public class SyncConceptTest extends SyncBaseTest {
 				
 				Concept c = cs.getConceptByName("SOMETHING NUMERIC");
 				assertNotNull("Failed to create numeric", c);
-				System.out.println("1: " + c);
+				log.info("1: " + c);
 				assertNotNull("No names got transferred", c.getNames());
 				assertTrue("No names got transferred", c.getNames().size() > 0);
 				assertEquals(c.getName().getName(), "SOMETHING NUMERIC");

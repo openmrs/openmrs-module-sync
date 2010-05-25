@@ -13,8 +13,66 @@
  */
 package org.openmrs.module.sync.serialization;
 
-public class DefaultNormalizer extends Normalizer
-{
-    public String toString(Object o) {return o.toString();}
-    public Object fromString(Class clazz, String s) { return null;}
+import java.lang.reflect.InvocationTargetException;
+
+/**
+ * Very basic serializer/normalizer that converts an object to/from a string
+ * 
+ * @see Normalizer
+ * @see TimestampNormalizer
+ * @see BinaryNormalizer
+ */
+public class DefaultNormalizer extends Normalizer {
+	
+	/**
+	 * This basic method just returns a toString() call on the object
+	 * 
+	 * @see org.openmrs.module.sync.serialization.Normalizer#toString(java.lang.Object)
+	 */
+	public String toString(Object o) {
+		return o.toString();
+	}
+	
+	/**
+	 * This default implementation attempts to due <code>new clazz(s)</code> if there is a
+	 * constructor with a string parameter...otherwise returns null
+	 * 
+	 * @see org.openmrs.module.sync.serialization.Normalizer#fromString(java.lang.Class,
+	 *      java.lang.String)
+	 */
+	public Object fromString(Class clazz, String s) {
+		
+		// super simple case
+		if ("java.lang.String".equals(clazz.getName()))
+			return s;
+		
+		// try to use a String constructor
+		try {
+			return clazz.getConstructor(String.class).newInstance(s);
+		}
+		catch (NoSuchMethodException e) {
+			log.debug("There is no String constructor on the " + clazz.getName() + ", so I'm not sure what to do here", e);
+		}
+		catch (IllegalArgumentException e) {
+			log.debug("The string constructor on the " + clazz.getName()
+			        + " object didn't take in the string value, so I'm not sure what to do here", e);
+		}
+		catch (SecurityException e) {
+			log.debug("There is no String constructor on the " + clazz.getName()
+			        + " object cannot be accessed, so I'm not sure what to do here", e);
+		}
+		catch (InstantiationException e) {
+			log.debug("The " + clazz + " object can't be instantiated, so I'm not sure what to do here", e);
+		}
+		catch (IllegalAccessException e) {
+			log.debug("The String constructor on the " + clazz.getName()
+			        + " object can't be accessed, so I'm not sure what to do here", e);
+		}
+		catch (InvocationTargetException e) {
+			log.debug("There is no String constructor on the " + clazz.getName()
+			        + "object is bombing, so I'm not sure what to do here", e);
+		}
+		
+		return null;
+	}
 }

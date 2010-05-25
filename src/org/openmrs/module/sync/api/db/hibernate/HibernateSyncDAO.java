@@ -1323,7 +1323,7 @@ public class HibernateSyncDAO implements SyncDAO {
         try {
         	//no need to mess around with precommit actions for collections, at least
         	//at this point
-            SyncUtil.updateOpenmrsObject(owner, ownerClassName, ownerUuid,null);
+            SyncUtil.updateOpenmrsObject(owner, ownerClassName, ownerUuid);
         } catch ( Exception e ) {
         	log.error("Unexpected exception occurred while processing hibernate collections", e);
             throw new SyncIngestException(SyncConstants.ERROR_ITEM_NOT_COMMITTED, ownerClassName, incoming,null);

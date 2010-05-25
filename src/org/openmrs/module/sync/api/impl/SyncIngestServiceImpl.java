@@ -15,17 +15,20 @@ package org.openmrs.module.sync.api.impl;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.Concept;
+import org.openmrs.ConceptName;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemState;
-import org.openmrs.module.sync.SyncPreCommitAction;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
@@ -98,9 +101,11 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         importRecord.setState(SyncRecordState.FAILED);  // by default, until we know otherwise
         importRecord.setRetryCount(record.getRetryCount());
         importRecord.setTimestamp(record.getTimestamp());
-        List<SyncPreCommitAction> preCommitRecordActions = new ArrayList<SyncPreCommitAction> ();  
+        // of classname to objects of that class that were updated in this record
+        Map<String, List<OpenmrsObject>> processedObjects = new HashMap<String, List<OpenmrsObject>>();
         
         SyncService syncService = Context.getService(SyncService.class);
+        SyncIngestService syncIngestService = Context.getService(SyncIngestService.class);
 		try {
             // first, let's see if this server even accepts this kind of syncRecord
             if ( OpenmrsUtil.containsAny(record.getContainedClassSet(), server.getClassesNotReceived())) {
@@ -154,7 +159,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     	if (item.getState() == SyncItemState.DELETED) {
                     		deletedItems.add(item);
                     	} else {
-	                        SyncImportItem importedItem = this.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(),preCommitRecordActions);
+	                        SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
 	                        importedItem.setKey(item.getKey());
 	                        importRecord.addItem(importedItem);
 	                        if ( !importedItem.getState().equals(SyncItemState.SYNCHRONIZED)) isError = true;
@@ -174,7 +179,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                      */
                 	syncService.setFlushModeManual(); 
                     for ( SyncItem item : deletedItems ) {
-                        SyncImportItem importedItem = this.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(),preCommitRecordActions);
+                        SyncImportItem importedItem = this.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
                         importedItem.setKey(item.getKey());
                         importRecord.addItem(importedItem);
                         if ( !importedItem.getState().equals(SyncItemState.SYNCHRONIZED)) isError = true;
@@ -186,39 +191,15 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                      * finally execute the pending actions that resulted from processing all sync items 
                      */
                     syncService.setFlushModeManual();
-                    SyncUtil.applyPreCommitRecordActions(preCommitRecordActions);
+                    syncIngestService.applyPreCommitRecordActions(processedObjects);
                     syncService.flushSession();
                     syncService.setFlushModeAutomatic();
                     
                     if ( !isError ) {
                         importRecord.setState(SyncRecordState.COMMITTED);
                         
-                        // now that we know there's no error, we have to prevent this change from being sent back to the originating server
-                        /*
-                         * This actually can't be done here, since hibernate may not yet commit the record - 
-                         * instead we have to get hacky: in processxxx() methods we set originalUuid and then commit changes.
-                         * Once that is done, the interceptor pulls the original uuid out and calls SyncServiceImpl.createSyncRecord()
-                         * where sync records *are* not written for the originting server
-                         * 
-                        SyncRecord newRecord = Context.getService(SyncService.class).getSyncRecord(record.getOriginalUuid());
-                        if ( newRecord != null ) {
-                            if ( server.getServerType().equals(RemoteServerType.PARENT)) {
-                                newRecord.setState(SyncRecordState.COMMITTED);
-                            } else {
-                                SyncServerRecord serverRecord = newRecord.getServerRecord(server);
-                                if ( serverRecord != null ) {
-                                    serverRecord.setState(SyncRecordState.COMMITTED);
-                                    
-                                } else {
-                                    log.warn("No server record was created for server " + server.getNickname() + " and record " + record.getOriginalUuid());
-                                }
-                            }
-                            Context.getService(SyncService.class).updateSyncRecord(newRecord);
-
-                        } else {
-                            log.warn("Can't find newly created record on system by originalUuid" + record.getOriginalUuid());
-                        }
-                        */
+                        
+                        
                     } else {
                     	//One of SyncItem commits failed, throw to rollback and set failure information.
                     	log.warn("Error while processing SyncRecord with original uuid " + record.getOriginalUuid() + " (" + record.getContainedClasses() + ")");
@@ -226,7 +207,6 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                         throw new SyncIngestException(SyncConstants.ERROR_ITEM_NOT_COMMITTED,null,null,importRecord);
                     }
                     
-                    //syncService.updateSyncImportRecord(importRecord);
                 }
             }
         } catch (SyncIngestException e) {
@@ -254,6 +234,45 @@ public class SyncIngestServiceImpl implements SyncIngestService {
     }
     
     /**
+	 * Applies the 'actions' identified during the processing of the record that need to be 
+	 * processed (for whatever reason) just before the sync record is to be committed.
+	 * 
+	 * The actions understood by this method are those listed in SyncUtil.PreCommitActionName enum:
+	 * <br/>REBUILDXSN 
+	 * <br/>- call to formentry module and attempt to rebuild XSN, 
+	 * <br/>- HashMap object will contain instance of Form object to be rebuilt
+	 * <br/>UPDATECONCEPTWORDS 
+	 * <br/>- call to concept service to update concept words for given concept 
+	 * <br/>- HashMap object will contain instance of Concept object which concept words are to be rebuilt
+	 * 
+	 * @param preCommitRecordActions actions to be applied
+	 * 
+	 */
+	public void applyPreCommitRecordActions(Map<String, List<OpenmrsObject>> processedObjects) {
+		
+		if (processedObjects == null)
+			return;
+		
+		// rebuild xsns if a form edit comes through
+		List<OpenmrsObject> xsns = processedObjects.get("org.openmrs.module.formentry.FormEntryXsn");
+		if (xsns != null) {
+			for (OpenmrsObject xsn : xsns) {
+				SyncUtil.rebuildXSN(xsn);
+			}
+		}
+		
+		// fix concept words for all names found
+		List<OpenmrsObject> names = processedObjects.get("org.openmrs.ConceptName");
+		if (names != null) {
+			for (OpenmrsObject o : names) {
+				Concept c = ((ConceptName)o).getConcept();
+    			c.addName((ConceptName)o);
+				Context.getConceptService().updateConceptWord(c);
+			}
+		}
+	}
+    
+    /**
      * Note: preCommitRecordActions collection is provided as a way for the OpenmrsObject instances to 'schedule' action that is necessary
      * for processing of the object yet it cannot be applied until the end of the processing of the parent sync record. For example, rebuild XSN
      * cannot happen until all form fields held in the sync items are applied first; thus the call to rebuild XSN need to happen after all
@@ -262,11 +281,11 @@ public class SyncIngestServiceImpl implements SyncIngestService {
      * HashMap contained in the collection is to capture the action, and the necessary object to resolve that action. The action
      * is understood and applied by {@link org.openmrs.synchronization.SyncUtil#applyPreCommitRecordActions(ArrayList)}
      * 
-     * @see org.openmrs.api.SyncIngestService#processSyncItem(org.openmrs.module.sync.SyncItem, java.lang.String, java.util.ArrayList)
-     * @see org.openmrs.synchronization.SyncUtil#applyPreCommitRecordActions(ArrayList)
+     * @see org.openmrs.module.sync.api.SyncIngestService#processSyncItem(org.openmrs.module.sync.SyncItem, java.lang.String, java.util.Map)
+     * @see org.openmrs.module.sync.SyncUtil#applyPreCommitRecordActions(ArrayList)
      * 
      */
-    public SyncImportItem processSyncItem(SyncItem item, String originalUuid,List<SyncPreCommitAction> preCommitRecordActions)  throws APIException {
+    public SyncImportItem processSyncItem(SyncItem item, String originalUuid, Map<String, List<OpenmrsObject>> processedObjects)  throws APIException {
     	String itemContent = null;
         SyncImportItem ret = null; 
 
@@ -288,7 +307,19 @@ public class SyncIngestServiceImpl implements SyncIngestService {
             	log.debug("Processing a persistent collection");
             	dao.processCollection(o.getClass(),itemContent,originalUuid);
             } else {
-            	processOpenmrsObject((OpenmrsObject)o,item,originalUuid,preCommitRecordActions);
+            	// do the saving of the object to the database, etc
+            	 OpenmrsObject openmrsObject = processOpenmrsObject((OpenmrsObject)o, item, originalUuid);
+				
+				// add this object to the proccessedObjects list
+            	String className = o.getClass().getName();
+            	if (!processedObjects.containsKey(className)) {
+            		List<OpenmrsObject> objects = new ArrayList<OpenmrsObject>();
+            		objects.add(openmrsObject);
+            		processedObjects.put(className, objects);
+            	}
+            	else {
+            		processedObjects.get(className).add(openmrsObject);
+            	}
             }
             ret.setState(SyncItemState.SYNCHRONIZED);                
         } catch (SyncIngestException e) {
@@ -329,12 +360,13 @@ public class SyncIngestServiceImpl implements SyncIngestService {
      * this value is retained and forwarded unchanged throughout the network of sychronizing servers in order to avoid re-applying
      * same changes over and over.
      * @param preCommitRecordActions collection of actions that will be applied a the end of the processing sync record
+     * @return the saved OpenmrsObject (could be different than what is passed in if updating a record)
      * 
      * @see SyncUtil#setProperty(Object, String, Object)
      * @see SyncUtil#getOpenmrsObj(String, String)
-     * @see SyncUtil#updateOpenmrsObject(OpenmrsObject, String, String, List)
+     * @see SyncUtil#updateOpenmrsObject(OpenmrsObject, String, String)
      */
-    private void processOpenmrsObject(OpenmrsObject o, SyncItem item, String originalUuid, List<SyncPreCommitAction> preCommitRecordActions) throws Exception {
+    private OpenmrsObject processOpenmrsObject(OpenmrsObject o, SyncItem item, String originalUuid) throws Exception {
 
     	String itemContent = null;
         String className = null;
@@ -401,7 +433,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 	        // now try to commit this fully inflated object
 	        try {
 	        	log.debug("About to update or create a " + className + " object, uuid: '" + uuid + "'");
-	            SyncUtil.updateOpenmrsObject(o, className, uuid, preCommitRecordActions);
+	            SyncUtil.updateOpenmrsObject(o, className, uuid);
 	            Context.getService(SyncService.class).flushSession();
 	        } catch ( Exception e ) {
 	        	// don't include stacktrace here because the parent classes log it sufficiently
@@ -410,6 +442,6 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 	        }
         }
         	                
-        return;
+        return o;
     }
 }

@@ -14,10 +14,12 @@
 package org.openmrs.module.sync.api;
 
 import java.util.List;
+import java.util.Map;
 
+import org.openmrs.OpenmrsObject;
+import org.openmrs.annotation.Logging;
 import org.openmrs.api.APIException;
 import org.openmrs.module.sync.SyncItem;
-import org.openmrs.module.sync.SyncPreCommitAction;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.ingest.SyncImportItem;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
@@ -49,10 +51,32 @@ public interface SyncIngestService {
      * 
      * @param item instance of syncItem to be processed.
      * @param originalUuid
-     * @param preCommitRecordActions
+     * @param processedObjects a map of classname to the list of objects that have been processed.  This item's object is added to this list
      * @return
      * @throws APIException
      */
     //@Authorized({"Manage Synchronization Records"})
-    public SyncImportItem processSyncItem(SyncItem item, String originalUuid,List<SyncPreCommitAction> preCommitRecordActions)  throws APIException;
+    @Logging(ignoreAllArgumentValues=true)
+    public SyncImportItem processSyncItem(SyncItem item, String originalUuid, Map<String, List<OpenmrsObject>> processedObjects) throws APIException;
+
+	/**
+	 * Does any post-record import processing right before flushing to the
+	 * database. The things that need to be done relates to logic that is
+	 * usually in the service save* methods. This method is called after all
+	 * sync items in a sync record have been processed but before anything is
+	 * flushed to the db<br/>
+	 * <br/>
+	 * For example, ConceptWords must be updated after a new ConceptName is
+	 * received. <br/>
+	 * <br/>
+	 * The Formentry module AOPs around this method to rebuild the XSN any time
+	 * a new XSN comes through.
+	 * 
+	 * @param processedObjects
+	 *            a map from classname to the list of objects of that class that
+	 *            were updated
+	 * @throws APIException
+	 */
+    @Logging(ignoreAllArgumentValues=true)
+	public void applyPreCommitRecordActions(Map<String, List<OpenmrsObject>> processedObjects) throws APIException;
 }
