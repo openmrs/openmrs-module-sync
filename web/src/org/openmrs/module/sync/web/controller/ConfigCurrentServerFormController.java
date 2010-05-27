@@ -240,10 +240,6 @@ public class ConfigCurrentServerFormController {
 			// default classes
 			List<SyncClass> defaultSyncClasses = syncService.getSyncClasses();
 			modelMap.put("syncClasses", defaultSyncClasses);
-
-			// openmrs objects
-			List<Class<OpenmrsObject>> openmrsObjects = syncService.getAllOpenmrsObjects();
-			modelMap.put("openmrsObjectClasses", openmrsObjects);
 		}
 		
 		return "/module/sync/configCurrentServerForm";

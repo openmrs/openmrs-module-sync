@@ -226,5 +226,22 @@
 			INSERT INTO scheduler_task_config_property (name, value, task_config_id) VALUES ('sync_record_states_to_delete', '', (select max(task_config_id) from scheduler_task_config where name = 'Cleanup Old Sync Records'));
 		</sql>
 	</diff>
+
+	<diff>
+		<version>0.71</version>
+		<author>Maros Cunderlik</author>
+		<date>May 27th 2010</date>
+		<description>
+			Additional classes to be excluded from sync by default: Scheduler, HL7, concept_word
+		</description>
+		<sql>
+			INSERT INTO `sync_class` (`name`,`default_send_to`,`default_receive_from`) values
+			('org.openmrs.scheduler', 0, 0);
+			INSERT INTO `sync_class` (`name`,`default_send_to`,`default_receive_from`) values
+			('org.openmrs.hl7', 0, 0);		
+			INSERT INTO `sync_class` (`name`,`default_send_to`,`default_receive_from`) values
+			('org.openmrs.ConceptWord', 0, 0);
+		</sql>
+	</diff>
 	
 </sqldiff>

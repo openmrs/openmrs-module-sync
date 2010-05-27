@@ -67,7 +67,7 @@ public class SyncStrategyFile {
     }
 
     /**
-     * Prepares a sync trasnmission containing sync records from source that are to be send to the remote server.
+     * Prepares a sync transmission containing sync records from source that are to be send to the remote server.
      * The records to be sent are determined as follows:
      * <br/> - select records from sync journal that are in the correct state (see SyncConstants.SYNC_TO_PARENT_STATES)
      * <br/> - if a sync record from the journal reached state of FAILED_AND_STOPPED; do not attempt to send
@@ -104,7 +104,7 @@ public class SyncStrategyFile {
                     	break;
                     }
                     Set<String> containedClasses = record.getContainedClassSet();
-                    if ( !OpenmrsUtil.containsAny(containedClasses, server.getClassesNotSent())) {
+                    if (server.shouldBeSentSyncRecord(record)) {
                         filteredChangeset.add(record);
                     } else {
                         if ( server.getServerType().equals(RemoteServerType.PARENT)) {

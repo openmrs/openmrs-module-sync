@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.SessionFactory;
 import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.APIException;
@@ -56,6 +57,8 @@ public class SyncServiceImpl implements SyncService {
 	private List<Class<OpenmrsObject>> allOpenmrsObjects;
 	
 	private final Log log = LogFactory.getLog(getClass());
+	
+	private static List<String> serverClassesCollection;
 	
 	private SyncDAO getSynchronizationDAO() {
 		return dao;
@@ -202,7 +205,8 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
-	 * @see org.openmrs.module.sync.api.SyncService#getSyncRecords(org.openmrs.module.sync.SyncRecordState[], org.openmrs.module.sync.server.RemoteServer)
+	 * @see org.openmrs.module.sync.api.SyncService#getSyncRecords(org.openmrs.module.sync.SyncRecordState[],
+	 *      org.openmrs.module.sync.server.RemoteServer)
 	 */
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, RemoteServer server) throws APIException {
 		List<SyncRecord> temp = null;
@@ -221,7 +225,7 @@ public class SyncServiceImpl implements SyncService {
 		if (ret != null) {
 			temp = new ArrayList<SyncRecord>();
 			for (SyncRecord record : ret) {
-				if (!OpenmrsUtil.containsAny(record.getContainedClassSet(), server.getClassesNotSent())) {
+				if (server.shouldBeSentSyncRecord(record)) {
 					record.setForServer(server);
 					temp.add(record);
 					
@@ -299,37 +303,36 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
-     * @see org.openmrs.module.sync.api.SyncService#getSyncRecords(java.lang.Integer, java.lang.Integer)
-     */
-    public List<SyncRecord> getSyncRecords(Integer firstRecordId, Integer numberToReturn) throws APIException {
-    	return getSynchronizationDAO().getSyncRecords(null, null, firstRecordId, numberToReturn, false);
-    }
-    
-    /**
-     * @see org.openmrs.module.sync.api.SyncService#deleteSyncRecords(org.openmrs.module.sync.SyncRecordState[], java.util.Date)
-     */
-    public Integer deleteSyncRecords(SyncRecordState[] states, Date to) throws APIException {
-    	
-    	// if no states passed in, then decide based on current server setup
-    	if (states == null || states.length == 0) {
-    		
-    		if (getParentServer() == null) {
-		    	// if server is not a leaf node (only a parent)
-		    	// state does not matter (but will always be NEW)
-		    	states = new SyncRecordState[] { SyncRecordState.NOT_SUPPOSED_TO_SYNC,
-		    	        SyncRecordState.NEW };
-    		}
-    		else {
-		    	// if a server is a leaf node, then only delete states that 
-    			// have been successfully sent to the parent already
-		    	states = new SyncRecordState[] { SyncRecordState.NOT_SUPPOSED_TO_SYNC,
-		    	        SyncRecordState.COMMITTED };
-    		}
-	    }
-    	
-    	return getSynchronizationDAO().deleteSyncRecords(states, to);
-    }
-
+	 * @see org.openmrs.module.sync.api.SyncService#getSyncRecords(java.lang.Integer,
+	 *      java.lang.Integer)
+	 */
+	public List<SyncRecord> getSyncRecords(Integer firstRecordId, Integer numberToReturn) throws APIException {
+		return getSynchronizationDAO().getSyncRecords(null, null, firstRecordId, numberToReturn, false);
+	}
+	
+	/**
+	 * @see org.openmrs.module.sync.api.SyncService#deleteSyncRecords(org.openmrs.module.sync.SyncRecordState[],
+	 *      java.util.Date)
+	 */
+	public Integer deleteSyncRecords(SyncRecordState[] states, Date to) throws APIException {
+		
+		// if no states passed in, then decide based on current server setup
+		if (states == null || states.length == 0) {
+			
+			if (getParentServer() == null) {
+				// if server is not a leaf node (only a parent)
+				// state does not matter (but will always be NEW)
+				states = new SyncRecordState[] { SyncRecordState.NOT_SUPPOSED_TO_SYNC, SyncRecordState.NEW };
+			} else {
+				// if a server is a leaf node, then only delete states that 
+				// have been successfully sent to the parent already
+				states = new SyncRecordState[] { SyncRecordState.NOT_SUPPOSED_TO_SYNC, SyncRecordState.COMMITTED };
+			}
+		}
+		
+		return getSynchronizationDAO().deleteSyncRecords(states, to);
+	}
+	
 	/**
 	 * @see org.openmrs.api.SyncService#getGlobalProperty(java.lang.String)
 	 */
@@ -364,6 +367,7 @@ public class SyncServiceImpl implements SyncService {
 			}
 			
 			getSynchronizationDAO().saveRemoteServer(server);
+			this.refreshServerClassesCollection();
 		}
 	}
 	
@@ -426,18 +430,19 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	public String getAdminEmail() {
-        return Context.getService(SyncService.class).getGlobalProperty(SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL);        
-    }
-    
-    public void saveAdminEmail(String email) {
-        Context.getService(SyncService.class).setGlobalProperty(SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL, email);
-    }
+		return Context.getService(SyncService.class).getGlobalProperty(SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL);
+	}
+	
+	public void saveAdminEmail(String email) {
+		Context.getService(SyncService.class).setGlobalProperty(SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL, email);
+	}
 	
 	/**
 	 * @see org.openmrs.api.SyncService#saveSyncClass(org.openmrs.module.sync.SyncClass)
 	 */
 	public void saveSyncClass(SyncClass syncClass) throws APIException {
 		getSynchronizationDAO().saveSyncClass(syncClass);
+		this.refreshServerClassesCollection();
 	}
 	
 	/**
@@ -445,6 +450,7 @@ public class SyncServiceImpl implements SyncService {
 	 */
 	public void deleteSyncClass(SyncClass syncClass) throws APIException {
 		getSynchronizationDAO().deleteSyncClass(syncClass);
+		this.refreshServerClassesCollection();
 	}
 	
 	public SyncClass getSyncClass(Integer syncClassId) throws APIException {
@@ -560,16 +566,14 @@ public class SyncServiceImpl implements SyncService {
 		return dao.getOpenmrsObjectByUuid(clazz, uuid);
 	}
 	
-
 	/**
 	 * @see org.openmrs.api.SynchronizationService#exportChildDB(java.lang.String,
 	 *      java.io.OutputStream)
 	 */
-	public void exportChildDB(String guidForChild, OutputStream os)
-	        throws APIException {
+	public void exportChildDB(String guidForChild, OutputStream os) throws APIException {
 		getSynchronizationDAO().exportChildDB(guidForChild, os);
 	}
-
+	
 	/**
 	 * @see org.openmrs.api.SynchronizationService#importParentDB(java.io.InputStream)
 	 */
@@ -580,24 +584,20 @@ public class SyncServiceImpl implements SyncService {
 			this.getSynchronizationDAO().deleteSyncRecord(record);
 		}
 	}
-
+	
 	/**
 	 * @see org.openmrs.module.sync.api.SyncService#generateDataFile()
 	 */
 	public File generateDataFile() throws APIException {
 		File dir = SyncUtil.getSyncApplicationDir();
-		String fileName = SyncConstants.CLONE_IMPORT_FILE_NAME
-		        + SyncConstants.SYNC_FILENAME_MASK.format(new Date()) + ".sql";
-		String[] ignoreTables = { "hl7_in_archive", "hl7_in_queue",
-		        "hl7_in_error", "formentry_archive", "formentry_queue",
-		        "formentry_error", "sync_class",
-		        "sync_import", "sync_record",
-		        "sync_server", "sync_server_class",
+		String fileName = SyncConstants.CLONE_IMPORT_FILE_NAME + SyncConstants.SYNC_FILENAME_MASK.format(new Date())
+		        + ".sql";
+		String[] ignoreTables = { "hl7_in_archive", "hl7_in_queue", "hl7_in_error", "formentry_archive", "formentry_queue",
+		        "formentry_error", "sync_class", "sync_import", "sync_record", "sync_server", "sync_server_class",
 		        "sync_server_record" };
 		
 		File outputFile = new File(dir, fileName);
-		getSynchronizationDAO().generateDataFile(outputFile,
-		                                         ignoreTables);
+		getSynchronizationDAO().generateDataFile(outputFile, ignoreTables);
 		return outputFile;
 	}
 	
@@ -621,5 +621,73 @@ public class SyncServiceImpl implements SyncService {
 		for (SyncRecord record : this.getSynchronizationDAO().getSyncRecords()) {
 			this.getSynchronizationDAO().deleteSyncRecord(record);
 		}
+	}
+	
+	/**
+	 * Determines if given object is to be sync-ed assuming sync as a feature is turned on.
+	 * This is done by: <br/>
+	 * 1. type has to implement  OpenmrsObject interface
+	 * 2. comparing the type of the object against the types in the DB configured for exclusion
+	 * from sync.
+	 * 
+	 * @see org.openmrs.module.sync.api.SyncService#execGeneratedFile(java.io.File)
+	 */
+	public Boolean shouldSynchronize(Object entity) throws APIException {
+		Boolean ret = true;
+					
+		// OpenmrsObject *only*.
+		if (!(entity instanceof OpenmrsObject)) {
+			if (log.isDebugEnabled())
+				log.debug("Do nothing. Flush with type that does not implement OpenmrsObject, type is:"
+				        + entity.getClass().getName());
+			return false;
+		}		
+		
+		//if the server classes haven't been loaded yet, do it now
+		if (SyncServiceImpl.serverClassesCollection == null) {
+			this.refreshServerClassesCollection();
+		}
+		
+		String type = entity.getClass().getName();
+		List<RemoteServer> servers = this.getRemoteServers();
+		for (RemoteServer server : servers) {
+			for (String temp1 : server.getClassesNotReceived()) {
+				if (type.startsWith(temp1)) {
+					ret = false;
+					break;
+				}
+			}
+			if (ret) { //walk through the 2nd set only if not matched already
+				for (String temp2 : server.getClassesNotSent()) {
+					if (type.startsWith(temp2)) {
+						ret = false;
+						break;
+					}
+				}
+			}
+		}
+					
+		return ret;
+		
+	}
+
+	/***
+	 * Refreshes static helper collection. This is a perf optimization to avoid fetching
+	 * the sync_server_classes on every call to {@link #shouldSynchronize(Object)}
+	 */
+	protected synchronized void refreshServerClassesCollection() {
+
+		List<RemoteServer> servers = this.getRemoteServers();
+		List<String> serverClasses = new ArrayList<String>();
+		for (RemoteServer server : servers) {
+			for (String temp1 : server.getClassesNotReceived()) {
+				serverClasses.add(temp1);
+			}
+			for (String temp2 : server.getClassesNotSent()) {
+				serverClasses.add(temp2);
+			}
+		}
+		
+		SyncServiceImpl.serverClassesCollection = serverClasses;
 	}
 }

@@ -560,4 +560,15 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	public void execGeneratedFile(File fileToExec) throws APIException;
+
+	/**
+	 * Determines if given object should be recorded for synchronization
+	 * 
+	 * @param Object to be tested
+	 * @throws APIException
+	 * @return true if the object should be recored for sync
+	 */
+	@Transactional(readOnly = true)
+	public Boolean shouldSynchronize(Object entity) throws APIException;
+
 }

@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,6 +61,7 @@ import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Normalizer;
 import org.openmrs.module.sync.serialization.Package;
 import org.openmrs.module.sync.serialization.Record;
+import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.util.OpenmrsConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -1062,25 +1064,34 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 	 */
 	protected boolean shouldSynchronize(Object entity) {
 
-		// OpenmrsObject *only*.
-		if (!(entity instanceof OpenmrsObject)) {
-			if (log.isDebugEnabled())
-				log
-						.debug("Do nothing. Flush with type that does not implement OpenmrsObject, type is:"
-								+ entity.getClass().getName());
-			return false;
-		}
+		Boolean ret = true;
 
-		// do not sync global properties
-		if (entity instanceof org.openmrs.GlobalProperty) {
-			return false;
+		// check if this object is to be sync-ed: compare against the configured classes
+		// for time being, suspend any flushing -- we are in the middle of hibernate stack
+		SessionFactory factory = (SessionFactory) this.context
+				.getBean("sessionFactory");
+		org.hibernate.FlushMode flushMode = factory.getCurrentSession()
+				.getFlushMode();
+		factory.getCurrentSession()
+				.setFlushMode(org.hibernate.FlushMode.MANUAL);
+		
+		try {
+			ret = this.getSyncService().shouldSynchronize(entity);
 		}
-
+		catch (Exception ex) {
+			log.error("Journal error\n", ex);
+		}
+		finally {
+			if (factory != null) {
+				factory.getCurrentSession().setFlushMode(flushMode);
+			}
+		}
+					
 		// finally, if 'deactivated' bit was set manually, return accordingly
-		if (deactivated.get() == null)
-			return true;
-		else
-			return false;
+		if (deactivated.get() != null)
+			ret = false;
+		
+		return ret;
 	}
 
 	/**

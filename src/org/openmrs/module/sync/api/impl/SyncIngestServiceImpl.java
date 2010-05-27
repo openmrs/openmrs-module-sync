@@ -101,14 +101,16 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         importRecord.setState(SyncRecordState.FAILED);  // by default, until we know otherwise
         importRecord.setRetryCount(record.getRetryCount());
         importRecord.setTimestamp(record.getTimestamp());
-        // of classname to objects of that class that were updated in this record
+        importRecord.setUuid(record.getOriginalUuid());
+        
+        // map of class name to objects of the classes that were updated in this record
         Map<String, List<OpenmrsObject>> processedObjects = new HashMap<String, List<OpenmrsObject>>();
         
         SyncService syncService = Context.getService(SyncService.class);
         SyncIngestService syncIngestService = Context.getService(SyncIngestService.class);
 		try {
             // first, let's see if this server even accepts this kind of syncRecord
-            if ( OpenmrsUtil.containsAny(record.getContainedClassSet(), server.getClassesNotReceived())) {
+            if ( !server.shouldReceiveSyncRecordFrom(record)) {
                 importRecord.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
                 log.warn("\nNOT INGESTING RECORD with " + record.getContainedClasses() + " BECAUSE SERVER IS NOT READY TO ACCEPT ALL CONTAINED OBJECTS\n");
             } else {

@@ -49,7 +49,7 @@ table td#syncChangesTable,table td#syncStatus {
 	font-weight: bold;
 }
 
-.syncFAILED_AND_STOPPED, .syncFAILED, .syncCONFLICT, .syncSEND_FAILED {
+.syncFAILED_AND_STOPPED, .syncFAILED, .syncCONFLICT, .syncSEND_FAILED,.syncREJECTED {
 	color: #dd0022;
 	font-weight: bold;
 }

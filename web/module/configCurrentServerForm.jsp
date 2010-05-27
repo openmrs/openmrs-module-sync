@@ -144,11 +144,6 @@
 										</c:if>
 									</c:forEach>
 								</div>
-								
-								<c:forEach var="openmrsObjectClass" items="${openmrsObjectClasses}">
-									${openmrsObjectClass.name}
-								</c:forEach>
-								
 								<br/>
 								<spring:message code="sync.config.addNewClass"/>:
 								<br/>
