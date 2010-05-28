@@ -981,6 +981,10 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 				Class c = Context.loadClass(className);
 				item.setAttribute("type", className);
 
+				// An empty string represents an empty value. Return it as the UUID does not exist.
+			    if(data.isEmpty())
+			        return data;
+				
 				// only convert to uuid if this is an OpenMrs object
 				// otherwise, we are just storing a simple String or Integer
 				// value
