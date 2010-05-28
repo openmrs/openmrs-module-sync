@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -58,7 +59,7 @@ public class SyncServiceImpl implements SyncService {
 	
 	private final Log log = LogFactory.getLog(getClass());
 	
-	private static List<String> serverClassesCollection;
+	private static Set<String> serverClassesCollection;
 	
 	private SyncDAO getSynchronizationDAO() {
 		return dao;
@@ -132,6 +133,7 @@ public class SyncServiceImpl implements SyncService {
 				}
 				record.setServerRecords(serverRecords);
 			}
+			
 			
 			getSynchronizationDAO().createSyncRecord(record);
 		}
@@ -624,70 +626,98 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
-	 * Determines if given object is to be sync-ed assuming sync as a feature is turned on.
-	 * This is done by: <br/>
-	 * 1. type has to implement  OpenmrsObject interface
-	 * 2. comparing the type of the object against the types in the DB configured for exclusion
-	 * from sync.
+	 * Determines if given object is to be sync-ed assuming sync as a feature is turned on. This is
+	 * done by: <br/>
+	 * 1. type has to implement OpenmrsObject interface 2. comparing the type of the object against
+	 * the types in the DB configured for exclusion from sync.
 	 * 
 	 * @see org.openmrs.module.sync.api.SyncService#execGeneratedFile(java.io.File)
 	 */
 	public Boolean shouldSynchronize(Object entity) throws APIException {
 		Boolean ret = true;
-					
+		
 		// OpenmrsObject *only*.
 		if (!(entity instanceof OpenmrsObject)) {
 			if (log.isDebugEnabled())
 				log.debug("Do nothing. Flush with type that does not implement OpenmrsObject, type is:"
 				        + entity.getClass().getName());
 			return false;
-		}		
+		}
 		
 		//if the server classes haven't been loaded yet, do it now
 		if (SyncServiceImpl.serverClassesCollection == null) {
 			this.refreshServerClassesCollection();
 		}
 		
+		//now verify
 		String type = entity.getClass().getName();
-		List<RemoteServer> servers = this.getRemoteServers();
-		for (RemoteServer server : servers) {
-			for (String temp1 : server.getClassesNotReceived()) {
-				if (type.startsWith(temp1)) {
-					ret = false;
-					break;
-				}
-			}
-			if (ret) { //walk through the 2nd set only if not matched already
-				for (String temp2 : server.getClassesNotSent()) {
-					if (type.startsWith(temp2)) {
-						ret = false;
-						break;
-					}
-				}
+		for (String temp : SyncServiceImpl.serverClassesCollection) {
+			if (type.startsWith(temp)) {
+				ret = false;
+				break;
 			}
 		}
-					
+		
 		return ret;
 		
 	}
-
+	
 	/***
-	 * Refreshes static helper collection. This is a perf optimization to avoid fetching
-	 * the sync_server_classes on every call to {@link #shouldSynchronize(Object)}
+	 * Refreshes static helper collection. This is a perf optimization to avoid fetching the
+	 * sync_server_classes on every call to {@link #shouldSynchronize(Object)} Remarks:<br/>
+	 * The algorithm is as follows: - if no servers to talk to are setup (i.e. no rows in
+	 * sync_server_class) then use sync_class only - else only use the classes that are setup in all
+	 * servers (i.e.) for the class/type to be excluded it has to be setup for exclusion in all
+	 * servers
 	 */
 	protected synchronized void refreshServerClassesCollection() {
-
-		List<RemoteServer> servers = this.getRemoteServers();
-		List<String> serverClasses = new ArrayList<String>();
-		for (RemoteServer server : servers) {
-			for (String temp1 : server.getClassesNotReceived()) {
-				serverClasses.add(temp1);
-			}
-			for (String temp2 : server.getClassesNotSent()) {
-				serverClasses.add(temp2);
-			}
-		}
 		
-		SyncServiceImpl.serverClassesCollection = serverClasses;
+		List<RemoteServer> servers = this.getRemoteServers();
+		Set<String> serverClasses = new HashSet<String>();
+		
+		if (servers == null || servers.size() == 0) {
+			//this is easy, just use the defaults
+			for (SyncClass sc : this.getSyncClasses()) {
+				serverClasses.add(sc.getName());
+			}
+		} else {
+			//some sync servers are set up
+			Map<String,Integer> helperMap = new HashMap<String,Integer>();
+			
+			//crank through and count up the types & occurrences
+			for (RemoteServer server : servers) {
+				for (String temp : server.getClassesNotReceived()) {
+					if (helperMap.containsKey(temp)) {
+						//already there, just increment the count
+						Integer iTemp = helperMap.get(temp) + 1;
+						helperMap.put(temp, iTemp);
+					} else {
+						//not there yet, just add with count of 0
+						helperMap.put(temp, 1);
+					}
+				}
+				for (String temp : server.getClassesNotSent()) {
+					if (helperMap.containsKey(temp)) {
+						//already there, just increment the count
+						Integer iTemp = helperMap.get(temp) + 1;
+						helperMap.put(temp, iTemp);
+					} else {
+						//not there yet, just add with count of 0
+						helperMap.put(temp, 1);
+					}
+				}
+			}
+			
+			//now, walk the map and only use the types where occurrence count = 2 x nbr or servers
+			//i.e. the type was listed on all servers as both don't send and don't receive
+			int targetCount = servers.size() * 2;
+			for(String type : helperMap.keySet()) {
+				if (helperMap.get(type).equals(targetCount) ) {
+					serverClasses.add(type);
+				}
+			}
+			
+			SyncServiceImpl.serverClassesCollection = serverClasses;
+		}
 	}
 }

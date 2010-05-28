@@ -243,5 +243,20 @@
 			('org.openmrs.ConceptWord', 0, 0);
 		</sql>
 	</diff>
+
+	<diff>
+		<version>0.72</version>
+		<author>Maros Cunderlik</author>
+		<date>May 28th 2010</date>
+		<description>
+			Removed concept_word from the additional classes; it doesn't implement OpenmrsObject
+		</description>
+		<sql>
+			DELETE `sync_server_class` FROM  `sync_server_class`, `sync_class`
+				WHERE `sync_class`.`class_id` = `sync_server_class`.`class_id` AND 
+				`sync_class`.`name` = 'org.openmrs.ConceptWord';
+			DELETE FROM `sync_class` where `name` = 'org.openmrs.ConceptWord';
+		</sql>
+	</diff>
 	
 </sqldiff>

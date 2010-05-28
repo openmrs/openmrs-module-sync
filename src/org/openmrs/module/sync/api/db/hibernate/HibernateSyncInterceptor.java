@@ -1083,7 +1083,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 			ret = this.getSyncService().shouldSynchronize(entity);
 		}
 		catch (Exception ex) {
-			log.error("Journal error\n", ex);
+			log.warn("Journal error\n", ex);
+			//log error info as warning but continue on
 		}
 		finally {
 			if (factory != null) {
@@ -1091,7 +1092,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 			}
 		}
 					
-		// finally, if 'deactivated' bit was set manually, return accordingly
+		// finally, if 'deactivated' bit was set manually for the whole sync, return accordingly
 		if (deactivated.get() != null)
 			ret = false;
 		

@@ -23,6 +23,11 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.openmrs.test.Verifies;
+import org.openmrs.GlobalProperty;
+import org.openmrs.PatientIdentifierType;
+import org.openmrs.PersonAttributeType;
+import org.openmrs.Person;
+import org.openmrs.User;
 
 /**
  * Tests methods in the SyncService
@@ -81,4 +86,23 @@ public class SyncServiceTest extends BaseModuleContextSensitiveTest {
 		Assert.assertEquals(59, records.size());
     }
     
+    @Test
+    @Verifies(value = "should exclude only types setup for all sync servers", method = "shouldSynchronize(Object)")
+    public void shouldSynchronize_shouldOnlySyncValidTypes() throws Exception {
+    	executeDataSet("org/openmrs/module/sync/include/SyncServerClasses.xml");
+    	
+    	SyncService syncService = Context.getService(SyncService.class);
+    	
+		Assert.assertFalse(syncService.shouldSynchronize(new GlobalProperty("test","test")));
+    	
+		Assert.assertTrue(syncService.shouldSynchronize(new PatientIdentifierType())); //maked 'yes' in all
+		
+		Assert.assertTrue(syncService.shouldSynchronize(new PersonAttributeType())); //marked as 'yes' in one server
+		
+		Assert.assertTrue(syncService.shouldSynchronize(new Person())); //not in sync_server_classes
+		
+		Assert.assertTrue(syncService.shouldSynchronize(new User())); //not in one sync_server_class
+		
+    }
+
 }
