@@ -650,11 +650,13 @@ public class SyncServiceImpl implements SyncService {
 		}
 		
 		//now verify
-		String type = entity.getClass().getName();
-		for (String temp : SyncServiceImpl.serverClassesCollection) {
-			if (type.startsWith(temp)) {
-				ret = false;
-				break;
+		if (SyncServiceImpl.serverClassesCollection != null) {
+			String type = entity.getClass().getName();
+			for (String temp : SyncServiceImpl.serverClassesCollection) {
+				if (type.startsWith(temp)) {
+					ret = false;
+					break;
+				}
 			}
 		}
 		
@@ -716,8 +718,9 @@ public class SyncServiceImpl implements SyncService {
 					serverClasses.add(type);
 				}
 			}
-			
-			SyncServiceImpl.serverClassesCollection = serverClasses;
 		}
+
+		//now assign
+		SyncServiceImpl.serverClassesCollection = serverClasses;
 	}
 }
