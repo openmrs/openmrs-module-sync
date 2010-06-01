@@ -95,9 +95,9 @@
 <div class="box">
 <form action="" method="GET">
   <label><strong><spring:message code="sync.maintenance.keyword"/></strong>
-  <input type="text" id="keyword" name="keyword">
+  <input type="text" id="keyword" name="keyword" value="${keyword}">
   </label>
-  <input name="searchButton" type="submit" id="searchButton" value="Search">
+  <input type="submit" id="searchButton" value="Search">
 </form>
 <c:if test="${not empty synchronizationMaintenanceList}">
 <div style="position: relative; border: 1px solid gray; margin: 10px; padding: 0px;">
@@ -160,13 +160,13 @@
 			<td align="center" valign="middle"><span><spring:message
 				code="sync.maintenance.goto" />:</span> <c:forEach var="p"
 				begin="${1}" end="${maxPages}" step="${1}">
-		 	--
+		 	|
 			<c:choose>
 					<span class="syncPageNum"> <c:when test="${p==currentPage}">
-						<a href="?state=page=${p}" style="font-size: 18px">${p}</a>
+						<a href="?keyword=${keyword}&page=${p}" style="font-size: 18px">${p}</a>
 					</c:when> </span>
 					<c:otherwise>
-						<span class="syncPageNum"><a href="?page=${p}">${p}</a></span>
+						<span class="syncPageNum"><a href="?keyword=${keyword}&page=${p}">${p}</a></span>
 					</c:otherwise>
 			  </c:choose>
 			</c:forEach></td>

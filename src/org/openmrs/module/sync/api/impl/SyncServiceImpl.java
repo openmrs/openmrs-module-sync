@@ -18,15 +18,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.SessionFactory;
 import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.APIException;
@@ -46,7 +45,6 @@ import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.SyncServerRecord;
-import org.openmrs.util.OpenmrsUtil;
 
 /**
  * Default implementation of the {@link SyncService}
@@ -151,6 +149,20 @@ public class SyncServiceImpl implements SyncService {
 	 */
 	public SyncRecord getFirstSyncRecordInQueue() throws APIException {
 		return getSynchronizationDAO().getFirstSyncRecordInQueue();
+	}
+	
+	/**
+	 * @see org.openmrs.api.SyncService#getSyncRecords(java.lang.String)
+	 */
+	public List<SyncRecord> getSyncRecords(String query) throws APIException {
+		return getSynchronizationDAO().getSyncRecords(query);
+	}
+	
+	/**
+	 * @see org.openmrs.api.SyncService#getSyncRecord(java.lang.Integer)
+	 */
+	public SyncRecord getSyncRecord(Integer id) throws APIException {
+		return getSynchronizationDAO().getSyncRecord(id);
 	}
 	
 	/**
@@ -369,7 +381,7 @@ public class SyncServiceImpl implements SyncService {
 			}
 			
 			getSynchronizationDAO().saveRemoteServer(server);
-			this.refreshServerClassesCollection();
+			refreshServerClassesCollection();
 		}
 	}
 	
@@ -444,7 +456,7 @@ public class SyncServiceImpl implements SyncService {
 	 */
 	public void saveSyncClass(SyncClass syncClass) throws APIException {
 		getSynchronizationDAO().saveSyncClass(syncClass);
-		this.refreshServerClassesCollection();
+		refreshServerClassesCollection();
 	}
 	
 	/**
@@ -452,7 +464,7 @@ public class SyncServiceImpl implements SyncService {
 	 */
 	public void deleteSyncClass(SyncClass syncClass) throws APIException {
 		getSynchronizationDAO().deleteSyncClass(syncClass);
-		this.refreshServerClassesCollection();
+		refreshServerClassesCollection();
 	}
 	
 	public SyncClass getSyncClass(Integer syncClassId) throws APIException {
@@ -645,14 +657,14 @@ public class SyncServiceImpl implements SyncService {
 		}
 		
 		//if the server classes haven't been loaded yet, do it now
-		if (SyncServiceImpl.serverClassesCollection == null) {
-			this.refreshServerClassesCollection();
+		if (serverClassesCollection == null) {
+			refreshServerClassesCollection();
 		}
 		
 		//now verify
-		if (SyncServiceImpl.serverClassesCollection != null) {
+		if (serverClassesCollection != null) {
 			String type = entity.getClass().getName();
-			for (String temp : SyncServiceImpl.serverClassesCollection) {
+			for (String temp : serverClassesCollection) {
 				if (type.startsWith(temp)) {
 					ret = false;
 					break;
@@ -672,15 +684,16 @@ public class SyncServiceImpl implements SyncService {
 	 * servers (i.e.) for the class/type to be excluded it has to be setup for exclusion in all
 	 * servers
 	 */
-	protected synchronized void refreshServerClassesCollection() {
+	public static synchronized void refreshServerClassesCollection() {
 		
-		List<RemoteServer> servers = this.getRemoteServers();
+		List<RemoteServer> servers = Context.getService(SyncService.class).getRemoteServers();
 		Set<String> serverClasses = new HashSet<String>();
 		
 		if (servers == null || servers.size() == 0) {
 			//this is easy, just use the defaults
-			for (SyncClass sc : this.getSyncClasses()) {
-				serverClasses.add(sc.getName());
+			for (SyncClass sc : Context.getService(SyncService.class).getSyncClasses()) {
+				if (!sc.getDefaultReceiveFrom() && !sc.getDefaultSendTo())
+					serverClasses.add(sc.getName());
 			}
 		} else {
 			//some sync servers are set up
@@ -721,6 +734,6 @@ public class SyncServiceImpl implements SyncService {
 		}
 
 		//now assign
-		SyncServiceImpl.serverClassesCollection = serverClasses;
+		serverClassesCollection = serverClasses;
 	}
 }

@@ -55,144 +55,126 @@ public class ViewRecordController {
 							@RequestParam String uuid,
 							@RequestParam(value="action", required=false) String action) throws Exception {
     	
-    	Map<String,Object> resultMap = new HashMap<String,Object>();
-        
     	// default empty Object
         SyncRecord record =null;
-        List<SyncRecord>recordList=new ArrayList<SyncRecord>();
         
-        boolean hasNext=true;
-        boolean hasPrevious=true;
+        SyncRecord previousRecord = null;
+    	SyncRecord nextRecord = null;
+    	
         // only fill the Object if the user has authenticated properly
         if (Context.isAuthenticated()) {
         	SyncService syncService=Context.getService(SyncService.class);
         	
-        	// TODO , this will be very slow. Change to selecting out jsut the SyncRecord by uuid that we want
+        	record = syncService.getSyncRecord(uuid);
         	
-        	recordList.addAll(syncService.getSyncRecords());
-        	if(!recordList.isEmpty())
-        	  for(int i=0;i<recordList.size();i++){
-        		if(recordList.get(i).getUuid().equals(uuid)){
-        			hasNext=(i<(recordList.size()-1));
-        			hasPrevious=(i>0);
-        			if("next".equals(action)&& hasNext){
-        				resultMap.put("record", recordList.get(i+1));
-        				resultMap.put("hasNext",i<(recordList.size()-2));
-            			resultMap.put("hasPrevious",i>=0);
-        			}
-        			else if("previous".equals(action)&& hasPrevious){
-        				resultMap.put("record", recordList.get(i-1));
-        				resultMap.put("hasNext",i<(recordList.size()));
-            			resultMap.put("hasPrevious",i>1);
-        			}
-        			else if("reset".equals(action)){
-        				SyncRecord rec=recordList.get(i);
-        				rec.setRetryCount(0);
-        				rec.setState(SyncRecordState.NEW);
-        				
-        				for(SyncServerRecord serverRecord : rec.getServerRecords()){
-        					serverRecord.setState(SyncRecordState.NEW);
-        				}        				
-        				
-        				syncService.updateSyncRecord(rec);
-        				
-        				resultMap.put("record", rec);
-        				resultMap.put("hasNext",hasNext);
-            			resultMap.put("hasPrevious",hasPrevious);
-        			}
-        			else if("remove".equals(action)){
-        				SyncRecord rec=recordList.get(i);
-        				rec.setRetryCount(0);
-        				rec.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
-        				
-        				for(SyncServerRecord serverRecord : rec.getServerRecords()){
-        					serverRecord.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
-        				}
-        				
-        				syncService.updateSyncRecord(rec);
-        				
-        				resultMap.put("record", rec);
-        				resultMap.put("hasNext",hasNext);
-            			resultMap.put("hasPrevious",hasPrevious);
-        			}
-        			else{
-        				resultMap.put("record", recordList.get(i));
-        				resultMap.put("hasNext",hasNext);
-            			resultMap.put("hasPrevious",hasPrevious);
-        			}
-        			
-        		}
+        	if (record != null) {
+        		
+	        	// find the previous record
+	        	Integer id = record.getRecordId();
+	        	while (previousRecord == null && id >= 0) {
+	        		previousRecord = syncService.getSyncRecord(--id);
+	        	}
+	        	
+	        	// find the next record
+	        	id = record.getRecordId();
+	        	SyncRecord latestSyncRecord = syncService.getLatestRecord();
+	        	Integer highestId = 0;
+	        	if (latestSyncRecord != null)
+	        		highestId = latestSyncRecord.getRecordId();
+	        	
+	        	while (nextRecord == null && id <= highestId) {
+	        		nextRecord = syncService.getSyncRecord(++id);
+	        	}
+	        	
+	        	
+				if("reset".equals(action)){
+					record.setRetryCount(0);
+					record.setState(SyncRecordState.NEW);
+					
+					for(SyncServerRecord serverRecord : record.getServerRecords()){
+						serverRecord.setState(SyncRecordState.NEW);
+					}        				
+					
+					syncService.updateSyncRecord(record);
+					
+				}
+				else if("remove".equals(action)){
+					record.setRetryCount(0);
+					record.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
+					
+					for(SyncServerRecord serverRecord : record.getServerRecords()){
+						serverRecord.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
+					}
+					
+					syncService.updateSyncRecord(record);
+				}
+	        
+	    	
+				List<SyncItem> syncItems=new ArrayList<SyncItem>();
+				Map<Object, String> itemTypes = new HashMap<Object, String>();
+				Map<Object, String> itemUuids = new HashMap<Object, String>();
+				
+				if (record != null) {
+						
+					String mainClassName = null;
+					String mainuuid = null;
+					String mainState = null;
+					
+					for (SyncItem item : record.getItems()) {
+						String syncItem = item.getContent();
+						syncItems.add(item);
+						if (mainState == null)mainState = item.getState().toString();
+						Record xml = Record.create(syncItem);
+						Item root = xml.getRootItem();
+						String className = root.getNode()
+						                       .getNodeName()
+						                       .substring("org.openmrs.".length());
+						itemTypes.put(item.getKey().getKeyValue(), className);
+						if (mainClassName == null)
+							mainClassName = className;
+						
+			
+						// String itemInfoKey = itemInfoKeys.get(className);
+			
+						// now we have to go through the item child nodes to find the
+						// real uuid that we want
+						NodeList nodes = root.getNode().getChildNodes();
+						for (int i = 0; i < nodes.getLength(); i++) {
+							Node n = nodes.item(i);
+							String propName = n.getNodeName();
+							if (propName.equalsIgnoreCase("uuid")) {
+								String tmpuuid = n.getTextContent();
+								itemUuids.put(item.getKey().getKeyValue(), tmpuuid);
+								if (mainuuid == null)
+									mainuuid = tmpuuid;
+							}
+						}
+					}
+					String displayName = "";
+					try {
+						displayName = SyncUtil.displayName(mainClassName, mainuuid);
+					} catch (Exception e) {
+						// some methods like Concept.getName() throw Exception s all the
+						// time...
+						displayName = "";
+					}
+					
+					modelMap.put("displayName", displayName);
+					modelMap.put("mainClassName", mainClassName);
+					modelMap.put("mainState", mainState);
+				}
+				
+				modelMap.put("nextRecord", nextRecord);
+				modelMap.put("previousRecord", previousRecord);
+				modelMap.put("record", record);
+				modelMap.put("syncItems", syncItems);
+				modelMap.put("itemsNumber", syncItems.size());
+				modelMap.put("itemTypes", itemTypes);
+				modelMap.put("itemuuids", itemUuids);
+				modelMap.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
         	}
-            
         }
         
-        modelMap.put("synchronizationViewRecordList", resultMap);
-    	
-		List<SyncItem> syncItems=new ArrayList<SyncItem>();
-		Map<Object, String> itemTypes = new HashMap<Object, String>();
-		Map<Object, String> itemUuids = new HashMap<Object, String>();
-		
-		record=(SyncRecord)resultMap.get("record");
-		
-		if (record != null) {
-				
-			String mainClassName = null;
-			String mainuuid = null;
-			String mainState = null;
-			
-			for (SyncItem item : record.getItems()) {
-				String syncItem = item.getContent();
-				syncItems.add(item);
-				if (mainState == null)mainState = item.getState().toString();
-				Record xml = Record.create(syncItem);
-				Item root = xml.getRootItem();
-				String className = root.getNode()
-				                       .getNodeName()
-				                       .substring("org.openmrs.".length());
-				itemTypes.put(item.getKey().getKeyValue(), className);
-				if (mainClassName == null)
-					mainClassName = className;
-				
-	
-				// String itemInfoKey = itemInfoKeys.get(className);
-	
-				// now we have to go through the item child nodes to find the
-				// real uuid that we want
-				NodeList nodes = root.getNode().getChildNodes();
-				for (int i = 0; i < nodes.getLength(); i++) {
-					Node n = nodes.item(i);
-					String propName = n.getNodeName();
-					if (propName.equalsIgnoreCase("uuid")) {
-						String tmpuuid = n.getTextContent();
-						itemUuids.put(item.getKey().getKeyValue(), tmpuuid);
-						if (mainuuid == null)
-							mainuuid = tmpuuid;
-					}
-				}
-			}
-			String displayName = "";
-			try {
-				displayName = SyncUtil.displayName(mainClassName, mainuuid);
-			} catch (Exception e) {
-				// some methods like Concept.getName() throw Exception s all the
-				// time...
-				displayName = "";
-			}
-			
-			modelMap.put("displayName", displayName);
-			modelMap.put("mainClassName", mainClassName);
-			modelMap.put("mainState", mainState);
-		}
-		
-		modelMap.put("hasNext",resultMap.get("hasNext"));
-		modelMap.put("hasPrevious",resultMap.get("hasPrevious"));
-		modelMap.put("record",record);
-		modelMap.put("syncItems",syncItems);
-		modelMap.put("itemsNumber", syncItems.size());
-		modelMap.put("itemTypes", itemTypes);
-		modelMap.put("itemuuids", itemUuids);
-		modelMap.put("syncDateDisplayFormat",TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
-		
     }
     
 }

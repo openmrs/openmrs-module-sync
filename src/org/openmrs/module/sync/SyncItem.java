@@ -62,6 +62,12 @@ public class SyncItem implements Serializable, IItem {
         this.content = content;
     }
 
+    /**
+     * This could return null if the module that created this sync item is
+     * no longer loaded
+     * 
+     * @return the {@link Class} for the one object this SyncItem represents
+     */
     public Class getContainedType() {
         return containedType;
     }
@@ -122,8 +128,14 @@ public class SyncItem implements Serializable, IItem {
         state = SyncItemState.valueOf(me.getAttribute("state"));
 
         containedType = null;
-        if ( me.getAttribute("containedType") != null && !"".equals(me.getAttribute("containedType")) ) 
-        	containedType = Context.loadClass(me.getAttribute("containedType"));
+        if ( me.getAttribute("containedType") != null && !"".equals(me.getAttribute("containedType")) ) {
+        	try {
+	            containedType = Context.loadClass(me.getAttribute("containedType"));
+            }
+            catch (ClassNotFoundException e) {
+	            log.debug("Unable to get class for object: " + containedType + ".  Was a module unloaded?");
+            }
+        }
 
         if ( me.getAttribute("key") != null) {
         	key = new SyncItemKey<String>(me.getAttribute("key"), String.class);

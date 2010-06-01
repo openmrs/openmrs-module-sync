@@ -107,19 +107,19 @@
 		</jar>
 	</target>
 	
-	<target name="deploy-web" depends="package-module">
+	<target name="deploy-web" depends="package-module" description="Deploy web files to 'openmrs' webapp">
 		<property environment="env"/>
 		<copy todir="/opt/tomcat6/webapps/openmrs/WEB-INF/view/module/${module.id}">
 			<fileset dir="web/module" includes="**/*" />
 		</copy>
 	</target>
 	
-	<target name="deploy-web-openmrschild" depends="package-module">
-			<property environment="env"/>
-			<copy todir="/opt/tomcat6/webapps/openmrschild/WEB-INF/view/module/${module.id}">
-				<fileset dir="web/module" includes="**/*" />
-			</copy>
-		</target>
+	<target name="deploy-web-openmrschild" depends="package-module" description="Deploy web files to 'openmrschild' webapp">
+		<property environment="env"/>
+		<copy todir="/opt/tomcat6/webapps/openmrschild/WEB-INF/view/module/${module.id}">
+			<fileset dir="web/module" includes="**/*" />
+		</copy>
+	</target>
 	
 	<target name="package-jar" depends="package-module" description="Packages class files into jar file to be included in other projects">
 		<!-- Create distributable jar file -->

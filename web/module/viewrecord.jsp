@@ -11,6 +11,7 @@
 <openmrs:htmlInclude file="/dwr/util.js" />
 <openmrs:htmlInclude file="/dwr/engine.js" />
 <openmrs:htmlInclude file="/dwr/interface/DWRSyncService.js" />
+<openmrs:htmlInclude file="/moduleResources/sync/sync.css" />
 
 <script language="JavaScript">
 	var currentKey="";
@@ -104,49 +105,43 @@
 			
 		}
 </script>
-<h2><spring:message code="sync.record.details.title" /></h2>
+<h2><spring:message code="sync.record.details.title" /> - ${mainClassName} ${displayName}</h2>
 <b class="boxHeader"><spring:message
 	code="sync.record.details.view_edit" /></b>
 <c:if test="${record!=null}">
-	<div class="box"><span><b><spring:message
-		code="sync.record.details.record" /> ${record.recordId} </b></span><span>
-	<h3>${mainClassName}: ${displayName}</h3>
-	<h5><spring:message code="sync.item.state_${mainState}" />
-	<span><b><spring:message
-		code="sync.record.details.on" /></b> <openmrs:formatDate
-		date="${record.timestamp}" format="${syncDateDisplayFormat}" /> </span><br />
-	</h5>
-	<h5><span><b><spring:message
-		code="sync.record.details.status" /></b></span><span
-		class="sync${record.state}"><spring:message
-		code="sync.record.state_${record.state}" /></span><br />
-	<span><b><spring:message
-		code="sync.record.details.retry_count" /></b></span><span>${record.retryCount}</span></br>
-	<br>
-	<span>
-	<ul>
-		<c:if
-			test="${record.state!='NEW' && record.state!='COMMITTED' && record.state!='ALREADY_COMMITTED'}">
-			<li><b><a
-				href="viewrecord.form?uuid=${record.uuid}&action=reset"><spring:message
-				code="sync.record.details.reset" /></a></b></li>
-		</c:if>
+	<div class="box">
+		<b><spring:message code="sync.record.details.record" />:</b> ${record.recordId}<br/>
+		<b><spring:message code="sync.record.details.uuid" />:</b> ${record.uuid}<br/>
+		<b><spring:message code="sync.record.details.state" />:</b> <spring:message code="sync.item.state_${mainState}" /><br/>
+		<b><spring:message code="sync.record.details.timestamp" />:</b> <openmrs:formatDate date="${record.timestamp}" format="${syncDateDisplayFormat}" /><br/>
+		<b><spring:message code="sync.record.details.status" />:</b>
+			<span class="sync${record.state}"><spring:message code="sync.record.state_${record.state}" /></span>
+			<br />
+		<b><spring:message code="sync.record.details.retry_count" />:</b> ${record.retryCount}</br>
+		
 		<br/>
-		<c:if
-			test="${record.state!='NOT_SUPPOSED_TO_SYNC' && record.state!='COMMITTED' && record.state!='ALREADY_COMMITTED'}">
-			<li><b><a
-				href="viewrecord.form?uuid=${record.uuid}&action=remove"><spring:message
-				code="sync.record.details.remove" /></a></b></li>
+		<c:if test="${record.state!='COMMITTED' && record.state!='ALREADY_COMMITTED'}">
+			<b><spring:message code="sync.record.details.action"/>:</b>
+				<c:if
+					test="${record.state!='NEW' && record.state!='COMMITTED' && record.state!='ALREADY_COMMITTED'}">
+					<b><a
+						href="viewrecord.form?uuid=${record.uuid}&action=reset"><spring:message
+						code="sync.record.details.reset" /></a></b>
+				</c:if>
+				<c:if
+					test="${record.state!='NOT_SUPPOSED_TO_SYNC' && record.state!='COMMITTED' && record.state!='ALREADY_COMMITTED'}">
+					| <b><a
+						href="viewrecord.form?uuid=${record.uuid}&action=remove"><spring:message
+						code="sync.record.details.remove" /></a></b>
+				</c:if>
+				<br/>
 		</c:if>
-	</ul>
-	</span><br />
-	</h5>
-	</span>
+		<br />
 
 <div class="innerBoxHeader"><span style="font-weight: bold"><spring:message code="sync.record.details.payload" /></div>
 	<div class="innerBox">
 	<br/>
-	<span style="font-weight: bold">${itemsNumber} <spring:message code="sync.record.details.classes" /> </span> <c:forEach var="syncItem" items="${syncItems}"
+	<span style="font-weight: bold">${itemsNumber} <spring:message code="sync.record.details.classes" />: </span> <c:forEach var="syncItem" items="${syncItems}"
 		varStatus="status">
 		<a id="item_${syncItem.key.keyValue}" href="#"
 			onclick="javascript:changeLinksTab(this.id);currentUuid='${record.uuid}';currentKey='${syncItem.key.keyValue}';javascript:getSyncItemContent();">${itemTypes[syncItem.key.keyValue]}
@@ -165,14 +160,14 @@
 	<table width="99%" border="0" cellpadding="0" cellspacing="0">
 		<tr>
 			<td width="25%" align="right" valign="middle"><c:if
-				test="${hasPrevious==true}">
-				<b><a href="?uuid=${record.uuid}&action=previous"><spring:message
+				test="${previousRecord != null}">
+				<b><a href="?uuid=${previousRecord.uuid}"><spring:message
 					code="sync.record.details.prev" /></a></b>
 			</c:if></td>
 			<td width="25%" align="center" valign="middle"><b>${record.recordId}</b></td>
 			<td width="25%" align="left" valign="middle"><c:if
-				test="${hasNext==true}">
-				<b><a href="?uuid=${record.uuid}&action=next"><spring:message
+				test="${nextRecord != null}">
+				<b><a href="?uuid=${nextRecord.uuid}"><spring:message
 					code="sync.record.details.next" /></a></b>
 			</c:if></td>
 			<td width="25%" align="right" valign="middle"></td>

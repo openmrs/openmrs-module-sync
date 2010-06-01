@@ -33,6 +33,7 @@ import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.ServletRequestUtils;
 import org.springframework.web.servlet.mvc.SimpleFormController;
@@ -42,16 +43,12 @@ import org.w3c.dom.NodeList;
 /**
  * 
  */
-public class MaintenanceController extends
-        SimpleFormController {
+public class MaintenanceController extends SimpleFormController {
 
 	/** Logger for this class and subclasses */
 	protected final Log log = LogFactory.getLog(getClass());
 
 	public Integer maxPageRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT);
-	public Integer currentPage = 1;
-	public Integer maxPages = 1;
-	public Integer totalRecords = 0;
 
 	/**
 	 * 
@@ -60,19 +57,30 @@ public class MaintenanceController extends
 	 * 
 	 * @see org.springframework.web.servlet.mvc.AbstractFormController#formBackingObject(javax.servlet.http.HttpServletRequest)
 	 */
-	protected Object formBackingObject(HttpServletRequest request)
+	protected String formBackingObject(HttpServletRequest request)
 	        throws ServletException {
-		// default empty Object
-		List<SyncRecord> recordList = new ArrayList<SyncRecord>();
+		// do nothing.  everything is in referenceData
+		return "";
+	}
+
+	@Override
+	protected Map<String, Object> referenceData(HttpServletRequest request, Object obj,
+	        Errors errors) throws Exception {
+		
+		Map<String, Object> ret = new HashMap<String, Object>();
+		
 		List<SyncRecord> returnList = new ArrayList<SyncRecord>();
 		List<SyncRecord> matchesList = new ArrayList<SyncRecord>();
 		String keyword = ServletRequestUtils.getStringParameter(request,
 		                                                        "keyword",
 		                                                        "");
-		String page = ServletRequestUtils.getStringParameter(request,
+		Integer page = ServletRequestUtils.getIntParameter(request,
 		                                                     "page",
-		                                                     "");
+		                                                     1);
 
+		Integer maxPages = 1;
+		Integer totalRecords = 0;
+		
 		// only fill the Object if the user has authenticated properly
 		if (Context.isAuthenticated()) {
 			SyncService syncService = Context.getService(SyncService.class);
@@ -80,83 +88,18 @@ public class MaintenanceController extends
 			// if ("".equals(keyword) || keyword == null)
 			// return new ArrayList<SyncRecord>();
 
-			recordList.addAll(syncService.getSyncRecords());
-
-			// sync records Search implementation
-			// warning: right now we are assuming there is only 1 item per
-			// record
-			for (SyncRecord record : recordList) {
-
-				String mainClassName = null;
-				String mainUuid = null;
-
-				for (SyncItem item : record.getItems()) {
-					try {
-						String syncItem = item.getContent();
-						Record xml;
-
-						xml = Record.create(syncItem);
-
-						Item root = xml.getRootItem();
-						String className = root.getNode()
-						                       .getNodeName()
-						                       .substring("org.openmrs.".length());
-						if (mainClassName == null)
-							mainClassName = className;
-
-						// String itemInfoKey = itemInfoKeys.get(className);
-
-						// now we have to go through the item child nodes to
-						// find
-						// the
-						// real UUID that we want
-						NodeList nodes = root.getNode().getChildNodes();
-						for (int i = 0; i < nodes.getLength(); i++) {
-							Node n = nodes.item(i);
-							String propName = n.getNodeName();
-							if (propName.equalsIgnoreCase("uuid")) {
-								String uuid = n.getTextContent();
-								// itemUuids.put(item.getKey().getKeyValue(),
-								// uuid);
-								if (mainUuid == null)
-									mainUuid = uuid;
-							}
-						}
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						log.error("Error generated", e);
-					}
-
-				}
-
-				// persistent sets should show something other than their
-				// mainClassName (persistedSet)
-				if (mainClassName.indexOf("Persistent") >= 0)
-					mainClassName = record.getContainedClasses();
-				String displayName = "";
-				try {
-					displayName = SyncUtil.displayName(mainClassName, mainUuid);
-				} catch (Exception e) {
-					// some methods like Concept.getName() throw Exception s all
-					// the
-					// time...
-					displayName = "";
-				}
-				if (displayName != null)
-					if (displayName.length() > 0)
-						if (displayName.toLowerCase()
-						               .contains(keyword.toLowerCase())
-						        && (keyword.replace(" ", "").length() >= 3)) {
-							matchesList.add(record);
-							log.warn("Matches found :::::::: "
-							        + matchesList.size());
-						}
-			}
+			if (StringUtils.hasText(keyword))
+				matchesList = syncService.getSyncRecords(keyword);
 
 			String maxPageRecordsString = Context.getAdministrationService()
 			                                     .getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS, SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT);
 
-			maxPageRecords = Integer.parseInt(maxPageRecordsString);
+			try {
+				maxPageRecords = Integer.parseInt(maxPageRecordsString);
+			}
+			catch (NumberFormatException e) {
+				log.warn("Unable to format gp: " + SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS + " into an integer", e);
+			}
 			
 			if (maxPageRecords < 1) {
 				maxPageRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT);
@@ -169,26 +112,16 @@ public class MaintenanceController extends
 			else
 				maxPages = (int) (totalRecords / maxPageRecords) + 1;
 
-			if (page != "")
-				currentPage = Integer.parseInt(page);
-			if (currentPage > maxPages)
-				currentPage = 1;
+			if (page > maxPages)
+				page = 1;
 
 			returnList.clear();
-			int start = (currentPage - 1) * maxPageRecords;
+			int start = (page - 1) * maxPageRecords;
 			for (int i = 0; start + i < totalRecords && i < maxPageRecords; i++) {
 				returnList.add(matchesList.get(start + i));
 			}
 
 		}
-
-		return returnList;
-	}
-
-	@Override
-	protected Map<String, Object> referenceData(HttpServletRequest request, Object obj,
-	        Errors errors) throws Exception {
-		Map<String, Object> ret = new HashMap<String, Object>();
 
 		List<GlobalProperty> globalPropList = new ArrayList<GlobalProperty>();
 		List<GlobalProperty> syncPropList = new ArrayList<GlobalProperty>();
@@ -197,18 +130,9 @@ public class MaintenanceController extends
 		Map<Object, String> itemUuids = new HashMap<Object, String>();
 		Map<String, String> recordText = new HashMap<String, String>();
 		Map<String, String> recordChangeType = new HashMap<String, String>();
-		// Map<String,String> itemInfoKeys = new HashMap<String,String>();
-		List<SyncRecord> recordList = (ArrayList<SyncRecord>) obj;
-		String keyword = ServletRequestUtils.getStringParameter(request,
-		                                                        "keyword",
-		                                                        "");
-
-		// itemInfoKeys.put("Patient", "gender,birthdate");
-		// itemInfoKeys.put("PersonName", "name");
-		// itemInfoKeys.put("User", "username");
 
 		// warning: right now we are assuming there is only 1 item per record
-		for (SyncRecord record : recordList) {
+		for (SyncRecord record : returnList) {
 
 			String mainClassName = null;
 			String mainUuid = null;
@@ -278,7 +202,7 @@ public class MaintenanceController extends
 		ret.put("keyword", keyword);
 		ret.put("syncProps", syncPropList);
 		ret.put("totalRecords", totalRecords);
-		ret.put("currentPage", currentPage);
+		ret.put("currentPage", page);
 		ret.put("maxPages", maxPages);
 		ret.put("recordTypes", recordTypes);
 		ret.put("itemTypes", itemTypes);
@@ -291,7 +215,8 @@ public class MaintenanceController extends
 		                          .getRemoteServers());
 		ret.put("syncDateDisplayFormat",
 		        TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
-
+		ret.put("synchronizationMaintenanceList", returnList);
+		
 		return ret;
 	}
 

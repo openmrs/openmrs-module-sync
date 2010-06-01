@@ -19,15 +19,17 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openmrs.ConceptDatatype;
-import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.SyncRecord;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
-import org.openmrs.test.Verifies;
 import org.openmrs.GlobalProperty;
 import org.openmrs.PatientIdentifierType;
-import org.openmrs.PersonAttributeType;
 import org.openmrs.Person;
+import org.openmrs.PersonAttributeType;
 import org.openmrs.User;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.SyncRecord;
+import org.openmrs.module.sync.api.impl.SyncServiceImpl;
+import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.TestUtil;
+import org.openmrs.test.Verifies;
 
 /**
  * Tests methods in the SyncService
@@ -90,12 +92,14 @@ public class SyncServiceTest extends BaseModuleContextSensitiveTest {
     @Verifies(value = "should exclude only types setup for all sync servers", method = "shouldSynchronize(Object)")
     public void shouldSynchronize_shouldOnlySyncValidTypes() throws Exception {
     	executeDataSet("org/openmrs/module/sync/include/SyncServerClasses.xml");
-    	
     	SyncService syncService = Context.getService(SyncService.class);
+    	SyncServiceImpl.refreshServerClassesCollection();
     	
 		Assert.assertFalse(syncService.shouldSynchronize(new GlobalProperty("test","test")));
     	
-		Assert.assertTrue(syncService.shouldSynchronize(new PatientIdentifierType())); //maked 'yes' in all
+		Assert.assertTrue(syncService.shouldSynchronize(new PatientIdentifierType())); //marked 'yes' in all
+		
+		TestUtil.printOutTableContents(getConnection(), "sync_class", "sync_server_class");
 		
 		Assert.assertTrue(syncService.shouldSynchronize(new PersonAttributeType())); //marked as 'yes' in one server
 		
@@ -105,4 +109,38 @@ public class SyncServiceTest extends BaseModuleContextSensitiveTest {
 		
     }
 
+	/**
+	 * @see {@link SyncService#getSyncRecord(Integer)}
+	 * 
+	 */
+	@Test
+	@Verifies(value = "should get a record by its primary key", method = "getSyncRecord(Integer)")
+	public void getSyncRecord_shouldGetARecordByItsPrimaryKey()
+			throws Exception {
+		executeDataSet("org/openmrs/module/sync/include/SyncRecords.xml");
+		
+		SyncService syncService = Context.getService(SyncService.class);
+    	
+		SyncRecord syncRecord = syncService.getSyncRecord(4);
+		
+		Assert.assertEquals("c7c38315-285d-471a-94cd-1fdc71a5459b", syncRecord.getUuid());
+	}
+
+	/**
+	 * @see {@link SyncService#getSyncRecords(String)}
+	 * 
+	 */
+	@Test
+	@Verifies(value = "should find a record given a string in its payload", method = "getSyncRecords(String)")
+	public void getSyncRecords_shouldFindARecordGivenAStringInItsPayload()
+			throws Exception {
+		executeDataSet("org/openmrs/module/sync/include/SyncRecords.xml");
+		
+		SyncService syncService = Context.getService(SyncService.class);
+    	
+		List<SyncRecord> syncRecords = syncService.getSyncRecords("ConceptDatatype");
+		
+		Assert.assertEquals(7, syncRecords.size());
+	}
+    
 }

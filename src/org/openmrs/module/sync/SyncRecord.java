@@ -411,4 +411,9 @@ public class SyncRecord implements Serializable, IItem {
         // (was getSimpleName instead of just getName)
     	
     }
+    
+    @Override
+    public String toString() {
+    	return "SyncRecord(" + getRecordId() + ") contains " + getContainedClasses();
+    }
 }

@@ -151,7 +151,11 @@ public class SyncItemListSerializingUserType implements UserType {
             throws HibernateException, SQLException {
         if (value == null) {
             ps.setNull(index, Types.CLOB);
-        } else {
+        } else if (value instanceof String) {
+        	// if the user is doing a search of the payload items
+        	ps.setString(index, (String)value);
+        }
+        else {
             Collection<SyncItem> items = (Collection<SyncItem>) value;
 
             Package pkg = new Package();

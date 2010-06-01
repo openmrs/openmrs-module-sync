@@ -76,6 +76,26 @@ public interface SyncService {
 	public void deleteSyncRecord(SyncRecord record) throws APIException;
 	
 	/**
+	 * @param keyword the search string to match
+	 * @return a list of sync records or an empty list if none
+	 * @throws APIException
+	 * @should find a record given a string in its payload
+	 */
+	//@Authorized({"View Synchronization Records"})
+	@Transactional(readOnly = true)
+	public List<SyncRecord> getSyncRecords(String keyword) throws APIException;
+	
+	/**
+	 * @param syncRecordId of the SyncRecord to retrieve
+	 * @return SyncRecord The SyncRecord or null if not found
+	 * @throws APIException
+	 * @should get a record by its primary key
+	 */
+	//@Authorized({"View Synchronization Records"})
+	@Transactional(readOnly = true)
+	public SyncRecord getSyncRecord(Integer syncRecordId) throws APIException;
+	
+	/**
 	 * @param uuid of the SyncRecord to retrieve
 	 * @return SyncRecord The SyncRecord or null if not found
 	 * @throws APIException

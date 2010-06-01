@@ -60,6 +60,10 @@ public interface SyncDAO {
 	 */
 	public void deleteSyncRecord(SyncRecord record) throws DAOException;
 	
+	public List<SyncRecord> getSyncRecords(String query) throws DAOException;
+	
+	public SyncRecord getSyncRecord(Integer recordId) throws DAOException;
+	
 	/**
 	 * @param uuid of the SyncRecord to retrieve
 	 * @return SyncRecord The SyncRecord or null if not found

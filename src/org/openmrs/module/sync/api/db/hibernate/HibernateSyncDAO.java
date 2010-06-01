@@ -47,6 +47,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Expression;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
@@ -174,20 +175,39 @@ public class HibernateSyncDAO implements SyncDAO {
      */
     @SuppressWarnings("unchecked")
     public SyncRecord getLatestRecord() throws DAOException {
-        List<SyncRecord> result = sessionFactory.getCurrentSession()
+        List<Integer> result = sessionFactory.getCurrentSession()
             .createCriteria(SyncRecord.class)
-            .addOrder(Order.desc("timestamp"))
-            .addOrder(Order.desc("recordId"))
-            .setFetchSize(1)
+            .setProjection(Projections.max("recordId"))
             .list();
         
         if (result.size() < 1) {
             return null;
         } else {
-            return result.get(0);
+        	Integer maxRecordId = result.get(0);
+            return getSyncRecord(maxRecordId);
         }
     }
+    
+    @SuppressWarnings("unchecked")
+    public List<SyncRecord> getSyncRecords(String query) throws DAOException {
+    	return sessionFactory.getCurrentSession()
+			.createCriteria(SyncRecord.class)
+			.add(Expression.or(
+					Restrictions.like("items", query, MatchMode.ANYWHERE), 
+					Restrictions.eq("originalUuid", query))
+				)
+			.addOrder(Order.desc("timestamp"))
+			.setMaxResults(250) // max number of records returned
+			.list();
+    }
 
+    public SyncRecord getSyncRecord(Integer recordId) throws DAOException {
+        return (SyncRecord) sessionFactory.getCurrentSession()
+        		.createCriteria(SyncRecord.class)
+        		.add(Restrictions.eq("recordId", recordId)) 
+        		.uniqueResult();
+    }
+    
     /**
      * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecord(java.lang.String)
      */

@@ -18,13 +18,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.openmrs.EncounterType;
+import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncServerClass;
 import org.openmrs.module.sync.SyncTransmissionState;
-import org.openmrs.module.sync.SyncRecord;
 
 /**
- *
+ * Represents another server that we are going to sync to/from.  
  */
 public class RemoteServer {
 	
@@ -349,4 +348,8 @@ public class RemoteServer {
 		this.serverRecords = serverRecords;
 	}
 	
+	@Override
+	public String toString() {
+		return "RemotServer(" + getServerId() + "): " + getNickname();
+	}
 }
