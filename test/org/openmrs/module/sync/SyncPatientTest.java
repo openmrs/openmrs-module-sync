@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -42,6 +43,7 @@ import org.openmrs.ProgramWorkflowState;
 import org.openmrs.User;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.test.annotation.NotTransactional;
 
@@ -422,6 +424,65 @@ public class SyncPatientTest extends SyncBaseTest {
 			}
 		});
 	}
+
+	@Test
+	@NotTransactional
+	public void shouldEditPatientIDs() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			PatientIdentifierType pit;
+			public void runOnChild() {
+				pit = Context.getPatientService().getPatientIdentifierType(2);
+				Location loc = Context.getLocationService().getLocation("Someplace");
+				Patient p = Context.getPatientService().getPatient(2);
+				p.setGender("F");
+				p.removeName(p.getPersonName());
+				p.addName(new PersonName("Peter", null, "Parker"));
+				p.addIdentifier(new PatientIdentifier("super123", pit, loc));
+				Context.getPatientService().savePatient(p);
+				
+				/* patient 2 has two existing IDs: 
+				 * "ID1234" with uuid of '6b920848-1b90-102b-8082-d8cf852a43d2' - this should be removed
+				 * "ID1234-2" with uuid of 'e333cc28-6fef-11df-83c8-3679bc4524e5' - this should be voided
+				 */
+				Set<PatientIdentifier> pis =p.getIdentifiers();
+				PatientIdentifier piToDelete = null;
+				PatientIdentifier piToVoid = null;
+				for(PatientIdentifier pi : pis) {
+					if ("ID1234".equals(pi.getIdentifier())) {
+						piToDelete = pi;
+					} else if ("ID1234-2".equals(pi.getIdentifier())) {
+						piToVoid = pi;
+					};
+				}
+				
+				//whack ID1234
+				SyncUtil.deleteOpenmrsObject(piToDelete);
+
+				//change ID1234-2 to void and save it via syncUtil to test resorting the treeset
+				piToVoid.setVoided(true);
+				piToVoid.setVoidReason("testing sync");				
+				SyncUtil.updateOpenmrsObject(piToVoid, "org.openmrs.PatientIdentifier", piToVoid.getUuid());
+				Context.getPatientService().savePatient(p);
+			}
+			public void runOnParent() {
+				Patient p = Context.getPatientService().getPatient(2);
+				assertEquals("Gender didn't change", p.getGender(), "F");
+				assertEquals("Name should be Peter Parker", p.getPersonName().toString(), "Peter Parker");
+				boolean foundNew = false;
+				boolean foundOld = false;
+				for (PatientIdentifier id : p.getIdentifiers()) {
+					if (id.getIdentifier().equals("super123") && id.getIdentifierType().equals(pit))
+						foundNew = true;
+					else if (id.getIdentifier().equals("ID1234") && id.getUuid().equals("6b920848-1b90-102b-8082-d8cf852a43d2"))
+						foundOld = true;
+				}
+		
+				assertTrue("Couldn't find new ID", foundNew);
+				assertFalse("Still found old ID that should have been removed.", foundOld);
+			}
+		});
+	}
+	
 	
 	@Test
 	@NotTransactional

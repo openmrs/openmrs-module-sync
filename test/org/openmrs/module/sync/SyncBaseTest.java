@@ -87,6 +87,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	@Transactional
 	@Rollback(false)
 	protected void runOnParent(SyncTestHelper testMethods) throws Exception {
+		authenticate();
 		//now run parent
 		log.info("\n************************************* Running on Parent *************************************");
 		testMethods.runOnParent();
@@ -115,6 +116,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		Context.openSession();
 		deleteAllData();
 		executeDataSet("org/openmrs/module/sync/include/SyncCreateTest.xml");
+		executeDataSet("org/openmrs/module/sync/include/SyncRemoteChildServer.xml");
 		executeDataSet(getInitialDataset());
 		
 		authenticate();
@@ -123,19 +125,32 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		// this is kind of hacky, but loading up the module here has adverse effects (sqldiff tries to run)
 		Context.addAdvisor(UserService.class, new GenerateSystemIdAdvisor());
 	}
-	
+
+
+	/**
+	 * Retrieves sync records currently stored in the sync_record.
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
 	@Transactional
 	@Rollback(false)
-	protected void applySyncChanges(SyncTestHelper testMethods, String xmlFileToExecute) throws Exception {
-		Context.openSession();
+	protected List<SyncRecord> getSyncRecords() throws Exception {
 		
 		//get sync records created
 		List<SyncRecord> syncRecords = Context.getService(SyncService.class).getSyncRecords();
 		if (syncRecords == null || syncRecords.size() == 0) {
 			assertFalse("No changes found (i.e. sync records size is 0)", true);
 		}
-		
-		//now reload db from scratch
+
+		return syncRecords;
+	}
+	
+	@Transactional
+	@Rollback(false)
+	protected void repopulateDB(String xmlFileToExecute) throws Exception {
+				
+		//reload db from scratch
 		log.info("\n************************************* Reload Database *************************************");
 		deleteAllData();
 		executeDataSet("org/openmrs/module/sync/include/SyncCreateTest.xml");
@@ -143,7 +158,16 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		if (xmlFileToExecute == null)
 			xmlFileToExecute = "org/openmrs/module/sync/include/SyncRemoteChildServer.xml";
 		executeDataSet(xmlFileToExecute);
-		
+				
+		return;
+	}
+
+	
+	@Transactional
+	@Rollback(false)
+	protected void applySyncChanges(List<SyncRecord> syncRecords, SyncTestHelper testMethods) throws Exception {
+		//Context.openSession();
+						
 		authenticate();
 		
 		log.info("\n************************************* Sync Record(s) to Process *************************************");
@@ -183,7 +207,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	 * Note: The non-transactional vs. transactional behavior of helper methods: each step must be
 	 * in its own Tx since sync flushes its sync record at Tx boundary. Consequently it is required
 	 * for the overall test to run as non-transactional and each individual step to be
-	 * transactional; as stated in class comments, true nested transactions are RDMS fantasy, it
+	 * transactional; as stated in class comments, true nested transactions are RDBMS fantasy, it
 	 * mostly doesn't exist.
 	 * 
 	 * @param testMethods helper object holding methods for child and parent execution
@@ -196,13 +220,19 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		
 		this.runOnChild(testMethods);
 
-		this.applySyncChanges(testMethods, getParentDataset());
+		List<SyncRecord> changes = this.getSyncRecords();
+		
+		this.repopulateDB(getParentDataset());
+		
+		this.applySyncChanges(changes, testMethods);
 		
 		this.runOnParent(testMethods);
 
 		//now that parent is committed; replay the parent's log against child #2
 		//after that is done, the data should be the same again
-		this.applySyncChanges(testMethods, getChild2Dataset());
+		changes = this.getSyncRecords();
+		this.repopulateDB(getChild2Dataset());
+		this.applySyncChanges(changes, testMethods);
 		
 		//now finish by checking the changes recorded on parent against the target state
 		this.runOnChild2(testMethods);

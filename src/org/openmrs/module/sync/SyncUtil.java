@@ -34,8 +34,8 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.Vector;
+import java.util.UUID;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
@@ -55,6 +55,7 @@ import org.openmrs.Location;
 import org.openmrs.Obs;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.OrderType;
+import org.openmrs.PatientIdentifier;
 import org.openmrs.PatientProgram;
 import org.openmrs.PatientState;
 import org.openmrs.Person;
@@ -535,16 +536,22 @@ public class SyncUtil {
     /**
      * Uses the generic hibernate API to perform the save<br/>
      *  
+     * Remarks: <br/>
+     * Obs: if an obs comes through with a non-null voidReason, make sure we change it back to using a PK.
+     *  
      * @param o object to save
      * @param className type
      * @param Uuid unique id of the object that is being saved
+     * @param true if it is an update scenario
      */
 	public static synchronized void updateOpenmrsObject(OpenmrsObject o, String className, String Uuid) {
     	
-    	// TODO allow this to be done by modules somehow
-    	// some pre-flush modifications
-    	// if an obs comes through with a non-null voidReason, make sure we change it back to using a PK
+		if (o == null) {
+			log.warn("Will not update OpenMRS object that is NULL");
+			return;
+		}
     	if ("org.openmrs.Obs".equals(className)) {
+        	// if an obs comes through with a non-null voidReason, make sure we change it back to using a PK
     		Obs obs = (Obs)o;
 			String voidReason = obs.getVoidReason();
 			if (StringUtils.hasLength(voidReason)) {
@@ -569,13 +576,8 @@ public class SyncUtil {
     	}
     	
     	// now do the save
-    	
-    	if ( o != null ) {
-			Context.getService(SyncService.class).saveOrUpdate(o);
-		} else {
-			log.warn("Will not update OpenMRS object that is NULL");
-		}
-    	
+		Context.getService(SyncService.class).saveOrUpdate(o);
+		return;
     }  
 	
     /**
@@ -697,13 +699,34 @@ public class SyncUtil {
         
     /**
      * Deletes instance of OpenmrsObject. Used to process SyncItems with state of deleted.
+     * 
+     * Remarks: <br />
+     * Delete of PatientIdentifier is a special case: we need to remove it from parent collection
+     * and then re-save patient: it has all-delete-cascade therefore it will
+     * take care of this itself; more over attempts to delete it explicitly result in hibernate
+     * error.
      */
 	public static synchronized void deleteOpenmrsObject(OpenmrsObject o) {
-		Context.getService(SyncService.class).deleteOpenmrsObject(o);
-		
-		if (o instanceof org.openmrs.Concept || o instanceof org.openmrs.ConceptName) {
-			//delete concept words explicitly
-			//TODO
+				
+		if (o != null && (o instanceof org.openmrs.PatientIdentifier)) {
+			//if this is a delete of patient identifier, just do the remove from collection
+			PatientIdentifier piToRemove = (org.openmrs.PatientIdentifier)o;
+			org.openmrs.Patient p = piToRemove.getPatient();
+			if (p == null) {
+				//we don't know what to do here, throw exception
+				log.error("deleteOpenmrsObject cannot proceed: asked to process PatientIdentifier but no patient id was set. pat_identifier: " + piToRemove.toString());
+				throw new SyncException("deleteOpenmrsObject cannot proceed: asked to process PatientIdentifier but no patient id was set. pat_identifier: " + piToRemove.toString());
+			}
+			//now just remove from collection and make sure save patient is queued up
+			p.removeIdentifier(piToRemove);
+			Context.getPatientService().savePatient(p);
+		} else if (o instanceof org.openmrs.Concept || o instanceof org.openmrs.ConceptName) {
+			//delete concept words explicitly, TODO -- is this still needed?
+			Context.getService(SyncService.class).deleteOpenmrsObject(o);
+		}
+		else {
+			//default behavior: just call plain delete via service API
+			Context.getService(SyncService.class).deleteOpenmrsObject(o);
 		}
 	}
 

@@ -24,6 +24,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openmrs.Concept;
 import org.openmrs.ConceptName;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.Patient;
+import org.openmrs.PatientIdentifier;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
@@ -89,6 +91,18 @@ public class SyncIngestServiceImpl implements SyncIngestService {
      * one transaction. To report back SyncImportRecord accurately in case of exception, notice that SyncIngestException contains
      * SyncImportRecord. In case of exception, callers should inspect this value as it will contain more information about the status of sync
      * item as it failed.
+     * <p/> Processing PatientIdentifier updates: *updates* to PatientIdentifier objects are processed last. This is because
+     * patient.identifiers is a TreeSet and any updates to the refrenced objects can potentially mess up the treeset.
+     * This is especially the case when patient identifier is changed to voided: voiding it changes its ordering per
+     * PatientIdentifier.CompareTo() method to 'last'. This means that if there is a treeset when we void the first
+     * identifier, the treeset cannot be navigatated & all operations such as contains(), remove() will return false.
+     * This is because treesets need to be 'resorted' if such changes are made to held objects..however re-sorting it via
+     * remove/add() is not feasible in our case since the actual type of patient.identifier collection is hibernate
+     * persistensortedset; this overrides remove() method and by calling remove()/add() the actual 'delete' to the 
+     * database is generated.
+     * To deal with this issue, simply process all patient identifier inserts and deletes first, and only then
+     * process updates that can potentially mess up the treeset order. The long-term fix to this is not to use
+     * treesets for collection of mutable objects such as patient.identifiers in core.
      * 
      * @param record SyncRecord to be processed
      * @param server Server where the record came from
@@ -97,6 +111,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
     public SyncImportRecord processSyncRecord(SyncRecord record, RemoteServer server) throws SyncIngestException {
         
     	ArrayList<SyncItem> deletedItems = new ArrayList<SyncItem>();
+    	ArrayList<SyncItem> patientIDItems = new ArrayList<SyncItem>();
     	SyncImportRecord importRecord = new SyncImportRecord();
         importRecord.setState(SyncRecordState.FAILED);  // by default, until we know otherwise
         importRecord.setRetryCount(record.getRetryCount());
@@ -160,6 +175,8 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     for ( SyncItem item : record.getItems() ) {
                     	if (item.getState() == SyncItemState.DELETED) {
                     		deletedItems.add(item);
+                    	} else if (item.getState() == SyncItemState.UPDATED && item.getContainedType() != null && "org.openmrs.PatientIdentifier".equals(item.getContainedType().getName())) {
+                    			patientIDItems.add(item);
                     	} else {
 	                        SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
 	                        importedItem.setKey(item.getKey());
@@ -181,6 +198,20 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                      */
                 	syncService.setFlushModeManual(); 
                     for ( SyncItem item : deletedItems ) {
+                        SyncImportItem importedItem = this.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
+                        importedItem.setKey(item.getKey());
+                        importRecord.addItem(importedItem);
+                        if ( !importedItem.getState().equals(SyncItemState.SYNCHRONIZED)) isError = true;
+                    }
+                    syncService.flushSession();
+                    syncService.setFlushModeAutomatic();
+
+
+                    /* Run through the patient identifier updates, see the method comments to understand
+                     * why this is done here. 
+                     */
+                    syncService.setFlushModeManual(); 
+                    for ( SyncItem item : patientIDItems ) {
                         SyncImportItem importedItem = this.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
                         importedItem.setKey(item.getKey());
                         importRecord.addItem(importedItem);

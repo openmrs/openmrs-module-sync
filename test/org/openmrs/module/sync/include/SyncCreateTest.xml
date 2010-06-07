@@ -115,12 +115,13 @@
   <patient patient_id="3" creator="1" date_created="2008-01-14 17:56:26.0" voided="0"/>
   <patient patient_id="4" creator="1" date_created="2008-01-14 17:56:26.0" voided="0"/>
 
-  <patient_identifier patient_identifier_id = "2" patient_id="2" identifier="ID1234" identifier_type="2" preferred="1" location_id="1" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="6b920848-1b90-102b-8082-d8cf852a43d2"/>
+  <patient_identifier patient_identifier_id = "2" patient_id="2" identifier="ID1234" identifier_type="2" preferred="0" location_id="1" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="6b920848-1b90-102b-8082-d8cf852a43d2"/>
+  <patient_identifier patient_identifier_id = "20" patient_id="2" identifier="ID1234-2" identifier_type="2" preferred="0" location_id="1" creator="1" date_created="2008-01-15 17:56:26.0" voided="0" uuid="e333cc28-6fef-11df-83c8-3679bc4524e5"/>
   <patient_identifier patient_identifier_id = "3" patient_id="3" identifier="ID4381924" identifier_type="2" preferred="1" location_id="1" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="75ca462a-1b90-102b-8082-d8cf852a43d2"/>
   <patient_identifier patient_identifier_id = "4" patient_id="4" identifier="ID4381925" identifier_type="2" preferred="1" location_id="1" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="121a462a-1b90-102b-8082-d8cf852a43d3"/>
   <patient_identifier_type retired="false" patient_identifier_type_id="1" name="OpenMRS Identification Number" description="Unique number used in OpenMRS" format="" check_digit="true" creator="1" date_created="2005-09-22 00:00:00.0" required="false" uuid="3010e3ee-144e-102b-8d9c-e44ed545d86c"/>
   <patient_identifier_type retired="false" patient_identifier_type_id="2" name="Old Identification Number" description="Number given out prior to the OpenMRS system (No check digit)" format="" check_digit="false" creator="1" date_created="2005-09-22 00:00:00.0" required="false" uuid="3010e86a-144e-102b-8d9c-e44ed545d86c"/>
-
+  
   <patient_program patient_program_id="1" patient_id="3" program_id="1" date_enrolled="2006-04-11 00:00:00.0" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="0bb5846a-168d-102b-8d9c-e44ed545d86c"/>
 
   <patient_state patient_state_id="1" patient_program_id="1" state="1" start_date="2006-04-11 00:00:00.0" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="11d71368-168d-102b-8d9c-e44ed545d86c"/>
