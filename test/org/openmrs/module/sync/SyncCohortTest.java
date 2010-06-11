@@ -14,12 +14,14 @@
 package org.openmrs.module.sync;
 
 import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 import org.openmrs.Cohort;
 import org.openmrs.api.CohortService;
 import org.openmrs.api.context.Context;
+import org.openmrs.test.TestUtil;
 import org.springframework.test.annotation.NotTransactional;
 
 /**
@@ -32,12 +34,22 @@ public class SyncCohortTest extends SyncBaseTest {
 		return "org/openmrs/module/sync/include/SyncCreateTest.xml";
 	}
 	
+	@Override
+	public String getParentDataset() {
+		return "org/openmrs/module/sync/include/SyncCohortTest.xml";
+	}
+	
+	@Override
+	public String getChild2Dataset() {
+		return getParentDataset();
+	}
+	
 	@Test
 	@NotTransactional
 	public void shouldSaveMemberIdsInCohorts() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
-			public void runOnChild() {
+			public void runOnChild() throws Exception {
 				CohortService cs = Context.getCohortService();
 				
 				Cohort cohort = new Cohort();
@@ -48,13 +60,17 @@ public class SyncCohortTest extends SyncBaseTest {
 				cs.saveCohort(cohort);
 			}
 			
-			public void runOnParent() {
+			public void runOnParent() throws Exception {
 				CohortService cs = Context.getCohortService();
 				
 				Cohort c = cs.getCohort("Dummy Name");
 				assertNotNull("Failed to create the cohort", c);
 				
+				TestUtil.printOutTableContents(getConnection(), "patient");
 				assertTrue("Failed to transfer cohort members", c.getMemberIds().size() == 2);
+				assertTrue("Failed to transfer cohort members with same patient id", c.getMemberIds().contains(3));
+				assertFalse("Failed to convert patient id from #2 to #5", c.getMemberIds().contains(2));
+				assertTrue("Failed to convert patient id from #2 to #5", c.getMemberIds().contains(5));
 			}
 		});
 	}

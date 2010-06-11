@@ -37,12 +37,13 @@ import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Projections;
 import org.hibernate.engine.ForeignKeys;
 import org.hibernate.metadata.ClassMetadata;
-import org.hibernate.persister.entity.PropertyMapping;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.EmbeddedComponentType;
 import org.hibernate.type.Type;
+import org.openmrs.Cohort;
 import org.openmrs.Obs;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.Patient;
 import org.openmrs.PersonAttribute;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.User;
@@ -1042,6 +1043,34 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 					log.trace("unable to get uuid from obs pk: " + obsId, e);
 				}
 			}
+		} else if (entity instanceof Cohort && "memberIds".equals(property)) {
+			// convert integer patient ids to uuids
+			try {
+				item.setAttribute("type", "java.util.Set<org.openmrs.Patient>");
+				StringBuilder sb = new StringBuilder();
+				
+				data = data.replaceFirst("\\[", "").replaceFirst("\\]", "");
+				
+				sb.append("[");
+				String[] fieldVals = data.split(",");
+				for (int x=0; x < fieldVals.length; x++) {
+					if (x >= 1)
+						sb.append(", ");
+					
+					String eachFieldVal = fieldVals[x].trim(); // take out whitespace
+					String uuid = fetchUuid(Patient.class, Integer.valueOf(eachFieldVal));
+					sb.append(uuid);
+					
+				}
+				
+				sb.append("]");
+				
+				return sb.toString();
+				
+			} catch (Throwable t) {
+				log.warn("Unable to get Patient for sync'ing cohort.memberIds property", t);
+			}
+			
 		}
 
 		return data;

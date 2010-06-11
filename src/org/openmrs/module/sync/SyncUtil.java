@@ -372,13 +372,26 @@ public class SyncUtil {
 					if ( collectionType.toString().startsWith("class ") )
 						collectionTypeClassName = collectionType.toString().substring("class ".length());
 					
+					// get the type of class defined in the text node
+					// if it is different, we could be dealing with something like Cohort.memberIds
+					// node type comes through as java.util.Set<classname>
+					String nodeDefinedCollectionType = null;
+					int indexOfLT = nodeDefinedClassName.indexOf("<");
+					if (indexOfLT > 0)
+						nodeDefinedCollectionType = nodeDefinedClassName.substring(indexOfLT+1, nodeDefinedClassName.length()-1);
+					
 					// change the string to just a comma delimited list
 					fieldVal = fieldVal.replaceFirst("\\[", "").replaceFirst("\\]", "");
 					
 					for (String eachFieldVal : fieldVal.split(",")) {
 						eachFieldVal = eachFieldVal.trim(); // take out whitespace
-						// convert to a simple object
+						// try to convert to a simple object
 						Object tmpObject = convertStringToObject(eachFieldVal, (Class)collectionType);
+						
+						// convert to an openmrs object
+						if (tmpObject == null && nodeDefinedCollectionType != null)
+							tmpObject = getOpenmrsObj(nodeDefinedCollectionType, eachFieldVal).getId();
+						
 						if (tmpObject == null)
 							log.error("Unable to convert: " + eachFieldVal + " to a " + collectionTypeClassName);
 						else
