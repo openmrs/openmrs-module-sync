@@ -29,6 +29,7 @@ import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
+import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.SyncServerRecord;
@@ -590,5 +591,16 @@ public interface SyncService {
 	 */
 	@Transactional(readOnly = true)
 	public Boolean shouldSynchronize(Object entity) throws APIException;
+
+	/**
+	 * Gets the value of the non-incrementing primary key
+	 * 
+	 * @param obj the object
+	 * @return the primary key value as a string
+	 * @throws APIException
+	 * @see {@link SyncUtil#hasNoAutomaticPrimaryKey(String)}
+	 */
+	@Transactional(readOnly = true)
+	public String getPrimaryKey(OpenmrsObject obj) throws APIException;
 
 }

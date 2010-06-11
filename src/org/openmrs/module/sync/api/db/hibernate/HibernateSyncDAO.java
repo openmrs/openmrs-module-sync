@@ -43,6 +43,7 @@ import java.util.TreeSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -1134,6 +1135,19 @@ public class HibernateSyncDAO implements SyncDAO {
 		return (T) crit.uniqueResult();
     }
 	
+	public <T extends OpenmrsObject> T getOpenmrsObjectByPrimaryKey(String classname, Object primaryKey) {
+		Criteria crit;
+		try {
+			crit = sessionFactory.getCurrentSession().createCriteria(Context.loadClass(classname));
+			crit.add(Restrictions.idEq(primaryKey));
+			return (T) crit.uniqueResult();
+		}
+		catch (ClassNotFoundException e) {
+			log.warn("getOpenmrsObjectByPrimaryKey couldn't find class: " + classname, e);
+			return null;
+		}
+	}
+	
 	public <T extends OpenmrsObject> String getUuidForOpenmrsObject(Class<T> clazz, String id) {
 		Criteria crit = sessionFactory.getCurrentSession().createCriteria(clazz);
 		crit.add(Restrictions.idEq(id));
@@ -1268,10 +1282,18 @@ public class HibernateSyncDAO implements SyncDAO {
 				String entryAction = ((Element)nodes.item(i)).getAttribute("action");
 				Object entry = SyncUtil.getOpenmrsObj(entryClassName, entryUuid);
 				
+				// objects like Privilege, Role, and GlobalProperty might have different
+				// uuids for different objects
+				if (entry == null && SyncUtil.hasNoAutomaticPrimaryKey(entryClassName)) {
+					String key = ((Element)nodes.item(i)).getAttribute("primaryKey");
+					entry = getOpenmrsObjectByPrimaryKey(entryClassName, key);
+				}
+				
 				if (entry == null) {
 					// blindly ignore this entry if it doesn't exist and we're trying to delete it
 					if (!"delete".equals(entryAction)) {
 						//the object not found: most likely cause here is data collision
+						
 			    		log.error("Was not able to retrieve reference to the collection entry object by uuid.");
 			    		log.error("Entry info: " +
 			    				"\nentryClassName: " + entryClassName + 

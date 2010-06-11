@@ -34,8 +34,8 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import java.util.UUID;
+import java.util.Vector;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
@@ -62,11 +62,13 @@ import org.openmrs.Person;
 import org.openmrs.PersonAddress;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.PersonName;
+import org.openmrs.Privilege;
 import org.openmrs.Program;
 import org.openmrs.ProgramWorkflow;
 import org.openmrs.ProgramWorkflowState;
 import org.openmrs.Relationship;
 import org.openmrs.RelationshipType;
+import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.LoginCredential;
 import org.openmrs.module.sync.api.SyncService;
@@ -384,6 +386,9 @@ public class SyncUtil {
 					}
 					
 					o = tmpCollection;
+				}
+				else if (Map.class.isAssignableFrom(classType)) {
+					// TODO implement this like Collection
 				}
 				else if ((o = convertStringToObject(fieldVal, classType)) != null) {
 					log.trace("Converted " + fieldVal + " into " + classType.getName());
@@ -910,4 +915,30 @@ public class SyncUtil {
 		}
 		return;
 	}
+
+	/**
+	 * Checks that given class to see if its "getId()" method returns an {@link UnsupportedOperationException}.
+	 * <br/>
+	 * The <code>entryClassName</code> should be of type {@link OpenmrsObject}
+	 * 
+	 * @param entryClassName class name of OpenmrsObject to check
+	 * @return true if getId() throws an {@link UnsupportedOperationException}
+	 */
+	public static boolean hasNoAutomaticPrimaryKey(String entryClassName) {
+		try {
+			Class<OpenmrsObject> c = (Class<OpenmrsObject>) Context.loadClass(entryClassName);
+			
+			OpenmrsObject o = c.newInstance();
+			o.getId();
+			return false;
+			
+		}
+		catch (UnsupportedOperationException e) {
+			return true;
+		}
+		catch (Exception e) {
+			throw new APIException("Can't load class named " + entryClassName, e);
+		}
+	}
+	
 }

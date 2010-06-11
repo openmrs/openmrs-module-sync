@@ -2,7 +2,6 @@
 <dataset>
   <global_property property="sync.server_name" property_value="Remote Child Server" uuid="1111111111111111111111" />
   <global_property property="sync.server_uuid" property_value="46b16ac6-144e-102b-8d9c-e44ed545d86c" uuid="2222222222222222222"/>
-  <sync_server server_id="1" nickname="Parent Server" address="" server_type="PARENT" username="admin" password="test" last_sync="2008-01-01 15:38:35.0" disabled="false" child_username="admin" uuid="12316ac6-144e-102b-8d9c-e44ed545d777"/>
   
   <sync_server server_id="1" nickname="Parent Server" address="" server_type="PARENT" username="admin" password="test" last_sync="2008-01-01 15:38:35.0" disabled="false" child_username="admin" uuid="12316ac6-144e-102b-8d9c-e44ed545d777"/>
   

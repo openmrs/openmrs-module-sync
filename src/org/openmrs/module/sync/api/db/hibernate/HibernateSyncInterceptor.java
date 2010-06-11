@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,6 +37,7 @@ import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Projections;
 import org.hibernate.engine.ForeignKeys;
 import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.persister.entity.PropertyMapping;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.EmbeddedComponentType;
 import org.hibernate.type.Type;
@@ -61,7 +61,6 @@ import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Normalizer;
 import org.openmrs.module.sync.serialization.Package;
 import org.openmrs.module.sync.serialization.Record;
-import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.util.OpenmrsConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -1475,14 +1474,23 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 			item.setAttribute("uuid", owner.getUuid());
 
 			// build out the xml for the item content
+			Boolean hasNoAutomaticPrimaryKey = null;
+			String type = null;
 			for (String entryKey : entriesHolder.keySet()) {
 				OpenmrsObject entryObject = entriesHolder.get(entryKey);
+				if (type == null) {
+					type = this.getType(entryObject);
+					hasNoAutomaticPrimaryKey = SyncUtil.hasNoAutomaticPrimaryKey(type);
+				}
 
 				Item temp = xml.createItem(entityItem, "entry");
-				temp.setAttribute("type", this.getType(entryObject));
+				temp.setAttribute("type", type);
 				temp.setAttribute("action", entryKey.substring(entryKey
 						.indexOf('|') + 1));
 				temp.setAttribute("uuid", entryObject.getUuid());
+				if (hasNoAutomaticPrimaryKey) {
+					temp.setAttribute("primaryKey", syncService.getPrimaryKey(entryObject));
+				}
 			}
 
 			SyncItem syncItem = new SyncItem();

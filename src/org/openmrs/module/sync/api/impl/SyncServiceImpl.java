@@ -28,6 +28,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.Privilege;
+import org.openmrs.Role;
 import org.openmrs.api.APIException;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
@@ -735,5 +737,17 @@ public class SyncServiceImpl implements SyncService {
 
 		//now assign
 		serverClassesCollection = serverClasses;
+	}
+	
+	public String getPrimaryKey(OpenmrsObject obj) {
+		if (obj instanceof Privilege) {
+			return ((Privilege)obj).getPrivilege();
+		} else if (obj instanceof Role) {
+			return ((Role)obj).getRole();
+		} else if (obj instanceof GlobalProperty) {
+			return ((GlobalProperty)obj).getProperty();
+		} else {
+			return null;
+		}
 	}
 }
