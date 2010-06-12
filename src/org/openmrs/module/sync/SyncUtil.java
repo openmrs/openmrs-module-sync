@@ -735,9 +735,13 @@ public class SyncUtil {
 				log.error("deleteOpenmrsObject cannot proceed: asked to process PatientIdentifier but no patient id was set. pat_identifier: " + piToRemove.toString());
 				throw new SyncException("deleteOpenmrsObject cannot proceed: asked to process PatientIdentifier but no patient id was set. pat_identifier: " + piToRemove.toString());
 			}
-			//now just remove from collection and make sure save patient is queued up
+			//now just remove from collection
 			p.removeIdentifier(piToRemove);
-			Context.getPatientService().savePatient(p);
+			if (p.getIdentifiers().size() > 0) { 
+				//...and make sure save patient is queued up if there is something to be saved,
+				//can't save patient with no IDs - API error
+				Context.getPatientService().savePatient(p);
+			}
 		} else if (o instanceof org.openmrs.Concept || o instanceof org.openmrs.ConceptName) {
 			//delete concept words explicitly, TODO -- is this still needed?
 			Context.getService(SyncService.class).deleteOpenmrsObject(o);
