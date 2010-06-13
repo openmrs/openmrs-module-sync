@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.sync.web.controller;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -99,18 +100,41 @@ public class ConfigServerFormController {
 		server.setNickname(nickname);
 		server.setUuid(uuid);
 		
-		// create a new user
-		Person person = new Person();
-		person.setGender(SyncConstants.DEFAULT_CHILD_SERVER_USER_GENDER);
-		person.setBirthdate(new Date());
-		PersonName name = new PersonName();
-		name.setFamilyName(nickname);
-		name.setGivenName(mss.getMessage(SyncConstants.DEFAULT_CHILD_SERVER_USER_NAME));
-		person.addName(name);
-		Context.getPersonService().savePerson(person);
 		
-		User user = new User(person);
-		user.setUsername(username);
+		// create a new user in either A) 1.5.x or B) 1.6+
+		User user = null;
+		
+		if (Person.class.isAssignableFrom(User.class)) {
+			// if we're in a pre-1.6 environment, User extends Person
+			user = new User();
+			// if 1.6+ the User.setGender method does not exist, so if we 
+			// don't do this by reflection we will have a compile-time error
+			// (and gender is a required field)
+			Method setGenderMethod = User.class.getMethod("setGender", String.class);
+			setGenderMethod.invoke(user, SyncConstants.DEFAULT_CHILD_SERVER_USER_GENDER);
+			
+			user.setUsername(username);
+			
+			PersonName name = new PersonName();
+			name.setFamilyName(nickname);
+			name.setGivenName(mss.getMessage(SyncConstants.DEFAULT_CHILD_SERVER_USER_NAME));
+			user.addName(name);
+		}
+		else {
+			// create a new user in a 1.6+ environemnt where
+			// User does NOT extend Person
+			Person person = new Person();
+			person.setGender(SyncConstants.DEFAULT_CHILD_SERVER_USER_GENDER);
+			person.setBirthdate(new Date());
+			PersonName name = new PersonName();
+			name.setFamilyName(nickname);
+			name.setGivenName(mss.getMessage(SyncConstants.DEFAULT_CHILD_SERVER_USER_NAME));
+			person.addName(name);
+			Context.getPersonService().savePerson(person);
+			
+			user = new User(person);
+			user.setUsername(username);
+		}
 		
 		String defaultRole = Context.getAdministrationService().getGlobalProperty("sync.default_role");
 		if (defaultRole != null) {
