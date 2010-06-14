@@ -292,6 +292,17 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 			for (OpenmrsObject xsn : xsns) {
 				SyncUtil.rebuildXSN(xsn);
 			}
+		} else {
+			//even if XSNs aren't sync-ed, look for forms to update form.template if needed
+			List<OpenmrsObject> forms = processedObjects.get("org.openmrs.Form");
+			if (forms != null) {
+				for (OpenmrsObject form : forms) {
+					if (form instanceof org.openmrs.Form) {
+						SyncUtil.rebuildXSNForForm((org.openmrs.Form)form);
+					}
+				}
+			}
+			
 		}
 		
 		// fix concept words for all names found

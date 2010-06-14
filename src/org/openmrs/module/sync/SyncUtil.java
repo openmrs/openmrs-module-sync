@@ -62,7 +62,6 @@ import org.openmrs.Person;
 import org.openmrs.PersonAddress;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.PersonName;
-import org.openmrs.Privilege;
 import org.openmrs.Program;
 import org.openmrs.ProgramWorkflow;
 import org.openmrs.ProgramWorkflowState;
@@ -933,6 +932,56 @@ public class SyncUtil {
 		return;
 	}
 
+	/**
+	 * Rebuilds XSN form. Same helper method as above, but takes Form as input. 
+	 * 
+	 * @param form form to rebuild xsn for
+	 */
+	public static void rebuildXSNForForm(Form form) {
+		Object o = null;
+		Class c = null;
+		Method m = null;
+		String msg = null;
+		Object xsn = null;
+		
+		if (form == null) {
+			return;
+		}
+		
+		try {
+			msg = "Processing form with id: " + form.getFormId().toString();
+			
+			boolean rebuildXsn = true;
+			try {
+				c = Context.loadClass("org.openmrs.module.formentry.FormEntryService");
+			} catch(Exception e){}
+			if (c==null) {
+				log.warn("Failed to find FormEntryService in formentry module; is module loaded? " + msg);
+				return;
+			}
+			try {
+				Object formentryservice = Context.getService(c);
+				m = formentryservice.getClass().getDeclaredMethod("getFormEntryXsn", new Class[]{form.getClass()});
+				xsn = m.invoke(formentryservice, form);
+				if (xsn == null)
+					rebuildXsn = false;
+			}
+			catch (Exception e) {
+				log.warn("Failed to test for formentry xsn existance");
+			}
+			
+			if (rebuildXsn) {
+				SyncUtil.rebuildXSN((OpenmrsObject)xsn);
+			}					
+		}	
+		catch (Exception e) {
+			log.error("FormEntry module present but failed to rebuild XSN, see stack for error detail." + msg,e);
+			throw new SyncException("FormEntry module present but failed to rebuild XSN, see server log for the stacktrace for error details " + msg, e);
+		}
+		return;
+	}
+	
+	
 	/**
 	 * Checks that given class to see if its "getId()" method returns an {@link UnsupportedOperationException}.
 	 * <br/>
