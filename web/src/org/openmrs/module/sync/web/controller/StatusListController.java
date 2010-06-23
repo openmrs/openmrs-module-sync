@@ -121,16 +121,23 @@ public class StatusListController extends SimpleFormController {
             	SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(parent, true);
                 String toTransmit = null; // the actual text that will be sent (either an ST or an STR)
                 
+                // Pull out the committed records from parent that haven't been sent back for confirmation
+                // these are all the records we've received and are not sending a confirmation of receipt
                 List<SyncImportRecord> syncImportRecords = syncService.getSyncImportRecords(SyncRecordState.COMMITTED);
                 
                 SyncTransmissionResponse str = new SyncTransmissionResponse();
                 str.setState(SyncTransmissionState.OK);
-                str.setSyncImportRecords(syncImportRecords); // these are all the records we've received and are not sending a confirmation of receipt
-                str.setSyncSourceUuid(tx.getSyncSourceUuid());
-                str.setSyncTargetUuid(tx.getSyncTargetUuid());
+                str.setSyncImportRecords(syncImportRecords);
+                //note: this is transmission *response* object: as in child's response to parent
+                //so the target/source is viewed from 'parent' perspective, 
+                //hence for responses the target ID contains the server that generated the response
+                //in this case that means: the target uuid is current server (child) uuid and source uuid is the parent 
+                str.setSyncSourceUuid(tx.getSyncTargetUuid());
+                str.setSyncTargetUuid(tx.getSyncSourceUuid());
                 str.setSyncTransmission(tx);
                 str.setTimestamp(tx.getTimestamp());
                 str.setUuid(tx.getUuid());
+                str.setFileName(""); //of no relevance; we're not saving to file system
                 
                 str.createFile(false);
                 toTransmit = str.getFileOutput();
