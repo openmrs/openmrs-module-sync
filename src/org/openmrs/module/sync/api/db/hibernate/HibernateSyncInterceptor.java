@@ -127,7 +127,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 
 	static final String sp = "_";
 
-	private ThreadLocal<SyncRecord> syncRecordHolder = new ThreadLocal<SyncRecord>();
+	private static ThreadLocal<SyncRecord> syncRecordHolder = new ThreadLocal<SyncRecord>();
 	private ThreadLocal<Boolean> deactivated = new ThreadLocal<Boolean>();
 	private ThreadLocal<HashSet<Object>> pendingFlushHolder = new ThreadLocal<HashSet<Object>>();
 
@@ -269,7 +269,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 					+ tx.wasCommitted() + " rolledback: " + tx.wasRolledBack()
 					+ " deactivated: " + deactivated.get());
 
-		// clean out SyncRecord in case of rollback:
+		// clean out SyncRecord in case of rollback
 		syncRecordHolder.remove();
 
 		// reactivate the interceptor
@@ -335,9 +335,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 		if (log.isDebugEnabled())
 			log.debug("onSave: " + state.toString());
 
-		// Set the originating uuid for the sync record
-		setOriginalUuid(entity);
-
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
 			if (log.isDebugEnabled()) {
@@ -381,9 +378,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 			String[] propertyNames, Type[] types) {
 		if (log.isDebugEnabled())
 			log.debug("onFlushDirty: " + entity.getClass().getName());
-
-		// Set the originating uuid for the sync record
-		setOriginalUuid(entity);
 
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
@@ -1574,52 +1568,73 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 		return concreteObj.getClass().getName();
 	}
 
+
 	/**
 	 * Sets the originating uuid for the sync record. This is done once per Tx;
-	 * else we may end up with empty string.
+	 * else we may end up with an empty string.
 	 * 
 	 * NOTE: This code is needed because we need for entity to know if it is
 	 * genuine local change or it is coming from the ingest code. This is what
 	 * original_uuid field in sync_journal is used for.
 	 * 
 	 * The way sync record uuids from ingest code are passed to the interceptor
-	 * is by convention: the the *1st* thing ingest code will do when processing
-	 * changes is to issue an update to global property with name
-	 * SyncConstants.PROPERTY_ORIGINAL_UUID and passing the ingest record uuid
-	 * as a value.
+	 * is by calling this method: the *1st* thing ingest code will do 
+	 * when processing changes is to issue this call to let interceptor know
+	 * we are about to process ingest changes.
 	 * 
 	 * This is done so that the intercetor can pull out the 'original' record
 	 * uuid associated with the change to the entity that is being processed.
 	 * Since ingest and interceptor do not have direct reference to each other,
 	 * there is no simple way to pass this info directly.
 	 * 
+	 * Note that this technique *relies* on the fact that syncRecordHolder is
+	 * ThreadLocal; in other words, the uuid is passed and stored on the 'stack'
+	 * by using thread local storage to ensure that multiple calling worker 
+	 * threads that maybe ingesting records concurrently are storring their
+	 * respective record state locally. 
+	 * 
 	 * More: read javadoc on SyncRecord to see what SyncRecord.OriginalUuid is
 	 * and how it is used.
 	 * 
-	 * @param entity
+	 * @param originalRecordUuid String representing value of orig record uuid
+	 * 
 	 */
-	private void setOriginalUuid(Object entity) {
-
-		String originalRecordUuid = null;
+	public static void setOriginalRecordUuid(String originalRecordUuid) {
+		
 		if (syncRecordHolder.get() != null) {
-			if (syncRecordHolder.get().getOriginalUuid() != null) {
-				originalRecordUuid = syncRecordHolder.get().getOriginalUuid();
+			if (syncRecordHolder.get().getOriginalUuid() == null
+					|| "".equals(syncRecordHolder.get().getOriginalUuid())) {
+				//orig record uuid not filled in yet, do so now
+				syncRecordHolder.get().setOriginalUuid(originalRecordUuid);
+			}
+			else {
+				//no-op the orig record info is already set
+				//TODO: perhaps we need to do the comparison here and if the orig uuid is being
+				//overriden by something else then thrown an exception?
 
-			} else if (entity instanceof org.openmrs.GlobalProperty) {
-				org.openmrs.GlobalProperty gp = (org.openmrs.GlobalProperty) entity;
-				if (SyncConstants.PROPERTY_ORIGINAL_UUID.equals(gp
-						.getProperty())) {
-					// okay, this is original uuid being passed in from ingest
-					originalRecordUuid = gp.getPropertyValue();
-					if (this.syncRecordHolder.get().getOriginalUuid() == null
-							|| "".equals(syncRecordHolder.get()
-									.getOriginalUuid())) {
-						syncRecordHolder.get().setOriginalUuid(
-								originalRecordUuid);
-					}
-				}
 			}
 		}
+		return;
 	}
-
+	/**
+	 * Clears out the orginal record uuid from the pending record by setting it to null.
+	 * This can happen if the current Tx is being aborted for some reason. Technically,
+	 * if the Tx is being aborted then the pending record will never be saved, that is
+	 * call to beforeTransactionCompletion() where we attempt to save the record
+	 * never happens. 
+	 * 
+	 * This method is however provided for completeness and defensive coding in 
+	 * SyncIngestServiceImpl.processSyncItem() that does cleanup as the exception 
+	 * resulting in abort(s) are behing raised.
+	 * 
+	 * @see org.openmrs.module.sync.api.SyncIngestServiceImpl#processSyncItem(org.openmrs.module.sync.SyncItem, java.lang.String, java.util.Map)
+	 */
+	public static void clearOriginalRecordUuid() {
+		
+		if (syncRecordHolder.get() != null) {
+			//clear out the value from the pending record
+			syncRecordHolder.get().setOriginalUuid(null);
+		}
+		return;
+	}
 }

@@ -99,7 +99,6 @@ public class SyncConstants {
 	public static final String PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT = "10";
     public static final String PROPERTY_ENABLE_COMPRESSION = "sync.enable_compression";
     public static final String PROPERTY_VERSION = "sync.version";
-    public static final String PROPERTY_ORIGINAL_UUID = "synchronization.original_uuid"; //note this value is used internally by sync; see Interceptor.setOriginalUuid()
 
 	public static final String RESPONSE_SUFFIX = "_response";
 

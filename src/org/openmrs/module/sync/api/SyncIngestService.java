@@ -50,14 +50,14 @@ public interface SyncIngestService {
      * Processes incoming SyncItem against the local server instance.
      * 
      * @param item instance of syncItem to be processed.
-     * @param originalUuid
+     * @param originalRecordUuid UUID of the record that this change came from
      * @param processedObjects a map of classname to the list of objects that have been processed.  This item's object is added to this list
      * @return
      * @throws APIException
      */
     //@Authorized({"Manage Synchronization Records"})
     @Logging(ignoreAllArgumentValues=true)
-    public SyncImportItem processSyncItem(SyncItem item, String originalUuid, Map<String, List<OpenmrsObject>> processedObjects) throws APIException;
+    public SyncImportItem processSyncItem(SyncItem item, String originalRecordUuid, Map<String, List<OpenmrsObject>> processedObjects) throws APIException;
 
 	/**
 	 * Does any post-record import processing right before flushing to the

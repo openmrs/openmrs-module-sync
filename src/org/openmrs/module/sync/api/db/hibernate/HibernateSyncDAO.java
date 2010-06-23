@@ -1160,7 +1160,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	/**
 	 * @see org.openmrs.module.sync.api.db.SyncDAO#processCollection(java.lang.Class, java.lang.String, java.lang.String)
 	 */
-	public void processCollection(Class collectionType, String incoming, String originalUuid) throws Exception {
+	public void processCollection(Class collectionType, String incoming, String originalRecordUuid) throws Exception {
 
     	OpenmrsObject owner = null;
     	String ownerClassName = null;
@@ -1346,14 +1346,9 @@ public class HibernateSyncDAO implements SyncDAO {
         
         /*
 		 * Pass the original uuid to interceptor: this will prevent the change
-		 * from being sent back to originating server the technique used here is
-		 * to simply fire an update to 'fake' global property which will be then
-		 * made on the same transaction that the real commit will come on.
-		 * Interceptor code is watching for this update. For more info see
-		 * HibernateSyncInterceptor.setOriginalUuid()
+		 * from being sent back to originating server. 
 		 */
-		Context.getService(SyncService.class).setGlobalProperty(
-				SyncConstants.PROPERTY_ORIGINAL_UUID, originalUuid);
+		HibernateSyncInterceptor.setOriginalRecordUuid(originalRecordUuid);
         
 
         //assign collection back to the owner if it is recreated

@@ -356,10 +356,10 @@ public interface SyncDAO {
      * 
      * @param type collection type.
      * @param incoming serialized state, interceptor implementation for serialization details
-     * @param originalUuid unique uuid assigned to this update that will be propagated throughout the synchronization to avoid
-     * duplicating this change
+     * @param originalRecordUuid unique uuid assigned to this update (i.e. sync record) that will be propagated 
+     * throughout the synchronization to avoid duplicating this change
      */
-    public void processCollection(Class collectionType, String incoming, String originalUuid) throws Exception;
+    public void processCollection(Class collectionType, String incoming, String originalRecordUuid) throws Exception;
     
 	/**
 	 * Dumps the entire database, much like what you'd get from the mysqldump

@@ -258,5 +258,17 @@
 			DELETE FROM `sync_class` where `name` = 'org.openmrs.ConceptWord';
 		</sql>
 	</diff>
+	<diff>
+		<version>0.80</version>
+		<author>Maros Cunderlik</author>
+		<date>June 22nd 2010</date>
+		<description>
+			Remove synchronization.original_uuid from global properties: it is no longer in use.
+		</description>
+		<sql>
+			DELETE FROM  `global_property`
+				WHERE property = 'synchronization.original_uuid';
+		</sql>
+	</diff>
 	
 </sqldiff>
