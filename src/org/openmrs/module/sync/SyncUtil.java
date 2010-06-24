@@ -354,7 +354,20 @@ public class SyncUtil {
 					// actual classname as defined by the PersonAttributeType.format.  However, the field.getClassName is 
 					// still String because thats what the db stores.  we need to convert the uuid to the pk integer/string and return it
 					OpenmrsObject obj = getOpenmrsObj(nodeDefinedClassName, fieldVal);
-					o = obj.getId().toString(); // call toString so the class types match when looking up the setter
+					if (obj == null) {
+						if (StringUtils.hasText(fieldVal)) {
+							// throw a warning if we're having trouble converting what should be a valid value
+							log.error("Unable to convert value '" + fieldVal + "' into a " + className);
+							throw new SyncException("Unable to convert value '" + fieldVal + "' into a " + className);
+						} 
+						else {
+							// if fieldVal is empty, just save an empty string here too
+							o = "";
+						}
+					}
+					else {
+						o = obj.getId().toString(); // call toString so the class types match when looking up the setter
+					}
 				}
 				else if (Collection.class.isAssignableFrom(classType)) {
 					// this is a collection of items. this is intentionally not in the convertStringToObject method
