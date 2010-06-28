@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.Authorized;
+import org.openmrs.annotation.Logging;
 import org.openmrs.api.APIException;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.sync.SyncClass;
@@ -590,6 +591,7 @@ public interface SyncService {
 	 * @return true if the object should be recored for sync
 	 */
 	@Transactional(readOnly = true)
+	@Logging(ignoreAllArgumentValues = true)
 	public Boolean shouldSynchronize(Object entity) throws APIException;
 
 	/**
@@ -601,6 +603,7 @@ public interface SyncService {
 	 * @see {@link SyncUtil#hasNoAutomaticPrimaryKey(String)}
 	 */
 	@Transactional(readOnly = true)
+	@Logging(ignoredArgumentIndexes = 0)
 	public String getPrimaryKey(OpenmrsObject obj) throws APIException;
 
 }
