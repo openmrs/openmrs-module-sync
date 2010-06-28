@@ -587,8 +587,8 @@ public class SyncUtil {
 			if (StringUtils.hasLength(voidReason)) {
 	    		int start = voidReason.lastIndexOf(" ") + 1; // assumes uuids don't have spaces 
 				int end = voidReason.length() - 1;
-				String uuid = voidReason.substring(start, end);
 				try {
+					String uuid = voidReason.substring(start, end);
 					OpenmrsObject openmrsObject = getOpenmrsObj("org.openmrs.Obs", uuid);
 					Integer obsId = openmrsObject.getId();
 					obs.setVoidReason(voidReason.substring(0, start) + obsId + ")");
