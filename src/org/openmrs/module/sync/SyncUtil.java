@@ -574,7 +574,7 @@ public class SyncUtil {
      * @param Uuid unique id of the object that is being saved
      * @param true if it is an update scenario
      */
-	public static synchronized void updateOpenmrsObject(OpenmrsObject o, String className, String Uuid) {
+	public static synchronized void updateOpenmrsObject(OpenmrsObject o, String className, String uuid) {
     	
 		if (o == null) {
 			log.warn("Will not update OpenMRS object that is NULL");
@@ -588,13 +588,13 @@ public class SyncUtil {
 	    		int start = voidReason.lastIndexOf(" ") + 1; // assumes uuids don't have spaces 
 				int end = voidReason.length() - 1;
 				try {
-					String uuid = voidReason.substring(start, end);
-					OpenmrsObject openmrsObject = getOpenmrsObj("org.openmrs.Obs", uuid);
+					String otherObsUuid = voidReason.substring(start, end);
+					OpenmrsObject openmrsObject = getOpenmrsObj("org.openmrs.Obs", otherObsUuid);
 					Integer obsId = openmrsObject.getId();
 					obs.setVoidReason(voidReason.substring(0, start) + obsId + ")");
 				}
 				catch (Exception e) {
-					log.trace("unable to get uuid from obs uuid: " + uuid, e);
+					log.trace("unable to get a uuid from obs voidReason. obs uuid: " + uuid, e);
 				}
 			}
     	}
