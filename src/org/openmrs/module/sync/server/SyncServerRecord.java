@@ -44,7 +44,8 @@ public class SyncServerRecord implements Serializable {
     private SyncRecord syncRecord;
     private SyncRecordState state = SyncRecordState.NEW;
     private int retryCount = 0;
-
+    private String errorMessage;
+    
     // Constructors
     /** default constructor */
     public SyncServerRecord() {
@@ -144,6 +145,14 @@ public class SyncServerRecord implements Serializable {
         } else if (!syncServer.equals(other.syncServer))
             return false;
         return true;
+    }
+
+	public void setErrorMessage(String errorMessage) {
+	    this.errorMessage = errorMessage;
+    }
+
+	public String getErrorMessage() {
+	    return errorMessage;
     }
 
     

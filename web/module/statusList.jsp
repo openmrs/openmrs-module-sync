@@ -134,6 +134,9 @@
 				return;
 			}
 			
+			if (num == null || typeof(num)=="undefined")
+				num = 0;
+			
 			DWRUtil.setValue("syncReceivingSize", "<spring:message code="sync.status.export.viaWeb.receiving" />".replace("{0}", num), { escapeHtml: false} );
 		}
 

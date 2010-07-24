@@ -438,6 +438,8 @@ public class SyncUtilTransmission {
             	} catch (Exception e) {
             		//just report error, import record already set to failed
             		log.error("Unexpected exception while ingesting records for server: " + origin.getNickname(), e);
+            		if (importRecord != null)
+            			importRecord.setErrorMessage(e.getMessage());
             	}
                 importRecords.add(importRecord);
                 

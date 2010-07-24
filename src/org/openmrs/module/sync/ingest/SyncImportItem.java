@@ -104,7 +104,7 @@ public class SyncImportItem {
 
         //serialize primitives
         xml.setAttribute(me, "state", state.toString());
-        if(errorMessage != null) xml.setAttribute(me, "errorMessage", errorMessage.toString());
+        if(errorMessage != null) xml.setAttribute(me, "errorMessage", errorMessage);
         if(errorMessageArgs != null) xml.setAttribute(me, "errorMessageArgs", errorMessageArgs.toString());
 
         if (key != null) {

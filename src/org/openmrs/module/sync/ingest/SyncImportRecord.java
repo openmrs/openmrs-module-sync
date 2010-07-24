@@ -159,8 +159,15 @@ public class SyncImportRecord implements Serializable, IItem {
         xml.setAttribute(me, "uuid", this.uuid);
         xml.setAttribute(me, "retryCount", Integer.toString(this.retryCount));
         xml.setAttribute(me, "state", this.state.toString());
+        
         if (timestamp != null) {
         	xml.setAttribute(me, "timestamp", new TimestampNormalizer().toString(timestamp));
+        }
+        
+        // serialize error message
+        if (StringUtils.hasText(errorMessage)) {
+        	Item errorMessageItem = xml.createItem(me, "errorMessage");
+        	xml.createTextAsCDATA(errorMessageItem, errorMessage);
         }
         
         //serialize items list
@@ -188,6 +195,10 @@ public class SyncImportRecord implements Serializable, IItem {
             this.timestamp = (Date)new TimestampNormalizer().fromString(Date.class,me.getAttribute("timestamp"));
         }
         
+         Item errorMessageItem = xml.getItem(me, "errorMessage");
+         if (errorMessageItem != null)
+        	 this.errorMessage = errorMessageItem.getText();
+         
         //now get items
         Item itemsCollection = xml.getItem(me, "items");
         

@@ -709,8 +709,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 				String property = me.getKey();
 
 				// if we are processing onDelete event all we need is uuid
-				if ((state == SyncItemState.DELETED)
-						&& (!"uuid".equals(property))) {
+				if ((state == SyncItemState.DELETED) && (!"uuid".equals(property))) {
 					continue;
 				}
 
@@ -719,10 +718,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 					appendRecord(xml, entity, entityItem, property, pcv
 							.getClazz(), pcv.getValue());
 				} catch (Exception e) {
-					String msg = "Could not append attribute. Error while processing property: "
-							+ property;
-					log.error(msg, e);
-					throw (new SyncException(msg));
+					String msg = "Could not append attribute. Error while processing property: " + property + " - " + e.getMessage();
+					throw (new SyncException(msg, e));
 				}
 			}
 
@@ -746,8 +743,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 				log.debug("Adding SyncItem to SyncRecord");
 
 			syncRecordHolder.get().addItem(syncItem);
-			syncRecordHolder.get().addContainedClass(
-					entity.getClass().getName());
+			syncRecordHolder.get().addContainedClass(entity.getClass().getName());
 
 			// set the originating uuid for the record: do this once per Tx;
 			// else we may end up with empty string
@@ -970,6 +966,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 		if (entity instanceof PersonAttribute && "value".equals(property)) {
 			PersonAttribute attr = (PersonAttribute) entity;
 			// use PersonAttributeType.format to get the uuid
+			if (attr.getAttributeType() == null)
+				throw new SyncException("Unable to find person attr type on attr with uuid: " + entity.getUuid());
 			String className = attr.getAttributeType().getFormat();
 			try {
 				Class c = Context.loadClass(className);

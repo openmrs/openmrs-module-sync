@@ -271,4 +271,16 @@
 		</sql>
 	</diff>
 	
+	<diff>
+		<version>0.81</version>
+		<author>Ben Wolfe</author>
+		<date>July 23rd 2010</date>
+		<description>
+			Add error message to sync_server_record
+		</description>
+		<sql>
+			ALTER table `sync_server_record` ADD COLUMN error_message varchar(255) default NULL;
+		</sql>
+	</diff>
+	
 </sqldiff>

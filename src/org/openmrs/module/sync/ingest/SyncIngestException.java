@@ -35,6 +35,7 @@ public class SyncIngestException extends SyncException {
 	}	
 	public SyncIngestException(String errorMessage, String errorMessageArgs, String syncItemContent, SyncImportRecord sir) {
 		this(null, errorMessage, errorMessageArgs, syncItemContent, sir);
+		sir.setErrorMessage(errorMessage);
 	}
 	
 	/**

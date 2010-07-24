@@ -28,5 +28,8 @@
 			</type>
 		</property>
 		
+		<property name="errorMessage" type="java.lang.String"
+			column="error_message" length="255" />
+			
 	</class>
 </hibernate-mapping>

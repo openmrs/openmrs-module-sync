@@ -357,8 +357,8 @@ public class SyncUtil {
 					if (obj == null) {
 						if (StringUtils.hasText(fieldVal)) {
 							// throw a warning if we're having trouble converting what should be a valid value
-							log.error("Unable to convert value '" + fieldVal + "' into a " + className);
-							throw new SyncException("Unable to convert value '" + fieldVal + "' into a " + className);
+							log.error("Unable to convert value '" + fieldVal + "' into a " + nodeDefinedClassName);
+							throw new SyncException("Unable to convert value '" + fieldVal + "' into a " + nodeDefinedClassName);
 						} 
 						else {
 							// if fieldVal is empty, just save an empty string here too
