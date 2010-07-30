@@ -283,6 +283,9 @@ public class SyncUtilTransmission {
             	//set the date
             	parent.setLastSync(new Date());
             	
+            	// set the flag saying that sync'ing is happening
+            	parent.setSyncInProgress(true);
+            	
             	//this is the initial handshake only; no state sent
                 SyncTransmission tx = SyncUtilTransmission.createSyncTransmissionRequest(parent);
                 
@@ -367,6 +370,10 @@ public class SyncUtilTransmission {
         } catch ( Exception e ) {
         	log.error("Unexpected Error during full synchronize.", e);
         	throw(new SyncException("Error while performing synchronization, see log messages and callstack.", e));
+        }
+        finally {
+        	// unset the flag so we know that sync'ing is done
+        	parent.setSyncInProgress(false);
         }
         
         return response;

@@ -177,7 +177,7 @@ public class ConfigListController extends SimpleFormController {
 			Map<String, Object> ref = (Map<String, Object>) obj;
 			
 			// the parent server
-			List<RemoteServer> serverList = (ArrayList<RemoteServer>) ref.get("serverList");
+			List<RemoteServer> serverList = (List<RemoteServer>) ref.get("serverList");
 			RemoteServer parent = null;
 			
 			for (RemoteServer server : serverList) {

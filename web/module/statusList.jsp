@@ -171,6 +171,9 @@
 					<td colspan="4">
 						<img src="${pageContext.request.contextPath}/images/lookup.gif" border="0" style="margin-bottom: -3px;">
 						<spring:message code="sync.status.export.viaWeb" />
+						<c:if test="${parent.syncInProgress}">
+							<br/><span class="syncStatsAttention"><spring:message code="sync.config.warning.syncInProgress" arguments="${parent.syncInProgressMinutes}"/></span>
+						</c:if>
 					</td>
 				</tr>
 				<tr>

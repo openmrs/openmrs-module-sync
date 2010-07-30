@@ -156,7 +156,7 @@
 							</c:forEach>
 							<!--Write out summary for this server based on pending value records -->
 							<tr>
-								<td colspan="8" style="background-color: #${bgStyle};font-weight: bold">
+								<td colspan="8" style="background-color: #${bgStyle};font-weight: bold; padding-top: 0px;">
 									<c:choose>
 										<c:when test="${empty server.uuid}">
 											<span class="syncStatsWarning"><spring:message code="sync.overview.warning.uuid" arguments="${server.serverId}"/></span>
@@ -169,7 +169,10 @@
 										</c:when>
 										<c:when test="${recordsPending > 0}">
 											<span class="syncStatsAttention"><spring:message code="sync.overview.pending" arguments="${recordsPending}"/></span>
-										</c:when>										
+										</c:when>
+										<c:when test="${server.syncInProgress}">
+											<span class="syncStatsAttention"><spring:message code="sync.config.warning.syncInProgress" arguments="${server.syncInProgressMinutes}"/></span><br/>
+										</c:when>
 										<c:otherwise>
 											<span class="syncStatsOK"><spring:message code="sync.overview.fullySyncd"/></span>
 										</c:otherwise>

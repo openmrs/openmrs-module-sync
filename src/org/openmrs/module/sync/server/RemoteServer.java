@@ -13,8 +13,11 @@
  */
 package org.openmrs.module.sync.server;
 
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -52,6 +55,8 @@ public class RemoteServer {
 	private Boolean disabled = false;
 	
 	private String childUsername = null;
+	
+	private static Map<Integer, Date> syncServersInProgress = new LinkedHashMap<Integer, Date>();
 	
 	public Boolean getDisabled() {
 		return disabled;
@@ -348,6 +353,48 @@ public class RemoteServer {
 		this.serverRecords = serverRecords;
 	}
 	
+    public Boolean getSyncInProgress() {
+    	synchronized (syncServersInProgress) {
+	    	if (getServerId() == null)
+	    		return false;
+	    	else
+	    		return syncServersInProgress.get(getServerId()) != null;
+    	}
+    }
+
+    /**
+     * If given true, marks this current server as 'in progress' (static variable not to be saved in the database)
+     * 
+     * @param syncInProgress
+     */
+    public synchronized void setSyncInProgress(Boolean syncInProgress) {
+    	synchronized (syncServersInProgress) {
+	    	if (syncInProgress) {
+	    		syncServersInProgress.put(getServerId(), new Date());
+	    	}
+	    	else {
+	    		syncServersInProgress.remove(getServerId());
+	    	}
+    	}
+    }
+    
+    private static DecimalFormat df = new DecimalFormat("0.00");
+	
+	/**
+	 * @return the number of minutes since the sync was started. If this is new server or sync is
+	 *         not in progress the empty string is returned
+	 */
+	public String getSyncInProgressMinutes() {
+		synchronized (syncServersInProgress) {
+	    	if (getServerId() == null || syncServersInProgress.get(getServerId()) == null)
+	    		return "";
+	    	
+	    	Long difference = System.currentTimeMillis() - syncServersInProgress.get(getServerId()).getTime();
+	    	
+	    	return df.format((float)(difference) / 1000 / 60);
+		}
+    }
+
 	@Override
 	public String toString() {
 		return "RemotServer(" + getServerId() + "): " + getNickname();

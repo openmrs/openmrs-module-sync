@@ -11,7 +11,7 @@
 <%@ include file="localHeader.jsp" %>
 
 <style>
- .parent {
+ .PARENT {
    font-weight: bold;
   }
 </style>
@@ -43,18 +43,18 @@
 							<th align="center" style="text-align: center; background-color: #fee; font-weight: normal;"><spring:message code="sync.config.server.synchronize.automatic" /></th>
 							<th></th>
 						</tr>
-						<tr>
-							<th><spring:message code="sync.config.server.name" /></th>
-							<th style="text-align: center;"><spring:message code="sync.config.server.type" /></th>
+						<tr style="text-align: center;">
+							<th style="text-align: left"><spring:message code="sync.config.server.name" /></th>
+							<th><spring:message code="sync.config.server.type" /></th>
 							<th><spring:message code="sync.config.server.lastSync" /></th>
-							<th style="background-color: #eef; text-align: center;"><img src="${pageContext.request.contextPath}/images/save.gif" border="0" style="margin-bottom: -3px;">
+							<th style="background-color: #eef;"><img src="${pageContext.request.contextPath}/images/save.gif" border="0" style="margin-bottom: -3px;">
 								<spring:message code="sync.config.server.syncViaFile" />
-							<th style="background-color: #efe; text-align: center;"><img src="${pageContext.request.contextPath}/images/lookup.gif" border="0" style="margin-bottom: -3px;">
+							<th style="background-color: #efe;"><img src="${pageContext.request.contextPath}/images/lookup.gif" border="0" style="margin-bottom: -3px;">
 								<spring:message code="sync.config.server.syncViaWeb" />
-							<th style="background-color: #fee; text-align: center;"><img src="${pageContext.request.contextPath}/moduleResources/sync/scheduled_send.gif" border="0" style="margin-bottom: -3px;">
+							<th style="background-color: #fee;"><img src="${pageContext.request.contextPath}/moduleResources/sync/scheduled_send.gif" border="0" style="margin-bottom: -3px;">
 								<spring:message code="sync.config.server.syncAutomatic" />
 								(<spring:message code="sync.general.scheduled" />)
-							<th style="text-align: center;"><spring:message code="sync.config.server.delete" /></th>
+							<th><spring:message code="sync.config.server.delete" /></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -63,22 +63,17 @@
 						<c:set var="bgStyleWebMan" value="ded" />				
 						<c:set var="bgStyleWebAuto" value="edd" />				
 						<c:forEach var="server" items="${configListBackingObject.serverList}" varStatus="status">
-							<tr>
-								<td nowrap style="background-color: #${bgStyle};">
+							<tr style="background-color: #${bgStyle}; text-align: center;">
+								<td nowrap style="text-align: left; padding-bottom: 0px;">
 									<a href="configServer.form?serverId=${server.serverId}"><b>${server.nickname}</b></a>
-									<c:if test="${empty server.uuid}">
-										<br/><span class="syncStatsWarning"><spring:message code="sync.config.warning.uuid"/></span>
-									</c:if>
 								</td>
-								<td style="background-color: #${bgStyle}; text-align:center;"
-									<c:if test="${server.serverType == 'PARENT'}">class="parent"</c:if>
-									>
+								<td class="${server.serverType}" style="padding-bottom: 0px;">
 									${server.serverType}
 								</td>
-								<td style="background-color: #${bgStyle}; text-align:center;">
+								<td style="padding-bottom: 0px;">
 									<openmrs:formatDate date="${server.lastSync}" format="${syncDateDisplayFormat}" />
 								</td>
-								<td style="background-color: #${bgStyleFile}; text-align:center;">
+								<td style="background-color: #${bgStyleFile}; padding-bottom: 0px;">
 									<c:choose>
 										<c:when test="${server.serverType == 'CHILD'}">
 											<a href="import.list?serverId=${server.serverId}">
@@ -96,7 +91,7 @@
 										</c:otherwise>
 									</c:choose>
 								</td>
-								<td style="background-color: #${bgStyleWebMan}; text-align:center;">
+								<td style="background-color: #${bgStyleWebMan}; padding-bottom: 0px;">
 									<c:choose>
 										<c:when test="${server.serverType == 'CHILD'}">
 											<span title="<spring:message code='sync.config.server.na.childWebSyncNotApplicable'/>"><spring:message code="sync.config.server.na"/></span>
@@ -108,7 +103,7 @@
 										</c:otherwise>
 									</c:choose>
 								</td>
-								<td style="background-color: #${bgStyleWebAuto}; text-align:center;">
+								<td style="background-color: #${bgStyleWebAuto}; padding-bottom: 0px;">
 									<c:choose>
 										<c:when test="${server.serverType == 'CHILD'}">
 											<span title="<spring:message code='sync.config.server.na.childWebSyncNotApplicable'/>"><spring:message code="sync.config.server.na"/></span>
@@ -131,7 +126,7 @@
 										</c:otherwise>
 									</c:choose>
 								</td>
-								<td style="background-color: #${bgStyle}; text-align:center;">
+								<td style="padding-bottom: 0px;">
 									<c:choose>
 										<c:when test="${server.serverType != 'PARENT'}">
 											<form id="deleteServer${server.serverId}" action="config.list" method="post">
@@ -145,6 +140,20 @@
 										</c:otherwise>
 									</c:choose>
 								</td>								
+							</tr>
+							<tr>
+								<td colspan="3" style="background-color: #${bgStyle}; padding-top: 0px;">
+									<c:if test="${empty server.uuid}">
+										<span class="syncStatsWarning"><spring:message code="sync.config.warning.uuid"/></span><br/>
+									</c:if>
+									<c:if test="${server.syncInProgress}">
+										<span class="syncStatsAttention"><spring:message code="sync.config.warning.syncInProgress" arguments="${server.syncInProgressMinutes}"/></span><br/>
+									</c:if>
+								</td>
+								<td style="background-color: #${bgStyleFile}; padding-top: 0px;"></td>
+								<td style="background-color: #${bgStyleWebMan}; padding-top: 0px;"></td>
+								<td style="background-color: #${bgStyleWebAuto}; padding-top: 0px;"></td>
+								<td style="background-color: #${bgStyle}; padding-top: 0px;"></td>
 							</tr>
 							<c:choose>
 								<c:when test="${bgStyle == 'eee'}">
@@ -163,12 +172,12 @@
 						</c:forEach>
 					</c:if>
 					<c:if test="${empty configListBackingObject.serverList}">
-						<td colspan="3" align="left">
+						<td colspan="7" align="left">
 							<i><spring:message code="sync.config.servers.noItems" /></i>
 						</td>
 					</c:if>
 					<tr>
-						<td colspan="3">
+						<td colspan="7">
 							<br>
 							<a href="configCurrentServer.form"><spring:message code="sync.config.server.config.current" /></a>
 							|

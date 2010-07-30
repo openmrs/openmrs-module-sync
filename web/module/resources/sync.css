@@ -39,9 +39,12 @@
     text-decoration: underline;
 }
 
-table td#syncChangesTable,table td#syncStatus {
+table td#syncStatus {
 	padding: 5px;
 	text-align: left;
+}
+table#syncChangesTable th {
+	text-align: center;
 }
 
 .syncCOMMITTED, .syncSYNCHRONIZED, .syncSUCCESS {

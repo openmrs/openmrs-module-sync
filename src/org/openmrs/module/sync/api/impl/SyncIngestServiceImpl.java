@@ -24,10 +24,9 @@ import org.apache.commons.logging.LogFactory;
 import org.openmrs.Concept;
 import org.openmrs.ConceptName;
 import org.openmrs.OpenmrsObject;
-import org.openmrs.Patient;
-import org.openmrs.PatientIdentifier;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.ModuleUtil;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemState;
@@ -44,7 +43,7 @@ import org.openmrs.module.sync.ingest.SyncIngestException;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.SyncServerRecord;
-import org.openmrs.util.OpenmrsUtil;
+import org.openmrs.util.OpenmrsConstants;
 import org.w3c.dom.NodeList;
 
 public class SyncIngestServiceImpl implements SyncIngestService {
@@ -79,6 +78,9 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     if ( importRecord.getState().equals(SyncRecordState.ALREADY_COMMITTED) ) serverRecord.setState(SyncRecordState.COMMITTED);
                     else if ( importRecord.getState().equals(SyncRecordState.NOT_SUPPOSED_TO_SYNC) ) serverRecord.setState(SyncRecordState.REJECTED);
                     else serverRecord.setState(importRecord.getState());
+                    
+                    // record (or clear out) the error message for this server and this record
+                    serverRecord.setErrorMessage(importRecord.getErrorMessage());
                 }
                 
                 Context.getService(SyncService.class).updateSyncRecord(record);
@@ -129,6 +131,9 @@ public class SyncIngestServiceImpl implements SyncIngestService {
             if ( !server.shouldReceiveSyncRecordFrom(record)) {
                 importRecord.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
                 log.warn("\nNOT INGESTING RECORD with " + record.getContainedClasses() + " BECAUSE SERVER IS NOT READY TO ACCEPT ALL CONTAINED OBJECTS\n");
+            } if (!isValidVersion(record)) {
+            	importRecord.setState(SyncRecordState.REJECTED);
+                log.warn("\nNOT INGESTING RECORD with version " + record.getDatabaseVersion() + " BECAUSE SERVER IS NOT COMPATIBLE\n");
             } else {
                 //log.warn("\nINGESTING ALL CLASSES: " + recordClasses + " BECAUSE SERVER IS READY TO ACCEPT ALL");
                 // second, let's see if this SyncRecord has already been imported
@@ -266,8 +271,19 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 
         return importRecord;
     }
-    
-    /**
+	
+	/**
+	 * Compares the code/database version for the incoming sync record against this server's code
+	 * version. If they are different, the record should be denied.
+	 * 
+	 * @param record the incoming SyncRecord
+	 * @return true if the record's database version matches this server's version
+	 */
+	private boolean isValidVersion(SyncRecord record) {
+		return ModuleUtil.compareVersion(OpenmrsConstants.OPENMRS_VERSION_SHORT, record.getDatabaseVersion()) == 0;
+	}
+
+	/**
 	 * Applies the 'actions' identified during the processing of the record that need to be 
 	 * processed (for whatever reason) just before the sync record is to be committed.
 	 * 
@@ -469,7 +485,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 	                SyncUtil.setProperty(o, nodes.item(i), allFields);
 	            } catch ( Exception e ) {
 	            	log.error("Error when trying to set " + nodes.item(i).getNodeName() + ", which is a " + className, e);
-	                throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_UNSET_PROPERTY, nodes.item(i).getNodeName() + "," + className, itemContent,null);
+	                throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_UNSET_PROPERTY, nodes.item(i).getNodeName() + "," + className + "," + e.getMessage(), itemContent,null);
 	            }
 	        }
         	        
@@ -481,7 +497,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 	        } catch ( Exception e ) {
 	        	// don't include stacktrace here because the parent classes log it sufficiently
 	        	log.error("Unexpected exception occurred while saving openmrsobject: " + className + ", uuid '" + uuid + "'");
-	            throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_NOT_COMMITTED, className, itemContent, null);
+	            throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_NOT_COMMITTED, e.getMessage(), itemContent, null);
 	        }
         }
         	                
