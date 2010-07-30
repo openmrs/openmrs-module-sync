@@ -147,6 +147,7 @@
 								<c:otherwise>
 									<c:if test="${serverStats.type == 'SYNC_RECORDS_OLDER_THAN_24HRS'}">
 										<c:set var="recordsOld" value="true" />
+										<c:set var="recordsPending" value="${serverStats.value}" />
 									</c:if>
 									<c:if test="${serverStats.type == 'SYNC_RECORDS_PENDING_COUNT'}">
 										<c:set var="recordsPending" value="${serverStats.value}" />

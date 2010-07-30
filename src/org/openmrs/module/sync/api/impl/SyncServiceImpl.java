@@ -570,7 +570,7 @@ public class SyncServiceImpl implements SyncService {
 				if (lastSyncPlus24hrs < new Date().getTime()) {
 					entry1.getValue().add(
 					    new SyncStatistic(SyncStatistic.Type.SYNC_RECORDS_OLDER_THAN_24HRS,
-					            SyncStatistic.Type.SYNC_RECORDS_OLDER_THAN_24HRS.toString(), true)); //careful, manipulating live collection
+					            SyncStatistic.Type.SYNC_RECORDS_OLDER_THAN_24HRS.toString(), pendingCount)); //careful, manipulating live collection
 				}
 			}
 		}
