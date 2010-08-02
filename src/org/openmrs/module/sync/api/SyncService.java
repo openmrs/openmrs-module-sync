@@ -17,9 +17,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.Authorized;
@@ -525,7 +525,7 @@ public interface SyncService {
 	 * @return
 	 * @throws DAOException
 	 */
-	public Map<RemoteServer, Set<SyncStatistic>> getSyncStatistics(Date fromDate, Date toDate) throws DAOException;
+	public Map<RemoteServer, LinkedHashSet<SyncStatistic>> getSyncStatistics(Date fromDate, Date toDate) throws DAOException;
 	
 	/**
 	 * Gets any type of OpenmrsObject given a class and a UUID

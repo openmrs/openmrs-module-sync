@@ -23,7 +23,22 @@ public class SyncStatistic {
 	
 	public enum Type {
 	    SYNC_RECORD_COUNT_BY_STATE,
-	    SYNC_RECORDS_OLDER_THAN_24HRS,
+	    
+	    /**
+	     * The last time this server was sync'd was greater than 3 days ago.
+	     * The admin should look into why this is and fix it. 
+	     */
+	    LAST_SYNC_REALLY_LONG_TIME_AGO,
+	    
+	    /**
+	     * The last time the server was sync'd was between 1-3 days.  This should
+	     * be looked into by an admin and fixed
+	     */
+	    LAST_SYNC_TIME_SOMEWHAT_TROUBLESOME,
+	    
+	    /**
+	     * The number of records waiting to be sent out to a specific server
+	     */
 	    SYNC_RECORDS_PENDING_COUNT,
 	    OTHER
 	}

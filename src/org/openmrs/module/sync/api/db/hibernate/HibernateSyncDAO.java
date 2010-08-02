@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -43,7 +44,6 @@ import java.util.TreeSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -62,7 +62,6 @@ import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
 import org.openmrs.module.sync.SyncUtil;
-import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.api.db.SyncDAO;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.ingest.SyncIngestException;
@@ -630,13 +629,13 @@ public class HibernateSyncDAO implements SyncDAO {
 	 * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncStatistics(java.util.Date, java.util.Date)
 	 */
 	@SuppressWarnings("unchecked")
-	public Map<RemoteServer,Set<SyncStatistic>> getSyncStatistics(Date fromDate, Date toDate) throws DAOException {
+	public Map<RemoteServer,LinkedHashSet<SyncStatistic>> getSyncStatistics(Date fromDate, Date toDate) throws DAOException {
 				
 		
 		//first get the list of remote servers and make map out of it
 		List<RemoteServer> servers = this.getRemoteServers();
 		
-		Map<RemoteServer,Set<SyncStatistic>> map = new HashMap<RemoteServer,Set<SyncStatistic>>();
+		Map<RemoteServer,LinkedHashSet<SyncStatistic>> map = new HashMap<RemoteServer,LinkedHashSet<SyncStatistic>>();
 
 		String hqlChild = "select rs.nickname, ssr.state, count(*) " +
 		"from RemoteServer rs join rs.serverRecords as ssr "+
@@ -653,7 +652,7 @@ public class HibernateSyncDAO implements SyncDAO {
 				Query q = sessionFactory.getCurrentSession().createQuery(hqlChild);
 				q.setParameter("server_id", r.getServerId());
 				List<Object[]> rows = q.list();
-				Set<SyncStatistic> props = new HashSet<SyncStatistic>();
+				LinkedHashSet<SyncStatistic> props = new LinkedHashSet<SyncStatistic>();
 				for (Object[] row : rows) {
 					SyncStatistic stat = new SyncStatistic(SyncStatistic.Type.SYNC_RECORD_COUNT_BY_STATE,row[1].toString(),row[2]); //state/count
 					props.add(stat); 
@@ -664,7 +663,7 @@ public class HibernateSyncDAO implements SyncDAO {
 				//for parent servers, get the number of records in sync record
 				Query q = sessionFactory.getCurrentSession().createQuery(hqlParent);
 				Long count = (Long)q.uniqueResult();
-				Set<SyncStatistic> props = new HashSet<SyncStatistic>();
+				LinkedHashSet<SyncStatistic> props = new LinkedHashSet<SyncStatistic>();
 				if (count != null) {
 					props.add(new SyncStatistic(SyncStatistic.Type.SYNC_RECORD_COUNT_BY_STATE,"AWAITING",count)); //count
 				}

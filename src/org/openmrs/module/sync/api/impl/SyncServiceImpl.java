@@ -17,9 +17,11 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -541,20 +543,20 @@ public class SyncServiceImpl implements SyncService {
 	 * @return
 	 * @throws DAOException
 	 */
-	public Map<RemoteServer, Set<SyncStatistic>> getSyncStatistics(Date fromDate, Date toDate) throws DAOException {
+	public Map<RemoteServer, LinkedHashSet<SyncStatistic>> getSyncStatistics(Date fromDate, Date toDate) throws DAOException {
 		
-		Map<RemoteServer, Set<SyncStatistic>> stats = getSynchronizationDAO().getSyncStatistics(fromDate, toDate);
+		Map<RemoteServer, LinkedHashSet<SyncStatistic>> stats = getSynchronizationDAO().getSyncStatistics(fromDate, toDate);
 		
 		//check out the info for the servers: if any records are pending and are older than 1 day, add flag to stats
-		for (Map.Entry<RemoteServer, Set<SyncStatistic>> entry1 : stats.entrySet()) {
+		for (Map.Entry<RemoteServer, LinkedHashSet<SyncStatistic>> entry1 : stats.entrySet()) {
 			Long pendingCount = 0L;
-			for (SyncStatistic entry2 : entry1.getValue()) {
-				if (entry2.getType() == SyncStatistic.Type.SYNC_RECORD_COUNT_BY_STATE) {
-					if (entry2.getName() != SyncRecordState.ALREADY_COMMITTED.toString()
-					        && entry2.getName() != SyncRecordState.COMMITTED.toString()
-					        && entry2.getName() != SyncRecordState.NOT_SUPPOSED_TO_SYNC.toString()) {
+			for (SyncStatistic syncStat : entry1.getValue()) {
+				if (syncStat.getType() == SyncStatistic.Type.SYNC_RECORD_COUNT_BY_STATE) {
+					if (syncStat.getName() != SyncRecordState.ALREADY_COMMITTED.toString()
+					        && syncStat.getName() != SyncRecordState.COMMITTED.toString()
+					        && syncStat.getName() != SyncRecordState.NOT_SUPPOSED_TO_SYNC.toString()) {
 						pendingCount = pendingCount
-						        + ((entry2.getValue() == null) ? 0L : Long.parseLong(entry2.getValue().toString()));
+						        + ((syncStat.getValue() == null) ? 0L : Long.parseLong(syncStat.getValue().toString()));
 					}
 				}
 			}
@@ -565,12 +567,25 @@ public class SyncServiceImpl implements SyncService {
 			            SyncStatistic.Type.SYNC_RECORDS_PENDING_COUNT.toString(), pendingCount)); //careful, manipulating live collection
 			
 			//if some 'stale' records found see if it has been 24hrs since last sync
-			if (pendingCount > 0 && entry1.getKey().getLastSync() != null) {
-				Long lastSyncPlus24hrs = entry1.getKey().getLastSync().getTime() + 24 * 60 * 60 * 1000;
-				if (lastSyncPlus24hrs < new Date().getTime()) {
+			RemoteServer server = entry1.getKey();
+			
+			if (server.getLastSync() != null) {
+				Calendar lastSync = Calendar.getInstance();
+				lastSync.setTime(server.getLastSync());
+				Calendar threeDayThreshold = Calendar.getInstance();
+				threeDayThreshold.add(Calendar.HOUR, -72); // check if last sync is more than 3 days ago
+				Calendar oneDayThreshold = Calendar.getInstance();
+				oneDayThreshold.add(Calendar.HOUR, -24); // check if last sync is more than 3 days ago
+				
+				if (lastSync.before(threeDayThreshold)) {
 					entry1.getValue().add(
-					    new SyncStatistic(SyncStatistic.Type.SYNC_RECORDS_OLDER_THAN_24HRS,
-					            SyncStatistic.Type.SYNC_RECORDS_OLDER_THAN_24HRS.toString(), pendingCount)); //careful, manipulating live collection
+					    new SyncStatistic(SyncStatistic.Type.LAST_SYNC_REALLY_LONG_TIME_AGO,
+					            SyncStatistic.Type.LAST_SYNC_REALLY_LONG_TIME_AGO.toString(), pendingCount)); //careful, manipulating live collection
+				}
+				else if (lastSync.before(oneDayThreshold)) {
+					entry1.getValue().add(
+					    new SyncStatistic(SyncStatistic.Type.LAST_SYNC_TIME_SOMEWHAT_TROUBLESOME,
+					            SyncStatistic.Type.LAST_SYNC_TIME_SOMEWHAT_TROUBLESOME.toString(), pendingCount)); //careful, manipulating live collection
 				}
 			}
 		}

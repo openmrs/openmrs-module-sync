@@ -16,9 +16,9 @@ package org.openmrs.module.sync.web.controller;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -114,7 +114,7 @@ public class OverviewController extends SimpleFormController {
             obj.put("localServerUuid",source.getSyncSourceUuid());
             
             //now add server stats
-            Map<RemoteServer,Set<SyncStatistic>> stats = ss.getSyncStatistics(null, null);
+            Map<RemoteServer,LinkedHashSet<SyncStatistic>> stats = ss.getSyncStatistics(null, null);
             obj.put("syncStats", stats);
         }
 

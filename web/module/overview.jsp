@@ -50,10 +50,10 @@
 						<td style="font-weight: bold;"><spring:message code="sync.status.LastSync.result" /></td>
 						<td>
 							<c:if test="${parent.lastSyncState != 'OK'}">
-								<span class="syncStatsWarning">${parent.lastSyncState}</span>
+								<div class="syncStatsWarning">${parent.lastSyncState}</div>
 							</c:if>
 							<c:if test="${parent.lastSyncState == 'OK'}">
-								<span class="syncStatsOK">${parent.lastSyncState}</span>
+								<div class="syncStatsOK">${parent.lastSyncState}</div>
 							</c:if>
 						</td>
 					</tr>
@@ -74,19 +74,19 @@
 						<tr>
 							<th></th>
 							<th></th>
-							<th align="center" colspan="2" style="text-align: center; font-weight: bold;">Last Attempt</th>
-							<th align="center" colspan="2" style="background-color: #eef3ff; text-align: center; font-weight: bold;">${localServerName} --> server</th>
-							<th align="center" colspan="2" style="text-align: center; background-color: #fee; font-weight: bold;">${localServerName} <-- server</th>
+							<th align="center" colspan="2" style="text-align: center; font-weight: bold;"><spring:message code="sync.config.server.lastSync"/></th>
+							<th align="center" colspan="2" style="background-color: #eef3ff; text-align: center; font-weight: bold;"><spring:message code="sync.general.outgoing"/></th>
+							<%-- <th align="center" colspan="2" style="text-align: center; background-color: #fee; font-weight: bold;"><spring:message code="sync.general.incoming"/></th> --%>
 						</tr>
 						<tr>
 							<th><spring:message code="sync.config.server.name" /></th>
 							<th style="text-align: center;"><spring:message code="sync.config.server.type" /></th>
-							<th style="text-align: center;">date/time</th>
-							<th>status</th>
-							<th style="background-color: #eef; text-align: center;">state</th>
-							<th style="background-color: #eef; text-align: center;">count</th>
-							<th style="background-color: #fee; text-align: center;">state</th>
-							<th style="background-color: #fee; text-align: center;">count</th>
+							<th style="text-align: center;">Date/time</th>
+							<th style="text-align: center;">Status</th>
+							<th style="background-color: #eef; text-align: center;"><spring:message code="sync.status.itemState"/></th>
+							<th style="background-color: #eef; text-align: center;"><spring:message code="sync.general.count"/></th>
+							<%-- <th style="background-color: #fee; text-align: center;">state</th>
+							<th style="background-color: #fee; text-align: center;">count</th> --%>
 						</tr>
 					</thead>
 					<tbody id="statsList">
@@ -140,46 +140,53 @@
 										<td style="background-color: #${bgStyleReceive}; text-align:center;">
 											${serverStats.value}
 										</td>								
-										<td style="background-color: #${bgStyleSend}; text-align:center;" />
-										<td style="background-color: #${bgStyleSend}; text-align:center;" />
+										<%-- <td style="background-color: #${bgStyleSend}; text-align:center;" />
+										<td style="background-color: #${bgStyleSend}; text-align:center;" /> --%>
 									</tr>
 								</c:when>
+								<c:when test="${serverStats.type == 'SYNC_RECORDS_PENDING_COUNT'}">
+									<c:set var="recordsPending" value="${serverStats.value}" />
+								</c:when>
 								<c:otherwise>
-									<c:if test="${serverStats.type == 'SYNC_RECORDS_OLDER_THAN_24HRS'}">
-										<c:set var="recordsOld" value="true" />
-										<c:set var="recordsPending" value="${serverStats.value}" />
-									</c:if>
-									<c:if test="${serverStats.type == 'SYNC_RECORDS_PENDING_COUNT'}">
-										<c:set var="recordsPending" value="${serverStats.value}" />
-									</c:if>
+									<%-- <tr><td>--${serverStats.type}--</td></tr> --%>
+									<%-- <tr><td>--${serverStats.type}--</td></tr> --%>
+									<!--Write out summary for this server based on pending value records -->
+									<tr>
+										<td colspan="6" style="background-color: #${bgStyle};font-weight: bold; padding-top: 0px;">
+											<c:set var="allSyncStatsOk" value="true" />
+											<c:if test="${empty server.uuid}">
+												<div class="syncStatsWarning"><spring:message code="sync.overview.warning.uuid" arguments="${server.serverId}"/></div>
+												<c:set var="allSyncStatsOk" value="false" />
+											</c:if>
+											<c:if test="${server.lastSyncState != 'OK'}">
+												<div class="syncStatsWarning"><spring:message code="sync.overview.warning.lastComm" arguments="${server.lastSyncState}"/></div>
+												<c:set var="allSyncStatsOk" value="false" />
+											</c:if>
+											<c:if test="${serverStats.type == 'LAST_SYNC_REALLY_LONG_TIME_AGO'}">
+												<div class="syncStatsWarning"><spring:message code="sync.overview.warning.lastSyncTimeVeryBad" arguments="${recordsPending}"/></div>
+												<c:set var="allSyncStatsOk" value="false" />
+											</c:if>
+											<c:if test="${serverStats.type == 'LAST_SYNC_TIME_SOMEWHAT_TROUBLESOME'}">
+												<div class="syncStatsAttention"><spring:message code="sync.overview.warning.lastSyncTimeTroublesome" arguments="${recordsPending}"/></div>
+												<c:set var="allSyncStatsOk" value="false" />
+											</c:if>
+											<c:if test="${recordsPending > 0}">
+												<div class="syncStatsAttention"><spring:message code="sync.overview.pending" arguments="${recordsPending}"/></div>
+												<c:set var="allSyncStatsOk" value="false" />
+											</c:if>
+											<c:if test="${server.syncInProgress}">
+												<div class="syncStatsAttention"><spring:message code="sync.config.warning.syncInProgress" arguments="${server.syncInProgressMinutes}"/></div><br/>
+												<c:set var="allSyncStatsOk" value="false" />
+											</c:if>
+											<c:if test="${allSyncStatsOk=='true'}">
+												<div class="syncStatsOK"><spring:message code="sync.overview.fullySyncd"/></div>
+											</c:if>
+										</td>
+									</tr>
 								</c:otherwise>
 							</c:choose>
 							</c:forEach>
-							<!--Write out summary for this server based on pending value records -->
-							<tr>
-								<td colspan="8" style="background-color: #${bgStyle};font-weight: bold; padding-top: 0px;">
-									<c:choose>
-										<c:when test="${empty server.uuid}">
-											<span class="syncStatsWarning"><spring:message code="sync.overview.warning.uuid" arguments="${server.serverId}"/></span>
-										</c:when>
-										<c:when test="${server.lastSyncState != 'OK'}">
-											<span class="syncStatsWarning"><spring:message code="sync.overview.warning.lastComm" arguments="${recordsPending}"/></span>
-										</c:when>
-										<c:when test="${recordsOld == true}">
-											<span class="syncStatsWarning"><spring:message code="sync.overview.warning.pending" arguments="${recordsPending}"/></span>
-										</c:when>
-										<c:when test="${recordsPending > 0}">
-											<span class="syncStatsAttention"><spring:message code="sync.overview.pending" arguments="${recordsPending}"/></span>
-										</c:when>
-										<c:when test="${server.syncInProgress}">
-											<span class="syncStatsAttention"><spring:message code="sync.config.warning.syncInProgress" arguments="${server.syncInProgressMinutes}"/></span><br/>
-										</c:when>
-										<c:otherwise>
-											<span class="syncStatsOK"><spring:message code="sync.overview.fullySyncd"/></span>
-										</c:otherwise>
-									</c:choose>																				
-								</td>
-							</tr>
+							
 							<c:choose>
 								<c:when test="${bgStyle == 'eee'}">
 									<c:set var="bgStyle" value="fff" />

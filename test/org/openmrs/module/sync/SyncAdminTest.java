@@ -18,10 +18,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openmrs.Concept;
@@ -193,10 +195,13 @@ public class SyncAdminTest extends SyncBaseTest {
 	}
 
 	@Test
+	@NotTransactional
 	public void shouldGetSyncStatistics() throws Exception {
 		executeDataSet("org/openmrs/module/sync/include/SyncRemoteChildServer.xml");
-		Map<RemoteServer,Set<SyncStatistic>> stats = Context.getService(SyncService.class).getSyncStatistics(null, null);
-		
-		return;
+		Map<RemoteServer,LinkedHashSet<SyncStatistic>> stats = Context.getService(SyncService.class).getSyncStatistics(null, null);
+		RemoteServer server = Context.getService(SyncService.class).getRemoteServer(1);
+		Iterator<SyncStatistic> iterator = stats.get(server).iterator();
+		Assert.assertEquals(SyncStatistic.Type.SYNC_RECORD_COUNT_BY_STATE, iterator.next().getType()); // make sure this comes first
+		Assert.assertTrue(iterator.hasNext()); // make sure that theres more than just the COUNT BY STATE in there
 	}	
 }
