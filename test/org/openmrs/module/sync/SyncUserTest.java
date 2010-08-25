@@ -18,6 +18,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
+import java.util.Map;
 
 import org.junit.Test;
 import org.openmrs.GlobalProperty;
@@ -29,7 +30,9 @@ import org.openmrs.User;
 import org.openmrs.api.UserService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.advice.GenerateSystemIdAdvisor;
+import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
+import org.openmrs.web.user.UserProperties;
 import org.springframework.test.annotation.NotTransactional;
 
 /**
@@ -211,6 +214,27 @@ public class SyncUserTest extends SyncBaseTest {
 			public void runOnParent() {
 				User u = us.getUserByUsername("djazayeri");
 				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
+			}
+		});
+	}
+
+	@Test
+	@NotTransactional
+	public void shouldSyncUserProperties() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			
+			UserService us = Context.getUserService();
+			public void runOnChild() {
+				
+				User u = us.getUser(1);
+				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD, "true");
+				us.saveUser(u, null);								
+			}
+			public void runOnParent() {
+				User u = us.getUser(1);
+				assertTrue(u.getUserProperties().containsKey(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD));
+				assertTrue(Boolean.valueOf(u.getUserProperties().get(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD)));
+
 			}
 		});
 	}

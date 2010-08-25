@@ -22,11 +22,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.openmrs.OpenmrsObject;
+import org.openmrs.Patient;
 import org.openmrs.annotation.Authorized;
 import org.openmrs.annotation.Logging;
 import org.openmrs.api.APIException;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.sync.SyncClass;
+import org.openmrs.module.sync.SyncPatientStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
@@ -606,4 +608,18 @@ public interface SyncService {
 	@Logging(ignoredArgumentIndexes = 0)
 	public String getPrimaryKey(OpenmrsObject obj) throws APIException;
 
+
+	/**
+	 * Handles the odd case of saving patient who already has person record. See SyncPatientStub 
+	 * class comments for detailed description of how this works. Note this service is marked as
+	 * transactional read only to avoid spring trying to flush/commit on exit.
+	 * 
+	 * @see SyncPatientStub
+	 * 
+	 * @param p Patient for which stub ought to be created
+	 * @throws APIException
+	 */
+	@Transactional(readOnly = true)
+	@Logging(ignoreAllArgumentValues = true)
+	public void handleInsertPatientStubIfNeeded(Patient p) throws APIException;
 }

@@ -70,7 +70,9 @@ import org.openmrs.RelationshipType;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.LoginCredential;
+import org.openmrs.module.sync.api.SyncIngestService;
 import org.openmrs.module.sync.api.SyncService;
+import org.openmrs.module.sync.api.db.hibernate.HibernateSyncInterceptor;
 import org.openmrs.module.sync.serialization.BinaryNormalizer;
 import org.openmrs.module.sync.serialization.DefaultNormalizer;
 import org.openmrs.module.sync.serialization.FilePackage;
@@ -564,10 +566,15 @@ public class SyncUtil {
     }
     
     /**
-     * Uses the generic hibernate API to perform the save<br/>
+     * Uses the generic hibernate API to perform the save with the following exceptions.<br/>
      *  
      * Remarks: <br/>
      * Obs: if an obs comes through with a non-null voidReason, make sure we change it back to using a PK.
+     * SyncPatientStub: this is a 'special' utility object that sync uses to compensate for presence of 
+     * the prepare stmt in HibernatePatientDAO.insertPatientStubIfNeeded() that by-passes normal hibernate
+     * interceptor behavior. For full description of how this works read class comments for 
+     * {@link SyncPatientStub}. 
+     *  
      *  
      * @param o object to save
      * @param className type
@@ -597,17 +604,21 @@ public class SyncUtil {
 					log.trace("unable to get a uuid from obs voidReason. obs uuid: " + uuid, e);
 				}
 			}
-    	}
-    	else if ("org.openmrs.api.db.LoginCredential".equals(className)) {
+    	} else if ("org.openmrs.api.db.LoginCredential".equals(className)) {
     		LoginCredential login = (LoginCredential)o;
 			OpenmrsObject openmrsObject = getOpenmrsObj("org.openmrs.User", login.getUuid());
 			Integer userId = openmrsObject.getId();
 			login.setUserId(userId);
     	}
     	
-    	// now do the save
-		Context.getService(SyncService.class).saveOrUpdate(o);
-		return;
+    	//now do the save; not method comments to see why SyncPatientStub is handled differently
+    	if ("org.openmrs.module.sync.SyncPatientStub".equals(className)) {
+     		SyncPatientStub stub = (SyncPatientStub)o;
+     		Context.getService(SyncIngestService.class).processSyncPatientStub(stub);
+     	} else {
+			Context.getService(SyncService.class).saveOrUpdate(o);
+     	}
+			return;
     }  
 	
     /**

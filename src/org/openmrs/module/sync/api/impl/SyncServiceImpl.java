@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.Patient;
 import org.openmrs.Privilege;
 import org.openmrs.Role;
 import org.openmrs.api.APIException;
@@ -38,6 +39,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncConstants;
+import org.openmrs.module.sync.SyncPatientStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncServerClass;
@@ -45,6 +47,7 @@ import org.openmrs.module.sync.SyncStatistic;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.api.db.SyncDAO;
+import org.openmrs.module.sync.api.db.hibernate.HibernateSyncInterceptor;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
@@ -765,4 +768,39 @@ public class SyncServiceImpl implements SyncService {
 			return null;
 		}
 	}
+	
+	/**
+	 * Handles the odd case of saving patient who already has person record. This method is invoked 
+	 * by sync AOP advice on save of new patient 
+	 * (see {@link org.openmrs.module.sync.advice.SavePatientAdvice})
+	 * in order to generate a necessary sync item for the actions taken inside of
+	 * {@link org.openmrs.api.db.hibernate.HibernatePatientDAO#savePatient(Patient)}.
+	 * The compensating logic resides in {@link HibernateSyncInterceptor#addSyncItemForPatientStub(SyncPatientStub)}.
+	 *  
+	 */
+	public void  handleInsertPatientStubIfNeeded(Patient p) throws APIException {
+		
+		if (p == null || p.getPatientId() == null || p.getUuid() == null) {
+			return;
+		}
+
+		OpenmrsObject personRecord = null;
+		OpenmrsObject patientRecord = null;
+
+		//check if person obj exists
+		personRecord = SyncUtil.getOpenmrsObj("org.openmrs.Person", p.getUuid());
+		patientRecord = SyncUtil.getOpenmrsObj("org.openmrs.Patient", p.getUuid());
+		if (personRecord != null && patientRecord == null) {
+			//bingo!
+			log.info("Create of new patient who is already user detected, uuid: " + p.getUuid());
+			SyncPatientStub stub= new SyncPatientStub(p);
+			HibernateSyncInterceptor.addSyncItemForPatientStub(stub);
+			//we are going to save patient later, thus person ought to be evicted from session
+			Context.evictFromSession(personRecord);
+			Context.evictFromSession(patientRecord);
+		}
+		
+		return;
+	}
+	
 }

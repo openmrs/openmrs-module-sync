@@ -32,6 +32,8 @@ import org.hibernate.EmptyInterceptor;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.collection.AbstractPersistentCollection;
+import org.hibernate.collection.PersistentMap;
 import org.hibernate.collection.PersistentSet;
 import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Projections;
@@ -54,6 +56,7 @@ import org.openmrs.module.sync.SyncException;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemKey;
 import org.openmrs.module.sync.SyncItemState;
+import org.openmrs.module.sync.SyncPatientStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
@@ -431,19 +434,19 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 	 * NOTE: At this point, we are ignoring any prepared statements. This method
 	 * gets called on any prepared stmt; meaning selects also which makes
 	 * handling this reliably difficult. Fundamentally, short of replaying sql
-	 * as is on parent, it is diffucult to imagine safe and complete
+	 * as is on parent, it is difficult to imagine safe and complete
 	 * implementation.
 	 * <p>
 	 * Preferred approach is to weed out all dynamic SQL from openMRS DB layer
 	 * and if absolutely necessary, create a hook for DB layer code to
-	 * explicitely specify what SQL should be passed to the parent during
+	 * Explicitly specify what SQL should be passed to the parent during
 	 * synchronization.
 	 * 
 	 * @see org.hibernate.EmptyInterceptor#onPrepareStatement(java.lang.String)
 	 */
 	@Override
 	public String onPrepareStatement(String sql) {
-		if (log.isDebugEnabled())
+		if (log.isInfoEnabled())
 			log.debug("onPrepareStatement. sql: " + sql);
 
 		return sql;
@@ -461,10 +464,11 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 	public void onCollectionRemove(Object collection, Serializable key)
 			throws CallbackException {
 		if (log.isDebugEnabled()) {
-			log.debug("COLLECTION remove with key: " + key);
+			log.debug("no-op: COLLECTION remove with key: " + key);
 		}
 
-		// this.processPersistentSet((PersistentSet)collection,key, "remove");
+		//no-op
+		return;
 	}
 
 	/**
@@ -486,14 +490,13 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 			log.debug("COLLECTION recreate with key: " + key);
 		}
 
-		if (!(collection instanceof org.hibernate.collection.PersistentSet)) {
-			log
-					.info("Cannot process collection that is not instance of PersistentSet, collection type was:"
-							+ collection.getClass().getName());
+		if (!(collection instanceof AbstractPersistentCollection)) {
+			log.info("Unsupported collection type; collection must derive from AbstractPersistentCollection," +
+					" collection type was:" + collection.getClass().getName());
 			return;
-		}
-
-		this.processPersistentSet((PersistentSet) collection, key, "recreate");
+		};
+		
+		this.processHibernateCollection((AbstractPersistentCollection) collection, key, "recreate");
 
 	}
 
@@ -513,14 +516,13 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 			log.debug("COLLECTION update with key: " + key);
 		}
 
-		if (!(collection instanceof org.hibernate.collection.PersistentSet)) {
-			log
-					.info("Cannot process collection that is not instance of PersistentSet, collection type was:"
-							+ collection.getClass().getName());
+		if (!(collection instanceof AbstractPersistentCollection)) {
+			log.info("Unsupported collection type; collection must derive from AbstractPersistentCollection," +
+					" collection type was:" + collection.getClass().getName());
 			return;
-		}
+		};
 
-		this.processPersistentSet((PersistentSet) collection, key, "update");
+		this.processHibernateCollection((AbstractPersistentCollection) collection, key, "update");
 	}
 
 	/**
@@ -704,7 +706,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 			Record xml = pkg.createRecordForWrite(className);
 			Item entityItem = xml.getRootItem();
 
-			// loop throgh the map of the properties that need to be serialized
+			// loop through the map of the properties that need to be serialized
 			for (Map.Entry<String, PropertyClassValue> me : values.entrySet()) {
 				String property = me.getKey();
 
@@ -1250,6 +1252,135 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 	}
 
 	/**
+	 * Processes changes to hibernate collections. At the moment, only persistent sets and
+	 * persistent maps containing simple types or instances of OpenmrsObject objects are supported.
+	 * 
+	 * <p>
+	 * Remarks:
+	 * <TODO>
+	 * <p>
+	 * @param collection
+	 *            Instance of Hibernate AbstractPersistentCollection to process.
+	 * @param key
+	 *            key of owner for the collection.
+	 * @param action
+	 *            hibernate 'action' being performed: update, recreate. note, deletes are handled via re-create
+	 */
+	protected void processHibernateCollection(
+	                                          AbstractPersistentCollection collection, 
+	                                          Serializable key,
+	                                          String action) {
+		
+		if (!(collection instanceof PersistentSet || collection instanceof PersistentMap)) {
+			log.info("Unsupported collection type, collection type was:"
+							+ collection.getClass().getName());
+			return;
+		};
+	
+		
+		OpenmrsObject owner = null;
+		String originalRecordUuid = null;
+		SessionFactory factory = null;
+		LinkedHashMap<String, OpenmrsObject> entriesHolder = null;
+
+		// we only process recreate and update
+		if (!"update".equals(action) && !"recreate".equals(action)) {
+			log
+					.error("Unexpected 'action' supplied, valid values: recreate, update. value provided: "
+							+ action);
+			throw new CallbackException(
+					"Unexpected 'action' supplied while processing a persistent set.");
+		}
+
+		// retrieve owner and original uuid if there is one
+		if (collection.getOwner() instanceof OpenmrsObject) {
+			owner = (OpenmrsObject) collection.getOwner();
+			if (this.syncRecordHolder.get() != null) {
+				originalRecordUuid = this.syncRecordHolder.get().getOriginalUuid();
+			}
+			
+		} else {
+			log.info("Cannot process collection where owner is not OpenmrsObject.");
+			return;
+		}
+
+		factory = (SessionFactory) this.context.getBean("sessionFactory");
+
+		/*
+		 * determine if this set needs to be processed. Process if: 1. it is
+		 * recreate or 2. is dirty && current state does not equal stored
+		 * snapshot
+		 */
+		boolean process = false;
+		if ("recreate".equals(action)) {
+			process = true;
+		} else {
+			if (collection.isDirty()) {
+				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) factory)
+						.getCollectionPersister(collection.getRole());
+				Object ss = null;
+				try { // code around hibernate bug:
+					// http://opensource.atlassian.com/projects/hibernate/browse/HHH-2937
+					ss = collection.getSnapshot(persister);
+				} catch (NullPointerException ex) {
+				}
+				if (ss == null) {
+					log.debug("snapshot is null");
+					if (collection.empty())
+						process = false;
+					else
+						process = true;
+				} else if (!collection.equalsSnapshot(persister)) {
+					process = true;
+				}
+				;
+			}
+
+			if (!process) {
+				log.info("set processing, no update needed: not dirty or current state and snapshots are same");
+			}
+		}
+		if (!process)
+			return;
+
+		// pull out the property name on owner that corresponds to the collection
+		ClassMetadata data = factory.getClassMetadata(owner.getClass());
+		String[] propNames = data.getPropertyNames();
+		// this is the name of the property on owner object that contains the set
+		String ownerPropertyName = null; 
+
+		for (String propName : propNames) {
+			Object propertyVal = data.getPropertyValue(owner, propName,
+					org.hibernate.EntityMode.POJO);
+			// note: test both with equals() and == because
+			// PersistentSet.equals()
+			// actually does not handle equality of two persistent sets well
+			if (collection == propertyVal || collection.equals(propertyVal)) {
+				ownerPropertyName = propName;
+				break;
+			}
+		}
+		if (ownerPropertyName == null) {
+			log.error("Could not find the property on owner object that corresponds to the collection being processed.");
+			log.error("owner info: \ntype: " + owner.getClass().getName()
+					+ ", \nuuid: " + owner.getUuid()
+					+ ",\n property name for collection: " + ownerPropertyName);
+			throw new CallbackException(
+					"Could not find the property on owner object that corresponds to the collection being processed.");
+		}
+		
+		//now we know this needs to be processed. Proceed accordingly:
+		if (collection instanceof PersistentSet) {
+			processPersistentSet((PersistentSet) collection, key, action, originalRecordUuid, owner, ownerPropertyName);
+		} else if (collection instanceof PersistentMap) {
+			//TODO: this is work in progress at this point
+			//processPersistentMap((PersistentMap) collection, key, action, originalRecordUuid, owner, ownerPropertyName);
+		}		
+		
+		return;
+	}
+	
+	/**
 	 * Processes changes to persistent sets that contains instances of
 	 * OpenmrsObject objects.
 	 * 
@@ -1284,101 +1415,19 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 	 * @param action
 	 *            action being performed on the set: update, recreate
 	 */
-	protected void processPersistentSet(PersistentSet set, Serializable key,
-			String action) {
-		OpenmrsObject owner = null;
-		String originalRecordUuid = null;
+	private void processPersistentSet(PersistentSet set, 
+	                                  Serializable key,
+	                                  String action,
+	                                  String originalRecordUuid,
+	                                  OpenmrsObject owner,
+	                                  String ownerPropertyName) {
+
 		SessionFactory factory = null;
 		LinkedHashMap<String, OpenmrsObject> entriesHolder = null;
 
-		// we only process recreate and update
-		if (!"update".equals(action) && !"recreate".equals(action)) {
-			log
-					.error("Unexpected 'action' supplied, valid values: recreate, update. value provided: "
-							+ action);
-			throw new CallbackException(
-					"Unexpected 'action' supplied while processing a persistent set.");
-		}
-
-		// retrieve owner and original uuid if there is one
-		if (set.getOwner() instanceof OpenmrsObject) {
-			owner = (OpenmrsObject) set.getOwner();
-			if (this.syncRecordHolder.get() != null) {
-				originalRecordUuid = this.syncRecordHolder.get()
-						.getOriginalUuid();
-			}
-			
-		} else {
-			log
-					.info("Cannot process PersistentSet where owner is not OpenmrsObject.");
-			return;
-		}
 
 		factory = (SessionFactory) this.context.getBean("sessionFactory");
 
-		/*
-		 * determine if this set needs to be processed. Process if: 1. it is
-		 * recreate or 2. is dirty && current state does not equal stored
-		 * snapshot
-		 */
-		boolean process = false;
-		if ("recreate".equals(action)) {
-			process = true;
-		} else {
-			if (set.isDirty()) {
-				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) factory)
-						.getCollectionPersister(set.getRole());
-				Object ss = null;
-				try { // code around hibernate bug:
-					// http://opensource.atlassian.com/projects/hibernate/browse/HHH-2937
-					ss = set.getSnapshot(persister);
-				} catch (NullPointerException ex) {
-				}
-				if (ss == null) {
-					log.debug("snapshot is null");
-					if (set.isEmpty())
-						process = false;
-					else
-						process = true;
-				} else if (!set.equalsSnapshot(persister)) {
-					process = true;
-				}
-				;
-			}
-
-			if (!process) {
-				log.info("set processing, no update needed: not dirty or current state and snapshots are same");
-			}
-		}
-		if (!process)
-			return;
-
-		// pull out the property name on owner that corresponds to the collection
-		ClassMetadata data = factory.getClassMetadata(owner.getClass());
-		String[] propNames = data.getPropertyNames();
-		// this is the name of the property on owner object that contains the set
-		String ownerPropertyName = null; 
-
-		for (String propName : propNames) {
-			Object propertyVal = data.getPropertyValue(owner, propName,
-					org.hibernate.EntityMode.POJO);
-			// note: test both with equals() and == because
-			// PersistentSet.equals()
-			// actually does not handle equality of two persistent sets well
-			if (set == propertyVal || set.equals(propertyVal)) {
-				ownerPropertyName = propName;
-				break;
-			}
-		}
-		if (ownerPropertyName == null) {
-			log
-					.error("Could not find the property on owner object that corresponds to the set being processed.");
-			log.error("owner info: \ntype: " + owner.getClass().getName()
-					+ ", \nuuid: " + owner.getUuid()
-					+ ",\n property name for collection: " + ownerPropertyName);
-			throw new CallbackException(
-					"Could not find the property on owner object that corresponds to the set being processed.");
-		}
 
 		// Setup the serialization data structures to hold the state
 		Package pkg = new Package();
@@ -1541,6 +1590,183 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 		}
 	}
 
+	//TODO: this is work in progress at this point
+	private void processPersistentMap(PersistentMap map, 
+	                                  Serializable key,
+	                                  String action,
+	                                  String originalRecordUuid,
+	                                  OpenmrsObject owner,
+	                                  String ownerPropertyName) {
+
+		SessionFactory factory = null;
+		LinkedHashMap<String, OpenmrsObject> entriesHolder = null;
+
+
+		factory = (SessionFactory) this.context.getBean("sessionFactory");
+
+
+		// Setup the serialization data structures to hold the state
+		Package pkg = new Package();
+		entriesHolder = new LinkedHashMap<String, OpenmrsObject>();
+		try {
+
+			// find out what entries need to be serialized
+			for (Object entry : map.entrySet()) {
+				if (entry instanceof OpenmrsObject) {
+					OpenmrsObject obj = (OpenmrsObject) entry;
+
+					// attempt to retrieve entry uuid
+					String entryUuid = obj.getUuid();
+					if (entryUuid == null) {
+						entryUuid = fetchUuid(obj);
+						if (log.isDebugEnabled()) {
+							log
+									.debug("Entry uuid was null, attempted to fetch uuid with the following results");
+							log.debug("Entry type:" + obj.getClass().getName()
+									+ ",uuid:" + entryUuid);
+						}
+					}
+					// well, this is messed up: have an instance of
+					// OpenmrsObject but has no uuid
+					if (entryUuid == null) {
+						log.error("Cannot handle set entries where uuid is null.");
+						throw new CallbackException(
+								"Cannot handle set entries where uuid is null.");
+					}
+
+					// add it to the holder to avoid possible duplicates: key =
+					// uuid + action
+					entriesHolder.put(entryUuid + "|update", obj);
+				} else if (SyncUtil.getNormalizer(entry.getClass()) == null){
+					log.warn("Cannot handle sets where entries are not OpenmrsObject here. Type was " + entry.getClass() + " in property " + ownerPropertyName + " in class " + owner.getClass());
+					// skip out early because we don't want to write any xml for it
+					// it was handled by the normal property writer hopefully
+					return;
+				}
+				else {
+					// don't do anything else (recreating/packaging) with these sets
+					return;
+				}
+			}
+
+			// add on deletes
+			if (!"recreate".equals(action) && map.getRole() != null) {
+				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) factory)
+						.getCollectionPersister(map.getRole());
+				Iterator it = map.getDeletes(persister, false);
+				if (it != null) {
+					while (it.hasNext()) {
+						Object entryDelete = it.next();
+						if (entryDelete instanceof OpenmrsObject) {
+							OpenmrsObject objDelete = (OpenmrsObject) entryDelete;
+							// attempt to retrieve entry uuid
+							String entryDeleteUuid = objDelete.getUuid();
+							if (entryDeleteUuid == null) {
+								entryDeleteUuid = fetchUuid(objDelete);
+								if (log.isDebugEnabled()) {
+									log
+											.debug("Entry uuid was null, attempted to fetch uuid with the following results");
+									log.debug("Entry type:"
+											+ entryDeleteUuid.getClass()
+													.getName() + ",uuid:"
+											+ entryDeleteUuid);
+								}
+							}
+							// well, this is messed up: have an instance of
+							// OpenmrsObject but has no uuid
+							if (entryDeleteUuid == null) {
+								log
+										.error("Cannot handle set delete entries where uuid is null.");
+								throw new CallbackException(
+										"Cannot handle set delete entries where uuid is null.");
+							}
+
+							// add it to the holder to avoid possible
+							// duplicates: key = uuid + action
+							entriesHolder.put(entryDeleteUuid + "|delete",
+									objDelete);
+
+						} else {
+							// TODO: more debug info
+							log.warn("Cannot handle sets where entries are not OpenmrsObject!");
+							// skip out early because we don't want to write any
+							// xml for it. it
+							// was handled by the normal property writer
+							// hopefully
+							return;
+						}
+					}
+				}
+			}
+
+			/*
+			 * Create SyncItem and store change in SyncRecord kept in
+			 * ThreadLocal. note: when making SyncItemKey, make it a composite
+			 * string of uuid + prop. name to avoid collisions with updates to
+			 * parent object or updates to more than one collection on same
+			 * owner
+			 */
+
+			// Setup the serialization data structures to hold the state
+			Record xml = pkg.createRecordForWrite(map.getClass().getName());
+			Item entityItem = xml.getRootItem();
+
+			// serialize owner info: we will need type, prop name where set
+			// goes, and owner uuid
+			Item item = xml.createItem(entityItem, "owner");
+			item.setAttribute("type", this.getType(owner));
+			item.setAttribute("properyName", ownerPropertyName);
+			item.setAttribute("action", action);
+			item.setAttribute("uuid", owner.getUuid());
+
+			// build out the xml for the item content
+			Boolean hasNoAutomaticPrimaryKey = null;
+			String type = null;
+			for (String entryKey : entriesHolder.keySet()) {
+				OpenmrsObject entryObject = entriesHolder.get(entryKey);
+				if (type == null) {
+					type = this.getType(entryObject);
+					hasNoAutomaticPrimaryKey = SyncUtil.hasNoAutomaticPrimaryKey(type);
+				}
+
+				Item temp = xml.createItem(entityItem, "entry");
+				temp.setAttribute("type", type);
+				temp.setAttribute("action", entryKey.substring(entryKey
+						.indexOf('|') + 1));
+				temp.setAttribute("uuid", entryObject.getUuid());
+				if (hasNoAutomaticPrimaryKey) {
+					temp.setAttribute("primaryKey", syncService.getPrimaryKey(entryObject));
+				}
+			}
+
+			SyncItem syncItem = new SyncItem();
+			syncItem.setKey(new SyncItemKey<String>(owner.getUuid() + "|"
+					+ ownerPropertyName, String.class));
+			syncItem.setState(SyncItemState.UPDATED);
+			syncItem.setContainedType(map.getClass());
+			syncItem.setContent(xml.toStringAsDocumentFragement());
+
+			syncRecordHolder.get().addOrRemoveAndAddItem(syncItem);
+			syncRecordHolder.get()
+					.addContainedClass(owner.getClass().getName());
+
+			// do the original uuid dance, same as in packageObject
+			if (syncRecordHolder.get().getOriginalUuid() == null
+					|| "".equals(syncRecordHolder.get().getOriginalUuid())) {
+				syncRecordHolder.get().setOriginalUuid(originalRecordUuid);
+			}
+		} catch (Exception ex) {
+			log
+					.error(
+							"Error processing Persistent set, see callstack and inner expection",
+							ex);
+			throw new CallbackException(
+					"Error processing Persistent set, see callstack and inner expection.",
+					ex);
+		}
+	}
+
+	
 	/**
 	 * Returns string representation of type for given object. The main idea is
 	 * to strip off the hibernate proxy info, if it happens to be present.
@@ -1633,6 +1859,71 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 			//clear out the value from the pending record
 			syncRecordHolder.get().setOriginalUuid(null);
 		}
+		return;
+	}
+
+	/**
+	 * Adds syncItem to pending sync record for the patient stub necessary to handle new patient from
+	 * the existing user scenario. See SyncPatientStub class comments for detailed description of how
+	 * this works.
+	 * 
+	 * @see SyncPatientStub
+	 */
+	public static void addSyncItemForPatientStub(SyncPatientStub stub) {
+		
+		try {
+
+			// Setup the serialization data structures to hold the state
+			Package pkg = new Package();
+			String className = stub.getClass().getName();
+			Record xml = pkg.createRecordForWrite(className);
+			Item ParentItem = xml.getRootItem();
+			Item item = null;
+
+			//uuid
+			item = xml.createItem(ParentItem, "uuid");
+			item.setAttribute("type", stub.getUuid().getClass().getName());
+			xml.createText(item, stub.getUuid());
+
+			//creator
+			User creator = stub.getCreator();
+			if (creator == null) {
+				creator = Context.getAuthenticatedUser();
+			}
+			if (creator == null) {
+				throw (new SyncException(
+					"Error generating patient stub. Creator is null. patient stub uuid: " + stub.getUuid()));
+			}
+			item = xml.createItem(ParentItem, "creator");
+			item.setAttribute("type", creator.getClass().getName());
+			xml.createText(item, creator.getUuid());
+			
+			//date created
+			Date dateCreated = stub.getDateCreated();
+			if (dateCreated == null) {
+				dateCreated = new Date();
+			}
+			item = xml.createItem(ParentItem, "dateCreated");
+			item.setAttribute("type", dateCreated.getClass().getName());
+			xml.createText(item,SyncUtil.getNormalizer(dateCreated.getClass()).toString(dateCreated) );
+
+			SyncItem syncItem = new SyncItem();
+			syncItem.setKey(new SyncItemKey<String>(stub.getUuid(), String.class));
+			syncItem.setState(SyncItemState.NEW);
+			syncItem.setContent(xml.toStringAsDocumentFragement());
+			syncItem.setContainedType(SyncPatientStub.class);
+
+			syncRecordHolder.get().addItem(syncItem);
+			syncRecordHolder.get().addContainedClass(SyncPatientStub.class.getName());
+
+		} catch (SyncException syncEx) {
+			//just rethrow it
+			throw(syncEx);
+		}
+		catch(Exception e) {
+			throw (new SyncException("Unknow error while creating patient stub for patient uuid: " + stub.getUuid(), e));
+		}
+		
 		return;
 	}
 }

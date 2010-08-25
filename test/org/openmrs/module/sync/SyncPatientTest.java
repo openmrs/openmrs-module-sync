@@ -36,6 +36,7 @@ import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.PatientProgram;
+import org.openmrs.Person;
 import org.openmrs.PersonName;
 import org.openmrs.Program;
 import org.openmrs.ProgramWorkflow;
@@ -43,6 +44,7 @@ import org.openmrs.ProgramWorkflowState;
 import org.openmrs.User;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.api.SyncIngestService;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.test.annotation.NotTransactional;
@@ -355,7 +357,7 @@ public class SyncPatientTest extends SyncBaseTest {
 		
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild() {
-				Location loc = Context.getEncounterService().getLocationByName("Someplace");
+				Location loc = Context.getLocationService().getLocation("Someplace");
 				PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierType(2);
 				if (pit.getUuid() == null)
 					throw new RuntimeException("pit.uuid is null! " + pit);
@@ -393,6 +395,64 @@ public class SyncPatientTest extends SyncBaseTest {
 				PatientIdentifier firstpid = p.getIdentifiers().iterator().next();
 				assertEquals(firstpid.getIdentifier(), id.getIdentifier());
 				assertEquals(firstpid.getIdentifierType(), id.getIdentifierType());
+			}
+		});
+	}
+
+	@Test
+	@NotTransactional
+	public void shouldCreatePatientFromExistingUser() throws Exception {
+		
+		
+		runSyncTest(new SyncTestHelper() {
+			String uuid = null;
+			public void runOnChild() {
+								
+				Location loc = Context.getLocationService().getLocation("Someplace");
+				PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierType(2);
+				ArrayList<PatientIdentifierType> pits = new ArrayList<PatientIdentifierType>(); pits.add(pit);
+				
+				if (pit.getUuid() == null)
+					throw new RuntimeException("pit.uuid is null! " + pit);
+				else
+					log.info("pit.uuid = " + pit.getUuid() + " , pit = " + pit);
+				
+				Person person = Context.getPersonService().getPerson(5);
+				Context.clearSession(); // so that this Person doesn't cause hibernate to think the new Patient is in the cache already (only needed until #725 is fixed)
+				Patient p = new Patient(person);
+				p.setCreator(Context.getUserService().getUser(1));
+				p.setDateCreated(Context.getUserService().getUser(1).getDateCreated());
+				
+				p.addIdentifier(new PatientIdentifier("999", pit, loc));
+				Context.getPatientService().savePatient(p);
+				List<PatientIdentifier> ids = Context.getPatientService().getPatientIdentifiers("999",pits,null,null,false);
+				assertNotNull(ids);
+				
+				this.uuid = p.getUuid();
+				
+				if (ids.size() != 1)
+					assertFalse("Can't find patient we just created. ids.size()==" + ids.size(), true);
+				log.info("Patients at end " + Context.getPatientService().getPatients("Stub").size());
+			}
+			public void runOnParent() {
+				
+				//check by pat identifier
+				Location loc = Context.getLocationService().getLocation("Someplace");
+				PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierType(2);
+				ArrayList<PatientIdentifierType> pits = new ArrayList<PatientIdentifierType>(); pits.add(pit);
+				PatientIdentifier id = new PatientIdentifier("999", pit, loc);
+				List<PatientIdentifier> ids = Context.getPatientService().getPatientIdentifiers("999",pits,null,null,false);
+				assertNotNull(ids);
+				if (ids.size() != 1)
+					assertFalse("Should only find one patient, not " + ids.size(), true);
+								
+				// fetch by uuid
+				Patient p = Context.getPatientService().getPatientByUuid(this.uuid);
+				assertNotNull(p);
+				
+				//fetch by name
+				assertEquals(1,Context.getPatientService().getPatients("Stub").size());
+
 			}
 		});
 	}

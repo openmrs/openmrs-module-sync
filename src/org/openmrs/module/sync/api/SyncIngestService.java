@@ -20,6 +20,7 @@ import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.Logging;
 import org.openmrs.api.APIException;
 import org.openmrs.module.sync.SyncItem;
+import org.openmrs.module.sync.SyncPatientStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.ingest.SyncImportItem;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
@@ -79,4 +80,19 @@ public interface SyncIngestService {
 	 */
     @Logging(ignoreAllArgumentValues=true)
 	public void applyPreCommitRecordActions(Map<String, List<OpenmrsObject>> processedObjects) throws APIException;
+
+    
+
+    /**
+     * Takes steps necessary to handle ingest of SyncPatientStub. This is special
+     * purpose object to handle processing of new patients who are already users.
+     * 
+     * @see SyncPatientStub
+     * 
+     * @param stub
+     * @throws APIException
+     */
+    @Logging(ignoreAllArgumentValues=true)
+	public void processSyncPatientStub(SyncPatientStub stub) throws APIException;
+
 }

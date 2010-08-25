@@ -24,8 +24,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.openmrs.api.UserService;
+import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.advice.GenerateSystemIdAdvisor;
+import org.openmrs.module.sync.advice.SavePatientAdvice;
 import org.openmrs.module.sync.api.SyncIngestService;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.FilePackage;
@@ -124,6 +126,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		// load the advice for the sync module.
 		// this is kind of hacky, but loading up the module here has adverse effects (sqldiff tries to run)
 		Context.addAdvisor(UserService.class, new GenerateSystemIdAdvisor());
+		Context.addAdvice(PatientService.class, new SavePatientAdvice());
 	}
 
 

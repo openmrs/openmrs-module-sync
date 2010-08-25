@@ -24,6 +24,7 @@ import java.io.Reader;
 import java.lang.reflect.Method;
 import java.sql.Blob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -54,10 +55,12 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncConstants;
+import org.openmrs.module.sync.SyncPatientStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
@@ -1365,4 +1368,87 @@ public class HibernateSyncDAO implements SyncDAO {
             throw new SyncIngestException(SyncConstants.ERROR_ITEM_NOT_COMMITTED, ownerClassName, incoming,null);
         }
     }
+	
+	/* For full description of how this works read class comments for 
+     * {@link SyncPatientStub}.
+	 * 
+	 * (non-Javadoc)
+	 * @see org.openmrs.module.sync.api.db.SyncDAO#processSyncPatientStub(org.openmrs.module.sync.SyncPatientStub)
+	 */
+	public void processSyncPatientStub(SyncPatientStub stub) {
+		Connection connection = sessionFactory.getCurrentSession().connection();
+		
+		boolean stubInsertNeeded = false;
+		PreparedStatement ps = null;
+		int personId = 0;
+		
+		// check if there is a row with a matching person record and no patient record 
+		try {
+			ps = connection.prepareStatement("SELECT person_id FROM person WHERE uuid = ?");
+			ps.setString(1, stub.getUuid());
+			ps.execute();
+			ResultSet rs = ps.getResultSet();
+			if (rs.next()) {
+				stubInsertNeeded = true;
+				personId = rs.getInt("person_id");
+			} else {
+				stubInsertNeeded = false;
+			}
+
+			//this should get no rows
+			ps = connection.prepareStatement("SELECT patient_id FROM patient WHERE patient_id = ?");
+			ps.setInt(1, personId);
+			ps.execute();			
+			if (ps.getResultSet().next()) {
+				stubInsertNeeded = false;
+			}
+			ps.close();
+			ps = null;
+			
+
+		}
+		catch (SQLException e) {
+			log.error("Error while trying to see if this person is a patient already", e);
+		}
+		if (ps != null) {
+			try {
+				ps.close();
+			}
+			catch (SQLException e) {
+				log.error("Error generated while closing statement", e);
+			}
+		}
+		
+		if (stubInsertNeeded) {
+			try {
+				//insert the stub
+				ps = connection
+				        .prepareStatement("INSERT INTO patient (patient_id, creator, voided, date_created) VALUES (?, ?, 0, ?)");
+				
+				ps.setInt(1, personId);
+				ps.setInt(2, stub.getCreator().getUserId());
+				ps.setDate(3, new java.sql.Date(stub.getDateCreated().getTime()));
+				ps.executeUpdate();
+				
+				//*and* create sync item for this
+				HibernateSyncInterceptor.addSyncItemForPatientStub(stub);
+			}
+			catch (SQLException e) {
+				log.warn("SQL Exception while trying to create a patient stub", e);
+			}
+			finally {
+				if (ps != null) {
+					try {
+						ps.close();
+					}
+					catch (SQLException e) {
+						log.error("Error generated while closing statement", e);
+					}
+				}
+			}
+		}
+		
+		return;
+	}
+	
 }

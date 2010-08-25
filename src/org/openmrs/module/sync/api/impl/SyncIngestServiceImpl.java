@@ -30,6 +30,7 @@ import org.openmrs.module.ModuleUtil;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemState;
+import org.openmrs.module.sync.SyncPatientStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
@@ -401,6 +402,18 @@ public class SyncIngestServiceImpl implements SyncIngestService {
     }
 
     /**
+     * Takes steps necessary to handle ingest of SyncPatientStub by calling 
+     * {@link SyncDAO#processSyncPatientStub(SyncPatientStub)} 
+     * 
+     * param stub SyncPatientStub to be saved.
+     */
+    public void processSyncPatientStub(SyncPatientStub stub) throws APIException {
+    	dao.processSyncPatientStub(stub);
+    	return;
+    }
+    
+    
+    /**
      * Processes serialized SyncItem state by attempting to hydrate the object SyncItem represents and then using OpenMRS service layer to
      * update the hydrated instance of OpenmrsObject object.
      * <p/>Remarks: This implementation relies on internal knowledge of how SyncItems are serialized: it iterates over direct child nodes of the root xml
@@ -503,4 +516,5 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         	                
         return o;
     }
+
 }
