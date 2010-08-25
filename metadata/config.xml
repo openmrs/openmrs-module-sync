@@ -5,7 +5,7 @@
 	<!-- Synchronization Module Properties -->
 	<id>sync</id>
 	<name>Synchronization Module</name>
-	<version>0.84</version>
+	<version>0.85</version>
 	<package>org.openmrs.module.@MODULE_ID@</package>
 	<author>Maros Cunderlik</author>
 	<description>Synchronize data between a parent and multiple child servers</description>
@@ -27,7 +27,10 @@
 		<point>org.openmrs.api.UserService</point>
 		<class>@MODULE_PACKAGE@.advice.GenerateSystemIdAdvisor</class>
 	</advice>
-	<!-- /AOP -->
+	<advice>
+		<point>org.openmrs.api.PatientService</point>
+		<class>@MODULE_PACKAGE@.advice.SavePatientAdvice</class>
+	</advice>	<!-- /AOP -->
 	
 	<globalProperty>
 		<property>sync.server_name</property>
