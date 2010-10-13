@@ -14,8 +14,10 @@
 package org.openmrs.module.sync;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.util.Date;
 import java.util.Map;
@@ -220,7 +222,7 @@ public class SyncUserTest extends SyncBaseTest {
 
 	@Test
 	@NotTransactional
-	public void shouldSyncUserProperties() throws Exception {
+	public void shouldSyncUserPropertyUpdate() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
 			UserService us = Context.getUserService();
@@ -228,15 +230,45 @@ public class SyncUserTest extends SyncBaseTest {
 				
 				User u = us.getUser(1);
 				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD, "true");
-				us.saveUser(u, null);								
+				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_DEFAULT_LOCALE, "testing,test,");
+				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_LOGIN_ATTEMPTS, "0");
+				us.saveUser(u, null);
+				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD, "false");
+				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_LOGIN_ATTEMPTS, "1");
+				us.saveUser(u, null);
 			}
 			public void runOnParent() {
 				User u = us.getUser(1);
 				assertTrue(u.getUserProperties().containsKey(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD));
-				assertTrue(Boolean.valueOf(u.getUserProperties().get(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD)));
+				assertFalse(Boolean.valueOf(u.getUserProperties().get(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD)));
+				assertTrue(u.getUserProperties().containsKey(OpenmrsConstants.USER_PROPERTY_DEFAULT_LOCALE));
+				assertTrue("testing,test,".equals(u.getUserProperties().get(OpenmrsConstants.USER_PROPERTY_DEFAULT_LOCALE)));
+				assertTrue(u.getUserProperties().containsKey(OpenmrsConstants.USER_PROPERTY_LOGIN_ATTEMPTS));
+				assertTrue("1".equals(u.getUserProperties().get(OpenmrsConstants.USER_PROPERTY_LOGIN_ATTEMPTS)));
 
 			}
 		});
 	}
 
+	@Test
+	@NotTransactional
+	public void shouldSyncUserPropertyRemove() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			
+			UserService us = Context.getUserService();
+			public void runOnChild() {
+				
+				User u = us.getUser(1);
+				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD, "true");
+				us.saveUser(u, null);
+				u.removeUserProperty(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD);
+				us.saveUser(u, null);
+			}
+			public void runOnParent() {
+				User u = us.getUser(1);
+				assertFalse(u.getUserProperties().containsKey(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD));
+			}
+		});
+	}
+	
 }

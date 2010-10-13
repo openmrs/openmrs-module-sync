@@ -51,7 +51,6 @@ import org.openmrs.PersonAttributeType;
 import org.openmrs.User;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncException;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemKey;
@@ -878,7 +877,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 	}
 
 	/**
-	 * Checks the given object to see
+	 * Checks the collection to see if it is a collection of supported types. If so, then
+	 * it returns appropriate normalizer. Note, this handles maps too.
 	 * 
 	 * @param object
 	 * @param propertyName
@@ -889,11 +889,26 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 	private Normalizer isCollectionOfSafeTypes(OpenmrsObject object,
 			String propertyName) throws SecurityException, NoSuchFieldException {
 		try {
-			java.lang.reflect.Type collectionType = ((java.lang.reflect.ParameterizedType) object
-					.getClass().getDeclaredField(propertyName).getGenericType())
-					.getActualTypeArguments()[0];
+			
+			java.lang.reflect.ParameterizedType collectionType = ((java.lang.reflect.ParameterizedType) object
+					.getClass().getDeclaredField(propertyName).getGenericType());
+			if (Map.class.isAssignableFrom((Class)collectionType.getRawType())) {
+				//this is a map; Map<K,V>: verify that K and V are of types we know how to process
+				java.lang.reflect.Type keyType = collectionType.getActualTypeArguments()[0];
+				java.lang.reflect.Type valueType = collectionType.getActualTypeArguments()[1];
+				Normalizer keyNormalizer = SyncUtil.getNormalizer((Class)keyType);
+				Normalizer valueNormalizer = SyncUtil.getNormalizer((Class)valueType);
+				if (keyNormalizer != null && valueNormalizer != null) {
+					return SyncUtil.getNormalizer((Class)collectionType.getRawType());
+				}
+				else {
+					return null;
+				}
+			} else {
+				//this is some other collection, so just get a normalizer for its 
+				return SyncUtil.getNormalizer((Class)(collectionType.getActualTypeArguments()[0]));
+			}
 
-			return SyncUtil.getNormalizer((Class)collectionType);
 		} catch (Throwable t) {
 			// might get here if the property is on a superclass to the object
 
@@ -1252,12 +1267,12 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 	}
 
 	/**
-	 * Processes changes to hibernate collections. At the moment, only persistent sets and
-	 * persistent maps containing simple types or instances of OpenmrsObject objects are supported.
+	 * Processes changes to hibernate collections. At the moment, only persistent sets are supported.
 	 * 
 	 * <p>
 	 * Remarks:
-	 * <TODO>
+	 * Note that simple lists and maps of primitive types are supported also by default via normalizers and 
+	 * do not require explicit handling as shown here for sets of any reference types.
 	 * <p>
 	 * @param collection
 	 *            Instance of Hibernate AbstractPersistentCollection to process.
@@ -1372,9 +1387,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 		//now we know this needs to be processed. Proceed accordingly:
 		if (collection instanceof PersistentSet) {
 			processPersistentSet((PersistentSet) collection, key, action, originalRecordUuid, owner, ownerPropertyName);
-		} else if (collection instanceof PersistentMap) {
-			//TODO: this is work in progress at this point
-			//processPersistentMap((PersistentMap) collection, key, action, originalRecordUuid, owner, ownerPropertyName);
 		}		
 		
 		return;
@@ -1568,182 +1580,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 					+ ownerPropertyName, String.class));
 			syncItem.setState(SyncItemState.UPDATED);
 			syncItem.setContainedType(set.getClass());
-			syncItem.setContent(xml.toStringAsDocumentFragement());
-
-			syncRecordHolder.get().addOrRemoveAndAddItem(syncItem);
-			syncRecordHolder.get()
-					.addContainedClass(owner.getClass().getName());
-
-			// do the original uuid dance, same as in packageObject
-			if (syncRecordHolder.get().getOriginalUuid() == null
-					|| "".equals(syncRecordHolder.get().getOriginalUuid())) {
-				syncRecordHolder.get().setOriginalUuid(originalRecordUuid);
-			}
-		} catch (Exception ex) {
-			log
-					.error(
-							"Error processing Persistent set, see callstack and inner expection",
-							ex);
-			throw new CallbackException(
-					"Error processing Persistent set, see callstack and inner expection.",
-					ex);
-		}
-	}
-
-	//TODO: this is work in progress at this point
-	private void processPersistentMap(PersistentMap map, 
-	                                  Serializable key,
-	                                  String action,
-	                                  String originalRecordUuid,
-	                                  OpenmrsObject owner,
-	                                  String ownerPropertyName) {
-
-		SessionFactory factory = null;
-		LinkedHashMap<String, OpenmrsObject> entriesHolder = null;
-
-
-		factory = (SessionFactory) this.context.getBean("sessionFactory");
-
-
-		// Setup the serialization data structures to hold the state
-		Package pkg = new Package();
-		entriesHolder = new LinkedHashMap<String, OpenmrsObject>();
-		try {
-
-			// find out what entries need to be serialized
-			for (Object entry : map.entrySet()) {
-				if (entry instanceof OpenmrsObject) {
-					OpenmrsObject obj = (OpenmrsObject) entry;
-
-					// attempt to retrieve entry uuid
-					String entryUuid = obj.getUuid();
-					if (entryUuid == null) {
-						entryUuid = fetchUuid(obj);
-						if (log.isDebugEnabled()) {
-							log
-									.debug("Entry uuid was null, attempted to fetch uuid with the following results");
-							log.debug("Entry type:" + obj.getClass().getName()
-									+ ",uuid:" + entryUuid);
-						}
-					}
-					// well, this is messed up: have an instance of
-					// OpenmrsObject but has no uuid
-					if (entryUuid == null) {
-						log.error("Cannot handle set entries where uuid is null.");
-						throw new CallbackException(
-								"Cannot handle set entries where uuid is null.");
-					}
-
-					// add it to the holder to avoid possible duplicates: key =
-					// uuid + action
-					entriesHolder.put(entryUuid + "|update", obj);
-				} else if (SyncUtil.getNormalizer(entry.getClass()) == null){
-					log.warn("Cannot handle sets where entries are not OpenmrsObject here. Type was " + entry.getClass() + " in property " + ownerPropertyName + " in class " + owner.getClass());
-					// skip out early because we don't want to write any xml for it
-					// it was handled by the normal property writer hopefully
-					return;
-				}
-				else {
-					// don't do anything else (recreating/packaging) with these sets
-					return;
-				}
-			}
-
-			// add on deletes
-			if (!"recreate".equals(action) && map.getRole() != null) {
-				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) factory)
-						.getCollectionPersister(map.getRole());
-				Iterator it = map.getDeletes(persister, false);
-				if (it != null) {
-					while (it.hasNext()) {
-						Object entryDelete = it.next();
-						if (entryDelete instanceof OpenmrsObject) {
-							OpenmrsObject objDelete = (OpenmrsObject) entryDelete;
-							// attempt to retrieve entry uuid
-							String entryDeleteUuid = objDelete.getUuid();
-							if (entryDeleteUuid == null) {
-								entryDeleteUuid = fetchUuid(objDelete);
-								if (log.isDebugEnabled()) {
-									log
-											.debug("Entry uuid was null, attempted to fetch uuid with the following results");
-									log.debug("Entry type:"
-											+ entryDeleteUuid.getClass()
-													.getName() + ",uuid:"
-											+ entryDeleteUuid);
-								}
-							}
-							// well, this is messed up: have an instance of
-							// OpenmrsObject but has no uuid
-							if (entryDeleteUuid == null) {
-								log
-										.error("Cannot handle set delete entries where uuid is null.");
-								throw new CallbackException(
-										"Cannot handle set delete entries where uuid is null.");
-							}
-
-							// add it to the holder to avoid possible
-							// duplicates: key = uuid + action
-							entriesHolder.put(entryDeleteUuid + "|delete",
-									objDelete);
-
-						} else {
-							// TODO: more debug info
-							log.warn("Cannot handle sets where entries are not OpenmrsObject!");
-							// skip out early because we don't want to write any
-							// xml for it. it
-							// was handled by the normal property writer
-							// hopefully
-							return;
-						}
-					}
-				}
-			}
-
-			/*
-			 * Create SyncItem and store change in SyncRecord kept in
-			 * ThreadLocal. note: when making SyncItemKey, make it a composite
-			 * string of uuid + prop. name to avoid collisions with updates to
-			 * parent object or updates to more than one collection on same
-			 * owner
-			 */
-
-			// Setup the serialization data structures to hold the state
-			Record xml = pkg.createRecordForWrite(map.getClass().getName());
-			Item entityItem = xml.getRootItem();
-
-			// serialize owner info: we will need type, prop name where set
-			// goes, and owner uuid
-			Item item = xml.createItem(entityItem, "owner");
-			item.setAttribute("type", this.getType(owner));
-			item.setAttribute("properyName", ownerPropertyName);
-			item.setAttribute("action", action);
-			item.setAttribute("uuid", owner.getUuid());
-
-			// build out the xml for the item content
-			Boolean hasNoAutomaticPrimaryKey = null;
-			String type = null;
-			for (String entryKey : entriesHolder.keySet()) {
-				OpenmrsObject entryObject = entriesHolder.get(entryKey);
-				if (type == null) {
-					type = this.getType(entryObject);
-					hasNoAutomaticPrimaryKey = SyncUtil.hasNoAutomaticPrimaryKey(type);
-				}
-
-				Item temp = xml.createItem(entityItem, "entry");
-				temp.setAttribute("type", type);
-				temp.setAttribute("action", entryKey.substring(entryKey
-						.indexOf('|') + 1));
-				temp.setAttribute("uuid", entryObject.getUuid());
-				if (hasNoAutomaticPrimaryKey) {
-					temp.setAttribute("primaryKey", syncService.getPrimaryKey(entryObject));
-				}
-			}
-
-			SyncItem syncItem = new SyncItem();
-			syncItem.setKey(new SyncItemKey<String>(owner.getUuid() + "|"
-					+ ownerPropertyName, String.class));
-			syncItem.setState(SyncItemState.UPDATED);
-			syncItem.setContainedType(map.getClass());
 			syncItem.setContent(xml.toStringAsDocumentFragement());
 
 			syncRecordHolder.get().addOrRemoveAndAddItem(syncItem);

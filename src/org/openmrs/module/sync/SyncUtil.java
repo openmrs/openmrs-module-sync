@@ -79,6 +79,7 @@ import org.openmrs.module.sync.serialization.FilePackage;
 import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.LocaleNormalizer;
+import org.openmrs.module.sync.serialization.MapNormalizer;
 import org.openmrs.module.sync.serialization.Normalizer;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
@@ -104,6 +105,7 @@ public class SyncUtil {
 		DefaultNormalizer defN = new DefaultNormalizer();
 		TimestampNormalizer dateN = new TimestampNormalizer();
 		BinaryNormalizer byteN = new BinaryNormalizer();
+		MapNormalizer mapN = new MapNormalizer();
 		
 		safetypes = new HashMap<String, Normalizer>();
 		// safetypes.put("binary", defN);
@@ -131,6 +133,8 @@ public class SyncUtil {
 		safetypes.put("timestamp", dateN);
 		// time
 		// timezone
+		
+		safetypes.put("map", mapN);
 	}
 	
 	/**
@@ -415,7 +419,13 @@ public class SyncUtil {
 					o = tmpCollection;
 				}
 				else if (Map.class.isAssignableFrom(classType)) {
-					// TODO implement this like Collection
+					//use MapNormalizer to de-serialize
+					Object tmpMap = SyncUtil.getNormalizer(classType).fromString(classType, fieldVal);
+					
+					//if we were able to convert and got anything at all back, assign it
+					if (tmpMap != null) {
+						o = tmpMap;
+					}
 				}
 				else if ((o = convertStringToObject(fieldVal, classType)) != null) {
 					log.trace("Converted " + fieldVal + " into " + classType.getName());
@@ -441,7 +451,7 @@ public class SyncUtil {
      * @return object of type "clazz" or null if unable to convert it
      * @see SyncUtil#getNormalizer(Class)
      */
-    private static Object convertStringToObject(String fieldVal, Class clazz) {
+    public static Object convertStringToObject(String fieldVal, Class clazz) {
     	
     	Normalizer normalizer = getNormalizer(clazz);
     	
@@ -1016,6 +1026,11 @@ public class SyncUtil {
 	 */
 	public static boolean hasNoAutomaticPrimaryKey(String entryClassName) {
 		try {
+			//bit of defensive coding
+			if (!entryClassName.startsWith("org.openmrs.")) {
+				return false;
+			}
+			
 			Class<OpenmrsObject> c = (Class<OpenmrsObject>) Context.loadClass(entryClassName);
 			
 			OpenmrsObject o = c.newInstance();
