@@ -97,19 +97,25 @@ public class MapNormalizer extends Normalizer {
 		tmp = tmp.substring(0, tmp.lastIndexOf("}}"));
 		
 		for (String entry : tmp.split("\\}\\}\\{\\{")) {
-			entry = entry.trim(); // take out whitespace
-			String keyvalArray[] = entry.split("\\|\\|");
-			if (keyvalArray != null && keyvalArray.length == 2) {
+			//entry = entry.trim(); // take out whitespace
+			if (entry.contains("||")) {
+				String keyvalArray[] = entry.split("\\|\\|");
+
 				// try to convert to a simple object
 				Object tmpKey = SyncUtil.convertStringToObject(keyvalArray[0], String.class);
-				Object tmpValue = SyncUtil.convertStringToObject(keyvalArray[1], String.class);
 				
-				if (tmpKey == null || tmpValue == null) {
-					throw new IllegalArgumentException("cannot deserialize the entry in the map. key || value:"
-					        + keyvalArray[0] + " || " + keyvalArray[1]);
-				} else {
-					map.put(tmpKey, tmpValue);
-				}
+				if (tmpKey == null)
+					throw new IllegalArgumentException("cannot deserialize the 'key' from map entry: " + entry);
+				
+				// we could have empty values
+				Object tmpValue = ""; // since we're converting everything to strings, this is effectively 'null'
+				if (keyvalArray.length > 1)
+					tmpValue = SyncUtil.convertStringToObject(keyvalArray[1], String.class);
+				
+				if (tmpValue == null)
+					throw new IllegalArgumentException("cannot deserialize the 'value' from map entry: " + entry);
+				
+				map.put(tmpKey, tmpValue);
 			} else {
 				throw new IllegalArgumentException(
 				        "Invalid serialization format for map entry. {{key||value}} expected. encountered:" + entry);
