@@ -162,19 +162,17 @@ public class ServerConnection {
 
 	public static Double getTimeout() {
 		// let's figure out a suitable timeout
-		Double timeout = (500.0 * 60 * 10); // let's just default at 5 min
-												// for now
+		Double timeout = 300000.0; // let's just default at 5 min for now
 		try {
 			Integer maxRecords = new Integer(Context.getAdministrationService()
 			                                        .getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS,
 			                                                           SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT));
-			timeout = (3 + (maxRecords * 0.1)) * 60 * 1000; // formula we cooked
-															// up after running
-															// several tests:
-															// latency + 0.1N
+			timeout = (3 + (maxRecords * 0.1)) * 6000;	// formula we cooked
+														// up after running
+														// several tests:
+														// latency + 0.1N
 		} catch (NumberFormatException nfe) {
-			// it's ok if this fails (not sure how it could) = we'll just do 10
-			// min timeout
+			// it's ok if this fails (not sure how it could) = we'll just do 5 min timeout
 		}
 		return timeout;
 	}
