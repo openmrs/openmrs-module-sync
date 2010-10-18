@@ -1017,20 +1017,17 @@ public class SyncUtil {
 	
 	
 	/**
-	 * Checks that given class to see if its "getId()" method returns an {@link UnsupportedOperationException}.
+	 * Checks that instances of a given class are loadable and its {@link OpenmrsObject#getId()} 
+	 * does not return an {@link UnsupportedOperationException}.
 	 * <br/>
 	 * The <code>entryClassName</code> should be of type {@link OpenmrsObject}
 	 * 
 	 * @param entryClassName class name of OpenmrsObject to check
-	 * @return true if getId() throws an {@link UnsupportedOperationException}
+	 * @return false if instance can be loaded via {@link Context#loadClass(String)} and {@link OpenmrsObject#getId()} 
+	 * can be called; else returns true.
 	 */
 	public static boolean hasNoAutomaticPrimaryKey(String entryClassName) {
-		try {
-			//bit of defensive coding
-			if (!entryClassName.startsWith("org.openmrs.")) {
-				return false;
-			}
-			
+		try {			
 			Class<OpenmrsObject> c = (Class<OpenmrsObject>) Context.loadClass(entryClassName);
 			
 			OpenmrsObject o = c.newInstance();
@@ -1038,11 +1035,8 @@ public class SyncUtil {
 			return false;
 			
 		}
-		catch (UnsupportedOperationException e) {
-			return true;
-		}
 		catch (Exception e) {
-			throw new APIException("Can't load class named " + entryClassName, e);
+			return true;
 		}
 	}
 	
