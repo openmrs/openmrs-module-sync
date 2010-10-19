@@ -619,9 +619,20 @@ public class SyncUtil {
 			OpenmrsObject openmrsObject = getOpenmrsObj("org.openmrs.User", login.getUuid());
 			Integer userId = openmrsObject.getId();
 			login.setUserId(userId);
+    	} else if (o instanceof org.openmrs.Concept) {
+    		Concept concept = (Concept)o;
+    		if (!Context.getService(SyncIngestService.class)
+    				.isConceptIdValidForUuid(concept.getConceptId(), concept.getUuid())) {
+    			//error
+    			String msg = "Data inconsistency in concepts detected."
+    				+ "Concept with conflicting pair of values (id-uuid) already exists in the database."
+    				+ "\n Concept id: " + concept.getConceptId() + " and uuid: " + concept.getUuid();
+    			throw new SyncException(msg);
+    		}
+    		
     	}
     	
-    	//now do the save; not method comments to see why SyncPatientStub is handled differently
+    	//now do the save; see method comments to see why SyncPatientStub is handled differently
     	if ("org.openmrs.module.sync.SyncPatientStub".equals(className)) {
      		SyncPatientStub stub = (SyncPatientStub)o;
      		Context.getService(SyncIngestService.class).processSyncPatientStub(stub);

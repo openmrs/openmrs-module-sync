@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,6 +52,7 @@ import org.openmrs.PersonAttributeType;
 import org.openmrs.User;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncException;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemKey;
@@ -60,6 +62,7 @@ import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
+import org.openmrs.module.sync.ingest.SyncIngestException;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Normalizer;
 import org.openmrs.module.sync.serialization.Package;
@@ -69,6 +72,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.StringUtils;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Implements 'change interception' for data synchronization feature using
@@ -132,6 +137,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 	private static ThreadLocal<SyncRecord> syncRecordHolder = new ThreadLocal<SyncRecord>();
 	private ThreadLocal<Boolean> deactivated = new ThreadLocal<Boolean>();
 	private ThreadLocal<HashSet<Object>> pendingFlushHolder = new ThreadLocal<HashSet<Object>>();
+	private ThreadLocal<HashSet<OpenmrsObject>> postInsertModifications = new ThreadLocal<HashSet<OpenmrsObject>>();
 
 	public HibernateSyncInterceptor() {
 		log.info("Initializing the synchronization interceptor");
@@ -199,6 +205,11 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 						log.debug(record.getItems().size()
 								+ " SyncItems in SyncRecord, saving!");
 
+					//update the record with any post-insert updates
+					if (this.postInsertModifications.get() != null && this.postInsertModifications.get().isEmpty() == false) {
+						processPostInsertModifications(record);
+					}
+					
 					// Grab user if we have one, and use the UUID of the user as
 					// creator of this SyncRecord
 					User user = Context.getAuthenticatedUser();
@@ -242,6 +253,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 			log.error("Journal error\n", ex);
 			throw (new SyncException(
 					"Error in interceptor, see log messages and callstack.", ex));
+		}
+		finally {
+			this.postInsertModifications.remove();
 		}
 	}
 
@@ -353,6 +367,10 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 				pendingFlushHolder.get().add(entity);
 			}
 
+			//set-up new set for managing objects in need of post-insert updates
+			if (postInsertModifications.get() == null)
+				postInsertModifications.set(new HashSet<OpenmrsObject>());
+			
 			packageObject((OpenmrsObject) entity, state, propertyNames, types,
 					id, SyncItemState.NEW);
 		}
@@ -631,9 +649,20 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 				idPropertyName = data.getIdentifierPropertyName();
 				idPropertyObj = ((org.hibernate.persister.entity.AbstractEntityPersister) data)
 						.getEntityMetamodel().getIdentifierProperty();
+				
+				//handle case of new objects that have IDs assigned by NativeIfNotAssignedIdentityGenerator
+				if (id == null && 
+					state == SyncItemState.NEW &&
+					idPropertyObj.getIdentifierGenerator() instanceof org.openmrs.api.db.hibernate.NativeIfNotAssignedIdentityGenerator) {
+					//Save the reference to this obj for later
+					postInsertModifications.get().add(entity);
+				}
+
 				if (id != null
 						&& idPropertyObj.getIdentifierGenerator() != null
-						&& (idPropertyObj.getIdentifierGenerator() instanceof org.hibernate.id.Assigned)) {
+						&& (idPropertyObj.getIdentifierGenerator() instanceof org.hibernate.id.Assigned
+							|| idPropertyObj.getIdentifierGenerator() instanceof org.openmrs.api.db.hibernate.NativeIfNotAssignedIdentityGenerator)
+					) {
 					// serialize value as string
 					values.put(idPropertyName, new PropertyClassValue(id
 							.getClass().getName(), id.toString()));
@@ -1761,5 +1790,81 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 		}
 		
 		return;
+	}
+	
+	
+	/**
+	 * Deals with the problem of auto-generated values such as auto-increment primary keys
+	 * that are assigned by the underlying DB layer. This is necessary since at the time
+	 * onSave() event is fired the auto-increment primary key values are not yet known. Therefore
+	 * if those values are to be saved into the record, we need to 'come back' to it once they
+	 * have been fetched and add the values to the record.
+	 * 
+	 * 
+	 * @param record record
+	 */
+	private void processPostInsertModifications(SyncRecord record) {
+	
+		HashSet<OpenmrsObject> tmp = this.postInsertModifications.get();
+		
+		if (record == null || record.hasItems() == false || tmp == null) {
+			return;
+		}
+
+		Collection<SyncItem> items = record.getItems();
+		if (items == null || items.isEmpty() == true) {
+			return;
+		}
+		
+		SessionFactory factory = (SessionFactory) this.context.getBean("sessionFactory");
+		ClassMetadata data = null;
+		Object idPropertyValue = null;
+		String idPropertyName = null;
+		org.hibernate.tuple.IdentifierProperty idPropertyObj = null;
+
+		try {
+			for (OpenmrsObject obj : tmp) {
+				data = factory.getClassMetadata(obj.getClass());
+				if (!data.hasIdentifierProperty()) {
+					break;
+				}
+				idPropertyValue = factory.getCurrentSession().getIdentifier(obj);
+				idPropertyName = data.getIdentifierPropertyName();
+				idPropertyObj = ((org.hibernate.persister.entity.AbstractEntityPersister) data)
+							.getEntityMetamodel().getIdentifierProperty();
+				//now find it in the record and update it
+				for (SyncItem item : items) {
+					if (item.getContainedType() == obj.getClass()) {
+						if (item.getKey().getKeyValue().equals(obj.getUuid())) {
+							//found the right SyncItem
+							try {
+								String newIdStringValue = SyncUtil.getNormalizer(idPropertyValue.getClass()).toString(idPropertyValue);
+								String itemContent = item.getContent();
+								Record xml = Record.create(itemContent);
+								Item idItem = xml.getItem(idPropertyName);
+								if (idItem == null) {
+									//id wasn't serialized initially; i.e. was null add it in now
+									this.appendRecord(xml, obj,xml.getRootItem(), idPropertyName, idPropertyValue.getClass().getName(),newIdStringValue);
+								} else {
+									//id is there, update the value
+									//TODO:
+								};
+								
+								//now finally replace the SyncItem content
+								item.setContent(xml.toStringAsDocumentFragement());
+							}
+							finally {
+								break;
+							}
+						}
+					}
+					
+				}
+			}
+		}
+		catch(Exception ex) {
+			//TODO: log info and continue: something went wrong, 
+			//one way or the other we weren't able to apply the mods; so just continue
+		}
 	}
 }

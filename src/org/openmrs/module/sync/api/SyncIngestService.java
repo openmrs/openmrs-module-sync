@@ -95,4 +95,21 @@ public interface SyncIngestService {
     @Logging(ignoreAllArgumentValues=true)
 	public void processSyncPatientStub(SyncPatientStub stub) throws APIException;
 
+    /**
+     * Validates that database does not already contain concept with mismatched
+     * id/uuid, mismatched being defined as:
+     * new conceptId == concept_id && new uuid != uuid or 
+     * new conceptId != concept_id && new uuid == uuid
+     * <br/>
+     * In other words, if there is already a row in db that has same conceptId
+     * or uuid, then *both* have to match.
+     * 
+     * @param conceptId conceptId of concept to check
+     * @param uuid uuid of concept to check
+     * @return true if database does not contain concept with conflicting id/uuid combination 
+     * @throws APIException
+     */
+    @Transactional(readOnly = true)
+    @Logging(ignoreAllArgumentValues=true)
+    public boolean isConceptIdValidForUuid(int conceptId, String uuid) throws APIException;
 }

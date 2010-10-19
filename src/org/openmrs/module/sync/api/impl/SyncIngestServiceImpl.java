@@ -517,4 +517,12 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         return o;
     }
 
+    /**
+     * (non-Javadoc)
+     * @see org.openmrs.module.sync.api.SyncIngestService#isConceptIdValidForUuid(int, java.lang.String)
+     */
+    public boolean isConceptIdValidForUuid(int conceptId, String uuid) throws APIException {
+ 
+    	return dao.isConceptIdValidForUuid(conceptId, uuid);
+    }
 }

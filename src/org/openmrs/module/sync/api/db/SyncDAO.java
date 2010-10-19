@@ -396,5 +396,9 @@ public interface SyncDAO {
 	 * @param stub
 	 */
 	public void processSyncPatientStub(SyncPatientStub stub);
-	
+
+	/**
+	 * See {@link org.openmrs.module.sync.api.SyncIngestService#isConceptIdValidForUuid(int, String)}
+	 */
+	public boolean isConceptIdValidForUuid(int conceptId, String uuid);
 }

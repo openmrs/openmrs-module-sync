@@ -1450,5 +1450,55 @@ public class HibernateSyncDAO implements SyncDAO {
 		
 		return;
 	}
+
+	/**
+	 * (non-Javadoc)
+	 * @see org.openmrs.module.sync.api.db.SyncDAO#isConceptIdValidForUuid(int, java.lang.String)
+	 */
+	public boolean isConceptIdValidForUuid(int conceptId, String uuid) {
+
+		if (uuid == null) {
+			return true;
+		}
+				
+		boolean ret = true; //assume all is well until proven otherwise
+		PreparedStatement ps = null;
+		Connection connection = sessionFactory.getCurrentSession().connection();
+		int foundId = 0;
+		String foundUuid = null;
+
+		try {
+			ps = connection.prepareStatement("SELECT concept_id, uuid FROM concept WHERE (uuid = ? AND concept_id <> ?)" +
+					"OR (uuid <> ? AND concept_id = ?)");
+			ps.setString(1, uuid);
+			ps.execute();
+			ResultSet rs = ps.getResultSet();
+			if (rs.next()) {
+				ret = false;
+				foundId = rs.getInt("concept_id");
+				foundUuid = rs.getString("uuid");
+				String msg = "Found inconsistent data during concept ingest."
+					+ "\nto be added conceptid/uuid are:" + conceptId + "/" + uuid
+					+ "\nfound in DB conceptid/uuid:"  + foundId + "/" + foundUuid;
+				log.error(msg);
+			};
+			
+			ps.close();
+			ps = null;
+		}
+		catch (SQLException e) {
+			log.error("Error while doing isConceptIdValidForUuid.", e);
+		}
+		if (ps != null) {
+			try {
+				ps.close();
+			}
+			catch (SQLException e) {
+				log.error("Error generated while closing statement", e);
+			}
+		}
+		
+		return ret;
+	}
 	
 }
