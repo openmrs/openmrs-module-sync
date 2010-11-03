@@ -1455,9 +1455,9 @@ public class HibernateSyncDAO implements SyncDAO {
 	 * (non-Javadoc)
 	 * @see org.openmrs.module.sync.api.db.SyncDAO#isConceptIdValidForUuid(int, java.lang.String)
 	 */
-	public boolean isConceptIdValidForUuid(int conceptId, String uuid) {
+	public boolean isConceptIdValidForUuid(Integer conceptId, String uuid) {
 
-		if (uuid == null) {
+		if (uuid == null || conceptId == null) {
 			return true;
 		}
 				

@@ -111,5 +111,5 @@ public interface SyncIngestService {
      */
     @Transactional(readOnly = true)
     @Logging(ignoreAllArgumentValues=true)
-    public boolean isConceptIdValidForUuid(int conceptId, String uuid) throws APIException;
+    public boolean isConceptIdValidForUuid(Integer conceptId, String uuid) throws APIException;
 }

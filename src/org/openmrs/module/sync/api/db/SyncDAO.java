@@ -400,5 +400,5 @@ public interface SyncDAO {
 	/**
 	 * See {@link org.openmrs.module.sync.api.SyncIngestService#isConceptIdValidForUuid(int, String)}
 	 */
-	public boolean isConceptIdValidForUuid(int conceptId, String uuid);
+	public boolean isConceptIdValidForUuid(Integer conceptId, String uuid);
 }

@@ -1828,7 +1828,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 				if (!data.hasIdentifierProperty()) {
 					break;
 				}
-				idPropertyValue = factory.getCurrentSession().getIdentifier(obj);
+				idPropertyValue = data.getIdentifier(obj,org.hibernate.EntityMode.POJO);
 				idPropertyName = data.getIdentifierPropertyName();
 				idPropertyObj = ((org.hibernate.persister.entity.AbstractEntityPersister) data)
 							.getEntityMetamodel().getIdentifierProperty();
