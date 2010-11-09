@@ -45,6 +45,7 @@ import java.util.TreeSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
+import org.hibernate.FlushMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -55,7 +56,6 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
-import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.sync.SyncClass;
@@ -590,11 +590,20 @@ public class HibernateSyncDAO implements SyncDAO {
     /**
      * Sets hibernate flush mode to org.hibernate.FlushMode.MANUAL.
      * 
+     * @return true if the flush mode was set already manual
+     * 
+     * @see #isFlushModeManual()
      * @see org.hibernate.FlushMode
      * @see org.openmrs.module.sync.api.db.SyncDAO#setFlushModeManual()
      */
-    public void setFlushModeManual() throws DAOException {
-    	sessionFactory.getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
+    public boolean setFlushModeManual() throws DAOException {
+    	boolean isManualAlready = isFlushModeManual();
+    	
+    	// don't need to set it if its already manual
+    	if (!isManualAlready)
+    		sessionFactory.getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
+    	
+    	return isManualAlready;
     }
     
     /**
@@ -605,6 +614,16 @@ public class HibernateSyncDAO implements SyncDAO {
      */
     public void setFlushModeAutomatic() throws DAOException {
     	sessionFactory.getCurrentSession().setFlushMode(org.hibernate.FlushMode.AUTO);
+    }
+    
+    /**
+     * Returns true if the flush mode is currently set to manual
+     * 
+     * @return true if the flush mode is manual
+     * @throws DAOException
+     */
+    public boolean isFlushModeManual() throws DAOException {
+    	return FlushMode.isManualFlushMode(sessionFactory.getCurrentSession().getFlushMode());
     }
 
     /**

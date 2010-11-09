@@ -538,6 +538,7 @@ public interface SyncService {
 	 * @return
 	 * @should get any openmrs object by its uuid
 	 */
+	@Transactional(readOnly = true)
 	public <T extends OpenmrsObject> T getOpenmrsObjectByUuid(Class<T> clazz, String uuid);
 	
 	/**
@@ -545,6 +546,7 @@ public interface SyncService {
 	 * 
 	 * @return a list of {@link OpenmrsObject}
 	 */
+	@Transactional(readOnly = true)
 	public List<Class<OpenmrsObject>> getAllOpenmrsObjects();
 	
 	/**
@@ -573,6 +575,7 @@ public interface SyncService {
 	 * Dumps the entire database with the mysqldump command to a file.
 	 * @return the file pointer to the database dump
 	 */
+	@Transactional(readOnly = true)
 	public File generateDataFile() throws APIException;
 
 	/**
@@ -619,7 +622,7 @@ public interface SyncService {
 	 * @param p Patient for which stub ought to be created
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true) // because things are not actually written to the db, just memory
 	@Logging(ignoreAllArgumentValues = true)
 	public void handleInsertPatientStubIfNeeded(Patient p) throws APIException;
 }

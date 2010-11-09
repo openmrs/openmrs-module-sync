@@ -43,7 +43,6 @@ public class SavePatientAdvice implements MethodBeforeAdvice  {
 	 *      java.lang.Object[], java.lang.Object)
 	 * @should not fail on update method with no arguments
 	 */
-	@SuppressWarnings("unchecked")
 	public void before(Method method, Object[] args, Object target) throws Throwable {
 
 		if (!method.getName().equals("savePatient")) {

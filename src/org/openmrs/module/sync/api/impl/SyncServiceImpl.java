@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.Patient;
+import org.openmrs.Person;
 import org.openmrs.Privilege;
 import org.openmrs.Role;
 import org.openmrs.api.APIException;
@@ -783,21 +784,31 @@ public class SyncServiceImpl implements SyncService {
 		if (p == null || p.getPatientId() == null || p.getUuid() == null) {
 			return;
 		}
-
-		OpenmrsObject personRecord = null;
-		OpenmrsObject patientRecord = null;
-
-		//check if person obj exists
-		personRecord = SyncUtil.getOpenmrsObj("org.openmrs.Person", p.getUuid());
-		patientRecord = SyncUtil.getOpenmrsObj("org.openmrs.Patient", p.getUuid());
-		if (personRecord != null && patientRecord == null) {
-			//bingo!
-			log.info("Create of new patient who is already user detected, uuid: " + p.getUuid());
-			SyncPatientStub stub= new SyncPatientStub(p);
-			HibernateSyncInterceptor.addSyncItemForPatientStub(stub);
-			//we are going to save patient later, thus person ought to be evicted from session
-			Context.evictFromSession(personRecord);
-			Context.evictFromSession(patientRecord);
+		
+		// changing the flush mode temporarily so that nothing is flushed
+		// to the db while we are checking for the uuids
+		boolean wasFlushModeAlready = dao.setFlushModeManual();
+		try {
+			OpenmrsObject personRecord = null;
+			OpenmrsObject patientRecord = null;
+	
+			//check if person obj exists
+			personRecord = dao.getOpenmrsObjectByUuid(Person.class, p.getUuid());
+			patientRecord = dao.getOpenmrsObjectByUuid(Patient.class, p.getUuid());
+			if (personRecord != null && patientRecord == null) {
+				//bingo!
+				log.info("Create of new patient who is already user detected, uuid: " + p.getUuid());
+				SyncPatientStub stub= new SyncPatientStub(p);
+				HibernateSyncInterceptor.addSyncItemForPatientStub(stub);
+				//we are going to save patient later, thus person ought to be evicted from session
+				Context.evictFromSession(personRecord);
+				Context.evictFromSession(patientRecord);
+			}
+		}
+		finally {
+			// only reset this if we really changed it when setting it to manual
+			if (!wasFlushModeAlready)
+				dao.setFlushModeAutomatic();
 		}
 		
 		return;

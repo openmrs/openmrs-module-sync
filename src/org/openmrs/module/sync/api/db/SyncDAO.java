@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.openmrs.OpenmrsObject;
-import org.openmrs.Patient;
 import org.openmrs.api.APIException;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.sync.SyncClass;
@@ -299,17 +298,26 @@ public interface SyncDAO {
 	/**
 	 * Sets session flush mode to manual thus suspending session flush.
 	 * 
+	 * @return true if the flush mode was manual already
 	 * @throws DAOException
 	 */
-	public void setFlushModeManual() throws DAOException;
+	public boolean setFlushModeManual() throws DAOException;
 	
 	/**
-	 * Sets session flush mode to automatic thus enabling presistence library's default flush
+	 * Sets session flush mode to automatic thus enabling persistence library's default flush
 	 * behavior.
 	 * 
 	 * @throws DAOException
 	 */
 	public void setFlushModeAutomatic() throws DAOException;
+	
+	/**
+	 * Returns true if the flush mode is currently set to manual
+	 * 
+	 * @return true if the flush mode is manual
+	 * @throws DAOException
+	 */
+	public boolean isFlushModeManual() throws DAOException;
 	
 	/**
 	 * Flushes presistence library's session.
