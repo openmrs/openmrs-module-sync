@@ -800,10 +800,10 @@ public class SyncServiceImpl implements SyncService {
 				log.info("Create of new patient who is already user detected, uuid: " + p.getUuid());
 				SyncPatientStub stub= new SyncPatientStub(p);
 				HibernateSyncInterceptor.addSyncItemForPatientStub(stub);
-				//we are going to save patient later, thus person ought to be evicted from session
-				Context.evictFromSession(personRecord);
-				Context.evictFromSession(patientRecord);
 			}
+			//we are going to save patient later, thus person ought to be evicted from session
+			Context.evictFromSession(personRecord);
+			Context.evictFromSession(patientRecord);
 		}
 		finally {
 			// only reset this if we really changed it when setting it to manual

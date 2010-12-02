@@ -5,7 +5,7 @@
 	<!-- Synchronization Module Properties -->
 	<id>sync</id>
 	<name>Synchronization Module</name>
-	<version>0.9</version>
+	<version>0.91</version>
 	<package>org.openmrs.module.@MODULE_ID@</package>
 	<author>Maros Cunderlik</author>
 	<description>Synchronize data between a parent and multiple child servers</description>

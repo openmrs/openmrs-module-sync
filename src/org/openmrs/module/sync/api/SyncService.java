@@ -596,7 +596,7 @@ public interface SyncService {
 	 * @return true if the object should be recored for sync
 	 */
 	@Transactional(readOnly = true)
-	@Logging(ignoreAllArgumentValues = true)
+	@Logging(ignoreAllArgumentValues = true) // TODO: change to ignore=true once 1.8 is the minimum supported version 
 	public Boolean shouldSynchronize(Object entity) throws APIException;
 
 	/**
