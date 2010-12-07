@@ -1519,5 +1519,28 @@ public class HibernateSyncDAO implements SyncDAO {
 		
 		return ret;
 	}
+
+	public Integer getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(SyncRecord.class);
+		criteria.setProjection(Projections.rowCount());
+		
+	    if (from != null)
+	    	criteria.add(Restrictions.gt("timestamp", from)); // greater than
+	       
+	    if (to != null)
+	        criteria.add(Restrictions.le("timestamp", to)); // less-than or equal
+	    
+	    // only check for matching states if any were passed in
+	    if (states != null && states.length > 0)
+	    	criteria.add(Restrictions.in("state", states));
+	    
+	    if (server != null) {
+	    	criteria.createCriteria("serverRecords", "sr");
+	    	criteria.add(Restrictions.in("sr.state", states));
+	    	criteria.add(Restrictions.eq("sr.syncServer", server));
+	    }
+	    
+	    return (Integer) criteria.uniqueResult();
+	}
 	
 }

@@ -259,6 +259,18 @@ public interface SyncService {
 	public List<SyncRecord> getSyncRecordsBetween(Date from, Date to) throws APIException;
 	
 	/**
+	 * 
+	 * @param server optional server to restrict this to
+	 * @param from the start date
+	 * @param to the end date
+	 * @param states optional states to restrict this to
+	 * @return the number of records
+	 * @throws APIException
+	 */
+	@Transactional(readOnly = true)
+	public Integer getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states) throws APIException;
+	
+	/**
 	 * Get the most recent sync records
 	 * 
 	 * @param firstRecordId the first SyncRecord#getRecordId() to return

@@ -409,4 +409,7 @@ public interface SyncDAO {
 	 * See {@link org.openmrs.module.sync.api.SyncIngestService#isConceptIdValidForUuid(int, String)}
 	 */
 	public boolean isConceptIdValidForUuid(Integer conceptId, String uuid);
+
+	public Integer getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states);
+	
 }

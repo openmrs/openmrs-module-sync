@@ -17,7 +17,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -27,23 +26,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.SyncItem;
-import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
-import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
-import org.openmrs.module.sync.serialization.Item;
-import org.openmrs.module.sync.serialization.Record;
-import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
-import org.springframework.web.servlet.view.RedirectView;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  *
@@ -52,13 +42,11 @@ public class StatisticsController extends SimpleFormController {
 
     /** Logger for this class and subclasses */
     protected final Log log = LogFactory.getLog(getClass());
-    private SyncStatisticsCommand command=null;
 
     public class SyncStatisticsCommand {
 		private String datePattern;
 		private Date fromDate;
 		private Date toDate;
-		private List<SyncRecord> records;
 		
 		public SyncStatisticsCommand() { }
 		public Date getFromDate() {
@@ -79,15 +67,10 @@ public class StatisticsController extends SimpleFormController {
 		public void setDatePattern(String datePattern) {
 			this.datePattern = datePattern;
 		}
-		public void setRecords(List<SyncRecord> records) {
-			this.records = records;
-		}
-		public List<SyncRecord> getRecords() {
-			return this.records;
-		}
 		
 	}
- // Move this to message.properties or OpenmrsConstants
+    
+    // Move this to message.properties or OpenmrsConstant
 	public static String DEFAULT_DATE_PATTERN = "MM/dd/yyyy HH:mm:ss";
 	public static DateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat(DEFAULT_DATE_PATTERN);
 	
@@ -109,177 +92,67 @@ public class StatisticsController extends SimpleFormController {
      */
     protected Object formBackingObject(HttpServletRequest request)
             throws ServletException {
-        if (Context.isAuthenticated()) {
-        	SyncService syncService = Context.getService(SyncService.class);
-        	if(command==null){
-        		command=new SyncStatisticsCommand();
-        		command.setDatePattern(DEFAULT_DATE_PATTERN);
-            	command.setFromDate(null);
-            	command.setToDate(new Date());
-                command.setRecords(syncService.getSyncRecords());
-        	}
-        	else if(command.getFromDate()==null){
-        		command=new SyncStatisticsCommand();
-        		command.setDatePattern(DEFAULT_DATE_PATTERN);
-            	command.setFromDate(null);
-            	command.setToDate(new Date());
-                command.setRecords(syncService.getSyncRecords());
-        	}
-        		
-        }
-
-		if (command == null)
-			command = new SyncStatisticsCommand();
     	
+    	SyncStatisticsCommand command = new SyncStatisticsCommand();
+    	command.setDatePattern(DEFAULT_DATE_PATTERN);
+        command.setFromDate(null);
+        command.setToDate(new Date());
+
         return command;
     }
     
+	/**
+	 * @see org.springframework.web.servlet.mvc.SimpleFormController#onSubmit(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.Object, org.springframework.validation.BindException)
+	 */
 	protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, Object obj, BindException errors) throws Exception {
 		
-		ModelAndView result = new ModelAndView(new RedirectView(getSuccessView()));
-		
-		command=(SyncStatisticsCommand)obj;
-		Date startDate=command.getFromDate();
-		Date endDate=command.getToDate();
-		
-		SyncService syncService = Context.getService(SyncService.class);
-		List<SyncRecord>rec=null;
-		if(startDate!=null && endDate!=null)
-			rec=syncService.getSyncRecordsBetween(startDate, endDate);
-		else if(startDate!=null)
-			rec=syncService.getSyncRecordsSince(startDate);
-		else{
-			rec=syncService.getSyncRecords();
-			command.setToDate(new Date());
-		}
-		
-    	command.setDatePattern(DEFAULT_DATE_PATTERN);
-        command.setRecords(rec);
-		
-		return result;
+		return showForm(request, response, errors);
 	}
 
 	@Override
     protected Map<String, Object> referenceData(HttpServletRequest request, Object obj, Errors errors) throws Exception {
 		Map<String,Object> ret = new HashMap<String,Object>();
 		
-		Map<String,String> recordTypes = new HashMap<String,String>();
-		Map<Object,String> itemTypes = new HashMap<Object,String>();
-		Map<Object,String> itemGuids = new HashMap<Object,String>();
-		Map<String,String> recordText = new HashMap<String,String>();
-        Map<String,String> recordChangeType = new HashMap<String,String>();
+		SyncService ss = Context.getService(SyncService.class);
+		SyncStatisticsCommand command = (SyncStatisticsCommand)obj;
+		
+		Date startDate = command.getFromDate();
+		Date endDate = command.getToDate();
+		
         // Sync statistics 
-        int totalRecords=0;
-        int synchronizedRecords=0;
-        int newRecords=0;
-        int pendingRecords=0;
-        int sentRecords=0;
-        int sendFailedRecords=0;
-        int ingestFailedRecords=0;
-        int retriedRecords=0;
-        int failedStoppedRecords=0;
-        int notSyncRecords=0;
-        int rejectedRecords=0;
-        int unknownstateRecords=0;
+        Integer totalRecords = ss.getCountOfSyncRecords(null, startDate, endDate, null);
         
-        SyncStatisticsCommand command=(SyncStatisticsCommand)obj;
-        List<SyncRecord> recordList =command.getRecords();
+        Integer synchronizedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.ALREADY_COMMITTED, SyncRecordState.COMMITTED, SyncRecordState.COMMITTED_AND_CONFIRMATION_SENT);
+        Integer newRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.NEW);
+        Integer pendingRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.PENDING_SEND);
+        Integer sentRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.SENT);
+        Integer sendFailedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.SEND_FAILED);
+        Integer ingestFailedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.FAILED);
+        Integer retriedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.SENT_AGAIN);
+        Integer failedStoppedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.FAILED_AND_STOPPED);
+        Integer notSyncRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.NOT_SUPPOSED_TO_SYNC);
+        Integer rejectedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.REJECTED);
         
-        totalRecords=recordList.size();
-        // warning: right now we are assuming there is only 1 item per record
-        for ( SyncRecord record : recordList ) {
-            SyncRecordState state=record.getState();
-        	if(state==SyncRecordState.ALREADY_COMMITTED||state==SyncRecordState.COMMITTED)
-        		synchronizedRecords++;
-        	else if(state==SyncRecordState.NEW)
-        		newRecords++;
-        	else if(state==SyncRecordState.PENDING_SEND)
-        		pendingRecords++;
-        	else if(state==SyncRecordState.SENT)
-        		sentRecords++;
-        	else if(state==SyncRecordState.SEND_FAILED)
-        		sendFailedRecords++;
-        	else if(state==SyncRecordState.FAILED)
-        		ingestFailedRecords++;
-        	else if(state==SyncRecordState.SENT_AGAIN)
-        		retriedRecords++;
-        	else if(state==SyncRecordState.FAILED_AND_STOPPED)
-        		failedStoppedRecords++;
-        	else if(state==SyncRecordState.NOT_SUPPOSED_TO_SYNC)
-        		notSyncRecords++;
-        	else if(state==SyncRecordState.REJECTED)
-        		rejectedRecords++;
-        	else 
-        		unknownstateRecords++;
-        	
-            String mainClassName = null;
-            String mainGuid = null;
-            String mainState = null;
-            
-			for ( SyncItem item : record.getItems() ) {
-				String syncItem = item.getContent();
-                mainState = item.getState().toString();
-				Record xml = Record.create(syncItem);
-				Item root = xml.getRootItem();
-				String className = root.getNode().getNodeName().substring("org.openmrs.".length());
-				itemTypes.put(item.getKey().getKeyValue(), className);
-				if ( mainClassName == null ) mainClassName = className;
-                
-				//String itemInfoKey = itemInfoKeys.get(className);
-				
-				// now we have to go through the item child nodes to find the real GUID that we want
-				NodeList nodes = root.getNode().getChildNodes();
-				for ( int i = 0; i < nodes.getLength(); i++ ) {
-					Node n = nodes.item(i);
-					String propName = n.getNodeName();
-					if ( propName.equalsIgnoreCase("guid") ) {
-                        String guid = n.getTextContent();
-						itemGuids.put(item.getKey().getKeyValue(), guid);
-                        if ( mainGuid == null ) mainGuid = guid;
-                    }
-				}
-			}
-
-			// persistent sets should show something other than their mainClassName (persistedSet)
-			if ( mainClassName.indexOf("Persistent") >= 0 ) mainClassName = record.getContainedClasses();
-			
-            recordTypes.put(record.getUuid(), mainClassName);
-            recordChangeType.put(record.getUuid(), mainState);
-
-            // refactored - CA 21 Jan 2008
-            String displayName = "";
-            try {
-                displayName = SyncUtil.displayName(mainClassName, mainGuid);
-            } catch ( Exception e ) {
-            	// some methods like Concept.getName() throw Exception s all the time...
-            	displayName = "";
-            }
-            if ( displayName != null ) if ( displayName.length() > 0 ) recordText.put(record.getUuid(), displayName);
-        }
+        // all "other" ones from some other state
+        Integer unknownstateRecords = totalRecords - synchronizedRecords - newRecords
+        - pendingRecords - sentRecords - sendFailedRecords - ingestFailedRecords - retriedRecords
+        - failedStoppedRecords - notSyncRecords - rejectedRecords;
         
         // reference statistics
-        ret.put("totalRecords",new Integer(totalRecords) );
-        ret.put("synchronizedRecords", new Integer(synchronizedRecords));
-        ret.put("newRecords",  new Integer(newRecords));
-        ret.put("pendingRecords",  new Integer(pendingRecords));
-        ret.put("sentRecords",  new Integer(sentRecords));
-        ret.put("sendFailedRecords",  new Integer(sendFailedRecords));
-        ret.put("ingestFailedRecords",  new Integer(ingestFailedRecords));
-        ret.put("retriedRecords",  new Integer(retriedRecords));
-        ret.put("failedStoppedRecords", new Integer(failedStoppedRecords));
-        ret.put("notSyncRecords", new Integer(notSyncRecords));
-        ret.put("rejectedRecords",  new Integer(rejectedRecords));
-        ret.put("unknownstateRecords", new Integer(unknownstateRecords));
+        ret.put("totalRecords", totalRecords );
+        ret.put("synchronizedRecords", synchronizedRecords);
+        ret.put("newRecords",  newRecords);
+        ret.put("pendingRecords",  pendingRecords);
+        ret.put("sentRecords",  sentRecords);
+        ret.put("sendFailedRecords",  sendFailedRecords);
+        ret.put("ingestFailedRecords",  ingestFailedRecords);
+        ret.put("retriedRecords",  retriedRecords);
+        ret.put("failedStoppedRecords", failedStoppedRecords);
+        ret.put("notSyncRecords", notSyncRecords);
+        ret.put("rejectedRecords",  rejectedRecords);
+        ret.put("unknownstateRecords", unknownstateRecords);
         
-        ret.put("recordTypes", recordTypes);
-        ret.put("itemTypes", itemTypes);
-        ret.put("itemGuids", itemGuids);
-        ret.put("recordText", recordText);
-        ret.put("recordChangeType", recordChangeType);
         ret.put("parent", Context.getService(SyncService.class).getParentServer());
-        ret.put("servers", Context.getService(SyncService.class).getRemoteServers());
-        ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
-        
         
 	    return ret;
     }

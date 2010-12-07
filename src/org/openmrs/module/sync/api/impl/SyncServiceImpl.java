@@ -813,5 +813,10 @@ public class SyncServiceImpl implements SyncService {
 		
 		return;
 	}
+
+	public Integer getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states)
+                                                                                                            throws APIException {
+	    return dao.getCountOfSyncRecords(server, from, to, states);
+    }
 	
 }
