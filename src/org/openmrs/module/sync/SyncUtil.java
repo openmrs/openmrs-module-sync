@@ -74,6 +74,7 @@ import org.openmrs.module.sync.api.SyncIngestService;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.api.db.hibernate.HibernateSyncInterceptor;
 import org.openmrs.module.sync.serialization.BinaryNormalizer;
+import org.openmrs.module.sync.serialization.ClassNormalizer;
 import org.openmrs.module.sync.serialization.DefaultNormalizer;
 import org.openmrs.module.sync.serialization.FilePackage;
 import org.openmrs.module.sync.serialization.IItem;
@@ -106,6 +107,7 @@ public class SyncUtil {
 		TimestampNormalizer dateN = new TimestampNormalizer();
 		BinaryNormalizer byteN = new BinaryNormalizer();
 		MapNormalizer mapN = new MapNormalizer();
+		ClassNormalizer classN = new ClassNormalizer();
 		
 		safetypes = new HashMap<String, Normalizer>();
 		// safetypes.put("binary", defN);
@@ -135,6 +137,7 @@ public class SyncUtil {
 		// timezone
 		
 		safetypes.put("map", mapN);
+		safetypes.put("class", classN);
 	}
 	
 	/**
