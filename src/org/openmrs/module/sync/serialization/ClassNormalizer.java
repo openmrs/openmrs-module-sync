@@ -13,6 +13,8 @@
  */
 package org.openmrs.module.sync.serialization;
 
+import org.openmrs.api.context.Context;
+
 /**
  * Converts Class objects to and from strings. Serialized version of Class object is simply a full
  * type name.
@@ -29,7 +31,7 @@ public class ClassNormalizer extends Normalizer {
 	public Object fromString(Class clazz, String s) {
 		Object o = null;
 		try {
-			o = Class.forName(s);
+			o = Context.loadClass(s);
 		}
 		catch (ClassNotFoundException ex) {}
 		
