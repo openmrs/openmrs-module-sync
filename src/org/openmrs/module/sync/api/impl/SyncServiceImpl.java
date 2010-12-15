@@ -787,27 +787,32 @@ public class SyncServiceImpl implements SyncService {
 		
 		// changing the flush mode temporarily so that nothing is flushed
 		// to the db while we are checking for the uuids
-		boolean wasFlushModeAlready = dao.setFlushModeManual();
+		boolean wasFlushModeManualAlready = dao.setFlushModeManual();
 		try {
-			OpenmrsObject personRecord = null;
-			OpenmrsObject patientRecord = null;
-	
+			AdministrationService as = Context.getAdministrationService();
+			
 			//check if person obj exists
-			personRecord = dao.getOpenmrsObjectByUuid(Person.class, p.getUuid());
-			patientRecord = dao.getOpenmrsObjectByUuid(Patient.class, p.getUuid());
-			if (personRecord != null && patientRecord == null) {
+			Object personId = null;
+			Object patientId = null;
+			
+			// TODO: Fix this logic when patient_id != person_id anymore
+			List<List<Object>> rows = as.executeSQL("select person_id from person where uuid = '" + p.getUuid() + "'", true);
+			if (rows.size() > 0)
+				personId = rows.get(0).get(0);
+			rows = as.executeSQL("select patient_id from patient where patient_id = (select person_id from person where uuid = '" + p.getUuid() + "')", true);
+			if (rows.size() > 0)
+				patientId = rows.get(0).get(0);
+			
+			if (personId != null && patientId == null) {
 				//bingo!
 				log.info("Create of new patient who is already user detected, uuid: " + p.getUuid());
 				SyncPatientStub stub= new SyncPatientStub(p);
 				HibernateSyncInterceptor.addSyncItemForPatientStub(stub);
 			}
-			//we are going to save patient later, thus person ought to be evicted from session
-			Context.evictFromSession(personRecord);
-			Context.evictFromSession(patientRecord);
 		}
 		finally {
 			// only reset this if we really changed it when setting it to manual
-			if (!wasFlushModeAlready)
+			if (!wasFlushModeManualAlready)
 				dao.setFlushModeAutomatic();
 		}
 		

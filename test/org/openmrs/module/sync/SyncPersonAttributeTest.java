@@ -22,7 +22,6 @@ import org.openmrs.PersonAttributeType;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
-import org.openmrs.test.TestUtil;
 import org.springframework.test.annotation.NotTransactional;
 
 /**
