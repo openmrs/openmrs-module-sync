@@ -466,4 +466,44 @@ public class SyncConceptTest extends SyncBaseTest {
 			}
 		});
 	}
+	
+	@Test
+	@NotTransactional
+	public void shouldAddAndRemoveConceptAnswer() throws Exception {
+			runSyncTest(new SyncTestHelper() {
+				
+				ConceptService cs;
+				
+				public void runOnChild() {
+					cs = Context.getConceptService();
+					
+					Concept coded = cs.getConcept(1);
+					
+					// remove the first answer
+					coded.removeAnswer(coded.getAnswers().toArray(new ConceptAnswer[]{})[0]);
+					
+					// add a new answer
+					Concept other = cs.getConceptByName("WEIGHT");
+					assertNotNull("Failed to get concept WEIGHT", other);
+					coded.addAnswer(new ConceptAnswer(other));
+					
+					cs.saveConcept(coded);
+				}
+				
+				public void runOnParent() {
+					Context.clearSession();
+					
+					Concept conceptCoded = cs.getConcept(1);
+					
+					Set<String> answers = new HashSet<String>();
+					for (ConceptAnswer a : conceptCoded.getAnswers()) {
+						answers.add(a.getAnswerConcept().getName().getName());
+					}
+					Assert.assertTrue(answers.contains("WEIGHT")); // we added this as a new answer
+					Assert.assertFalse(answers.contains("OTHER NON-CODED")); // we removed this
+					Assert.assertTrue(answers.contains("NONE")); // was already on the concept
+					
+				}
+			});
+		}
 }

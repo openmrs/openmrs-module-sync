@@ -194,6 +194,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     
                     syncService.flushSession();
                     syncService.setFlushModeAutomatic();
+                    Context.clearSession(); // so that objects aren't resaved at next flush below
                     
                     /* now run through deletes: deletes must be processed after inserts/updates
                      * because of hibernate flushing semantics inside transactions:
@@ -212,6 +213,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     }
                     syncService.flushSession();
                     syncService.setFlushModeAutomatic();
+                    Context.clearSession(); // so that objects aren't resaved at next flush below
 
 
                     /* Run through the patient identifier updates, see the method comments to understand
@@ -226,6 +228,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     }
                     syncService.flushSession();
                     syncService.setFlushModeAutomatic();
+                    Context.clearSession(); // so that objects aren't resaved at next flush below
                     
                     /* 
                      * finally execute the pending actions that resulted from processing all sync items 
@@ -234,6 +237,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     syncIngestService.applyPreCommitRecordActions(processedObjects);
                     syncService.flushSession();
                     syncService.setFlushModeAutomatic();
+                    Context.clearSession(); // so that objects aren't resaved at next flush below
                     
                     if ( !isError ) {
                         importRecord.setState(SyncRecordState.COMMITTED);
