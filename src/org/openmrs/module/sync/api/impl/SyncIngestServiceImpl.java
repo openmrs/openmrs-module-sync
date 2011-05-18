@@ -117,7 +117,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         
     	ArrayList<SyncItem> deletedItems = new ArrayList<SyncItem>();
     	ArrayList<SyncItem> treeSetItems = new ArrayList<SyncItem>();  //these are processed out of order.  See method comments.
-    	ArrayList<SyncItem> firstPass = new ArrayList<SyncItem>();  //inserts and updates
+    	ArrayList<SyncItem> regularNewAndUpdateItems = new ArrayList<SyncItem>();  //inserts and updates
     	SyncImportRecord importRecord = new SyncImportRecord();
         importRecord.setState(SyncRecordState.FAILED);  // by default, until we know otherwise
         importRecord.setRetryCount(record.getRetryCount());
@@ -191,22 +191,18 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     			|| "org.openmrs.PersonName".equals(item.getContainedType().getName())
                     			)) {
                     		treeSetItems.add(item);
-                    	} else {
-                    		firstPass.add(item);
-                    	}
-                    }
-                    
-                    //Sync-180: Person items need to be processed first
-                    for (SyncItem item : firstPass){
-                    	if (Person.class.isAssignableFrom(item.getContainedType())){
+                    	} else if (Person.class.isAssignableFrom(item.getContainedType())){
+                    		//Sync-180: Person items need to be processed first
 		                    SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
 		                    importedItem.setKey(item.getKey());
 		                    importRecord.addItem(importedItem);
 		                    if ( !importedItem.getState().equals(SyncItemState.SYNCHRONIZED)) isError = true;
+                    	} else {
+                    		regularNewAndUpdateItems.add(item);
                     	}
                     }
-                    
-                    for (SyncItem item : firstPass){
+
+                    for (SyncItem item : regularNewAndUpdateItems){
                     	if (!Person.class.isAssignableFrom(item.getContainedType())){
 		                    SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
 		                    importedItem.setKey(item.getKey());
