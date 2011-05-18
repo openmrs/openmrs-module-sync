@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
+import org.springframework.util.StringUtils;
 
 /**
  * 
@@ -162,6 +163,14 @@ public class ServerConnection {
 
 	public static Double getTimeout() {
 		// let's figure out a suitable timeout
+		String timeoutGP = Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_CONNECTION_TIMEOUT).trim();
+		try {
+			if (StringUtils.hasText(timeoutGP))
+				return Double.valueOf(timeoutGP);
+			
+		} catch (Exception ex){
+			log.error("Could not convert " + timeoutGP + " to Double.  Please enter a valid number of miliseconds, or leave " + SyncConstants.PROPERTY_CONNECTION_TIMEOUT + " blank to use the default.");
+		}
 		Double timeout = 300000.0; // let's just default at 5 min for now
 		try {
 			Integer maxRecords = new Integer(Context.getAdministrationService()
@@ -174,6 +183,7 @@ public class ServerConnection {
 		} catch (NumberFormatException nfe) {
 			// it's ok if this fails (not sure how it could) = we'll just do 5 min timeout
 		}
+		
 		return timeout;
 	}
 

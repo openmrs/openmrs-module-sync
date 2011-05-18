@@ -5,7 +5,7 @@
 	<!-- Synchronization Module Properties -->
 	<id>sync</id>
 	<name>Synchronization Module</name>
-	<version>0.95</version>
+	<version>0.96</version>
 	<package>org.openmrs.module.@MODULE_ID@</package>
 	<author>Maros Cunderlik</author>
 	<description>Synchronize data between a parent and multiple child servers</description>
@@ -61,6 +61,11 @@
 		<property>sync.max_records</property>
 		<defaultValue>50</defaultValue>
 		<description>Number of records to package up and send at a time.</description>
+	</globalProperty>
+	<globalProperty>
+		<property>sync.connection_timeout</property>
+		<defaultValue></defaultValue>
+		<description>Timeout before sync process gives up trying to connect to parent server.  If null, sync default formula is used.  Units are milliseconds (remember, 6000 represents a minute).</description>
 	</globalProperty>
 	
 	
