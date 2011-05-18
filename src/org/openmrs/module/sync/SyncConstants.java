@@ -99,6 +99,7 @@ public class SyncConstants {
 	public static final String PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT = "10";
     public static final String PROPERTY_ENABLE_COMPRESSION = "sync.enable_compression";
     public static final String PROPERTY_VERSION = "sync.version";
+    public static final String PROPERTY_CONNECTION_TIMEOUT = "sync.connection_timeout";
 
 	public static final String RESPONSE_SUFFIX = "_response";
 
