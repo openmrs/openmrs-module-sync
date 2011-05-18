@@ -27,10 +27,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -55,7 +57,7 @@ import org.openmrs.Location;
 import org.openmrs.Obs;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.OrderType;
-import org.openmrs.PatientIdentifier;
+import org.openmrs.Patient;
 import org.openmrs.PatientProgram;
 import org.openmrs.PatientState;
 import org.openmrs.Person;
@@ -67,12 +69,10 @@ import org.openmrs.ProgramWorkflow;
 import org.openmrs.ProgramWorkflowState;
 import org.openmrs.Relationship;
 import org.openmrs.RelationshipType;
-import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.LoginCredential;
 import org.openmrs.module.sync.api.SyncIngestService;
 import org.openmrs.module.sync.api.SyncService;
-import org.openmrs.module.sync.api.db.hibernate.HibernateSyncInterceptor;
 import org.openmrs.module.sync.serialization.BinaryNormalizer;
 import org.openmrs.module.sync.serialization.ClassNormalizer;
 import org.openmrs.module.sync.serialization.DefaultNormalizer;
@@ -298,8 +298,8 @@ public class SyncUtil {
 	public static OpenmrsObject getOpenmrsObj(String className, String uuid) {
 		try {
 			OpenmrsObject o = Context.getService(SyncService.class).getOpenmrsObjectByUuid((Class<OpenmrsObject>) Context.loadClass(className), uuid);
-			
-	        if (log.isDebugEnabled()) {
+	        
+			if (log.isDebugEnabled()) {
 	    		if ( o == null ) {
 	    			log.debug("Unable to get an object of type " + className + " with Uuid " + uuid + ";");
 	    		}			
@@ -327,7 +327,6 @@ public class SyncUtil {
 		for ( Field f : allFields ) {
 			//log.debug("field is " + f.getName());
 			if ( f.getName().equals(fieldName) ) {
-				log.debug("found Field " + fieldName + " with type is " + f.getGenericType());
 				Class classType = null;
 				String className = f.getGenericType().toString(); // the string class name for the actual field
 				
@@ -344,7 +343,7 @@ public class SyncUtil {
 				else {
 					log.trace("Abnormal className for " + f.getGenericType());
 				}
-
+				
 				// we have to explicitly create a new value object here because all we have is a string - won't know how to convert
 				if ( OpenmrsObject.class.isAssignableFrom(classType) ) {
 					o = getOpenmrsObj(className, fieldVal);
@@ -772,23 +771,10 @@ public class SyncUtil {
      * error.
      */
 	public static synchronized void deleteOpenmrsObject(OpenmrsObject o) {
-				
-		if (o != null && (o instanceof org.openmrs.PatientIdentifier)) {
-			//if this is a delete of patient identifier, just do the remove from collection
-			PatientIdentifier piToRemove = (org.openmrs.PatientIdentifier)o;
-			org.openmrs.Patient p = piToRemove.getPatient();
-			if (p == null) {
-				//we don't know what to do here, throw exception
-				log.error("deleteOpenmrsObject cannot proceed: asked to process PatientIdentifier but no patient id was set. pat_identifier: " + piToRemove.toString());
-				throw new SyncException("deleteOpenmrsObject cannot proceed: asked to process PatientIdentifier but no patient id was set. pat_identifier: " + piToRemove.toString());
-			}
-			//now just remove from collection
-			p.removeIdentifier(piToRemove);
-			if (p.getIdentifiers().size() > 0) { 
-				//...and make sure save patient is queued up if there is something to be saved,
-				//can't save patient with no IDs - API error
-				Context.getPatientService().savePatient(p);
-			}
+		
+		if (o != null && (o instanceof org.openmrs.PersonAddress || o instanceof org.openmrs.PersonName || o instanceof org.openmrs.PersonAttribute || o instanceof org.openmrs.PatientIdentifier)){
+			//see this method below
+			removeFromPatientParentCollectionAndSave(o);
 		} else if (o instanceof org.openmrs.Concept || o instanceof org.openmrs.ConceptName) {
 			//delete concept words explicitly, TODO -- is this still needed?
 			Context.getService(SyncService.class).deleteOpenmrsObject(o);
@@ -1051,6 +1037,73 @@ public class SyncUtil {
 		}
 		catch (Exception e) {
 			return true;
+		}
+	}
+	
+	
+	/**
+	 * This monstrosity looks for getter(s) on the parent object of an OpenmrsObject that return a collection of the originally passed in OpenmrsObject type.
+	 * This then explicitly removes the object from the parent collection, and if the parent is a Patient or Person, calls save on the parent.
+	 * 
+	 * @param item -- the OpenmrsObject to remove and save
+	 */
+	private static void removeFromPatientParentCollectionAndSave(OpenmrsObject item){
+		Field[] f = item.getClass().getDeclaredFields();
+		for (int k = 0; k < f.length; k++){
+			Type fieldType = f[k].getGenericType();
+			if (org.openmrs.OpenmrsObject.class.isAssignableFrom((Class) fieldType)){ //if the property is an OpenmrsObject (excludes lists, etc..)
+				Method getter = getGetterMethod(item.getClass(), f[k].getName()); //get the getters
+				OpenmrsObject parent = null; //the parent object
+				if (getter == null){
+					continue; //no prob -- eliminates most utility methods on item
+				}		
+				try {
+					parent = (OpenmrsObject) getter.invoke(item, null);  //get the parent object
+				} catch (Exception ex){
+					log.debug("in removeFromParentCollection:  getter probably did not return an object that could be case as an OpenmrsObject", ex);
+				}
+				if (parent != null){				
+					Method[] methods =  getter.getReturnType().getDeclaredMethods();  //get the Parent's methods to inspect
+					for (Method method : methods){
+						Type type = method.getGenericReturnType();
+						//return is a parameterizable and there are 0 arguments to method and the return is a Collection
+						if (ParameterizedType.class.isAssignableFrom(type.getClass()) 
+								&& method.getGenericParameterTypes().length == 0 
+								&& method.getName().contains("get")) {  //get the methods on Person that return Lists or Sets
+							ParameterizedType pt = (ParameterizedType) type;
+							for (int i = 0 ; i < pt.getActualTypeArguments().length ; i++){
+								Type t = pt.getActualTypeArguments()[i];
+								// if the return type matches the original object, and the return is not a Map
+								if (item.getClass().equals(t)
+										&& !pt.getRawType().toString().equals(java.util.Map.class.toString()) 
+										&& java.util.Collection.class.isAssignableFrom((Class) pt.getRawType())){
+									try {
+										Object colObj =  (Object) method.invoke(parent, null);  //get the list
+										if (colObj != null){
+											java.util.Collection collection = (java.util.Collection) colObj;
+											Iterator it = collection.iterator();
+											while (it.hasNext()){
+												OpenmrsObject omrsobj = (OpenmrsObject) it.next();
+												if (omrsobj.getUuid() != null && !omrsobj.getUuid().equals(item.getUuid())){ //compare uuid of original item with Collection contents
+													it.remove();
+													if (parent instanceof org.openmrs.Patient && ((Patient) parent).getIdentifiers().size() > 0){
+														Context.getPatientService().savePatient((Patient) parent);
+													} else if (parent instanceof org.openmrs.Person){
+														Context.getPersonService().savePerson((Person) parent);
+													}
+													return;
+												}
+											}
+										}
+									} catch (Exception ex){
+										log.error("Failed to build new collection", ex);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 	

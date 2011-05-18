@@ -52,7 +52,6 @@ import org.openmrs.PersonAttributeType;
 import org.openmrs.User;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncException;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemKey;
@@ -62,7 +61,6 @@ import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
-import org.openmrs.module.sync.ingest.SyncIngestException;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Normalizer;
 import org.openmrs.module.sync.serialization.Package;
@@ -72,8 +70,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.StringUtils;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Implements 'change interception' for data synchronization feature using

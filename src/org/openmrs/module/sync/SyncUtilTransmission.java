@@ -279,7 +279,7 @@ public class SyncUtilTransmission {
         
         try {
             if ( parent != null ) {
-            	
+            	Integer parentId = parent.getServerId();
             	//set the date
             	parent.setLastSync(new Date());
             	
@@ -314,7 +314,10 @@ public class SyncUtilTransmission {
                             
                             // process syncTx from parent, and generate response
                             // tx may be null - meaning no updates from parent
+                            parent = null; //for SYNC-175
                             str = SyncUtilTransmission.processSyncTransmission(initialTxFromParent);
+                            
+                            
                         } else {
                             log.info("initialTxFromParent was null coming back from parent(?)");
                             initialResponse.createFile(false, "requestResponse");
@@ -322,11 +325,14 @@ public class SyncUtilTransmission {
                         }
 
                         // now get local changes destined for parent, and package those inside
+						parent = syncService.getRemoteServer(parentId);
                         SyncTransmission st = SyncUtilTransmission.createSyncTransmission(parent, false);
                         if ( str != null ) {
                             log.info("Received updates from parent, so replying and sending updates of our own: " + st.getFileOutput());
                             str.setSyncTransmission(st);
                             str.createFile(false, "/receiveAndSend");
+                            //reload parent
+                            //parent = syncService.getRemoteServer(parentId);
                             response = SyncUtilTransmission.sendSyncTransmission(parent, null, str);
                             
                             // add all changes from parent into response
@@ -397,6 +403,7 @@ public class SyncUtilTransmission {
 		str.setSyncTargetUuid(syncService.getServerUuid());
         String sourceUuid = st.getSyncSourceUuid();
         RemoteServer origin = syncService.getRemoteServer(sourceUuid);
+        log.warn("Receiving Sync Transmission from " + origin.getNickname());
 
         User authenticatedUser = Context.getAuthenticatedUser();
         if ( origin == null && authenticatedUser != null ) {
@@ -425,6 +432,7 @@ public class SyncUtilTransmission {
         boolean success = true;
         List<SyncImportRecord> importRecords = new ArrayList<SyncImportRecord>();
         if ( st.getSyncRecords() != null ) {
+        	log.warn("Processing Sync Transmission from " + origin.getNickname());
         	SyncImportRecord importRecord = null;
             for ( SyncRecord record : st.getSyncRecords() ) {
             	try {
@@ -436,9 +444,12 @@ public class SyncUtilTransmission {
                     
                     //TODO: write record as pending to prevent someone else trying to process this record at the same time
                     
+                    //reload origin for SYNC-175
+                    Integer originId = origin.getServerId();
                     //now attempt to process
+                    log.warn("Processing record " + record.getUuid() + " which contains " + record.getContainedClassSet().toString());
             		importRecord = Context.getService(SyncIngestService.class).processSyncRecord(record, origin);
-            		
+            		origin = syncService.getRemoteServer(originId);
             	} catch (SyncIngestException e) {
             		log.error("Sync error while ingesting records for server: " + origin.getNickname(), e);
             		importRecord = e.getSyncImportRecord();
@@ -460,7 +471,9 @@ public class SyncUtilTransmission {
         }
         
         //what ever happened here, send the status for the import records back
-        if ( importRecords.size() > 0 ) str.setSyncImportRecords(importRecords);
+        if ( importRecords.size() > 0 ){
+        		str.setSyncImportRecords(importRecords);
+        }
                 
         // now we're ready to see if we need to fire back a response transmission
         if ( origin != null ) {
@@ -489,7 +502,8 @@ public class SyncUtilTransmission {
         	origin.setLastSyncState(SyncTransmissionState.FAILED); //set it failed to start with
         }
         syncService.saveRemoteServer(origin);
-        
+        //for SYNC-175
+        origin = null;
         return str;
     }
     

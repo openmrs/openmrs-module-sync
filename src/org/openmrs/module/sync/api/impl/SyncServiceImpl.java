@@ -31,7 +31,6 @@ import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.Patient;
-import org.openmrs.Person;
 import org.openmrs.Privilege;
 import org.openmrs.Role;
 import org.openmrs.api.APIException;
@@ -129,7 +128,7 @@ public class SyncServiceImpl implements SyncService {
 						if (!server.getServerType().equals(RemoteServerType.PARENT)) {
 							SyncServerRecord serverRecord = new SyncServerRecord(server, record);
 							if (server.equals(origin)) {
-								log.warn("this record came from server " + origin.getNickname()
+								log.info("this record came from server " + origin.getNickname()
 								        + ", so we will set its status to commmitted");
 								serverRecord.setState(SyncRecordState.COMMITTED);
 							}

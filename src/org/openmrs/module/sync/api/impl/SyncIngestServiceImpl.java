@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openmrs.Concept;
 import org.openmrs.ConceptName;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.Person;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.ModuleUtil;
@@ -115,7 +116,8 @@ public class SyncIngestServiceImpl implements SyncIngestService {
     public SyncImportRecord processSyncRecord(SyncRecord record, RemoteServer server) throws SyncIngestException {
         
     	ArrayList<SyncItem> deletedItems = new ArrayList<SyncItem>();
-    	ArrayList<SyncItem> patientIDItems = new ArrayList<SyncItem>();
+    	ArrayList<SyncItem> treeSetItems = new ArrayList<SyncItem>();  //these are processed out of order.  See method comments.
+    	ArrayList<SyncItem> firstPass = new ArrayList<SyncItem>();  //inserts and updates
     	SyncImportRecord importRecord = new SyncImportRecord();
         importRecord.setState(SyncRecordState.FAILED);  // by default, until we know otherwise
         importRecord.setRetryCount(record.getRetryCount());
@@ -182,13 +184,34 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     for ( SyncItem item : record.getItems() ) {
                     	if (item.getState() == SyncItemState.DELETED) {
                     		deletedItems.add(item);
-                    	} else if (item.getState() == SyncItemState.UPDATED && item.getContainedType() != null && "org.openmrs.PatientIdentifier".equals(item.getContainedType().getName())) {
-                    			patientIDItems.add(item);
+                    	} else if (item.getState() == SyncItemState.UPDATED && item.getContainedType() != null && (
+                    			   "org.openmrs.PatientIdentifier".equals(item.getContainedType().getName())
+                    			|| "org.openmrs.PersonAttribute".equals(item.getContainedType().getName())
+                    			|| "org.openmrs.PersonAddress".equals(item.getContainedType().getName())
+                    			|| "org.openmrs.PersonName".equals(item.getContainedType().getName())
+                    			)) {
+                    		treeSetItems.add(item);
                     	} else {
-	                        SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
-	                        importedItem.setKey(item.getKey());
-	                        importRecord.addItem(importedItem);
-	                        if ( !importedItem.getState().equals(SyncItemState.SYNCHRONIZED)) isError = true;
+                    		firstPass.add(item);
+                    	}
+                    }
+                    
+                    //Sync-180: Person items need to be processed first
+                    for (SyncItem item : firstPass){
+                    	if (Person.class.isAssignableFrom(item.getContainedType())){
+		                    SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
+		                    importedItem.setKey(item.getKey());
+		                    importRecord.addItem(importedItem);
+		                    if ( !importedItem.getState().equals(SyncItemState.SYNCHRONIZED)) isError = true;
+                    	}
+                    }
+                    
+                    for (SyncItem item : firstPass){
+                    	if (!Person.class.isAssignableFrom(item.getContainedType())){
+		                    SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
+		                    importedItem.setKey(item.getKey());
+		                    importRecord.addItem(importedItem);
+		                    if ( !importedItem.getState().equals(SyncItemState.SYNCHRONIZED)) isError = true;
                     	}
                     }
                     
@@ -220,7 +243,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                      * why this is done here. 
                      */
                     syncService.setFlushModeManual(); 
-                    for ( SyncItem item : patientIDItems ) {
+                    for ( SyncItem item : treeSetItems ) {
                         SyncImportItem importedItem = this.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
                         importedItem.setKey(item.getKey());
                         importRecord.addItem(importedItem);
@@ -273,7 +296,8 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         	//reset the flush mode back to automatic, no matter what
         	syncService.setFlushModeAutomatic();
         }
-
+        //for hibernate SYNC-175
+        server = null;
         return importRecord;
     }
 	

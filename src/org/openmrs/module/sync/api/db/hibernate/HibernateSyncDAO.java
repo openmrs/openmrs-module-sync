@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Blob;
 import java.sql.Connection;
@@ -44,7 +45,6 @@ import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
 import org.hibernate.FlushMode;
 import org.hibernate.Query;
@@ -55,6 +55,12 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.impl.CriteriaImpl;
+import org.hibernate.impl.SessionImpl;
+import org.hibernate.loader.OuterJoinLoader;
+import org.hibernate.loader.criteria.CriteriaLoader;
+import org.hibernate.persister.entity.OuterJoinLoadable;
 import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.context.Context;
@@ -1542,6 +1548,27 @@ public class HibernateSyncDAO implements SyncDAO {
 	    }
 	    
 	    return (Integer) criteria.uniqueResult();
+	}
+	
+	//this is a utility method that i used for Sync-180
+	//won't hurt to leave it around -- may be useful in the future
+	private String getSQL(Criteria crit){
+		String ret = "";
+		CriteriaImpl c = (CriteriaImpl)crit;
+		SessionImpl s = (SessionImpl)c.getSession();
+		SessionFactoryImplementor factory = (SessionFactoryImplementor)s.getSessionFactory();
+		String[] implementors = factory.getImplementors( c.getEntityOrClassName() );
+		CriteriaLoader loader = new CriteriaLoader((OuterJoinLoadable)factory.getEntityPersister(implementors[0]),
+		    factory, c, implementors[0], s.getEnabledFilters());
+		try {
+			Field f = OuterJoinLoader.class.getDeclaredField("sql");
+			f.setAccessible(true);
+			String sql = (String)f.get(loader);
+			return sql;
+		} catch (Exception ex){
+			//pass
+		}
+		return ret;
 	}
 	
 }
