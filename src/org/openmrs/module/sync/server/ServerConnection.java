@@ -110,6 +110,7 @@ public class ServerConnection {
 
 			// Open a connection to the server and post the data
 			HttpClient client = new HttpClient();
+			client.getHttpConnectionManager().getParams().setSoTimeout(ServerConnection.getTimeout().intValue());
 			client.getHttpConnectionManager().getParams().setConnectionTimeout(ServerConnection.getTimeout().intValue());
 			int status = client.executeMethod(method);	
 			
