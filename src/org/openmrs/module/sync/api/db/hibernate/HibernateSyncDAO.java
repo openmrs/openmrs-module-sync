@@ -1497,6 +1497,9 @@ public class HibernateSyncDAO implements SyncDAO {
 			ps = connection.prepareStatement("SELECT concept_id, uuid FROM concept WHERE (uuid = ? AND concept_id <> ?)" +
 					"OR (uuid <> ? AND concept_id = ?)");
 			ps.setString(1, uuid);
+			ps.setInt(2, conceptId);
+			ps.setString(3,uuid);
+			ps.setInt(4, conceptId);
 			ps.execute();
 			ResultSet rs = ps.getResultSet();
 			if (rs.next()) {
@@ -1514,6 +1517,7 @@ public class HibernateSyncDAO implements SyncDAO {
 		}
 		catch (SQLException e) {
 			log.error("Error while doing isConceptIdValidForUuid.", e);
+			ret = false;
 		}
 		if (ps != null) {
 			try {

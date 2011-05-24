@@ -646,18 +646,21 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 				idPropertyObj = ((org.hibernate.persister.entity.AbstractEntityPersister) data)
 						.getEntityMetamodel().getIdentifierProperty();
 				
-				//handle case of new objects that have IDs assigned by NativeIfNotAssignedIdentityGenerator
-				if (id == null && 
-					state == SyncItemState.NEW &&
-					idPropertyObj.getIdentifierGenerator() instanceof org.openmrs.api.db.hibernate.NativeIfNotAssignedIdentityGenerator) {
-					//Save the reference to this obj for later
-					postInsertModifications.get().add(entity);
-				}
+
+				//DT: the only NativeIfNotAssignedIdentityGenerator pojo in openmrs is Concept, and now that we have MetadataSharing, we DON'T want new Concepts to get sent with their conceptIds.
+//				//Sync-160
+//				if (id == null && 
+//					state == SyncItemState.NEW &&
+//					idPropertyObj.getIdentifierGenerator() instanceof org.openmrs.api.db.hibernate.NativeIfNotAssignedIdentityGenerator) {
+//					//Save the reference to this obj for later
+//					postInsertModifications.get().add(entity);
+//				}
 
 				if (id != null
 						&& idPropertyObj.getIdentifierGenerator() != null
 						&& (idPropertyObj.getIdentifierGenerator() instanceof org.hibernate.id.Assigned
-							|| idPropertyObj.getIdentifierGenerator() instanceof org.openmrs.api.db.hibernate.NativeIfNotAssignedIdentityGenerator)
+						//	|| idPropertyObj.getIdentifierGenerator() instanceof org.openmrs.api.db.hibernate.NativeIfNotAssignedIdentityGenerator
+							)
 					) {
 					// serialize value as string
 					values.put(idPropertyName, new PropertyClassValue(id
