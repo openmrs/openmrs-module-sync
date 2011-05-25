@@ -191,7 +191,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     			|| "org.openmrs.PersonName".equals(item.getContainedType().getName())
                     			)) {
                     		treeSetItems.add(item);
-                    	} else if (Person.class.isAssignableFrom(item.getContainedType())){
+                    	} else if (Person.class.isAssignableFrom(item.getContainedType()) || Concept.class.isAssignableFrom(item.getContainedType())){
                     		//Sync-180: Person items need to be processed first
 		                    SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
 		                    importedItem.setKey(item.getKey());
