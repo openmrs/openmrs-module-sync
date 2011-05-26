@@ -1327,7 +1327,7 @@ public class HibernateSyncDAO implements SyncDAO {
 			    				"\nentryClassName: " + entryClassName + 
 			    				"\nentryUuid: " + entryUuid +
 			    				"\nentryAction: " + entryAction);
-						throw new SyncIngestException(SyncConstants.ERROR_ITEM_UUID_NOT_FOUND, ownerClassName + "," + entryUuid, incoming, null);
+						throw new SyncIngestException(SyncConstants.ERROR_ITEM_UUID_NOT_FOUND, ownerClassName + " missing " + entryClassName + "," + entryUuid, incoming, null);
 					}
 				} else if ("update".equals(entryAction)) {				
 					if (!OpenmrsUtil.collectionContains(entries, entry)) {
