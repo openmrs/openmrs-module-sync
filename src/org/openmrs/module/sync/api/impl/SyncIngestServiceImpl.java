@@ -134,7 +134,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
             if ( !server.shouldReceiveSyncRecordFrom(record)) {
                 importRecord.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
                 log.warn("\nNOT INGESTING RECORD with " + record.getContainedClasses() + " BECAUSE SERVER IS NOT READY TO ACCEPT ALL CONTAINED OBJECTS\n");
-            } if (!isValidVersion(record)) {
+            } else if (!isValidVersion(record)) {
             	importRecord.setState(SyncRecordState.REJECTED);
                 log.warn("\nNOT INGESTING RECORD with version " + record.getDatabaseVersion() + " BECAUSE SERVER IS NOT COMPATIBLE\n");
             } else {
