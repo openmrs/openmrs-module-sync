@@ -52,6 +52,7 @@ import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.SyncServerRecord;
+import org.openmrs.util.OpenmrsConstants;
 
 /**
  * Default implementation of the {@link SyncService}
@@ -795,10 +796,12 @@ public class SyncServiceImpl implements SyncService {
 			Object patientId = null;
 			
 			// TODO: Fix this logic when patient_id != person_id anymore
-			List<List<Object>> rows = as.executeSQL("select person_id from person where uuid = '" + p.getUuid() + "'", true);
+			List<List<Object>> rows = executeSQLPrivilegeSafe("select person_id from person where uuid = '" + p.getUuid() + "'", true);
 			if (rows.size() > 0)
 				personId = rows.get(0).get(0);
-			rows = as.executeSQL("select patient_id from patient where patient_id = (select person_id from person where uuid = '" + p.getUuid() + "')", true);
+
+			rows = executeSQLPrivilegeSafe("select patient_id from patient where patient_id = (select person_id from person where uuid = '" + p.getUuid() + "')", true);
+			
 			if (rows.size() > 0)
 				patientId = rows.get(0).get(0);
 			
@@ -822,5 +825,23 @@ public class SyncServiceImpl implements SyncService {
                                                                                                             throws APIException {
 	    return dao.getCountOfSyncRecords(server, from, to, states);
     }
+	
+    
+	/**
+	 * Utility method for wrapping executeSQL calls in SQL LEVEL ACCESS privilege, if necessary
+	 * @param sql
+	 * @param selectOnly
+	 * @return
+	 */
+	private List<List<Object>> executeSQLPrivilegeSafe(String sql, boolean selectOnly){
+		String privilege = OpenmrsConstants.PRIV_SQL_LEVEL_ACCESS;
+		//can the user ever be unauthenticated?
+		if (!Context.getAuthenticatedUser().hasPrivilege(privilege)){
+			Context.addProxyPrivilege(privilege);
+			List<List<Object>> ret = Context.getAdministrationService().executeSQL(sql, selectOnly);
+			Context.removeProxyPrivilege(privilege);
+			return ret;
+		} else return Context.getAdministrationService().executeSQL(sql, selectOnly);
+	}
 	
 }
