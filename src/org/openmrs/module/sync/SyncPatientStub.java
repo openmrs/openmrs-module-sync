@@ -17,7 +17,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.BaseOpenmrsData;
 import org.openmrs.Patient;
-import org.openmrs.module.sync.api.SyncService;
 
 /**
  * Utility class that exists in support of odd case of saving patient who is already
@@ -52,7 +51,7 @@ import org.openmrs.module.sync.api.SyncService;
  * 
  * <p/>The ingest of this newly created sync item is processed as follows: 
  * <br/>1. Ingest logic in SyncIngestServiceImpl.processOpenmrsObject() works as for any 
- * other openmrs object; it delegates the hadling of 'NEW' on instance of openmrs object to
+ * other openmrs object; it delegates the handling of 'NEW' on instance of openmrs object to
  * syncUtil.updateOpenmrsObject.
  * 
  * <br/>2. syncUtil.updateOpenmrsObject determines that instance of SyncPatientStub is 

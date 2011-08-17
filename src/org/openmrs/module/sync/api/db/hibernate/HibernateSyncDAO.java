@@ -1458,6 +1458,7 @@ public class HibernateSyncDAO implements SyncDAO {
 				
 				//*and* create sync item for this
 				HibernateSyncInterceptor.addSyncItemForPatientStub(stub);
+				log.debug("Sync Inserted Person Stub for " + stub.getUuid());
 			}
 			catch (SQLException e) {
 				log.warn("SQL Exception while trying to create a patient stub", e);

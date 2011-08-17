@@ -191,8 +191,8 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     			|| "org.openmrs.PersonName".equals(item.getContainedType().getName())
                     			)) {
                     		treeSetItems.add(item);
-                    	} else if (Person.class.isAssignableFrom(item.getContainedType()) || Concept.class.isAssignableFrom(item.getContainedType())){
-                    		//Sync-180: Person items need to be processed first
+                    	} else if (Person.class.isAssignableFrom(item.getContainedType()) || Concept.class.isAssignableFrom(item.getContainedType()) || SyncPatientStub.class.isAssignableFrom(item.getContainedType())){
+                    		//Sync-180: Person items need to be processed first, Concept exibited same behavior.
 		                    SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
 		                    importedItem.setKey(item.getKey());
 		                    importRecord.addItem(importedItem);
@@ -203,12 +203,10 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     }
 
                     for (SyncItem item : regularNewAndUpdateItems){
-                    	if (!Person.class.isAssignableFrom(item.getContainedType())){
-		                    SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
-		                    importedItem.setKey(item.getKey());
-		                    importRecord.addItem(importedItem);
-		                    if ( !importedItem.getState().equals(SyncItemState.SYNCHRONIZED)) isError = true;
-                    	}
+	                    SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
+	                    importedItem.setKey(item.getKey());
+	                    importRecord.addItem(importedItem);
+	                    if ( !importedItem.getState().equals(SyncItemState.SYNCHRONIZED)) isError = true;
                     }
                     
                     syncService.flushSession();
