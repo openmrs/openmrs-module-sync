@@ -403,7 +403,7 @@ public class SyncUtilTransmission {
 		str.setSyncTargetUuid(syncService.getServerUuid());
         String sourceUuid = st.getSyncSourceUuid();
         RemoteServer origin = syncService.getRemoteServer(sourceUuid);
-        log.warn("Receiving Sync Transmission from " + origin.getNickname());
+        log.info("Receiving Sync Transmission from " + origin.getNickname());
 
         User authenticatedUser = Context.getAuthenticatedUser();
         if ( origin == null && authenticatedUser != null ) {
@@ -432,7 +432,7 @@ public class SyncUtilTransmission {
         boolean success = true;
         List<SyncImportRecord> importRecords = new ArrayList<SyncImportRecord>();
         if ( st.getSyncRecords() != null ) {
-        	log.warn("Processing Sync Transmission from " + origin.getNickname());
+        	log.info("Processing Sync Transmission from " + origin.getNickname());
         	SyncImportRecord importRecord = null;
             for ( SyncRecord record : st.getSyncRecords() ) {
             	try {
@@ -447,7 +447,7 @@ public class SyncUtilTransmission {
                     //reload origin for SYNC-175
                     Integer originId = origin.getServerId();
                     //now attempt to process
-                    log.warn("Processing record " + record.getUuid() + " which contains " + record.getContainedClassSet().toString());
+                    log.info("Processing record " + record.getUuid() + " which contains " + record.getContainedClassSet().toString());
             		importRecord = Context.getService(SyncIngestService.class).processSyncRecord(record, origin);
             		origin = syncService.getRemoteServer(originId);
             	} catch (SyncIngestException e) {
