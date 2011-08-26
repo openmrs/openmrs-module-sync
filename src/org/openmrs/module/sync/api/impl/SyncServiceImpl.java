@@ -835,12 +835,16 @@ public class SyncServiceImpl implements SyncService {
 	 */
 	private List<List<Object>> executeSQLPrivilegeSafe(String sql, boolean selectOnly){
 		String privilege = OpenmrsConstants.PRIV_SQL_LEVEL_ACCESS;
-		//can the user ever be unauthenticated?
-		if (Context.getAuthenticatedUser() == null || !Context.getAuthenticatedUser().hasPrivilege(privilege)){
-			Context.addProxyPrivilege(privilege);
-			List<List<Object>> ret = Context.getAdministrationService().executeSQL(sql, selectOnly);
-			Context.removeProxyPrivilege(privilege);
-			return ret;
+		
+		if (!Context.isAuthenticated() || !Context.hasPrivilege(privilege)) {
+			try {
+				Context.addProxyPrivilege(privilege);
+				return Context.getAdministrationService().executeSQL(sql, selectOnly);
+			}
+			finally {
+				Context.removeProxyPrivilege(privilege);
+			}
+			
 		} else return Context.getAdministrationService().executeSQL(sql, selectOnly);
 	}
 	
