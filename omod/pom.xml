@@ -8,7 +8,7 @@
 	</parent>
 	<groupId>org.openmrs.module</groupId>
 	<artifactId>sync</artifactId>
-	<packaging>omod</packaging>
+	<packaging>jar</packaging>
 	<name>Synchronization Module OMOD</name>
 	<description>OpenMRS module project for Synchronization Module</description>
 
