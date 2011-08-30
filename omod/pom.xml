@@ -8,7 +8,7 @@
 	</parent>
 	<groupId>org.openmrs.module</groupId>
 	<artifactId>sync</artifactId>
-	<packaging>jar</packaging>
+	<packaging>omod</packaging>
 	<name>Synchronization Module OMOD</name>
 	<description>OpenMRS module project for Synchronization Module</description>
 
@@ -100,8 +100,8 @@
 		<plugins>
 			<plugin>
 				<groupId>org.openmrs.maven.plugins</groupId>
-				<artifactId>module-wizard-plugin</artifactId>
-				<version>1.0.0</version> <!-- needed so that .12 m2e users don't get an NPE on checkout and then no .classpath file -->
+				<artifactId>maven-openmrs-plugin</artifactId>
+				<version>1.0.1</version> <!-- needed so that .12 m2e users don't get an NPE on checkout and then no .classpath file -->
 				<extensions>true</extensions>
 				<configuration>
 					<verifyOmod>false</verifyOmod>
