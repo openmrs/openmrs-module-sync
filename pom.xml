@@ -86,7 +86,7 @@
 	</dependencyManagement>
 
 	<properties>
-		<openMRSVersion>1.6.3</openMRSVersion>
+		<openMRSVersion>1.6.2</openMRSVersion>
 	</properties>
 
 	<build>
