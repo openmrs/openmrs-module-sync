@@ -82,6 +82,20 @@
 				<type>jar</type> <!--  change to "pom" for 1.8+ -->
 				<scope>test</scope>
 			</dependency>
+			
+			<dependency>
+				<groupId>xerces</groupId>
+				<artifactId>xercesImpl</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>xml-apis</groupId>
+				<artifactId>xml-apis</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>xml-resolver</groupId>
+				<artifactId>xml-resolver</artifactId>
+			</dependency>
+		
 		</dependencies>
 	</dependencyManagement>
 
