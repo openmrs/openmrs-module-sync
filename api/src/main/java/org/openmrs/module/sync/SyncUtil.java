@@ -779,7 +779,15 @@ public class SyncUtil {
 			//see this method below
 			removeFromPatientParentCollectionAndSave(o);
 		} else if (o instanceof org.openmrs.Concept || o instanceof org.openmrs.ConceptName) {
-			//delete concept words explicitly, TODO -- is this still needed?
+			//  if this is a concept or a concept name, make sure we delete concept words explicitly (since concept words don't extend OpenmrsObject)
+			if (o instanceof org.openmrs.Concept) {
+				Context.getAdministrationService().executeSQL("delete from concept_word where concept_id = " + o.getId(), false);
+			}
+			else if (o instanceof org.openmrs.ConceptName){
+				Context.getAdministrationService().executeSQL("delete from concept_word where concept_name_id = " + o.getId(), false);
+			}
+			
+			// now call the call plain delete via service API
 			Context.getService(SyncService.class).deleteOpenmrsObject(o);
 		}
 		else {

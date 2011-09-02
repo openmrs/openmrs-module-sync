@@ -32,6 +32,7 @@ import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemState;
 import org.openmrs.module.sync.SyncPatientStub;
+import org.openmrs.module.sync.SyncProcessedObject;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
@@ -132,7 +133,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         importRecord.setUuid(record.getOriginalUuid());
         
         // map of class name to objects of the classes that were updated in this record
-        Map<String, List<OpenmrsObject>> processedObjects = new HashMap<String, List<OpenmrsObject>>();
+        Map<String, List<SyncProcessedObject>> processedObjects = new HashMap<String, List<SyncProcessedObject>>();
         
         SyncService syncService = Context.getService(SyncService.class);
         SyncIngestService syncIngestService = Context.getService(SyncIngestService.class);
@@ -321,35 +322,35 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 	 * Applies the 'actions' identified during the processing of the record that need to be 
 	 * processed (for whatever reason) just before the sync record is to be committed.
 	 * 
-	 * The actions understood by this method are those listed in SyncUtil.PreCommitActionName enum:
-	 * <br/>REBUILDXSN 
+	 * The actions understood by this method:
+	 * <br/>REBUILD XSN 
 	 * <br/>- call to formentry module and attempt to rebuild XSN, 
 	 * <br/>- HashMap object will contain instance of Form object to be rebuilt
-	 * <br/>UPDATECONCEPTWORDS 
+	 * <br/>UPDATE CONCEPT WORDS 
 	 * <br/>- call to concept service to update concept words for given concept 
 	 * <br/>- HashMap object will contain instance of Concept object which concept words are to be rebuilt
 	 * 
 	 * @param preCommitRecordActions actions to be applied
 	 * 
 	 */
-	public void applyPreCommitRecordActions(Map<String, List<OpenmrsObject>> processedObjects) {
+	public void applyPreCommitRecordActions(Map<String, List<SyncProcessedObject>> processedObjects) {
 		
 		if (processedObjects == null)
 			return;
 		
 		// rebuild xsns if a form edit comes through
-		List<OpenmrsObject> xsns = processedObjects.get("org.openmrs.module.formentry.FormEntryXsn");
+		List<SyncProcessedObject> xsns = processedObjects.get("org.openmrs.module.formentry.FormEntryXsn");
 		if (xsns != null) {
-			for (OpenmrsObject xsn : xsns) {
-				SyncUtil.rebuildXSN(xsn);
+			for (SyncProcessedObject xsn : xsns) {
+				SyncUtil.rebuildXSN(xsn.getObject());
 			}
 		} else {
 			//even if XSNs aren't sync-ed, look for forms to update form.template if needed
-			List<OpenmrsObject> forms = processedObjects.get("org.openmrs.Form");
+			List<SyncProcessedObject> forms = processedObjects.get("org.openmrs.Form");
 			if (forms != null) {
-				for (OpenmrsObject form : forms) {
-					if (form instanceof org.openmrs.Form) {
-						SyncUtil.rebuildXSNForForm((org.openmrs.Form)form);
+				for (SyncProcessedObject form : forms) {
+					if (form.getObject() instanceof org.openmrs.Form) {
+						SyncUtil.rebuildXSNForForm((org.openmrs.Form)form.getObject());
 					}
 				}
 			}
@@ -357,12 +358,15 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 		}
 		
 		// fix concept words for all names found
-		List<OpenmrsObject> names = processedObjects.get("org.openmrs.ConceptName");
+		List<SyncProcessedObject> names = processedObjects.get("org.openmrs.ConceptName");
 		if (names != null) {
-			for (OpenmrsObject o : names) {
-				Concept c = ((ConceptName)o).getConcept();
-    			c.addName((ConceptName)o);
-				Context.getConceptService().updateConceptWord(c);
+			for (SyncProcessedObject o : names) {
+				// we only want to update the concept words if this is NOT a delete action
+				if (o.getState() != SyncItemState.DELETED) {
+					Concept c = ((ConceptName)o.getObject()).getConcept();
+	    			c.addName((ConceptName)o.getObject());
+					Context.getConceptService().updateConceptWord(c);
+				}
 			}
 		}
 	}
@@ -380,7 +384,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
      * @see org.openmrs.module.sync.SyncUtil#applyPreCommitRecordActions(ArrayList)
      * 
      */
-    public SyncImportItem processSyncItem(SyncItem item, String originalRecordUuid, Map<String, List<OpenmrsObject>> processedObjects)  throws APIException {
+    public SyncImportItem processSyncItem(SyncItem item, String originalRecordUuid, Map<String, List<SyncProcessedObject>> processedObjects)  throws APIException {
     	String itemContent = null;
         SyncImportItem ret = null; 
 
@@ -408,12 +412,12 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 				// add this object to the proccessedObjects list
             	String className = o.getClass().getName();
             	if (!processedObjects.containsKey(className)) {
-            		List<OpenmrsObject> objects = new ArrayList<OpenmrsObject>();
-            		objects.add(openmrsObject);
+            		List<SyncProcessedObject> objects = new ArrayList<SyncProcessedObject>();
+            		objects.add(new SyncProcessedObject(openmrsObject, item.getState()));
             		processedObjects.put(className, objects);
             	}
             	else {
-            		processedObjects.get(className).add(openmrsObject);
+            		processedObjects.get(className).add(new SyncProcessedObject(openmrsObject, item.getState()));
             	}
             }
             ret.setState(SyncItemState.SYNCHRONIZED);                

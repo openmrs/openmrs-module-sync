@@ -70,6 +70,8 @@
   <concept_name concept_name_id="13" concept_id="13" name="MARRIED" locale="en" voided="0" creator="1" date_created="2008-01-14 18:02:28.0" uuid="2222ee63-15c5-102b-8d9c-e44ed5452222"/>
   <concept_name concept_name_id="14" concept_id="14" name="SINGLE" locale="en" voided="0" creator="1" date_created="2008-01-14 18:02:28.0" uuid="3333ee63-15c5-102b-8d9c-e44ed5453333"/>
   
+  <concept_word concept_word_id="1" concept_name_id="14" concept_id="14" word="SINGLE" locale="en" />
+  
   <concept_description concept_description_id="1" concept_id="1" description="Describes a cause of death for a patient.  Coded answer." locale="en" creator="1" date_created="2006-04-30" uuid="37b7c34c-e897-102b-8dae-001e378eb67e"/>
   <concept_description concept_description_id="2" concept_id="2" description="Non-coded answer to a coded question - allows other as a coded answer." locale="en" creator="1" date_created="2006-04-30" uuid="5ea2df46-e897-102b-8dae-001e378eb67e"/>
   <concept_description concept_description_id="3" concept_id="3" description="Generic descriptive answer." locale="en" creator="1" date_created="2006-04-30" uuid="6523ae4a-e897-102b-8dae-001e378eb67e"/>

@@ -16,11 +16,11 @@ package org.openmrs.module.sync.api;
 import java.util.List;
 import java.util.Map;
 
-import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.Logging;
 import org.openmrs.api.APIException;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncPatientStub;
+import org.openmrs.module.sync.SyncProcessedObject;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.ingest.SyncImportItem;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
@@ -58,7 +58,7 @@ public interface SyncIngestService {
      */
     //@Authorized({"Manage Synchronization Records"})
     @Logging(ignoreAllArgumentValues=true)
-    public SyncImportItem processSyncItem(SyncItem item, String originalRecordUuid, Map<String, List<OpenmrsObject>> processedObjects) throws APIException;
+    public SyncImportItem processSyncItem(SyncItem item, String originalRecordUuid, Map<String, List<SyncProcessedObject>> processedObjects) throws APIException;
 
 	/**
 	 * Does any post-record import processing right before flushing to the
@@ -79,7 +79,7 @@ public interface SyncIngestService {
 	 * @throws APIException
 	 */
     @Logging(ignoreAllArgumentValues=true)
-	public void applyPreCommitRecordActions(Map<String, List<OpenmrsObject>> processedObjects) throws APIException;
+	public void applyPreCommitRecordActions(Map<String, List<SyncProcessedObject>> processedObjects) throws APIException;
 
     
 

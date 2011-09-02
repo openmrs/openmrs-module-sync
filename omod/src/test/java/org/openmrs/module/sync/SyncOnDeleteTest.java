@@ -18,7 +18,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.openmrs.Concept;
 import org.openmrs.Location;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
@@ -151,4 +153,28 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 		});
 	}
 	
+	@Test
+	@NotTransactional
+	public void shouldDeleteConcept() throws Exception {
+			runSyncTest(new SyncTestHelper() {
+				// note that we need to test a concept that can be deleted (i.e., doesn't have any associated answer concepts, obs, etc)  but that has an associated concept word so we can test the special case of
+				// needing to explicitly delete concept words
+				Integer conceptId = 14;  
+				
+				public void runOnChild() {
+					Concept conceptToDelete = Context.getConceptService().getConcept(conceptId);
+					
+					// delete the concept
+					Context.getConceptService().purgeConcept(conceptToDelete);
+				}
+				
+				public void runOnParent() {
+					Context.clearSession();
+					
+					// confirm that it has been deleted on parent
+					Concept deletedConcept = Context.getConceptService().getConcept(conceptId);
+					Assert.assertNull(deletedConcept); 
+				}
+			});
+	}
 }
