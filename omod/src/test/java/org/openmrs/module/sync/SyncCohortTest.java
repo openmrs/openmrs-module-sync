@@ -66,7 +66,7 @@ public class SyncCohortTest extends SyncBaseTest {
 				Cohort c = cs.getCohort("Dummy Name");
 				assertNotNull("Failed to create the cohort", c);
 				
-				TestUtil.printOutTableContents(getConnection(), "patient");
+				//TestUtil.printOutTableContents(getConnection(), "patient");
 				assertTrue("Failed to transfer cohort members", c.getMemberIds().size() == 2);
 				assertTrue("Failed to transfer cohort members with same patient id", c.getMemberIds().contains(3));
 				assertFalse("Failed to convert patient id from #2 to #5", c.getMemberIds().contains(2));

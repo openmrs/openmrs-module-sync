@@ -110,11 +110,11 @@ public class SyncDrugOrderTest extends SyncBaseTest {
 				
 				DrugOrder order = Context.getOrderService().getDrugOrder(1);
 
-				assert(order.getDose().doubleValue()!=10.0);
+				assert(order.getDose().doubleValue() != 10.0);
 				log.info("Instructions: " + order.getInstructions());
 				order.setInstructions("test");
 				Context.getOrderService().updateOrder(order);
-				assert(order.getDose().doubleValue()==10.0);
+				assert(order.getDose().doubleValue() == 10.0);
 				
 			}
 			public void runOnParent() {

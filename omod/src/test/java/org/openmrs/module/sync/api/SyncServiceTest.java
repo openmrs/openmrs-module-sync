@@ -99,7 +99,7 @@ public class SyncServiceTest extends BaseModuleContextSensitiveTest {
     	
 		Assert.assertTrue(syncService.shouldSynchronize(new PatientIdentifierType())); //marked 'yes' in all
 		
-		TestUtil.printOutTableContents(getConnection(), "sync_class", "sync_server_class");
+		//TestUtil.printOutTableContents(getConnection(), "sync_class", "sync_server_class");
 		
 		Assert.assertTrue(syncService.shouldSynchronize(new PersonAttributeType())); //marked as 'yes' in one server
 		

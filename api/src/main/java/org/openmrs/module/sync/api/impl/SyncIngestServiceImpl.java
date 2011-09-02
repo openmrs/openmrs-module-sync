@@ -103,10 +103,10 @@ public class SyncIngestServiceImpl implements SyncIngestService {
      * SyncImportRecord. In case of exception, callers should inspect this value as it will contain more information about the status of sync
      * item as it failed.
      * <p/> Processing PatientIdentifier updates: *updates* to PatientIdentifier objects are processed last. This is because
-     * patient.identifiers is a TreeSet and any updates to the refrenced objects can potentially mess up the treeset.
+     * patient.identifiers is a TreeSet and any updates to the referenced objects can potentially mess up the treeset.
      * This is especially the case when patient identifier is changed to voided: voiding it changes its ordering per
      * PatientIdentifier.CompareTo() method to 'last'. This means that if there is a treeset when we void the first
-     * identifier, the treeset cannot be navigatated & all operations such as contains(), remove() will return false.
+     * identifier, the treeset cannot be navigated & all operations such as contains(), remove() will return false.
      * This is because treesets need to be 'resorted' if such changes are made to held objects..however re-sorting it via
      * remove/add() is not feasible in our case since the actual type of patient.identifier collection is hibernate
      * persistensortedset; this overrides remove() method and by calling remove()/add() the actual 'delete' to the 
@@ -122,6 +122,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
     public SyncImportRecord processSyncRecord(SyncRecord record, RemoteServer server) throws SyncIngestException {
         
     	ArrayList<SyncItem> deletedItems = new ArrayList<SyncItem>();
+    	Map<String, Class> deletedObjects = new HashMap<String, Class>(); // actual openmrsobjects deleted.  so that we don't try to process them again when saving/updating things in the treeSetItems list
     	ArrayList<SyncItem> treeSetItems = new ArrayList<SyncItem>();  //these are processed out of order.  See method comments.
     	ArrayList<SyncItem> regularNewAndUpdateItems = new ArrayList<SyncItem>();  //inserts and updates
     	SyncImportRecord importRecord = new SyncImportRecord();
@@ -232,19 +233,23 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                         SyncImportItem importedItem = this.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
                         importedItem.setKey(item.getKey());
                         importRecord.addItem(importedItem);
+                        deletedObjects.put((String)item.getKey().getKeyValue(), item.getContainedType());
                         if ( !importedItem.getState().equals(SyncItemState.SYNCHRONIZED)) isError = true;
                     }
                     syncService.flushSession();
                     syncService.setFlushModeAutomatic();
                     Context.clearSession(); // so that objects aren't resaved at next flush below
-
-
+                    
                     /* Run through the patient identifier updates, see the method comments to understand
                      * why this is done here. 
                      */
                     syncService.setFlushModeManual(); 
                     for ( SyncItem item : treeSetItems ) {
-                        SyncImportItem importedItem = this.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
+                    	if (item.getContainedType().equals(deletedObjects.get((String)item.getKey().getKeyValue()))) {
+                    		log.debug("skipping update of " + item.getContainedType() + ":" + item.getKey() + " because we just deleted it");
+                    		continue;
+                    	}
+                        SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
                         importedItem.setKey(item.getKey());
                         importRecord.addItem(importedItem);
                         if ( !importedItem.getState().equals(SyncItemState.SYNCHRONIZED)) isError = true;
@@ -252,7 +257,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     syncService.flushSession();
                     syncService.setFlushModeAutomatic();
                     Context.clearSession(); // so that objects aren't resaved at next flush below
-                    
+                   
                     /* 
                      * finally execute the pending actions that resulted from processing all sync items 
                      */
