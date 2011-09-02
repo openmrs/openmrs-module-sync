@@ -45,7 +45,7 @@ public class SyncConstants {
 		SyncRecordState.SENT_AGAIN,
 		SyncRecordState.FAILED,
 		SyncRecordState.FAILED_AND_STOPPED, //this is here so that we can display the failed record on UI
-		SyncRecordState.REJECTED
+		//SyncRecordState.REJECTED   SYNC-204
 	};
 
 	// error message codes

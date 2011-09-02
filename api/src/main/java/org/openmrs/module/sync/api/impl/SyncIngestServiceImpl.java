@@ -72,13 +72,19 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                 if ( server.getServerType().equals(RemoteServerType.PARENT) ) {
                     // with parents, we set the actual state of the record
                     if ( importRecord.getState().equals(SyncRecordState.ALREADY_COMMITTED) ) record.setState(SyncRecordState.COMMITTED);
-                    else if ( importRecord.getState().equals(SyncRecordState.NOT_SUPPOSED_TO_SYNC) ) record.setState(SyncRecordState.REJECTED);
+                    else if ( importRecord.getState().equals(SyncRecordState.REJECTED) ) {
+                    		record.setState(SyncRecordState.FAILED); 
+                    		log.error("Sync Response for record " + record.getUuid() + " returned REJECTED, meaning that the failure on the target server was caused by openmrs version differences." );
+                    } else if ( importRecord.getState().equals(SyncRecordState.NOT_SUPPOSED_TO_SYNC) ) record.setState(SyncRecordState.REJECTED);
                     else record.setState(importRecord.getState());
                 } else {
                     // with non-parents we set state in the server-record
                     SyncServerRecord serverRecord = record.getServerRecord(server);
                     if ( importRecord.getState().equals(SyncRecordState.ALREADY_COMMITTED) ) serverRecord.setState(SyncRecordState.COMMITTED);
-                    else if ( importRecord.getState().equals(SyncRecordState.NOT_SUPPOSED_TO_SYNC) ) serverRecord.setState(SyncRecordState.REJECTED);
+                    else if ( importRecord.getState().equals(SyncRecordState.REJECTED) ) {
+                    		serverRecord.setState(SyncRecordState.FAILED);
+                    		log.error("Sync Response for record " + record.getUuid() + " returned REJECTED, meaning that the failure on the target server was caused by openmrs version differences." );
+                    } else if ( importRecord.getState().equals(SyncRecordState.NOT_SUPPOSED_TO_SYNC) ) serverRecord.setState(SyncRecordState.REJECTED);
                     else serverRecord.setState(importRecord.getState());
                     
                     // record (or clear out) the error message for this server and this record

@@ -462,8 +462,8 @@ public class SyncUtilTransmission {
                 importRecords.add(importRecord);
                 
                 //if the record update failed for any reason, do not continue on, stop now
-                
-                if (importRecord.getState() != SyncRecordState.COMMITTED && importRecord.getState() != SyncRecordState.ALREADY_COMMITTED) {
+                //adding NOT_SUPPOSED_TO_SYNC: SYNC-204.
+                if (importRecord.getState() != SyncRecordState.COMMITTED && importRecord.getState() != SyncRecordState.ALREADY_COMMITTED && importRecord.getState() != SyncRecordState.NOT_SUPPOSED_TO_SYNC ) {
                 	success = false;
                 	break;
                 }
