@@ -117,7 +117,7 @@ public class CreateChildServlet extends HttpServlet {
 				             new FileOutputStream(file));
 				Context.getService(SyncService.class).execGeneratedFile(file);
 
-				reply(response,"Child database successifully updated","green");
+				reply(response,"Child database successfully updated","green");
 			} catch (Exception ex) {
 				log.warn("Unable to read the clone data file", ex);
 				reply(response,"Unable to read the data clonefile"+ ex.toString(),"red");

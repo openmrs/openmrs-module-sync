@@ -73,7 +73,7 @@ public class DWRSyncService {
 
 					Context.getService(SyncService.class).execGeneratedFile(file);
 					item.setResponsefileName(file.getName());
-					item.setErrorMessage("Parent data cloned successifully");
+					item.setErrorMessage("Parent data cloned successfully");
 				} catch (FileNotFoundException e) {
 					item.setErrorMessage("Unable to save file(" + file.getAbsolutePath() + ")");
 					log.error("Unable to save file(" + file.getAbsolutePath()
