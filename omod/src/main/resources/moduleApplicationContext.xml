@@ -85,7 +85,9 @@
 				<bean class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
 					<property name="transactionManager"><ref bean="transactionManager"/></property>
 					<property name="target">
-						<bean class="org.openmrs.module.sync.api.impl.SyncServiceImpl" autowire="byType" />
+						<bean class="org.openmrs.module.sync.api.impl.SyncServiceImpl" autowire="byType">
+							<property name="serializedObjectDao"><ref bean="serializedObjectDAO"/></property>
+						</bean>
 					</property>
 					<property name="preInterceptors">
 						<ref bean="serviceInterceptors"/>

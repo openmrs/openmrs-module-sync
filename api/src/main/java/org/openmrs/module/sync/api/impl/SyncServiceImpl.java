@@ -37,6 +37,7 @@ import org.openmrs.api.APIException;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.DAOException;
+import org.openmrs.api.db.SerializedObjectDAO;
 import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncPatientStub;
@@ -67,6 +68,18 @@ public class SyncServiceImpl implements SyncService {
 	
 	private static Set<String> serverClassesCollection;
 	
+    private SerializedObjectDAO serializedObjectDao;
+    
+    public void setSerializedObjectDao(SerializedObjectDAO serializedObjectDao) {
+    	this.serializedObjectDao = serializedObjectDao;
+    }
+	
+	
+    public SerializedObjectDAO getSerializedObjectDao() {
+    	return serializedObjectDao;
+    }
+
+
 	private SyncDAO getSynchronizationDAO() {
 		return dao;
 	}
@@ -598,7 +611,16 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	public <T extends OpenmrsObject> T getOpenmrsObjectByUuid(Class<T> clazz, String uuid) {
-		return dao.getOpenmrsObjectByUuid(clazz, uuid);
+		T ret =  dao.getOpenmrsObjectByUuid(clazz, uuid);
+		if (ret == null){
+			try {
+				ret = serializedObjectDao.getObjectByUuid(clazz, uuid);  //sync-205
+			} catch (Exception ex){
+				//pass -- not sure if catch/try is necessary
+			}	
+		}
+		
+		return ret;
 	}
 	
 	/**
