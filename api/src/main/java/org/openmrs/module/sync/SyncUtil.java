@@ -1087,7 +1087,7 @@ public class SyncUtil {
 											Iterator it = collection.iterator();
 											while (it.hasNext()){
 												OpenmrsObject omrsobj = (OpenmrsObject) it.next();
-												if (omrsobj.getUuid() != null && !omrsobj.getUuid().equals(item.getUuid())){ //compare uuid of original item with Collection contents
+												if (omrsobj.getUuid() != null && omrsobj.getUuid().equals(item.getUuid())){ //compare uuid of original item with Collection contents
 													it.remove();
 													if (parent instanceof org.openmrs.Patient && ((Patient) parent).getIdentifiers().size() > 0){
 														Context.getPatientService().savePatient((Patient) parent);
