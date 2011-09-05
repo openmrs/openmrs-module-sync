@@ -162,9 +162,9 @@
 				begin="${1}" end="${maxPages}" step="${1}">
 		 	|
 			<c:choose>
-					<span class="syncPageNum"> <c:when test="${p==currentPage}">
-						<a href="?keyword=${keyword}&page=${p}" style="font-size: 18px">${p}</a>
-					</c:when> </span>
+					<c:when test="${p==currentPage}">
+						<span class="syncPageNum"><a href="?keyword=${keyword}&page=${p}" style="font-size: 18px">${p}</a></span>
+					</c:when>
 					<c:otherwise>
 						<span class="syncPageNum"><a href="?keyword=${keyword}&page=${p}">${p}</a></span>
 					</c:otherwise>
