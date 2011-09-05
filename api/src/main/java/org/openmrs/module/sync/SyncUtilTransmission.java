@@ -403,7 +403,10 @@ public class SyncUtilTransmission {
 		str.setSyncTargetUuid(syncService.getServerUuid());
         String sourceUuid = st.getSyncSourceUuid();
         RemoteServer origin = syncService.getRemoteServer(sourceUuid);
-        log.info("Receiving Sync Transmission from " + origin.getNickname());
+        
+        if (origin != null) {
+        	log.info("Receiving Sync Transmission from " + origin.getNickname());
+        }
 
         User authenticatedUser = Context.getAuthenticatedUser();
         if ( origin == null && authenticatedUser != null ) {
