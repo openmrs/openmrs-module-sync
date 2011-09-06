@@ -13,6 +13,8 @@
  */
 package org.openmrs.module.sync;
 
+import java.util.EnumSet;
+
 /**
  * State for SyncRecords. Has to be in a separate "class"/file due to Hibernate issues with restoring the objects
  */
@@ -53,5 +55,9 @@ public enum SyncRecordState {
     NOT_SUPPOSED_TO_SYNC, 
     
     /** record was sent to server, but server does not accept this type of record for sync'ing */
-    REJECTED
+    REJECTED;
+    
+    public static EnumSet<SyncRecordState> getErrorStates() {
+    	return EnumSet.of(SEND_FAILED, FAILED, FAILED_AND_STOPPED, REJECTED);
+    }
 };

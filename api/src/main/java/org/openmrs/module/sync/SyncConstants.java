@@ -116,4 +116,5 @@ public class SyncConstants {
     public static final String DEFAULT_CHILD_SERVER_USER_NAME = "sync.config.child.user.name";
     
     public static final String PRIV_BACKUP_ENTIRE_DATABASE = "Backup Entire Database";
+    public static final String PRIV_VIEW_SYNC_RECORDS = "View Synchronization Records";
 }

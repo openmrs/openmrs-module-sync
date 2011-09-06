@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.openmrs.module.sync.SyncPatientStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
 
@@ -411,5 +413,10 @@ public interface SyncDAO {
 	public boolean isConceptIdValidForUuid(Integer conceptId, String uuid);
 
 	public Integer getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states);
+
+	/**
+	 * @see SyncService#getOlderSyncRecordInState(SyncRecord, EnumSet)
+	 */
+	public SyncRecord getOlderSyncRecordInState(SyncRecord syncRecord, EnumSet<SyncRecordState> states);
 	
 }

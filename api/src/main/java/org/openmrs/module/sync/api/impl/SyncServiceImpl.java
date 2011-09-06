@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -55,6 +56,7 @@ import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.util.OpenmrsConstants;
 
+
 /**
  * Default implementation of the {@link SyncService}
  */
@@ -68,18 +70,18 @@ public class SyncServiceImpl implements SyncService {
 	
 	private static Set<String> serverClassesCollection;
 	
-    private SerializedObjectDAO serializedObjectDao;
-    
-    public void setSerializedObjectDao(SerializedObjectDAO serializedObjectDao) {
-    	this.serializedObjectDao = serializedObjectDao;
-    }
+	private SerializedObjectDAO serializedObjectDao;
+	
+	public void setSerializedObjectDao(SerializedObjectDAO serializedObjectDao) {
+		this.serializedObjectDao = serializedObjectDao;
+	}
 	
 	
-    public SerializedObjectDAO getSerializedObjectDao() {
-    	return serializedObjectDao;
-    }
-
-
+	public SerializedObjectDAO getSerializedObjectDao() {
+		return serializedObjectDao;
+	}
+	
+	
 	private SyncDAO getSynchronizationDAO() {
 		return dao;
 	}
@@ -143,7 +145,7 @@ public class SyncServiceImpl implements SyncService {
 							SyncServerRecord serverRecord = new SyncServerRecord(server, record);
 							if (server.equals(origin)) {
 								log.info("this record came from server " + origin.getNickname()
-								        + ", so we will set its status to commmitted");
+									+ ", so we will set its status to commmitted");
 								serverRecord.setState(SyncRecordState.COMMITTED);
 							}
 							serverRecords.add(serverRecord);
@@ -212,6 +214,14 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
+	 * @see org.openmrs.module.sync.api.SyncService#getOlderSyncRecordInState(org.openmrs.module.sync.SyncRecord, java.util.EnumSet)
+	 */
+	public SyncRecord getOlderSyncRecordInState(SyncRecord syncRecord, EnumSet<SyncRecordState> states) throws APIException {
+		return getSynchronizationDAO().getOlderSyncRecordInState(syncRecord, states);
+	}
+
+	
+	/**
 	 * @see org.openmrs.api.SyncService#getSyncImportRecords(org.openmrs.module.sync.engine.SyncRecordState)
 	 */
 	public List<SyncImportRecord> getSyncImportRecords(SyncRecordState state) throws APIException {
@@ -266,7 +276,7 @@ public class SyncServiceImpl implements SyncService {
 					
 				} else {
 					log.warn("Omitting record with " + record.getContainedClasses() + " for server: " + server.getNickname()
-					        + " with server type: " + server.getServerType());
+						+ " with server type: " + server.getServerType());
 					if (server.getServerType().equals(RemoteServerType.PARENT)) {
 						record.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
 					} else {
@@ -570,18 +580,18 @@ public class SyncServiceImpl implements SyncService {
 			for (SyncStatistic syncStat : entry1.getValue()) {
 				if (syncStat.getType() == SyncStatistic.Type.SYNC_RECORD_COUNT_BY_STATE) {
 					if (syncStat.getName() != SyncRecordState.ALREADY_COMMITTED.toString()
-					        && syncStat.getName() != SyncRecordState.COMMITTED.toString()
-					        && syncStat.getName() != SyncRecordState.NOT_SUPPOSED_TO_SYNC.toString()) {
+							&& syncStat.getName() != SyncRecordState.COMMITTED.toString()
+							&& syncStat.getName() != SyncRecordState.NOT_SUPPOSED_TO_SYNC.toString()) {
 						pendingCount = pendingCount
-						        + ((syncStat.getValue() == null) ? 0L : Long.parseLong(syncStat.getValue().toString()));
+						+ ((syncStat.getValue() == null) ? 0L : Long.parseLong(syncStat.getValue().toString()));
 					}
 				}
 			}
 			
 			//add pending count
 			entry1.getValue().add(
-			    new SyncStatistic(SyncStatistic.Type.SYNC_RECORDS_PENDING_COUNT,
-			            SyncStatistic.Type.SYNC_RECORDS_PENDING_COUNT.toString(), pendingCount)); //careful, manipulating live collection
+				new SyncStatistic(SyncStatistic.Type.SYNC_RECORDS_PENDING_COUNT,
+					SyncStatistic.Type.SYNC_RECORDS_PENDING_COUNT.toString(), pendingCount)); //careful, manipulating live collection
 			
 			//if some 'stale' records found see if it has been 24hrs since last sync
 			RemoteServer server = entry1.getKey();
@@ -596,13 +606,13 @@ public class SyncServiceImpl implements SyncService {
 				
 				if (lastSync.before(threeDayThreshold)) {
 					entry1.getValue().add(
-					    new SyncStatistic(SyncStatistic.Type.LAST_SYNC_REALLY_LONG_TIME_AGO,
-					            SyncStatistic.Type.LAST_SYNC_REALLY_LONG_TIME_AGO.toString(), pendingCount)); //careful, manipulating live collection
+						new SyncStatistic(SyncStatistic.Type.LAST_SYNC_REALLY_LONG_TIME_AGO,
+							SyncStatistic.Type.LAST_SYNC_REALLY_LONG_TIME_AGO.toString(), pendingCount)); //careful, manipulating live collection
 				}
 				else if (lastSync.before(oneDayThreshold)) {
 					entry1.getValue().add(
-					    new SyncStatistic(SyncStatistic.Type.LAST_SYNC_TIME_SOMEWHAT_TROUBLESOME,
-					            SyncStatistic.Type.LAST_SYNC_TIME_SOMEWHAT_TROUBLESOME.toString(), pendingCount)); //careful, manipulating live collection
+						new SyncStatistic(SyncStatistic.Type.LAST_SYNC_TIME_SOMEWHAT_TROUBLESOME,
+							SyncStatistic.Type.LAST_SYNC_TIME_SOMEWHAT_TROUBLESOME.toString(), pendingCount)); //careful, manipulating live collection
 				}
 			}
 		}
@@ -648,10 +658,10 @@ public class SyncServiceImpl implements SyncService {
 	public File generateDataFile() throws APIException {
 		File dir = SyncUtil.getSyncApplicationDir();
 		String fileName = SyncConstants.CLONE_IMPORT_FILE_NAME + SyncConstants.SYNC_FILENAME_MASK.format(new Date())
-		        + ".sql";
+		+ ".sql";
 		String[] ignoreTables = { "hl7_in_archive", "hl7_in_queue", "hl7_in_error", "formentry_archive", "formentry_queue",
-		        "formentry_error", "sync_class", "sync_import", "sync_record", "sync_server", "sync_server_class",
-		        "sync_server_record" };
+				"formentry_error", "sync_class", "sync_import", "sync_record", "sync_server", "sync_server_class",
+		"sync_server_record" };
 		
 		File outputFile = new File(dir, fileName);
 		getSynchronizationDAO().generateDataFile(outputFile, ignoreTables);
@@ -695,7 +705,7 @@ public class SyncServiceImpl implements SyncService {
 		if (!(entity instanceof OpenmrsObject)) {
 			if (log.isDebugEnabled())
 				log.debug("Do nothing. Flush with type that does not implement OpenmrsObject, type is:"
-				        + entity.getClass().getName());
+					+ entity.getClass().getName());
 			return false;
 		}
 		
@@ -775,7 +785,7 @@ public class SyncServiceImpl implements SyncService {
 				}
 			}
 		}
-
+		
 		//now assign
 		serverClassesCollection = serverClasses;
 	}
@@ -821,7 +831,7 @@ public class SyncServiceImpl implements SyncService {
 			List<List<Object>> rows = executeSQLPrivilegeSafe("select person_id from person where uuid = '" + p.getUuid() + "'", true);
 			if (rows.size() > 0)
 				personId = rows.get(0).get(0);
-
+			
 			rows = executeSQLPrivilegeSafe("select patient_id from patient where patient_id = (select person_id from person where uuid = '" + p.getUuid() + "')", true);
 			
 			if (rows.size() > 0)
@@ -842,13 +852,13 @@ public class SyncServiceImpl implements SyncService {
 		
 		return;
 	}
-
-	public Integer getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states)
-                                                                                                            throws APIException {
-	    return dao.getCountOfSyncRecords(server, from, to, states);
-    }
 	
-    
+	public Integer getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states)
+	throws APIException {
+		return dao.getCountOfSyncRecords(server, from, to, states);
+	}
+	
+	
 	/**
 	 * Utility method for wrapping executeSQL calls in SQL LEVEL ACCESS privilege, if necessary
 	 * @param sql
@@ -869,5 +879,7 @@ public class SyncServiceImpl implements SyncService {
 			
 		} else return Context.getAdministrationService().executeSQL(sql, selectOnly);
 	}
+	
+	
 	
 }

@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.openmrs.annotation.Logging;
 import org.openmrs.api.APIException;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.sync.SyncClass;
+import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncPatientStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
@@ -120,6 +122,19 @@ public interface SyncService {
 	public SyncRecord getLatestRecord() throws APIException;
 	
 	/**
+	 * Returns a sync record which is older than the given sync record and is in one of the given
+	 * states.
+	 * 
+	 * @param syncRecord
+	 * @param states
+	 * @return the sync record or null if not found
+	 * @throws APIException
+	 */
+	@Authorized({ SyncConstants.PRIV_VIEW_SYNC_RECORDS })
+	@Transactional(readOnly = true)
+	public SyncRecord getOlderSyncRecordInState(SyncRecord syncRecord, EnumSet<SyncRecordState> states) throws APIException;
+	
+	/**
 	 * Create a new SyncImportRecord
 	 * 
 	 * @param SyncImportRecord The SyncImportRecord to create
@@ -204,7 +219,7 @@ public interface SyncService {
 	 * @return SyncRecord A list containing all SyncRecords with the given states
 	 * @throws APIException
 	 */
-	@Authorized( { "View Synchronization Records" })
+	@Authorized({ "View Synchronization Records" })
 	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states) throws APIException;
 	
@@ -259,7 +274,6 @@ public interface SyncService {
 	public List<SyncRecord> getSyncRecordsBetween(Date from, Date to) throws APIException;
 	
 	/**
-	 * 
 	 * @param server optional server to restrict this to
 	 * @param from the start date
 	 * @param to the end date
@@ -268,7 +282,8 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	@Transactional(readOnly = true)
-	public Integer getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states) throws APIException;
+	public Integer getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states)
+	    throws APIException;
 	
 	/**
 	 * Get the most recent sync records
@@ -301,8 +316,8 @@ public interface SyncService {
 	 * All {@link SyncServerRecord}s are deleted that are before the given date and have are either
 	 * {@link SyncRecordState#COMMITTED} or {@link SyncRecordState#NOT_SUPPOSED_TO_SYNC}.
 	 * 
-	 * @param states the states on {@link SyncServerRecord} to delete (or null if automatic selection
-	 *            should be done)
+	 * @param states the states on {@link SyncServerRecord} to delete (or null if automatic
+	 *            selection should be done)
 	 * @param to the date to delete before
 	 * @return the number of delete records
 	 * @throws DAOException
@@ -386,8 +401,8 @@ public interface SyncService {
 	public List<RemoteServer> getRemoteServers() throws APIException;
 	
 	/**
-	 * @return RemoteServer The RemoteServer defined as the parent to this current server or 
-	 * null if this server is the root of all other servers
+	 * @return RemoteServer The RemoteServer defined as the parent to this current server or null if
+	 *         this server is the root of all other servers
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Servers"})
@@ -436,21 +451,21 @@ public interface SyncService {
 	public void saveServerName(String name) throws APIException;
 	
 	/**
-	 * Get the stored administrative email address or null if none 
+	 * Get the stored administrative email address or null if none
 	 * 
 	 * @return admin email address or null
 	 * @throws APIException
 	 */
 	public String getAdminEmail() throws APIException;
 	
-    /**
-     * Save the admin email address for this server
-     * 
-     * @param email the admin's email address
-     * @throws APIException
-     */
-    public void saveAdminEmail(String email) throws APIException;
-    
+	/**
+	 * Save the admin email address for this server
+	 * 
+	 * @param email the admin's email address
+	 * @throws APIException
+	 */
+	public void saveAdminEmail(String email) throws APIException;
+	
 	/**
 	 * Update or create a SyncClass
 	 * 
@@ -562,44 +577,43 @@ public interface SyncService {
 	public List<Class<OpenmrsObject>> getAllOpenmrsObjects();
 	
 	/**
-	 * Dumps the entire database, much like what you'd get from the mysqldump
-	 * command, and adds a few insert lines to set the child's UUID, and delete sync
-	 * history.  This is slightly slower than the {@link #generateDataFile()} method but 
-	 * not specific to mysql.
+	 * Dumps the entire database, much like what you'd get from the mysqldump command, and adds a
+	 * few insert lines to set the child's UUID, and delete sync history. This is slightly slower
+	 * than the {@link #generateDataFile()} method but not specific to mysql.
 	 * 
-	 * @param uuidForChild if not null, use this as the uuid for the child
-	 *        server, otherwise autogenerate one
+	 * @param uuidForChild if not null, use this as the uuid for the child server, otherwise
+	 *            autogenerate one
 	 * @param out where to write the sql
 	 * @throws APIException
 	 */
 	// @Authorized({"Backup Entire Database"})
 	@Transactional(readOnly = true)
 	public void exportChildDB(String uuidForChild, OutputStream os) throws APIException;
-
+	
 	/**
 	 * imports a synchronization database backup from the parent
 	 * 
 	 * @throws DAOException
 	 */
 	public void importParentDB(InputStream in) throws APIException;
-
+	
 	/**
 	 * Dumps the entire database with the mysqldump command to a file.
+	 * 
 	 * @return the file pointer to the database dump
 	 */
 	@Transactional(readOnly = true)
 	public File generateDataFile() throws APIException;
-
+	
 	/**
-	 * Executes a sql file on the database.  <br/>
-	 * The sync global properties and sync records are cleared out after 
-	 * importing the sql.
+	 * Executes a sql file on the database. <br/>
+	 * The sync global properties and sync records are cleared out after importing the sql.
 	 * 
 	 * @param fileToExec the file to run
 	 * @throws APIException
 	 */
 	public void execGeneratedFile(File fileToExec) throws APIException;
-
+	
 	/**
 	 * Determines if given object should be recorded for synchronization
 	 * 
@@ -608,9 +622,10 @@ public interface SyncService {
 	 * @return true if the object should be recored for sync
 	 */
 	@Transactional(readOnly = true)
-	@Logging(ignoreAllArgumentValues = true) // TODO: change to ignore=true once 1.8 is the minimum supported version 
+	@Logging(ignoreAllArgumentValues = true)
+	// TODO: change to ignore=true once 1.8 is the minimum supported version 
 	public Boolean shouldSynchronize(Object entity) throws APIException;
-
+	
 	/**
 	 * Gets the value of the non-incrementing primary key
 	 * 
@@ -622,19 +637,18 @@ public interface SyncService {
 	@Transactional(readOnly = true)
 	@Logging(ignoredArgumentIndexes = 0)
 	public String getPrimaryKey(OpenmrsObject obj) throws APIException;
-
-
+	
 	/**
-	 * Handles the odd case of saving patient who already has person record. See SyncPatientStub 
+	 * Handles the odd case of saving patient who already has person record. See SyncPatientStub
 	 * class comments for detailed description of how this works. Note this service is marked as
 	 * transactional read only to avoid spring trying to flush/commit on exit.
 	 * 
 	 * @see SyncPatientStub
-	 * 
 	 * @param p Patient for which stub ought to be created
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true) // because things are not actually written to the db, just memory
+	@Transactional(readOnly = true)
+	// because things are not actually written to the db, just memory
 	@Logging(ignoreAllArgumentValues = true)
 	public void handleInsertPatientStubIfNeeded(Patient p) throws APIException;
 }

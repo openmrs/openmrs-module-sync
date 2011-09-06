@@ -25,6 +25,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncRecord;
+import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.Item;
@@ -47,15 +48,24 @@ public class HistoryListController {
 	/** Logger for this class and subclasses */
 	protected final Log log = LogFactory.getLog(getClass());
 	
+	public static abstract class Views {
+		
+		public static final String HISTORY = "/module/sync/history";
+		
+		public static final String HISTORY_ERROR = "/module/sync/historyNextError";
+	}
+	
 	@SuppressWarnings("unchecked")
-	@RequestMapping(value = "/module/sync/history", method = RequestMethod.GET)
-	public void showThePage(ModelMap modelMap, @RequestParam(value = "firstRecordId", required = false) Integer firstRecordId,
+	@RequestMapping(value = Views.HISTORY, method = RequestMethod.GET)
+	public void showThePage(ModelMap modelMap,
+	                        @RequestParam(value = "firstRecordId", required = false) Integer firstRecordId,
 	                        @RequestParam(value = "size", required = false) Integer size) throws Exception {
 		
 		// default the list size to 20 items
 		if (size == null) {
 			AdministrationService as = Context.getAdministrationService();
-			String max = as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS, SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT_DEFAULT);
+			String max = as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS,
+			    SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT_DEFAULT);
 			size = Integer.valueOf(max);
 		}
 		
@@ -148,6 +158,21 @@ public class HistoryListController {
 		
 		modelMap.put("firstRecordId", firstRecordId);
 		modelMap.put("size", size);
+	}
+	
+	@RequestMapping(value = Views.HISTORY_ERROR, method = RequestMethod.GET)
+	public String historyNextError(@RequestParam("recordId") Integer recordId, @RequestParam("size") Integer size)
+	    throws Exception {
+		SyncService ss = Context.getService(SyncService.class);
+		
+		SyncRecord syncRecordInError = ss.getOlderSyncRecordInState(ss.getSyncRecord(recordId),
+		    SyncRecordState.getErrorStates());
+		
+		if (syncRecordInError != null) {
+			recordId = syncRecordInError.getRecordId();
+		}
+		
+		return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + recordId + "&size=" + size;
 	}
 	
 }
