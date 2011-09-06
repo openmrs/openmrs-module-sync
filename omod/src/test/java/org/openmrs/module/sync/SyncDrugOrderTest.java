@@ -19,13 +19,14 @@ import static org.junit.Assert.assertTrue;
 import java.util.Date;
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 import org.openmrs.Concept;
 import org.openmrs.Drug;
 import org.openmrs.DrugOrder;
 import org.openmrs.OrderType;
 import org.openmrs.Patient;
-import org.openmrs.api.AdministrationService;
 import org.openmrs.api.OrderService;
 import org.openmrs.api.context.Context;
 import org.springframework.test.annotation.NotTransactional;
@@ -44,7 +45,6 @@ public class SyncDrugOrderTest extends SyncBaseTest {
     @NotTransactional
 	public void shouldCreateDrugOrder() throws Exception {
 		runSyncTest(new SyncTestHelper() {			
-			AdministrationService adminService = Context.getAdministrationService();
 			OrderService orderService = Context.getOrderService();
 			public void runOnChild() {
 
@@ -95,8 +95,8 @@ public class SyncDrugOrderTest extends SyncBaseTest {
 				
 				List<DrugOrder> orders = Context.getOrderService().getDrugOrders();
 				
-				log.info("Orders: " + orders.size());
-				assertTrue(orders.size() == 2);
+				//log.info("Orders: " + orders.size());
+				Assert.assertEquals(2, orders.size());
 				
 			}
 		});
@@ -108,20 +108,20 @@ public class SyncDrugOrderTest extends SyncBaseTest {
 		runSyncTest(new SyncTestHelper() {			
 			public void runOnChild() {
 				
-				DrugOrder order = Context.getOrderService().getDrugOrder(1);
+				DrugOrder order = Context.getOrderService().getOrder(1, DrugOrder.class);
 
 				assert(order.getDose().doubleValue() != 10.0);
-				log.info("Instructions: " + order.getInstructions());
+				//log.info("Instructions: " + order.getInstructions());
 				order.setInstructions("test");
-				Context.getOrderService().updateOrder(order);
-				assert(order.getDose().doubleValue() == 10.0);
+				order.setDose(10.0);
+				Context.getOrderService().saveOrder(order);
+				Assert.assertEquals(10.0, order.getDose().doubleValue());
 				
 			}
 			public void runOnParent() {
 
-				//DrugOrder order = orderService.getDrugOrder(1);
-				//assert(order.getDose()==10.0);
-
+				DrugOrder order = Context.getOrderService().getOrder(1, DrugOrder.class);
+				Assert.assertEquals(10.0, order.getDose().doubleValue());
 			}
 		});
 	}
