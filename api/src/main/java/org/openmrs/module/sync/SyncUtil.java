@@ -547,7 +547,7 @@ public class SyncUtil {
 					if (me.getName().equals(methodName) || me.getName().equals(altMethodName)) {
 						Class[] meParamTypes = me.getParameterTypes();
 						if (propValType != null && meParamTypes != null && meParamTypes.length == 1
-						        && meParamTypes[0].isAssignableFrom(propValType)) {
+						        && isAssignableFrom(meParamTypes[0], propValType)) {
 							m = me;
 							continueLoop = false; //aha! found it
 							break;
@@ -572,6 +572,25 @@ public class SyncUtil {
 		
 		return m;
 	}
+	
+	 /**
+     * Checks if a class is assignable from another.
+     * 
+     * @param class1 the first class.
+     * @param class2 the second class.
+     * @return
+     */
+    private static boolean isAssignableFrom(Class class1, Class class2){
+    	if (class1.isAssignableFrom(class2)) {
+    		return true;
+    	}
+    	else if (class1.getName().equals("int") && class2.getName().equals("java.lang.Integer")) {
+    		return true;
+    	}
+    	//TODO Should i add for other primitive types like bool, byte, etc?
+    	
+    	return false;
+    }
 	
 	private static OpenmrsObject findByUuid(Collection<? extends OpenmrsObject> list, OpenmrsObject toCheck) {
 		
