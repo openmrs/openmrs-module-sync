@@ -283,4 +283,16 @@
 		</sql>
 	</diff>
 	
+	<diff>
+		<version>0.97</version>
+		<author>Wyclif</author>
+		<date>September 06 2011</date>
+		<description>
+			Add unique constraint to sync_record.uuid column
+		</description>
+		<sql>
+			ALTER TABLE `sync_record` ADD UNIQUE (`uuid`);
+		</sql>
+	</diff>
+	
 </sqldiff>
