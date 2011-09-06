@@ -351,6 +351,13 @@ public class SyncUtil {
 					log.trace("Abnormal className for " + f.getGenericType());
 				}
 				
+				if (classType == null) {
+					if ("int".equals(className) ) {
+						return new Integer(fieldVal);
+					}
+					//TODO should we also include other primitive types like bool, byte, etc?
+				}
+				
 				// we have to explicitly create a new value object here because all we have is a string - won't know how to convert
 				if (OpenmrsObject.class.isAssignableFrom(classType)) {
 					o = getOpenmrsObj(className, fieldVal);
