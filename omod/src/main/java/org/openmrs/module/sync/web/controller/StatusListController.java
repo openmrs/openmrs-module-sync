@@ -61,9 +61,6 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.ServletRequestUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
@@ -119,6 +116,7 @@ public class StatusListController extends SimpleFormController {
 				syncRecord.setRetryCount(0);
 				syncService.updateSyncRecord(syncRecord);
 			}
+			success = msa.getMessage("sync.status.transmission.reset.attempts.success", new Object[] { syncRecords.size() });
 			result.addObject("mode", request.getParameter("mode"));
 		} else if ("createTx".equals(action)) { // handle transmission generation
 			try {
