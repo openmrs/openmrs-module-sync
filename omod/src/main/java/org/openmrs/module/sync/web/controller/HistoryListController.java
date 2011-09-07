@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpSession;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.AdministrationService;
@@ -25,12 +27,12 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncRecord;
-import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
+import org.openmrs.web.WebConstants;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -161,15 +163,17 @@ public class HistoryListController {
 	}
 	
 	@RequestMapping(value = Views.HISTORY_ERROR, method = RequestMethod.GET)
-	public String historyNextError(@RequestParam("recordId") Integer recordId, @RequestParam("size") Integer size)
-	    throws Exception {
+	public String historyNextError(@RequestParam("recordId") Integer recordId, @RequestParam("size") Integer size,
+	                               HttpSession session) throws Exception {
 		SyncService ss = Context.getService(SyncService.class);
 		
 		SyncRecord syncRecordInError = ss.getOlderSyncRecordInState(ss.getSyncRecord(recordId),
-		    SyncRecordState.getErrorStates());
+		    SyncConstants.SYNC_RECORD_ERROR_STATES);
 		
 		if (syncRecordInError != null) {
 			recordId = syncRecordInError.getRecordId();
+		} else {
+			session.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.general.noNextError");
 		}
 		
 		return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + recordId + "&size=" + size;
