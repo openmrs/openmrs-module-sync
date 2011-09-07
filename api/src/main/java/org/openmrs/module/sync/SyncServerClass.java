@@ -17,9 +17,11 @@ import org.openmrs.OpenmrsObject;
 import org.openmrs.module.sync.server.RemoteServer;
 
 /**
- * This class is similar to the {@link SyncClass} in that it is used to mark {@link OpenmrsObject}
- * classes that should not be sync'ed. <br/>
- * The difference is that this class is per-sync-server.  
+ * By default, all OpenmrsObjects in the system are sync'ed. A SyncServerClass is an
+ * {@link OpenmrsObject} type that should not be sync'ed with a specific remote server. This is
+ * defined by the user. At the moment, we don't restrict what can/can't be in this list, so a user
+ * could theoretically shoot themselves in the foot by choosing to ignore, say, the very important
+ * {@link Patient} class.
  */
 public class SyncServerClass {
 	

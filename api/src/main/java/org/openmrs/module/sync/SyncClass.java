@@ -13,14 +13,9 @@
  */
 package org.openmrs.module.sync;
 
-import org.openmrs.OpenmrsObject;
-import org.openmrs.Patient;
-
 /**
- * By default, all OpenmrsObjects in the system are sync'ed. A SyncClass is an {@link OpenmrsObject}
- * type that should not be sync'ed. This is defined by the user. At the moment, we don't restrict
- * what can/can't be in this list, so a user could theoretically shoot themselves in the foot by
- * choosing to ignore, say, the very important {@link Patient} class.
+ * A component of a {@link SyncServerClass} that stores the class not to sync
+ * 
  */
 public class SyncClass {
 	
