@@ -100,7 +100,6 @@ public class ConfigServerFormController {
 		server.setNickname(nickname);
 		server.setUuid(uuid);
 		
-		
 		// create a new user in either A) 1.5.x or B) 1.6+
 		User user = null;
 		
@@ -119,8 +118,7 @@ public class ConfigServerFormController {
 			name.setFamilyName(nickname);
 			name.setGivenName(mss.getMessage(SyncConstants.DEFAULT_CHILD_SERVER_USER_NAME));
 			user.addName(name);
-		}
-		else {
+		} else {
 			// create a new user in a 1.6+ environemnt where
 			// User does NOT extend Person
 			Person person = new Person();
@@ -201,8 +199,9 @@ public class ConfigServerFormController {
 	@RequestMapping(value = "/module/sync/configServer", method = RequestMethod.POST, params = "action=saveParent")
 	protected String onSaveParent(@RequestParam String nickname, @RequestParam String address,
 	                              @RequestParam String username, @RequestParam String password,
-	                              @RequestParam(required = false) Boolean started, @RequestParam(required = false) Integer repeatInterval,
-	                              HttpSession httpSession, @ModelAttribute("server") RemoteServer server, Errors errors,
+	                              @RequestParam(required = false) Boolean started,
+	                              @RequestParam(required = false) Integer repeatInterval, HttpSession httpSession,
+	                              @ModelAttribute("server") RemoteServer server, Errors errors,
 	                              @RequestParam(required = false) List<String> notSendTo,
 	                              @RequestParam(required = false) List<String> notReceiveFrom) throws Exception {
 		
@@ -258,7 +257,6 @@ public class ConfigServerFormController {
 	}
 	
 	/**
-	 * 
 	 * @param server
 	 * @param notSendTo
 	 * @param notReceiveFrom
@@ -276,7 +274,7 @@ public class ConfigServerFormController {
 		SyncService syncService = Context.getService(SyncService.class);
 		
 		Set<SyncServerClass> currentServerClasses = server.getServerClasses();
-
+		
 		// mark all current serverClasses that are not in the lists
 		for (SyncServerClass syncClass : currentServerClasses) {
 			if (!notSendTo.contains(syncClass.getSyncClass().getName()) && !syncClass.getSendTo()) {
@@ -301,12 +299,12 @@ public class ConfigServerFormController {
 			// we need to add a new item to the list
 			if (!foundClass) {
 				SyncClass defaultSyncClass = syncService.getSyncClassByName(className);
-				if ( defaultSyncClass == null) {
+				if (defaultSyncClass == null) {
 					defaultSyncClass = new SyncClass();
 					defaultSyncClass.setName(className);
 					syncService.saveSyncClass(defaultSyncClass);
 				}
-					
+				
 				SyncServerClass newSyncClass = new SyncServerClass();
 				newSyncClass.setSyncClass(defaultSyncClass);
 				newSyncClass.setSendTo(false);
@@ -329,7 +327,7 @@ public class ConfigServerFormController {
 			// we need to add a new item to the list
 			if (!foundClass) {
 				SyncClass defaultSyncClass = syncService.getSyncClassByName(className);
-				if ( defaultSyncClass == null) {
+				if (defaultSyncClass == null) {
 					defaultSyncClass = new SyncClass();
 					defaultSyncClass.setName(className);
 					syncService.saveSyncClass(defaultSyncClass);
@@ -463,28 +461,29 @@ public class ConfigServerFormController {
 	}
 	
 	@SuppressWarnings("unchecked")
-    @RequestMapping(value = "/module/sync/configServer", method = RequestMethod.GET)
+	@RequestMapping(value = "/module/sync/configServer", method = RequestMethod.GET)
 	protected String showPage(ModelMap modelMap, @ModelAttribute("server") RemoteServer server,
 	                          @RequestParam(value = "type", required = false) String serverType) throws Exception {
 		
 		if (Context.isAuthenticated()) {
 			
-			if (serverType == null || RemoteServerType.PARENT.equals(serverType) || RemoteServerType.PARENT.equals(server.getServerType())) {
+			if (serverType == null || RemoteServerType.PARENT.equals(serverType)
+			        || RemoteServerType.PARENT.equals(server.getServerType())) {
 				// testConnection error messages
 				MessageSourceService mss = Context.getMessageSourceService();
 				Map<String, String> connectionState = new HashMap<String, String>();
-				connectionState.put(ServerConnectionState.OK.toString(), mss
-				        .getMessage("sync.config.server.connection.status.ok"));
-				connectionState.put(ServerConnectionState.AUTHORIZATION_FAILED.toString(), mss
-				        .getMessage("sync.config.server.connection.status.noAuth"));
-				connectionState.put(ServerConnectionState.CONNECTION_FAILED.toString(), mss
-				        .getMessage("sync.config.server.connection.status.noConnection"));
-				connectionState.put(ServerConnectionState.CERTIFICATE_FAILED.toString(), mss
-				        .getMessage("sync.config.server.connection.status.noCertificate"));
-				connectionState.put(ServerConnectionState.MALFORMED_URL.toString(), mss
-				        .getMessage("sync.config.server.connection.status.badUrl"));
-				connectionState.put(ServerConnectionState.NO_ADDRESS.toString(), mss
-				        .getMessage("sync.config.server.connection.status.noAddress"));
+				connectionState.put(ServerConnectionState.OK.toString(),
+				    mss.getMessage("sync.config.server.connection.status.ok"));
+				connectionState.put(ServerConnectionState.AUTHORIZATION_FAILED.toString(),
+				    mss.getMessage("sync.config.server.connection.status.noAuth"));
+				connectionState.put(ServerConnectionState.CONNECTION_FAILED.toString(),
+				    mss.getMessage("sync.config.server.connection.status.noConnection"));
+				connectionState.put(ServerConnectionState.CERTIFICATE_FAILED.toString(),
+				    mss.getMessage("sync.config.server.connection.status.noCertificate"));
+				connectionState.put(ServerConnectionState.MALFORMED_URL.toString(),
+				    mss.getMessage("sync.config.server.connection.status.badUrl"));
+				connectionState.put(ServerConnectionState.NO_ADDRESS.toString(),
+				    mss.getMessage("sync.config.server.connection.status.noAddress"));
 				
 				// get repeatInterval for tasks taskConfig for automated syncing
 				TaskDefinition serverSchedule = new TaskDefinition();
