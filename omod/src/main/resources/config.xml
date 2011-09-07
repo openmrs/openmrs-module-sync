@@ -32,6 +32,21 @@
 		<class>@MODULE_PACKAGE@.advice.SavePatientAdvice</class>
 	</advice>	<!-- /AOP -->
 	
+	<privilege>
+		<name>View Synchronization Status</name>
+		<description>Enables one to see the status of the synchronization process</description>
+	</privilege>
+	
+	<privilege>
+		<name>View Synchronization Records</name>
+		<description>Enables one to see the synchronization record data</description>
+	</privilege>
+	
+	<privilege>
+		<name>Manage Synchronization</name>
+		<description>Enables one to do administrative duties for the synchronization module</description>
+	</privilege>
+	
 	<globalProperty>
 		<property>sync.server_name</property>
 		<defaultValue/>

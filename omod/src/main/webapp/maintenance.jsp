@@ -183,28 +183,30 @@
 	</table>
 </c:if>
 </div>
-<br/>
-<b class="boxHeader"><spring:message code="sync.maintenance.archive.title"/></b>
-<div class="box"><br/>
-<span><spring:message code="sync.maintenance.archive.description" /></span>
-	<ul>
-		<li>
-			<span>
-				<spring:message code="sync.maintenance.archive.journal" />
-				<input id="archiveJournalButton" type="button"  onclick="archiveSyncJournal(true);" value="<spring:message code="sync.maintenance.archive.now" />"/></span>
-		</li>
-		<br/>
-		<li>
-			<span><spring:message code="sync.maintenance.archive.import" />
-			<input id="archiveImportButton" type="button"  onclick="archiveSyncImport(true);" value="<spring:message
-			code="sync.maintenance.archive.now" />" /></span>
-		</li>
-	</ul>
+<openmrs:hasPrivilege privilege="Manage Synchronization">
 	<br/>
-<div id="archiveResult">
-
-</div>
-<br/>
-</div>
+	<b class="boxHeader"><spring:message code="sync.maintenance.archive.title"/></b>
+	<div class="box"><br/>
+	<span><spring:message code="sync.maintenance.archive.description" /></span>
+		<ul>
+			<li>
+				<span>
+					<spring:message code="sync.maintenance.archive.journal" />
+					<input id="archiveJournalButton" type="button"  onclick="archiveSyncJournal(true);" value="<spring:message code="sync.maintenance.archive.now" />"/></span>
+			</li>
+			<br/>
+			<li>
+				<span><spring:message code="sync.maintenance.archive.import" />
+				<input id="archiveImportButton" type="button"  onclick="archiveSyncImport(true);" value="<spring:message
+				code="sync.maintenance.archive.now" />" /></span>
+			</li>
+		</ul>
+		<br/>
+	<div id="archiveResult">
+	
+	</div>
+	<br/>
+	</div>
+</openmrs:hasPrivilege>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>

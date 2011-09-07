@@ -2,7 +2,7 @@
 	<li class="first">
 		<a href="${pageContext.request.contextPath}/admin"><spring:message code="admin.title.short"/></a>
 	</li>
-	<openmrs:hasPrivilege privilege="Manage Synchronization">
+	<openmrs:hasPrivilege privilege="View Synchronization Status">
 		<li <c:if test='<%= request.getRequestURI().contains("overview") %>'>class="active"</c:if>>
 			<a href="${pageContext.request.contextPath}/module/sync/overview.htm">
 				<spring:message code="sync.overview.title"/>
@@ -30,11 +30,14 @@
 		</li>
 	</openmrs:hasPrivilege>
 	
-	<li <c:if test='<%= request.getRequestURI().contains("upgrade") %>'>class="active"</c:if>>
-		<a href="${pageContext.request.contextPath}/module/sync/upgrade.form">
-			<spring:message code="sync.upgrade.title"/>
-		</a>
-	</li>
+	<openmrs:hasPrivilege privilege="Manage Synchronization">
+		<li <c:if test='<%= request.getRequestURI().contains("upgrade") %>'>class="active"</c:if>>
+			<a href="${pageContext.request.contextPath}/module/sync/upgrade.form">
+				<spring:message code="sync.upgrade.title"/>
+			</a>
+		</li>
+	</openmrs:hasPrivilege>
+	
 	<li <c:if test='<%= request.getRequestURI().contains("help") %>'>class="active"</c:if>>
 		<a href="${pageContext.request.contextPath}/module/sync/help.htm">
 			<spring:message code="sync.help.title"/>

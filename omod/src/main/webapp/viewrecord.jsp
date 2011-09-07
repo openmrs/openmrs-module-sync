@@ -120,60 +120,64 @@
 		<b><spring:message code="sync.record.details.retry_count" />:</b> ${record.retryCount}</br>
 		
 		<br/>
-		<c:if test="${record.state!='COMMITTED' && record.state!='ALREADY_COMMITTED'}">
-			<b><spring:message code="sync.record.details.action"/>:</b>
-				<c:if
-					test="${record.state!='NEW' && record.state!='COMMITTED' && record.state!='ALREADY_COMMITTED'}">
-					<b><a
-						href="viewrecord.form?uuid=${record.uuid}&action=reset"><spring:message
-						code="sync.record.details.reset" /></a></b>
-				</c:if>
-				<c:if
-					test="${record.state!='NOT_SUPPOSED_TO_SYNC' && record.state!='COMMITTED' && record.state!='ALREADY_COMMITTED'}">
-					| <b><a
-						href="viewrecord.form?uuid=${record.uuid}&action=remove"><spring:message
-						code="sync.record.details.remove" /></a></b>
-				</c:if>
-				<br/>
-		</c:if>
+		<openmrs:hasPrivilege privilege="Manage Synchronization">
+			<c:if test="${record.state!='COMMITTED' && record.state!='ALREADY_COMMITTED'}">
+				<b><spring:message code="sync.record.details.action"/>:</b>
+					<c:if
+						test="${record.state!='NEW' && record.state!='COMMITTED' && record.state!='ALREADY_COMMITTED'}">
+						<b><a
+							href="viewrecord.form?uuid=${record.uuid}&action=reset"><spring:message
+							code="sync.record.details.reset" /></a></b>
+					</c:if>
+					<c:if
+						test="${record.state!='NOT_SUPPOSED_TO_SYNC' && record.state!='COMMITTED' && record.state!='ALREADY_COMMITTED'}">
+						| <b><a
+							href="viewrecord.form?uuid=${record.uuid}&action=remove"><spring:message
+							code="sync.record.details.remove" /></a></b>
+					</c:if>
+					<br/>
+			</c:if>	
+		</openmrs:hasPrivilege>
 		<br />
 
-<div class="innerBoxHeader"><span style="font-weight: bold"><spring:message code="sync.record.details.payload" /></div>
-	<div class="innerBox">
-	<br/>
-	<span style="font-weight: bold">${itemsNumber} <spring:message code="sync.record.details.classes" />: </span> <c:forEach var="syncItem" items="${syncItems}"
-		varStatus="status">
-		<a id="item_${syncItem.key.keyValue}" href="#"
-			onclick="javascript:changeLinksTab(this.id);currentUuid='${record.uuid}';currentKey='${syncItem.key.keyValue}';javascript:getSyncItemContent();">${itemTypes[syncItem.key.keyValue]}
-		(${syncItem.state})</a> | 
-		</c:forEach>
-		<br/><br/>
+<openmrs:hasPrivilege privilege="Manage Synchronization">
+	<div class="innerBoxHeader"><span style="font-weight: bold"><spring:message code="sync.record.details.payload" /></div>
+		<div class="innerBox">
+		<br/>
+		<span style="font-weight: bold">${itemsNumber} <spring:message code="sync.record.details.classes" />: </span> <c:forEach var="syncItem" items="${syncItems}"
+			varStatus="status">
+			<a id="item_${syncItem.key.keyValue}" href="#"
+				onclick="javascript:changeLinksTab(this.id);currentUuid='${record.uuid}';currentKey='${syncItem.key.keyValue}';javascript:getSyncItemContent();">${itemTypes[syncItem.key.keyValue]}
+			(${syncItem.state})</a> | 
+			</c:forEach>
+			<br/><br/>
+			
+		<div align="center">
+			<span id="loadContent" align="center" style="font: Batang; font-weight: bold; color: #0066FF"></span>
+		</div>
 		
-	<div align="center">
-		<span id="loadContent" align="center" style="font: Batang; font-weight: bold; color: #0066FF"></span>
+		<div id="contents" align="center">
+		</div>
+		
+		</div>
+		<table width="99%" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td width="25%" align="right" valign="middle"><c:if
+					test="${previousRecord != null}">
+					<b><a href="?uuid=${previousRecord.uuid}"><spring:message
+						code="sync.record.details.prev" /></a></b>
+				</c:if></td>
+				<td width="25%" align="center" valign="middle"><b>${record.recordId}</b></td>
+				<td width="25%" align="left" valign="middle"><c:if
+					test="${nextRecord != null}">
+					<b><a href="?uuid=${nextRecord.uuid}"><spring:message
+						code="sync.record.details.next" /></a></b>
+				</c:if></td>
+				<td width="25%" align="right" valign="middle"></td>
+			</tr>
+		</table>
 	</div>
-	
-	<div id="contents" align="center">
-	</div>
-	
-	</div>
-	<table width="99%" border="0" cellpadding="0" cellspacing="0">
-		<tr>
-			<td width="25%" align="right" valign="middle"><c:if
-				test="${previousRecord != null}">
-				<b><a href="?uuid=${previousRecord.uuid}"><spring:message
-					code="sync.record.details.prev" /></a></b>
-			</c:if></td>
-			<td width="25%" align="center" valign="middle"><b>${record.recordId}</b></td>
-			<td width="25%" align="left" valign="middle"><c:if
-				test="${nextRecord != null}">
-				<b><a href="?uuid=${nextRecord.uuid}"><spring:message
-					code="sync.record.details.next" /></a></b>
-			</c:if></td>
-			<td width="25%" align="right" valign="middle"></td>
-		</tr>
-	</table>
-	</div>
+</openmrs:hasPrivilege>
 </c:if>
 <c:if test="${record==null}">
 	<span style="font-weight: bold"><spring:message

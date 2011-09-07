@@ -40,6 +40,7 @@ import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.ServerConnectionState;
 import org.openmrs.scheduler.TaskDefinition;
 import org.openmrs.web.WebConstants;
+import org.openmrs.util.OpenmrsConstants;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
@@ -150,7 +151,10 @@ public class OverviewController extends SimpleFormController {
 	        connectionState.put(ServerConnectionState.MALFORMED_URL.toString(), msa.getMessage("sync.config.server.connection.status.badUrl"));
 	        connectionState.put(ServerConnectionState.NO_ADDRESS.toString(), msa.getMessage("sync.config.server.connection.status.noAddress"));
 	        
-	        // taskConfig for automated syncing
+	        //Add privilege to enable us access the registered tasks
+	        Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+	        
+	        //taskConfig for automated syncing
 	        TaskDefinition parentSchedule = new TaskDefinition();
 	        String repeatInterval = "";
 	        if ( parent != null ) {
@@ -169,7 +173,9 @@ public class OverviewController extends SimpleFormController {
 	            	}
 	        	}
 	        }
-            
+	        
+	        //We no longer need this privilege.
+	        Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
 	        
 	        ret.put("connectionState", connectionState.entrySet());
 			ret.put("parent", parent);

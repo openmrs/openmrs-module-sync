@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/upgrade.form" />
+<openmrs:require privilege="Manage Synchronization" otherwise="/login.htm" redirect="/module/sync/upgrade.form" />
 <spring:message var="pageTitle" code="sync.upgrade.titlebar" scope="page"/>
 
 <%@ include file="/WEB-INF/template/header.jsp" %>

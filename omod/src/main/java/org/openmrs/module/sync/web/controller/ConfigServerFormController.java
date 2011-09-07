@@ -47,6 +47,7 @@ import org.openmrs.module.sync.server.ServerConnectionState;
 import org.openmrs.scheduler.SchedulerException;
 import org.openmrs.scheduler.TaskDefinition;
 import org.openmrs.web.WebConstants;
+import org.openmrs.util.OpenmrsConstants;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
@@ -360,6 +361,9 @@ public class ConfigServerFormController {
 		Integer serverId = server.getServerId();
 		MessageSourceService mss = Context.getMessageSourceService();
 		
+		//Add privilege to enable us access the registered tasks
+        Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+        
 		TaskDefinition serverSchedule = null;
 		Collection<TaskDefinition> tasks = Context.getSchedulerService().getRegisteredTasks();
 		if (tasks != null) {
@@ -378,6 +382,9 @@ public class ConfigServerFormController {
 		} else {
 			log.warn("tasks is null");
 		}
+		
+		//We no longer need this privilege.
+        Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
 		
 		Map<String, String> props = new HashMap<String, String>();
 		props.put(SyncConstants.SCHEDULED_TASK_PROPERTY_SERVER_ID, serverId.toString());
@@ -488,6 +495,9 @@ public class ConfigServerFormController {
 				connectionState.put(ServerConnectionState.NO_ADDRESS.toString(),
 				    mss.getMessage("sync.config.server.connection.status.noAddress"));
 				
+				//Add privilege to enable us access the registered tasks
+		        Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+		        
 				// get repeatInterval for tasks taskConfig for automated syncing
 				TaskDefinition serverSchedule = new TaskDefinition();
 				String repeatInterval = "";
@@ -513,6 +523,9 @@ public class ConfigServerFormController {
 				modelMap.put("connectionState", connectionState.entrySet());
 				modelMap.put("serverSchedule", serverSchedule);
 				modelMap.put("repeatInterval", repeatInterval);
+				
+				//We no longer need this privilege.
+		        Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
 			}
 			
 			modelMap.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
