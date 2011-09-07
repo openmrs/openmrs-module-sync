@@ -355,7 +355,24 @@ public class SyncUtil {
 					if ("int".equals(className) ) {
 						return new Integer(fieldVal);
 					}
-					//TODO should we also include other primitive types like bool, byte, etc?
+					else if ("long".equals(className) ) {
+						return new Long(fieldVal);
+					}
+					else if ("double".equals(className) ) {
+						return new Double(fieldVal);
+					}
+					else if ("float".equals(className) ) {
+						return new Float(fieldVal);
+					}
+					else if ("boolean".equals(className) ) {
+						return new Boolean(fieldVal);
+					}
+					else if ("byte".equals(className) ) {
+						return new Byte(fieldVal);
+					}
+					else if ("short".equals(className) ) {
+						return new Short(fieldVal);
+					}
 				}
 				
 				// we have to explicitly create a new value object here because all we have is a string - won't know how to convert
@@ -591,11 +608,35 @@ public class SyncUtil {
     	if (class1.isAssignableFrom(class2)) {
     		return true;
     	}
-    	else if (class1.getName().equals("int") && class2.getName().equals("java.lang.Integer")) {
+    	else if ((class1.getName().equals("int") && class2.getName().equals("java.lang.Integer")) ||
+    			(class1.getName().equals("java.lang.Integer") && class2.getName().equals("int"))) {
     		return true;
     	}
-    	//TODO Should i add for other primitive types like bool, byte, etc?
-    	
+    	else if ((class1.getName().equals("long") && class2.getName().equals("java.lang.Long")) ||
+    			(class1.getName().equals("java.lang.Long") && class2.getName().equals("long"))) {
+    		return true;
+    	}
+    	else if ((class1.getName().equals("double") && class2.getName().equals("java.lang.Double")) ||
+    			(class1.getName().equals("java.lang.Double") && class2.getName().equals("double"))) {
+    		return true;
+    	}
+    	else if ((class1.getName().equals("float") && class2.getName().equals("java.lang.Float")) ||
+    			(class1.getName().equals("java.lang.Float") && class2.getName().equals("float"))) {
+    		return true;
+    	}
+    	else if ((class1.getName().equals("boolean") && class2.getName().equals("java.lang.Boolean")) ||
+    			(class1.getName().equals("java.lang.Boolean") && class2.getName().equals("boolean"))) {
+    		return true;
+    	}
+    	else if ((class1.getName().equals("byte") && class2.getName().equals("java.lang.Byte")) ||
+    			(class1.getName().equals("java.lang.Byte") && class2.getName().equals("byte"))) {
+    		return true;
+    	}
+    	else if ((class1.getName().equals("short") && class2.getName().equals("java.lang.Short")) ||
+    			(class1.getName().equals("java.lang.Short") && class2.getName().equals("short"))) {
+    		return true;
+    	}
+
     	return false;
     }
 	

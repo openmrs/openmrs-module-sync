@@ -25,20 +25,110 @@ public class SyncUtilTest {
 
 	@Test
 	public void getSetterMethod_shouldReturnMethodForPrimitiveInt(){
-		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "formId", new Integer(1).getClass());
+		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "intField", new Integer(1).getClass());
 		Assert.notNull(m);
 	}
 	
-	public class Xform{
+	@Test
+	public void getSetterMethod_shouldReturnMethodForPrimitiveLong(){
+		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "longField", new Long(1).getClass());
+		Assert.notNull(m);
+	}
+	
+	@Test
+	public void getSetterMethod_shouldReturnMethodForPrimitiveDouble(){
+		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "doubleField", new Double(1).getClass());
+		Assert.notNull(m);
+	}
+	
+	@Test
+	public void getSetterMethod_shouldReturnMethodForPrimitiveFloat(){
+		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "floatField", new Float(1).getClass());
+		Assert.notNull(m);
+	}
+	
+	@Test
+	public void getSetterMethod_shouldReturnMethodForPrimitiveBoolean(){
+		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "booleanField", new Boolean(true).getClass());
+		Assert.notNull(m);
+	}
+	
+	@Test
+	public void getSetterMethod_shouldReturnMethodForPrimitiveShort(){
+		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "shortField", new Short((short)1).getClass());
+		Assert.notNull(m);
+	}
+	
+	@Test
+	public void getSetterMethod_shouldReturnMethodForPrimitiveByte(){
+		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "byteField", new Byte((byte)1).getClass());
+		Assert.notNull(m);
+	}
+	
+	public class Xform {
 		
-		int formId;
+		int intField;
+		long longField;
+		double doubleField;
+		float floatField;
+		boolean booleanField;
+		byte byteField;
+		short shortField;
 
-        public int getFormId() {
-        	return formId;
+        public int getIntField() {
+        	return intField;
         }
 
-        public void setFormId(int formId) {
-        	this.formId = formId;
+        public void setIntField(int intField) {
+        	this.intField = intField;
+        }
+		
+        public long getLongField() {
+        	return longField;
+        }
+		
+        public void setLongField(long longField) {
+        	this.longField = longField;
+        }
+		
+        public double getDoubleField() {
+        	return doubleField;
+        }
+		
+        public void setDoubleField(double doubleField) {
+        	this.doubleField = doubleField;
+        }
+
+        public float getFloatField() {
+        	return floatField;
+        }
+		
+        public void setFloatField(float floatField) {
+        	this.floatField = floatField;
+        }
+		
+        public boolean getBooleanField() {
+        	return booleanField;
+        }
+		
+        public void setBooleanField(boolean booleanField) {
+        	this.booleanField = booleanField;
+        }
+		
+        public byte getByteField() {
+        	return byteField;
+        }
+	
+        public void setByteField(byte byteField) {
+        	this.byteField = byteField;
+        }
+	
+        public short getShortField() {
+        	return shortField;
+        }
+		
+        public void setShortField(short shortField) {
+        	this.shortField = shortField;
         }
 	}
 }
