@@ -4,7 +4,7 @@
 
 	<groupId>org.openmrs.module</groupId>
 	<artifactId>sync-parent</artifactId>
-	<version>0.974-SNAPSHOT</version>
+	<version>0.975-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Synchronization Module</name>
 	<description>Parent project for Synchronization Module</description>
