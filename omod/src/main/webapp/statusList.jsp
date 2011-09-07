@@ -238,6 +238,11 @@
 
 <b class="boxHeader"><spring:message code="sync.changes.recent"/></b>
 <div class="box">
+	<form method="post">
+		<input type="hidden" name="action" value="resetAttempts" />
+		<input type="hidden" name="mode" value="${mode}" />
+		<input type="submit" value="<spring:message code="sync.status.transmission.reset.attempts"/>" />
+	</form>
 	<table id="syncChangesTable" cellpadding="4" cellspacing="0">
 		<thead>
 			<tr>
