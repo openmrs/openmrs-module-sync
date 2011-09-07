@@ -90,5 +90,10 @@ public enum SyncTransmissionState {
     /**
      * Send/receive of data has been initiated however not yet completed with fail or success.
      */
-    PENDING    
+    PENDING,    
+    
+    /**
+     * Cannot run more than one sync task at the same time.
+     */
+    ERROR_CANNOT_RUN_PARALELL
 }

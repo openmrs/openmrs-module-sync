@@ -536,6 +536,16 @@ public class SyncUtilTransmission {
         RemoteServer parent = Context.getService(SyncService.class).getParentServer();
         
         if ( parent != null ) {
+        	if (parent.getSyncInProgress() || SyncTask.getIsExecuting()) {
+        		SyncTransmissionResponse response = new SyncTransmissionResponse();
+    	        response.setErrorMessage(SyncConstants.ERROR_CANNOT_RUN_PARALELL.toString());
+    	        response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
+    	        response.setUuid(SyncConstants.UUID_UNKNOWN);
+    	        response.setState(SyncTransmissionState.ERROR_CANNOT_RUN_PARALELL);
+    	        
+    	        return response;
+        	}
+        	
             return SyncUtilTransmission.doFullSynchronize(parent, size); 
         }
         else {

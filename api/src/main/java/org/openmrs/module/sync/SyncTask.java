@@ -103,4 +103,14 @@ public class SyncTask extends AbstractTask {
         }
 	}
 
+	/**
+	 * Checks if the sync task is running.
+	 * 
+	 * @return true if running, else false.
+	 */
+    public static Boolean getIsExecuting() {
+    	synchronized (isExecuting) {
+    		return isExecuting;
+    	}
+    }
 }
