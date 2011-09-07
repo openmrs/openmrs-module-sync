@@ -67,8 +67,9 @@ public class ConfigServerFormController {
 	protected static transient final Log log = LogFactory.getLog(ConfigServerFormController.class);
 	
 	@RequestMapping(value = "/module/sync/configServer", method = RequestMethod.POST, params = "action=saveNewChild")
-	protected String onSaveNewChild(@RequestParam String nickname, @RequestParam String uuid, @RequestParam String username,
-	                                @RequestParam String password, @RequestParam String passwordRetype,
+	protected String onSaveNewChild(@RequestParam String nickname, @RequestParam String uuid,
+	                                @RequestParam(required = false) String username,
+	                                @RequestParam(required = false) String password, @RequestParam String passwordRetype,
 	                                @RequestParam(required = false) Boolean shouldEmail, @RequestParam String adminEmail,
 	                                HttpSession httpSession, @ModelAttribute("server") RemoteServer server, Errors errors,
 	                                @RequestParam(required = false) List<String> notSendTo,
@@ -77,13 +78,13 @@ public class ConfigServerFormController {
 		if (!Context.isAuthenticated())
 			throw new APIAuthenticationException("Not authenticated!");
 		
-		if (!StringUtils.hasLength(username))
-			errors.rejectValue("username", "sync.config.server.error.usernameRequired");
-		
-		if (!StringUtils.hasLength(password) || !StringUtils.hasLength(passwordRetype)) {
-			errors.rejectValue("password", "sync.config.server.error.passwordRequired");
-		} else if (!password.equals(passwordRetype))
-			errors.rejectValue("password", "error.password.match");
+		//if the user provided a username, then the passwords are required
+		if (StringUtils.hasText(username)) {
+			if (!StringUtils.hasText(password) || !StringUtils.hasText(passwordRetype)) {
+				errors.rejectValue("password", "sync.config.server.error.passwordRequired");
+			} else if (!password.equals(passwordRetype))
+				errors.rejectValue("password", "error.password.match");
+		}
 		
 		if (!StringUtils.hasLength(nickname))
 			errors.rejectValue("nickname", "sync.config.server.error.nicknameRequired");
@@ -100,59 +101,61 @@ public class ConfigServerFormController {
 		server.setNickname(nickname);
 		server.setUuid(uuid);
 		
-		// create a new user in either A) 1.5.x or B) 1.6+
-		User user = null;
-		
-		if (Person.class.isAssignableFrom(User.class)) {
-			// if we're in a pre-1.6 environment, User extends Person
-			user = new User();
-			// if 1.6+ the User.setGender method does not exist, so if we 
-			// don't do this by reflection we will have a compile-time error
-			// (and gender is a required field)
-			Method setGenderMethod = User.class.getMethod("setGender", String.class);
-			setGenderMethod.invoke(user, SyncConstants.DEFAULT_CHILD_SERVER_USER_GENDER);
+		if (StringUtils.hasText(username)) {
+			// create a new user in either A) 1.5.x or B) 1.6+
+			User user = null;
 			
-			user.setUsername(username);
-			
-			PersonName name = new PersonName();
-			name.setFamilyName(nickname);
-			name.setGivenName(mss.getMessage(SyncConstants.DEFAULT_CHILD_SERVER_USER_NAME));
-			user.addName(name);
-		} else {
-			// create a new user in a 1.6+ environemnt where
-			// User does NOT extend Person
-			Person person = new Person();
-			person.setGender(SyncConstants.DEFAULT_CHILD_SERVER_USER_GENDER);
-			person.setBirthdate(new Date());
-			PersonName name = new PersonName();
-			name.setFamilyName(nickname);
-			name.setGivenName(mss.getMessage(SyncConstants.DEFAULT_CHILD_SERVER_USER_NAME));
-			person.addName(name);
-			Context.getPersonService().savePerson(person);
-			
-			user = new User(person);
-			user.setUsername(username);
-		}
-		
-		String defaultRole = Context.getAdministrationService().getGlobalProperty("sync.default_role");
-		if (defaultRole != null) {
-			String[] roles = defaultRole.split(",");
-			for (String role : roles) {
-				Role r = Context.getUserService().getRole(role.trim());
-				if (r != null)
-					user.addRole(r);
+			if (Person.class.isAssignableFrom(User.class)) {
+				// if we're in a pre-1.6 environment, User extends Person
+				user = new User();
+				// if 1.6+ the User.setGender method does not exist, so if we 
+				// don't do this by reflection we will have a compile-time error
+				// (and gender is a required field)
+				Method setGenderMethod = User.class.getMethod("setGender", String.class);
+				setGenderMethod.invoke(user, SyncConstants.DEFAULT_CHILD_SERVER_USER_GENDER);
+				
+				user.setUsername(username);
+				
+				PersonName name = new PersonName();
+				name.setFamilyName(nickname);
+				name.setGivenName(mss.getMessage(SyncConstants.DEFAULT_CHILD_SERVER_USER_NAME));
+				user.addName(name);
+			} else {
+				// create a new user in a 1.6+ environemnt where
+				// User does NOT extend Person
+				Person person = new Person();
+				person.setGender(SyncConstants.DEFAULT_CHILD_SERVER_USER_GENDER);
+				person.setBirthdate(new Date());
+				PersonName name = new PersonName();
+				name.setFamilyName(nickname);
+				name.setGivenName(mss.getMessage(SyncConstants.DEFAULT_CHILD_SERVER_USER_NAME));
+				person.addName(name);
+				Context.getPersonService().savePerson(person);
+				
+				user = new User(person);
+				user.setUsername(username);
 			}
-		}
-		
-		// create in database
-		try {
-			Context.getUserService().saveUser(user, password);
-			server.setChildUsername(user.getUsername());
-		}
-		catch (Exception e) {
-			log.error("Unable to create new user to associate with child server", e);
-			errors.rejectValue("username", "sync.config.child.error.uniqueUsername");
-			return "/module/sync/configServerForm";
+			
+			String defaultRole = Context.getAdministrationService().getGlobalProperty("sync.default_role");
+			if (defaultRole != null) {
+				String[] roles = defaultRole.split(",");
+				for (String role : roles) {
+					Role r = Context.getUserService().getRole(role.trim());
+					if (r != null)
+						user.addRole(r);
+				}
+			}
+			
+			// create in database
+			try {
+				Context.getUserService().saveUser(user, password);
+				server.setChildUsername(user.getUsername());
+			}
+			catch (Exception e) {
+				log.error("Unable to create new user to associate with child server", e);
+				errors.rejectValue("username", "sync.config.child.error.uniqueUsername");
+				return "/module/sync/configServerForm";
+			}
 		}
 		
 		server.setAddress("N/A");

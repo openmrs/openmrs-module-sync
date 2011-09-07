@@ -242,7 +242,8 @@
 							<b><spring:message code="sync.config.child.username" /></b>
 						</td>
 						<td align="left" valign="top">
-							<input type="text" size="25" maxlength="250" id="username" name="username" value="" />
+							<input type="text" size="25" maxlength="250" id="username" name="username" value="" /> 
+							(<spring:message code="general.optional" />)
 						</td>
 					</tr>
 					<tr>
@@ -250,7 +251,8 @@
 							<b><spring:message code="sync.config.child.password" /></b>
 						</td>
 						<td align="left" valign="top">
-							<input type="password" size="25" maxlength="250" id="password" name="password" value="" />
+							<input type="password" size="25" maxlength="250" id="password" name="password" value="" /> 
+							(<spring:message code="sync.config.required.ifUsernameProvided" />)
 						</td>
 					</tr>
 					<tr>
@@ -259,6 +261,7 @@
 						</td>
 						<td align="left" valign="top">
 							<input type="password" size="25" maxlength="250" id="passwordRetype" name="passwordRetype" value="" />
+							(<spring:message code="sync.config.required.ifUsernameProvided" />)
 							<br>
 							<i><span class="syncHint"><spring:message code="sync.config.server.option.login" /></span></i>
 						</td>
