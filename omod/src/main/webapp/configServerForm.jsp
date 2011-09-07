@@ -12,31 +12,6 @@
 
 <script language="JavaScript">
 	<!--
-	
-		function showHideDiv(id) {
-			var div = document.getElementById(id);
-			if ( div ) {
-				if ( div.style.display != "none" ) {
-					div.style.display = "none";
-				} else { 
-					div.style.display = "";
-				}
-			}
-		}
-
-		function showDiv(id) {
-			var div = document.getElementById(id);
-			if ( div ) {
-				div.style.display = "";
-			}
-		}
-
-		function hideDiv(id) {
-			var div = document.getElementById(id);
-			if ( div ) {
-				div.style.display = "none";
-			}
-		}
 		
     function enableInput(id) {
         var el = document.getElementById(id);
@@ -357,16 +332,12 @@
 					</tr>
 				</c:if>
 				<tr>
-					<td align="right">
-						<a href="javascript://" onclick="showHideDiv('details');"><spring:message code="sync.general.showHideMoreOptions" /></a>
+					<td align="right" valign="top" nowrap>
+						<b><spring:message code="sync.config.advanced.objects"/></b>
 					</td>
-					<td></td>
-				</tr>
-				<tr>
-					<td></td>
 					<td>
 						
-						<div id="details" style="display:none;">
+						<div id="details">
 
 							<i><spring:message code="sync.config.server.classes.description"/></i>
 							
