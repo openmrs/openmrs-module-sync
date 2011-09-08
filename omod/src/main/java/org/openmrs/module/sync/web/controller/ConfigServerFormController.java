@@ -154,7 +154,11 @@ public class ConfigServerFormController {
 			}
 			catch (Exception e) {
 				log.error("Unable to create new user to associate with child server", e);
-				errors.rejectValue("username", "sync.config.child.error.uniqueUsername");
+				
+				//Am using the exception message because it is already localized. 
+				//You can look at OpenmrsUtil.validatePassword()
+				errors.rejectValue("username", e.getMessage());
+				
 				return "/module/sync/configServerForm";
 			}
 		}
