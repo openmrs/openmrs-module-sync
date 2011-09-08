@@ -69,7 +69,7 @@
 	</bean>
 	
 	<bean id="synchronizationMaintenanceListController"  class="org.openmrs.module.sync.web.controller.MaintenanceController">
-		<property name="commandName"><value>synchronizationMaintenanceList</value></property>
+		<property name="commandName"><value>task</value></property>
 		<property name="formView"><value>/module/sync/maintenance</value></property>
 		<property name="successView"><value>maintenance.form</value></property>
 	</bean>

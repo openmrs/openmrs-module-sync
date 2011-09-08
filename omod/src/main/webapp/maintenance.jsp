@@ -90,8 +90,33 @@
 	DWRUtil.setValue("archiveResult","&nbsp;" + "<img src='${pageContext.request.contextPath}/images/loader.gif' border='0'>" + "&nbsp;" +"<span class='syncNEUTRAL'><b><spring:message code='sync.maintenance.archive.import.progress' /></b></span>");
 		DWRSyncService.archiveSyncImport(clearDir,showImportArchiveResult);
 	}
+	
+	function removeProperty(btn) {
+		btn.parentNode.parentNode.parentNode.removeChild(btn.parentNode.parentNode);
+	}
+	
+	function addNewProperty() {
+		var propsTable = document.getElementById("propertiesTable");
+		var blankPropRow = document.getElementById("newProperty");
+		if(blankPropRow && propsTable){
+			var newPropRow = blankPropRow.cloneNode(true);
+			$j(newPropRow).show();
+			newPropRow.id = '';
+		
+			propsTable.appendChild(newPropRow);
+		}
+	}
 </script>
 <b class="boxHeader"><spring:message code="sync.maintenance.search.title"/></b>
+<spring:hasBindErrors name="task">
+	<spring:message code="fix.error"/>
+	<div class="error">
+		<c:forEach items="${errors.allErrors}" var="error">
+			<spring:message code="${error.code}" text="${error.code}"/><br/><!-- ${error} -->
+		</c:forEach>
+	</div>
+	<br />
+</spring:hasBindErrors>
 <div class="box">
 <form action="" method="GET">
   <label><strong><spring:message code="sync.maintenance.keyword"/></strong>
@@ -208,5 +233,43 @@
 	<br/>
 	</div>
 </openmrs:hasPrivilege>
+
+<br />
+<div class="boxHeader"><spring:message code="sync.maintenance.manage.cleanUpOldRecordsTaskProperties" /></div>
+<div class="box">
+<form method="post">
+	<input type="hidden" name="taskId" value="${task.id}" />
+	<table id="propertiesTable">
+		<tr>
+			<th><spring:message code="general.name" /></th>
+			<th><spring:message code="general.value" /></th>
+			<th></th>
+		</tr>
+		<c:forEach var="property" items="${task.properties}">			
+		<tr>
+			<td><input type="text" name="propertyName" size="20" value="${property.key}" /></td>
+			<td><input type="text" name="propertyValue" size="30" value="${property.value}" /></td>
+			<td>
+				<input type="button" class="smallButton" onclick="removeProperty(this)" value="<spring:message code="general.remove"/>" />
+			</td>
+		</tr>
+		</c:forEach>
+		<tr id="newProperty" style="display: none">
+			<td>
+				<input type="text" name="propertyName" size="20"/> 
+			</td>
+			<td>
+				<input type="text" name="propertyValue" size="30"/> 
+			</td>
+			<td>
+				<input type="button" class="smallButton" onclick="removeProperty(this)" value="<spring:message code="general.remove"/>">
+			</td>
+		</tr>
+	</table>
+	<input type="button" class="smallButton" onclick="addNewProperty(this)" value="<spring:message code="general.add"/>" />
+	<br /><br />
+	<input type="submit" value="<spring:message code="general.save"/>">
+</form>
+</div>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>

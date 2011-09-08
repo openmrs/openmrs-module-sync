@@ -16,6 +16,8 @@ package org.openmrs.module.sync;
 import java.text.SimpleDateFormat;
 import java.util.EnumSet;
 
+import org.openmrs.module.sync.scheduler.CleanupSyncTablesTask;
+
 /**
  * Common sync constants
  */
@@ -149,6 +151,8 @@ public class SyncConstants {
 	public static final String SCHEDULED_TASK_CLASS = SyncTask.class.getName();
 	
 	public static final String SCHEDULED_TASK_PROPERTY_SERVER_ID = "serverId";
+	
+	public static final String CLEAN_UP_OLD_RECORDS_TASK_CLASS_NAME = CleanupSyncTablesTask.class.getName();
 	
 	public static final String DEFAULT_PARENT_SCHEDULE_NAME = "sync.status.parent.schedule.default.name";
 	
