@@ -919,6 +919,13 @@ public class SyncUtil {
 				Context.getMessageService().sendMessage(message);
 				
 				log.info("Sent sync error message to " + adminEmail);
+				
+				//send an alert to super users that the email has been sent
+				Alert alert = new Alert(Context.getMessageSourceService().getMessage("sync.mail.sentErrorMessageTo",
+				    new Object[] { adminEmail }, null), Context.getUserService().getUsersByRole(
+				    new Role(OpenmrsConstants.SUPERUSER_ROLE)));
+				alert.setSatisfiedByAny(true);
+				Context.getAlertService().saveAlert(alert);
 			}
 			
 		}
