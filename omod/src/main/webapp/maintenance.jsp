@@ -107,7 +107,6 @@
 		}
 	}
 </script>
-<b class="boxHeader"><spring:message code="sync.maintenance.search.title"/></b>
 <spring:hasBindErrors name="task">
 	<spring:message code="fix.error"/>
 	<div class="error">
@@ -117,6 +116,7 @@
 	</div>
 	<br />
 </spring:hasBindErrors>
+<b class="boxHeader"><spring:message code="sync.maintenance.search.title"/></b>
 <div class="box">
 <form action="" method="GET">
   <label><strong><spring:message code="sync.maintenance.keyword"/></strong>
@@ -235,34 +235,69 @@
 </openmrs:hasPrivilege>
 
 <br />
+<openmrs:hasPrivilege privilege="Manage Scheduler">
+<%-- If the task exists(not deleted) --%>
+<c:if test="${task.id != null}">
 <div class="boxHeader"><spring:message code="sync.maintenance.manage.cleanUpOldRecordsTaskProperties" /></div>
 <div class="box">
 <form method="post">
 	<input type="hidden" name="taskId" value="${task.id}" />
-	<table id="propertiesTable">
+	<table>
 		<tr>
-			<th><spring:message code="general.name" /></th>
-			<th><spring:message code="general.value" /></th>
-			<th></th>
-		</tr>
-		<c:forEach var="property" items="${task.properties}">			
-		<tr>
-			<td><input type="text" name="propertyName" size="20" value="${property.key}" /></td>
-			<td><input type="text" name="propertyValue" size="30" value="${property.value}" /></td>
+			<th valign="top"><spring:message code="Scheduler.scheduleForm.startTime"/></th>
 			<td>
-				<input type="button" class="smallButton" onclick="removeProperty(this)" value="<spring:message code="general.remove"/>" />
+				<spring:bind path="task.startTime">
+					<input type="text" id="startTime" name="startTime" size="25" value="${status.value}"/> 
+					<b><i><spring:message code="Scheduler.scheduleForm.startTimePattern"/>: </i></b><spring:message code="Scheduler.scheduleForm.startTime.pattern"/>
+					<c:if test="${status.errorMessage != ''}"><span class="error">${status.errorMessage}</span></c:if>
+				</spring:bind>
 			</td>
 		</tr>
-		</c:forEach>
-		<tr id="newProperty" style="display: none">
+		<tr>
+			<th valign="top"><spring:message code="Scheduler.scheduleForm.repeatInterval"/></th>
 			<td>
-				<input type="text" name="propertyName" size="20"/> 
+				<spring:bind path="task.repeatInterval">
+					<input type="text" id="repeatInterval" name="repeatInterval" size="10" value="${status.value}" /> 
+					<select name="repeatIntervalUnits">
+						<option value="seconds" <c:if test="${units=='seconds'}">selected="selected"</c:if>><spring:message code="Scheduler.scheduleForm.repeatInterval.units.seconds" /></option>
+						<option value="minutes" <c:if test="${units=='minutes'}">selected="selected"</c:if>><spring:message code="Scheduler.scheduleForm.repeatInterval.units.minutes" /></option>
+						<option value="hours" <c:if test="${units=='hours'}">selected="selected"</c:if>><spring:message code="Scheduler.scheduleForm.repeatInterval.units.hours" /></option>
+						<option value="days" <c:if test="${units=='days'}">selected="selected"</c:if>><spring:message code="Scheduler.scheduleForm.repeatInterval.units.days" /></option>
+					</select>
+					<c:if test="${status.errorMessage != ''}"><span class="error">${status.errorMessage}</span></c:if>
+				</spring:bind>
 			</td>
+		</tr>
+		<tr>
+			<th valign="top"><spring:message code="general.properties"/>:</th>
 			<td>
-				<input type="text" name="propertyValue" size="30"/> 
-			</td>
-			<td>
-				<input type="button" class="smallButton" onclick="removeProperty(this)" value="<spring:message code="general.remove"/>">
+				<table id="propertiesTable">
+					<tr>
+						<th><spring:message code="general.name" /></th>
+						<th><spring:message code="general.value" /></th>
+						<th></th>
+					</tr>
+					<c:forEach var="property" items="${task.properties}">			
+					<tr>
+						<td><input type="text" name="propertyName" size="20" value="${property.key}" /></td>
+						<td><input type="text" name="propertyValue" size="30" value="${property.value}" /></td>
+						<td>
+							<input type="button" class="smallButton" onclick="removeProperty(this)" value="<spring:message code="general.remove"/>" />
+						</td>
+					</tr>
+					</c:forEach>
+					<tr id="newProperty" style="display: none">
+						<td>
+							<input type="text" name="propertyName" size="20"/> 
+						</td>
+						<td>
+							<input type="text" name="propertyValue" size="30"/> 
+						</td>
+						<td>
+							<input type="button" class="smallButton" onclick="removeProperty(this)" value="<spring:message code="general.remove"/>">
+						</td>
+					</tr>
+				</table>
 			</td>
 		</tr>
 	</table>
@@ -271,5 +306,7 @@
 	<input type="submit" value="<spring:message code="general.save"/>">
 </form>
 </div>
+</c:if>
+</openmrs:hasPrivilege>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>

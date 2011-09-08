@@ -15,6 +15,7 @@ package org.openmrs.module.sync.web.controller;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,10 +38,15 @@ import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.scheduler.TaskDefinition;
+import org.openmrs.scheduler.web.controller.SchedulerFormController;
+import org.openmrs.util.OpenmrsUtil;
 import org.openmrs.web.WebConstants;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
+import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.ServletRequestUtils;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
@@ -57,6 +63,18 @@ public class MaintenanceController extends SimpleFormController {
 	protected final Log log = LogFactory.getLog(getClass());
 	
 	public Integer maxPageRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT);
+	
+	/**
+	 * @see org.springframework.web.servlet.mvc.BaseCommandController#initBinder(javax.servlet.http.HttpServletRequest,
+	 *      org.springframework.web.bind.ServletRequestDataBinder)
+	 */
+	@Override
+	protected void initBinder(HttpServletRequest request, ServletRequestDataBinder binder) throws Exception {
+		super.initBinder(request, binder);
+		binder.registerCustomEditor(java.lang.Long.class, new CustomNumberEditor(java.lang.Long.class, true));
+		binder.registerCustomEditor(java.util.Date.class, new CustomDateEditor(SchedulerFormController.DEFAULT_DATE_FORMAT,
+		        true));
+	}
 	
 	/**
 	 * @see org.springframework.web.servlet.mvc.SimpleFormController#processFormSubmission(javax.servlet.http.HttpServletRequest,
@@ -78,6 +96,21 @@ public class MaintenanceController extends SimpleFormController {
 		}
 		task.setProperties(properties);
 		
+		task.setStartTimePattern(SchedulerFormController.DEFAULT_DATE_PATTERN);
+		// if the user selected a different repeat interval unit, fix repeatInterval
+		String units = request.getParameter("repeatIntervalUnits");
+		Long interval = task.getRepeatInterval();
+		
+		if ("minutes".equals(units)) {
+			interval = interval * 60;
+		} else if ("hours".equals(units)) {
+			interval = interval * 60 * 60;
+		} else if ("days".equals(units)) {
+			interval = interval * 60 * 60 * 24;
+		}
+		
+		task.setRepeatInterval(interval);
+		
 		return super.processFormSubmission(request, response, command, errors);
 	}
 	
@@ -97,6 +130,8 @@ public class MaintenanceController extends SimpleFormController {
 				}
 			}
 		}
+		if (taskModel == null)
+			taskModel = new TaskDefinition();
 		
 		return taskModel;
 	}
@@ -247,6 +282,25 @@ public class MaintenanceController extends SimpleFormController {
 		ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
 		ret.put("synchronizationMaintenanceList", returnList);
 		
+		TaskDefinition task = (TaskDefinition) obj;
+		
+		Long interval = task.getRepeatInterval();
+		
+		//Copied this from the scehduler controller but it displays the wrong value if the time 
+		//is not divisible by say 60, 3600 etc. E.g 1hr 30min may be displayed as just 1hr
+		if (interval == null || interval < 60)
+			ret.put("units", "seconds");
+		else if (interval < 3600) {
+			ret.put("units", "minutes");
+			task.setRepeatInterval(interval / 60);
+		} else if (interval < 86400) {
+			ret.put("units", "hours");
+			task.setRepeatInterval(interval / 3600);
+		} else {
+			ret.put("units", "days");
+			task.setRepeatInterval(interval / 86400);
+		}
+		
 		return ret;
 	}
 	
@@ -261,8 +315,9 @@ public class MaintenanceController extends SimpleFormController {
 		
 		try {
 			TaskDefinition task = (TaskDefinition) command;
-			//reschedule the task if it is started, is not running and
-			if (task.getStarted() && (task.getTaskInstance() == null || !task.getTaskInstance().isExecuting()))
+			//only reschedule a task if it is started, is not running and the time is not in the past
+			if (task.getStarted() && OpenmrsUtil.compareWithNullAsEarliest(task.getStartTime(), new Date()) > 0
+			        && (task.getTaskInstance() == null || !task.getTaskInstance().isExecuting()))
 				Context.getSchedulerService().rescheduleTask(task);
 			else
 				Context.getSchedulerService().saveTask(task);
