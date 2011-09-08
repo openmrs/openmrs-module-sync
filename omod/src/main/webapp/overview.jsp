@@ -127,10 +127,10 @@
 											</c:if>
 										</td>
 										<!-- Last Attempt Status -->
-										<td style="background-color: #${bgStyle}; text-align:center;">
+										<td style="background-color: #${bgStyle}; text-align:center; <c:if test="${server.lastSyncState == 'FAILED'}">color: red;</c:if>">
 											<c:if test="${wroteServerInfo == false}">
 												<c:set var="wroteServerInfo" value="true" />
-												${server.lastSyncState}
+												${server.lastSyncState} 
 											</c:if>
 										</td>
 										<!-- Data receive/send stats local <- CHILD server, i.e. local is parent -->
