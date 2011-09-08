@@ -190,6 +190,8 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     // for each sync item, process it and insert/update the database; 
                     //put deletes into deletedItems collection -- these will get processed last
                     for ( SyncItem item : record.getItems() ) {
+                    	//System.out.println("item: " + item.getContainedType() + " state: " + item.getState());
+                    	//System.out.println("content: " + item.getContent());
                     	if (item.getState() == SyncItemState.DELETED) {
                     		deletedItems.add(item);
                     	} else if (item.getState() == SyncItemState.UPDATED && item.getContainedType() != null && (
@@ -200,7 +202,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     			)) {
                     		treeSetItems.add(item);
                     	} else if (Person.class.isAssignableFrom(item.getContainedType()) || Concept.class.isAssignableFrom(item.getContainedType()) || SyncPatientStub.class.isAssignableFrom(item.getContainedType())){
-                    		//Sync-180: Person items need to be processed first, Concept exibited same behavior.
+                    		//Sync-180: Person items need to be processed first, Concept exhibited same behavior.
 		                    SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
 		                    importedItem.setKey(item.getKey());
 		                    importRecord.addItem(importedItem);
@@ -234,6 +236,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                         SyncImportItem importedItem = this.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
                         importedItem.setKey(item.getKey());
                         importRecord.addItem(importedItem);
+                        // save this object for later so we're sure to not update it when processing the "treesetitems"
                         deletedObjects.put((String)item.getKey().getKeyValue(), item.getContainedType());
                         if ( !importedItem.getState().equals(SyncItemState.SYNCHRONIZED)) isError = true;
                     }
@@ -241,7 +244,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     syncService.setFlushModeAutomatic();
                     Context.clearSession(); // so that objects aren't resaved at next flush below
                     
-                    /* Run through the patient identifier updates, see the method comments to understand
+                    /* Run through the updates for patient props that are treesets, see the method comments to understand
                      * why this is done here. 
                      */
                     syncService.setFlushModeManual(); 
@@ -250,6 +253,8 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     		log.debug("skipping update of " + item.getContainedType() + ":" + item.getKey() + " because we just deleted it");
                     		continue;
                     	}
+                    	
+                    	//why is the identifier not getting into a sync item?
                         SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
                         importedItem.setKey(item.getKey());
                         importRecord.addItem(importedItem);

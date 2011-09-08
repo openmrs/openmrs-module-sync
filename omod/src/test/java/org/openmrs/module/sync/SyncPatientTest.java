@@ -44,8 +44,6 @@ import org.openmrs.ProgramWorkflowState;
 import org.openmrs.User;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.api.SyncIngestService;
-import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.test.annotation.NotTransactional;
 
@@ -487,7 +485,7 @@ public class SyncPatientTest extends SyncBaseTest {
 
 	@Test
 	@NotTransactional
-	public void shouldEditPatientIDs() throws Exception {
+	public void shouldEditPatientIdentifiers() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			PatientIdentifierType pit;
 			public void runOnChild() {
@@ -498,13 +496,14 @@ public class SyncPatientTest extends SyncBaseTest {
 				p.removeName(p.getPersonName());
 				p.addName(new PersonName("Peter", null, "Parker"));
 				p.addIdentifier(new PatientIdentifier("super123", pit, loc));
-				Context.getPatientService().savePatient(p);
+				// don't save here, in real-world situations savePatient is only called once per transaction
+				//Context.getPatientService().savePatient(p);
 				
 				/* patient 2 has two existing IDs: 
 				 * "ID1234" with uuid of '6b920848-1b90-102b-8082-d8cf852a43d2' - this should be removed
 				 * "ID1234-2" with uuid of 'e333cc28-6fef-11df-83c8-3679bc4524e5' - this should be voided
 				 */
-				Set<PatientIdentifier> pis =p.getIdentifiers();
+				Set<PatientIdentifier> pis = p.getIdentifiers();
 				PatientIdentifier piToDelete = null;
 				PatientIdentifier piToVoid = null;
 				for(PatientIdentifier pi : pis) {
@@ -515,13 +514,14 @@ public class SyncPatientTest extends SyncBaseTest {
 					};
 				}
 				
-				//whack ID1234
-				SyncUtil.deleteOpenmrsObject(piToDelete);
+				//whack ID1234 by removing it from the patient
+				p.removeIdentifier(piToDelete);
+				//SyncUtil.deleteOpenmrsObject(piToDelete);
 
 				//change ID1234-2 to void and save it via syncUtil to test resorting the treeset
 				piToVoid.setVoided(true);
 				piToVoid.setVoidReason("testing sync");				
-				SyncUtil.updateOpenmrsObject(piToVoid, "org.openmrs.PatientIdentifier", piToVoid.getUuid());
+				//SyncUtil.updateOpenmrsObject(piToVoid, "org.openmrs.PatientIdentifier", piToVoid.getUuid());
 				Context.getPatientService().savePatient(p);
 			}
 			public void runOnParent() {

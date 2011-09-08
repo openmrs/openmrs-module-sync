@@ -19,6 +19,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openmrs.Concept;
 import org.openmrs.Location;
@@ -89,6 +90,7 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 	
 	@Test
     @NotTransactional
+    @Ignore
 	public void shouldDeletePersonAttributeType() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild(){				
@@ -126,7 +128,7 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 			}
 			public void runOnParent() {
 				Patient p = Context.getPatientService().getPatient(2);
-				assertEquals("Name should be Peter Parker", p.getPersonName().toString(), "Peter Parker");
+				assertEquals("Name should be Peter Parker", "Peter Parker", p.getPersonName().toString());
 				boolean found = false;
 				for (PatientIdentifier id : p.getIdentifiers())
 					if (id.getIdentifier().equals("super123") && id.getIdentifierType().equals(pit))
@@ -142,7 +144,7 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 		runSyncTest(new SyncTestHelper() {
 			Integer patientId = 4;
 			
-			public void runOnChild() {				
+			public void runOnChild() {
 				Patient p = Context.getPatientService().getPatient(patientId);
 				Context.getPatientService().purgePatient(p);				
 			}

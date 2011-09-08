@@ -152,7 +152,9 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	@Transactional
 	@Rollback(false)
 	protected void repopulateDB(String xmlFileToExecute) throws Exception {
-				
+		
+		Context.clearSession();
+		
 		//reload db from scratch
 		log.info("\n************************************* Reload Database *************************************");
 		deleteAllData();
@@ -223,19 +225,20 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		
 		this.runOnChild(testMethods);
 
-		List<SyncRecord> changes = this.getSyncRecords();
+		List<SyncRecord> firstChanges = this.getSyncRecords();
 		
 		this.repopulateDB(getParentDataset());
 		
-		this.applySyncChanges(changes, testMethods);
+		this.applySyncChanges(firstChanges, testMethods);
 		
 		this.runOnParent(testMethods);
 
 		//now that parent is committed; replay the parent's log against child #2
 		//after that is done, the data should be the same again
-		changes = this.getSyncRecords();
+		List<SyncRecord> secondChanges = this.getSyncRecords();
 		this.repopulateDB(getChild2Dataset());
-		this.applySyncChanges(changes, testMethods);
+		
+		this.applySyncChanges(secondChanges, testMethods);
 		
 		//now finish by checking the changes recorded on parent against the target state
 		this.runOnChild2(testMethods);

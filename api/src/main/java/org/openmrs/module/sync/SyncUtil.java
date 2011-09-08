@@ -1190,17 +1190,18 @@ public class SyncUtil {
 										if (colObj != null) {
 											java.util.Collection collection = (java.util.Collection) colObj;
 											Iterator it = collection.iterator();
-											while (it.hasNext()) {
+											boolean atLeastOneRemoved = false;
+											while (it.hasNext()){
 												OpenmrsObject omrsobj = (OpenmrsObject) it.next();
 												if (omrsobj.getUuid() != null && omrsobj.getUuid().equals(item.getUuid())) { //compare uuid of original item with Collection contents
 													it.remove();
-													if (parent instanceof org.openmrs.Patient
-													        && ((Patient) parent).getIdentifiers().size() > 0) {
-														Context.getPatientService().savePatient((Patient) parent);
-													} else if (parent instanceof org.openmrs.Person) {
-														Context.getPersonService().savePerson((Person) parent);
-													}
-													return;
+													atLeastOneRemoved = true;
+												}
+												if (atLeastOneRemoved && (parent instanceof org.openmrs.Patient || parent instanceof org.openmrs.Person)) {
+													// this is commented out because deleting of patients fails if it is here.
+													// we really should not need to call "save", that can only cause problems.
+													// removing the object from the parent collection is the important part, which we're doing above
+													//Context.getService(SyncService.class).saveOrUpdate(parent);
 												}
 											}
 										}
