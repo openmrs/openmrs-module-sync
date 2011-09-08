@@ -58,7 +58,6 @@ import org.openmrs.Location;
 import org.openmrs.Obs;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.OrderType;
-import org.openmrs.Patient;
 import org.openmrs.PatientProgram;
 import org.openmrs.PatientState;
 import org.openmrs.Person;
@@ -920,35 +919,37 @@ public class SyncUtil {
 				
 				log.info("Sent sync error message to " + adminEmail);
 				
-				//send an alert to super users that the email has been sent
-				Alert alert = new Alert(Context.getMessageSourceService().getMessage("sync.mail.sentErrorMessageTo",
-				    new Object[] { adminEmail }, null), Context.getUserService().getUsersByRole(
-				    new Role(OpenmrsConstants.SUPERUSER_ROLE)));
-				alert.setSatisfiedByAny(true);
-				Context.getAlertService().saveAlert(alert);
+				sendAlert(
+				    Context.getMessageSourceService().getMessage("sync.mail.sentErrorMessageTo",
+				        new Object[] { adminEmail }, null),
+				    Context.getUserService().getUsersByRole(new Role(OpenmrsConstants.SUPERUSER_ROLE)));
 			}
 			
 		}
 		catch (MessageException e) {
 			log.error("An error occurred while sending the sync error message", e);
-			try {
-				Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_ALERTS);
-				Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_USERS);
-				
-				String message = Context.getMessageSourceService().getMessage("sync.status.email.notSentError",
-				    new String[] { exception.getMessage(), e.getMessage() }, null);
-				List<User> users = Context.getUserService().getUsersByRole(new Role(OpenmrsConstants.SUPERUSER_ROLE));
-				Alert alert = new Alert(message, users);
-				alert.setSatisfiedByAny(true);
-				
-				Context.getAlertService().saveAlert(alert);
-			}
-			finally {
-				Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_ALERTS);
-				Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_USERS);
-			}
+			
+			String message = Context.getMessageSourceService().getMessage("sync.status.email.notSentError",
+			    new String[] { exception.getMessage(), e.getMessage() }, null);
+			sendAlert(message, Context.getUserService().getUsersByRole(new Role(OpenmrsConstants.SUPERUSER_ROLE)));
+			
 		}
 		
+	}
+	
+	private static void sendAlert(String message, List<User> users) {
+		try {
+			Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_ALERTS);
+			Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_USERS);
+			Alert alert = new Alert(message, users);
+			alert.setSatisfiedByAny(true);
+			
+			Context.getAlertService().saveAlert(alert);
+		}
+		finally {
+			Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_ALERTS);
+			Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_USERS);
+		}
 	}
 	
 	/**
@@ -1191,13 +1192,14 @@ public class SyncUtil {
 											java.util.Collection collection = (java.util.Collection) colObj;
 											Iterator it = collection.iterator();
 											boolean atLeastOneRemoved = false;
-											while (it.hasNext()){
+											while (it.hasNext()) {
 												OpenmrsObject omrsobj = (OpenmrsObject) it.next();
 												if (omrsobj.getUuid() != null && omrsobj.getUuid().equals(item.getUuid())) { //compare uuid of original item with Collection contents
 													it.remove();
 													atLeastOneRemoved = true;
 												}
-												if (atLeastOneRemoved && (parent instanceof org.openmrs.Patient || parent instanceof org.openmrs.Person)) {
+												if (atLeastOneRemoved
+												        && (parent instanceof org.openmrs.Patient || parent instanceof org.openmrs.Person)) {
 													// this is commented out because deleting of patients fails if it is here.
 													// we really should not need to call "save", that can only cause problems.
 													// removing the object from the parent collection is the important part, which we're doing above
