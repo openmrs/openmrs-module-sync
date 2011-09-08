@@ -44,56 +44,49 @@ import org.w3c.dom.NodeList;
  * 
  */
 public class MaintenanceController extends SimpleFormController {
-
+	
 	/** Logger for this class and subclasses */
 	protected final Log log = LogFactory.getLog(getClass());
-
+	
 	public Integer maxPageRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT);
-
+	
 	/**
-	 * 
-	 * This is called prior to displaying a form for the first time. It tells
-	 * Spring the form/command object to load into the request
+	 * This is called prior to displaying a form for the first time. It tells Spring the
+	 * form/command object to load into the request
 	 * 
 	 * @see org.springframework.web.servlet.mvc.AbstractFormController#formBackingObject(javax.servlet.http.HttpServletRequest)
 	 */
-	protected String formBackingObject(HttpServletRequest request)
-	        throws ServletException {
+	protected String formBackingObject(HttpServletRequest request) throws ServletException {
 		// do nothing.  everything is in referenceData
 		return "";
 	}
-
+	
 	@Override
-	protected Map<String, Object> referenceData(HttpServletRequest request, Object obj,
-	        Errors errors) throws Exception {
+	protected Map<String, Object> referenceData(HttpServletRequest request, Object obj, Errors errors) throws Exception {
 		
 		Map<String, Object> ret = new HashMap<String, Object>();
 		
 		List<SyncRecord> returnList = new ArrayList<SyncRecord>();
 		List<SyncRecord> matchesList = new ArrayList<SyncRecord>();
-		String keyword = ServletRequestUtils.getStringParameter(request,
-		                                                        "keyword",
-		                                                        "");
-		Integer page = ServletRequestUtils.getIntParameter(request,
-		                                                     "page",
-		                                                     1);
-
+		String keyword = ServletRequestUtils.getStringParameter(request, "keyword", "");
+		Integer page = ServletRequestUtils.getIntParameter(request, "page", 1);
+		
 		Integer maxPages = 1;
 		Integer totalRecords = 0;
 		
 		// only fill the Object if the user has authenticated properly
 		if (Context.isAuthenticated()) {
 			SyncService syncService = Context.getService(SyncService.class);
-
+			
 			// if ("".equals(keyword) || keyword == null)
 			// return new ArrayList<SyncRecord>();
-
+			
 			if (StringUtils.hasText(keyword))
 				matchesList = syncService.getSyncRecords(keyword);
-
-			String maxPageRecordsString = Context.getAdministrationService()
-			                                     .getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS, SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT);
-
+			
+			String maxPageRecordsString = Context.getAdministrationService().getGlobalProperty(
+			    SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS, SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT);
+			
 			try {
 				maxPageRecords = Integer.parseInt(maxPageRecordsString);
 			}
@@ -104,25 +97,25 @@ public class MaintenanceController extends SimpleFormController {
 			if (maxPageRecords < 1) {
 				maxPageRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT);
 			}
-
+			
 			// Adding paging
 			totalRecords = matchesList.size();
 			if (matchesList.size() % maxPageRecords == 0)
 				maxPages = (int) (totalRecords / maxPageRecords);
 			else
 				maxPages = (int) (totalRecords / maxPageRecords) + 1;
-
+			
 			if (page > maxPages)
 				page = 1;
-
+			
 			returnList.clear();
 			int start = (page - 1) * maxPageRecords;
 			for (int i = 0; start + i < totalRecords && i < maxPageRecords; i++) {
 				returnList.add(matchesList.get(start + i));
 			}
-
+			
 		}
-
+		
 		List<GlobalProperty> globalPropList = new ArrayList<GlobalProperty>();
 		List<GlobalProperty> syncPropList = new ArrayList<GlobalProperty>();
 		Map<String, String> recordTypes = new HashMap<String, String>();
@@ -130,28 +123,26 @@ public class MaintenanceController extends SimpleFormController {
 		Map<Object, String> itemUuids = new HashMap<Object, String>();
 		Map<String, String> recordText = new HashMap<String, String>();
 		Map<String, String> recordChangeType = new HashMap<String, String>();
-
+		
 		// warning: right now we are assuming there is only 1 item per record
 		for (SyncRecord record : returnList) {
-
+			
 			String mainClassName = null;
 			String mainUuid = null;
 			String mainState = null;
-
+			
 			for (SyncItem item : record.getItems()) {
 				String syncItem = item.getContent();
 				mainState = item.getState().toString();
 				Record xml = Record.create(syncItem);
 				Item root = xml.getRootItem();
-				String className = root.getNode()
-				                       .getNodeName()
-				                       .substring("org.openmrs.".length());
+				String className = root.getNode().getNodeName().substring("org.openmrs.".length());
 				itemTypes.put(item.getKey().getKeyValue(), className);
 				if (mainClassName == null)
 					mainClassName = className;
-
+				
 				// String itemInfoKey = itemInfoKeys.get(className);
-
+				
 				// now we have to go through the item child nodes to find the
 				// real UUID that we want
 				NodeList nodes = root.getNode().getChildNodes();
@@ -166,20 +157,21 @@ public class MaintenanceController extends SimpleFormController {
 					}
 				}
 			}
-
+			
 			// persistent sets should show something other than their
 			// mainClassName (persistedSet)
 			if (mainClassName.indexOf("Persistent") >= 0)
 				mainClassName = record.getContainedClasses();
-
+			
 			recordTypes.put(record.getUuid(), mainClassName);
 			recordChangeType.put(record.getUuid(), mainState);
-
+			
 			// refactored - CA 21 Jan 2008
 			String displayName = "";
 			try {
 				displayName = SyncUtil.displayName(mainClassName, mainUuid);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				// some methods like Concept.getName() throw Exception s all the
 				// time...
 				displayName = "";
@@ -189,13 +181,13 @@ public class MaintenanceController extends SimpleFormController {
 					recordText.put(record.getUuid(), displayName);
 		}
 		
-		globalPropList=Context.getAdministrationService().getAllGlobalProperties();
-		for(GlobalProperty prop: globalPropList){
-			if(prop.getProperty().equals(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS))
+		globalPropList = Context.getAdministrationService().getAllGlobalProperties();
+		for (GlobalProperty prop : globalPropList) {
+			if (prop.getProperty().equals(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS))
 				syncPropList.add(prop);
-			else if(prop.getProperty().equals(SyncConstants.PROPERTY_NAME_MAX_RECORDS))
+			else if (prop.getProperty().equals(SyncConstants.PROPERTY_NAME_MAX_RECORDS))
 				syncPropList.add(prop);
-			else if(prop.getProperty().equals(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT))
+			else if (prop.getProperty().equals(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT))
 				syncPropList.add(prop);
 		}
 		
@@ -211,13 +203,11 @@ public class MaintenanceController extends SimpleFormController {
 		ret.put("recordText", recordText);
 		ret.put("recordChangeType", recordChangeType);
 		ret.put("parent", Context.getService(SyncService.class).getParentServer());
-		ret.put("servers", Context.getService(SyncService.class)
-		                          .getRemoteServers());
-		ret.put("syncDateDisplayFormat",
-		        TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
+		ret.put("servers", Context.getService(SyncService.class).getRemoteServers());
+		ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
 		ret.put("synchronizationMaintenanceList", returnList);
 		
 		return ret;
 	}
-
+	
 }

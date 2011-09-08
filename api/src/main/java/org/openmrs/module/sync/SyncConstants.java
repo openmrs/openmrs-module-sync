@@ -16,8 +16,6 @@ package org.openmrs.module.sync;
 import java.text.SimpleDateFormat;
 import java.util.EnumSet;
 
-import org.openmrs.module.sync.SyncTask;
-
 /**
  * Common sync constants
  */
