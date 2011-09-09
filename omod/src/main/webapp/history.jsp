@@ -9,12 +9,76 @@
 <openmrs:htmlInclude file="/dwr/util.js" />
 <openmrs:htmlInclude file="/moduleResources/sync/sync.css" />
 
+<script type="text/javascript">
+
+	function reloadPage(firstRecordId) {
+    	var dropdown = document.getElementById("itemsPerPage");
+   		var index = dropdown.selectedIndex;
+    	var ddVal = dropdown.options[index].value;
+		document.location = "?firstRecordId=" + firstRecordId + "&size=" + ddVal;
+	}
+
+	function getQueryParameter() {
+		  var queryString = window.top.location.search.substring(1);
+		  var parameterName = "size=";
+		  if ( queryString.length > 0 ) {
+		    begin = queryString.indexOf ( parameterName );
+		    if ( begin != -1 ) {
+		      begin += parameterName.length;
+		      end = queryString.indexOf ( "&" , begin );
+		        if ( end == -1 ) {
+		        end = queryString.length
+		      }
+		      var size = unescape ( queryString.substring ( begin, end ) );
+				var dropdown = document.getElementById("itemsPerPage");
+				document.getElementById('itemsPerPage').value = size;
+		    }
+		  }
+	}
+ 
+	function getNewerItemsList(firstRecordId,flag) {
+		var firstRecordNum = parseInt(firstRecordId);
+		var dropdown = document.getElementById("itemsPerPage");
+    	var index = dropdown.selectedIndex;
+    	var ddVal = dropdown.options[index].value;
+    	var ddNum = parseInt(ddVal);
+    	parseInt(ddNum);
+    	
+    	if(flag == false){
+    		firstRecordNum = firstRecordNum + ddNum;
+    	}if(flag == true){
+    		firstRecordNum -= ddNum;
+   		}
+   		document.location = "?firstRecordId=" + firstRecordNum + "&size=" + ddNum;   
+	}
+</script>
+
 <h2><spring:message code="sync.history.title"/></h2>
 
-<b class="boxHeader"><spring:message code="sync.changes.all"/></b>
+<b class="boxHeader">
+<table>
+<tr>
+<td><spring:message code="sync.changes.all"/>
+</td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;<spring:message code="sync.history.recordsPerPage"/>
+<select id="itemsPerPage" name="itemsPerPage" onchange="reloadPage(${firstRecordId})">
+	<option value="10">10</option>
+	<option value="50">50</option>
+	<option value="100">100</option>
+	</select>
+</td>
+</tr>
+</table>
+
+</b>
 <div class="box">
-	<a href="?firstRecordId=${firstRecordId + size}&size=${size}" disabled="disabled">&larr; <spring:message code="sync.general.newer"/></a>
-	<a href="?firstRecordId=${firstRecordId - size}&size=${size}"><spring:message code="sync.general.older"/> &rarr;</a> | 
+	<c:if test="${syncRecords[0].recordId != latestRecordId}">
+	<a href="javascript: getNewerItemsList(${firstRecordId}, false)">&larr; <spring:message code="sync.general.newer"/></a>
+	</c:if>
+	<c:if test="${isEarliestRecord != true}">
+	<a href="javascript: getNewerItemsList(${firstRecordId}, true)"><spring:message code="sync.general.older"/> &rarr;</a>
+	</c:if>
+	&#124;
 	<a href="historyNextError.list?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.nextError"/> &rarr;</a>
 	
 	<table id="syncChangesTable" cellpadding="7" cellspacing="0">
@@ -106,10 +170,19 @@
 		</tbody>
 	</table>
 	
-	<a href="?firstRecordId=${firstRecordId + size}&size=${size}" disabled="disabled">&larr; <spring:message code="sync.general.newer"/></a>
-	<a href="?firstRecordId=${firstRecordId - size}&size=${size}"><spring:message code="sync.general.older"/> &rarr;</a> | 
+	<c:if test="${syncRecords[0].recordId != latestRecordId}">
+	<a href="javascript: getNewerItemsList(${firstRecordId}, false)">&larr; <spring:message code="sync.general.newer"/></a>
+	</c:if>
+	<c:if test="${isEarliestRecord != true}">
+	<a href="javascript: getNewerItemsList(${firstRecordId}, true)"><spring:message code="sync.general.older"/> &rarr;</a>
+	</c:if>
+	&#124;
 	<a href="historyNextError.list?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.nextError"/> &rarr;</a>
 	
 </div>
+
+<script>
+window.onload=getQueryParameter(); 
+</script>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>

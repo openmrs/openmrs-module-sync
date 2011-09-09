@@ -194,6 +194,21 @@ public class HibernateSyncDAO implements SyncDAO {
 		}
 	}
 	
+	 @SuppressWarnings("unchecked")
+	    public SyncRecord getEarliestRecord() throws DAOException {
+	        List<Integer> result = sessionFactory.getCurrentSession()
+	            .createCriteria(SyncRecord.class)
+	            .setProjection(Projections.min("recordId"))
+	            .list();
+	        
+	        if (result.size() < 1) {
+	            return null;
+	        } else {
+	        	Integer minRecordId = result.get(0);
+	            return getSyncRecord(minRecordId);
+	        }
+	    }
+	
 	@SuppressWarnings("unchecked")
 	public List<SyncRecord> getSyncRecords(String query) throws DAOException {
 		return sessionFactory
@@ -1501,9 +1516,9 @@ public class HibernateSyncDAO implements SyncDAO {
 	 */
 	public SyncRecord getOlderSyncRecordInState(SyncRecord syncRecord, EnumSet<SyncRecordState> states) {
 		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(SyncRecord.class);
-		criteria.add(Restrictions.lt("recordId", syncRecord.getRecordId()));
+		criteria.add(Restrictions.lt("timestamp", syncRecord.getTimestamp()));
 		criteria.add(Restrictions.in("state", states));
-		criteria.addOrder(Order.desc("recordId"));
+		criteria.addOrder(Order.desc("timestamp"));
 		criteria.setMaxResults(1);
 		return (SyncRecord) criteria.uniqueResult();
 	}

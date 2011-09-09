@@ -207,6 +207,13 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
+	 * @see org.openmrs.api.SyncService#getEarliestRecord()
+	 */
+	public SyncRecord getEarliestRecord() throws APIException {
+		return getSynchronizationDAO().getEarliestRecord();
+	}
+	
+	/**
 	 * @see org.openmrs.api.SyncService#getSyncRecord(java.lang.String)
 	 */
 	public SyncImportRecord getSyncImportRecord(String uuid) throws APIException {

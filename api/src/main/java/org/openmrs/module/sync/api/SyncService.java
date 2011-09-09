@@ -122,6 +122,12 @@ public interface SyncService {
 	public SyncRecord getLatestRecord() throws APIException;
 	
 	/**
+	 * @return SyncRecord The earliest SyncRecord or null if not found
+	 * @throws APIException
+	 */
+	public SyncRecord getEarliestRecord() throws APIException;
+	
+	/**
 	 * Returns a sync record which is older than the given sync record and is in one of the given
 	 * states.
 	 * 

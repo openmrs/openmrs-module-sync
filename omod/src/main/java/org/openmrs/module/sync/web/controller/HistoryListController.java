@@ -27,6 +27,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncRecord;
+import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.Item;
@@ -63,6 +64,8 @@ public class HistoryListController {
 	                        @RequestParam(value = "firstRecordId", required = false) Integer firstRecordId,
 	                        @RequestParam(value = "size", required = false) Integer size) throws Exception {
 		
+		SyncRecord latestRecord = null;
+		SyncRecord earliestRecord  = null;
 		// default the list size to 20 items
 		if (size == null) {
 			AdministrationService as = Context.getAdministrationService();
@@ -79,6 +82,9 @@ public class HistoryListController {
 		if (Context.isAuthenticated()) {
 			SyncService ss = Context.getService(SyncService.class);
 			recordList = ss.getSyncRecords(firstRecordId, size);
+			latestRecord = ss.getLatestRecord();
+			earliestRecord = ss.getEarliestRecord();
+			
 		}
 		
 		if (recordList == null)
@@ -159,6 +165,14 @@ public class HistoryListController {
 		modelMap.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
 		
 		modelMap.put("firstRecordId", firstRecordId);
+		
+		if(latestRecord != null)
+		modelMap.put("latestRecordId", latestRecord.getRecordId());
+		
+		if(earliestRecord != null){
+			if(earliestRecord.getRecordId() == recordList.get(recordList.size() -1).getRecordId())
+				modelMap.put("isEarliestRecord", "true");	
+		}
 		modelMap.put("size", size);
 	}
 	

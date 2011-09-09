@@ -83,6 +83,12 @@ public interface SyncDAO {
 	public SyncRecord getLatestRecord() throws DAOException;
 	
 	/**
+	 * @return The earliest SyncRecord or null if not found
+	 * @throws DAOException
+	 */
+	public SyncRecord getEarliestRecord() throws DAOException;
+	
+	/**
 	 * Create a new SyncImportRecord
 	 * 
 	 * @param SyncImportRecord The SyncImportRecord to create
