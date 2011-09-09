@@ -170,4 +170,6 @@ public class SyncConstants {
 	public static final String PRIV_BACKUP_ENTIRE_DATABASE = "Backup Entire Database";
 	
 	public static final String PRIV_VIEW_SYNC_RECORDS = "View Synchronization Records";
+	
+	public static final String ROLE_TO_SEND_TO_MAIL_ALERTS = "sync.roleToSendToMailAlerts";
 }

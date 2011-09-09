@@ -919,10 +919,13 @@ public class SyncUtil {
 				
 				log.info("Sent sync error message to " + adminEmail);
 				
+				String role = Context.getAdministrationService()
+				        .getGlobalProperty(SyncConstants.ROLE_TO_SEND_TO_MAIL_ALERTS);
+				if (!StringUtils.hasText(role))
+					role = OpenmrsConstants.SUPERUSER_ROLE;
 				sendAlert(
 				    Context.getMessageSourceService().getMessage("sync.mail.sentErrorMessageTo",
-				        new Object[] { adminEmail }, null),
-				    Context.getUserService().getUsersByRole(new Role(OpenmrsConstants.SUPERUSER_ROLE)));
+				        new Object[] { adminEmail }, null), Context.getUserService().getUsersByRole(new Role(role)));
 			}
 			
 		}
