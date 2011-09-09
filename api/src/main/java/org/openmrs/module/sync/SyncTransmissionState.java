@@ -95,5 +95,5 @@ public enum SyncTransmissionState {
     /**
      * Cannot run more than one sync task at the same time.
      */
-    ERROR_CANNOT_RUN_PARALELL
+    ERROR_CANNOT_RUN_PARALLEL
 }

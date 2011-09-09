@@ -71,7 +71,7 @@ public class SyncConstants {
 	
 	public static final String ERROR_INVALID_SERVER = "sync.status.transmission.invalidServer";
 	
-	public static final String ERROR_CANNOT_RUN_PARALELL = "sync.status.transmission.cannotRunParalell";
+	public static final String ERROR_CANNOT_RUN_PARALLEL = "sync.status.transmission.cannotRunParallel";
 	
 	// error message codes - at the item/record level
 	public static final String ERROR_ITEM_NOT_COMMITTED = "sync.status.item.notCommitted";

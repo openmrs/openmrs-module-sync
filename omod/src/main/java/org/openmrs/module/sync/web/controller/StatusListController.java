@@ -400,7 +400,7 @@ public class StatusListController extends SimpleFormController {
 		state.put(SyncTransmissionState.MAX_RETRY_REACHED.toString(),
 		    msa.getMessage("sync.status.transmission.maxRetryReached"));
 		state.put(SyncTransmissionState.FAILED_RECORDS.toString(), msa.getMessage("sync.status.transmission.failedRecords"));
-		state.put(SyncTransmissionState.ERROR_CANNOT_RUN_PARALELL.toString(), msa.getMessage("sync.status.transmission.cannotRunParalell"));
+		state.put(SyncTransmissionState.ERROR_CANNOT_RUN_PARALLEL.toString(), msa.getMessage("sync.status.transmission.cannotRunParallel"));
 		state.put(SyncRecordState.ALREADY_COMMITTED.toString(), msa.getMessage("sync.record.state_ALREADY_COMMITTED"));
 		state.put(SyncRecordState.COMMITTED.toString(), msa.getMessage("sync.record.state_COMMITTED"));
 		state.put(SyncRecordState.FAILED.toString(), msa.getMessage("sync.record.state_FAILED"));
