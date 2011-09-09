@@ -39,6 +39,7 @@ import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.scheduler.TaskDefinition;
 import org.openmrs.scheduler.web.controller.SchedulerFormController;
+import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
 import org.openmrs.web.WebConstants;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -317,6 +318,9 @@ public class MaintenanceController extends SimpleFormController {
 		
 		try {
 			TaskDefinition task = (TaskDefinition) command;
+			
+			Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+			
 			//only reschedule a task if it is started, is not running and the time is not in the past
 			if (task.getStarted() && OpenmrsUtil.compareWithNullAsEarliest(task.getStartTime(), new Date()) > 0
 			        && (task.getTaskInstance() == null || !task.getTaskInstance().isExecuting()))
@@ -329,6 +333,9 @@ public class MaintenanceController extends SimpleFormController {
 		catch (APIException e) {
 			errors.reject("sync.maintenance.manage.failedToSaveTaskProperties");
 			return showForm(request, errors, getFormView());
+		}
+		finally {
+			Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
 		}
 		
 		return new ModelAndView(new RedirectView(getSuccessView()));

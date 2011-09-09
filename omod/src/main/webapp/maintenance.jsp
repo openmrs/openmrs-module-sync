@@ -235,7 +235,7 @@
 </openmrs:hasPrivilege>
 
 <br />
-<openmrs:hasPrivilege privilege="Manage Scheduler">
+
 <%-- If the task exists(not deleted) --%>
 <c:if test="${task.id != null}">
 <div class="boxHeader"><spring:message code="sync.maintenance.manage.cleanUpOldRecordsTaskProperties" /></div>
@@ -298,15 +298,14 @@
 						</td>
 					</tr>
 				</table>
+				<input type="button" class="smallButton" onclick="addNewProperty(this)" value="<spring:message code="general.add"/>" />
 			</td>
 		</tr>
 	</table>
-	<input type="button" class="smallButton" onclick="addNewProperty(this)" value="<spring:message code="general.add"/>" />
 	<br /><br />
 	<input type="submit" value="<spring:message code="general.save"/>">
 </form>
 </div>
 </c:if>
-</openmrs:hasPrivilege>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>
