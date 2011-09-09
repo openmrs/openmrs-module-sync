@@ -289,7 +289,7 @@ public interface SyncService {
 	 */
 	@Transactional(readOnly = true)
 	public Integer getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states)
-	    throws APIException;
+	                                                                                                        throws APIException;
 	
 	/**
 	 * Get the most recent sync records

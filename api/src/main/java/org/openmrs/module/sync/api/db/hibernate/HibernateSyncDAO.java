@@ -194,20 +194,18 @@ public class HibernateSyncDAO implements SyncDAO {
 		}
 	}
 	
-	 @SuppressWarnings("unchecked")
-	    public SyncRecord getEarliestRecord() throws DAOException {
-	        List<Integer> result = sessionFactory.getCurrentSession()
-	            .createCriteria(SyncRecord.class)
-	            .setProjection(Projections.min("recordId"))
-	            .list();
-	        
-	        if (result.size() < 1) {
-	            return null;
-	        } else {
-	        	Integer minRecordId = result.get(0);
-	            return getSyncRecord(minRecordId);
-	        }
-	    }
+	@SuppressWarnings("unchecked")
+	public SyncRecord getEarliestRecord() throws DAOException {
+		List<Integer> result = sessionFactory.getCurrentSession().createCriteria(SyncRecord.class)
+		        .setProjection(Projections.min("recordId")).list();
+		
+		if (result.size() < 1) {
+			return null;
+		} else {
+			Integer minRecordId = result.get(0);
+			return getSyncRecord(minRecordId);
+		}
+	}
 	
 	@SuppressWarnings("unchecked")
 	public List<SyncRecord> getSyncRecords(String query) throws DAOException {
@@ -305,7 +303,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	
 	@SuppressWarnings("unchecked")
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, RemoteServer server)
-	    throws DAOException {
+	                                                                                                      throws DAOException {
 		String maxResultsString = Context.getAdministrationService().getGlobalProperty(
 		    SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB);
 		int maxResults = 0;

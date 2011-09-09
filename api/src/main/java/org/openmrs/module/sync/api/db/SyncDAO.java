@@ -164,6 +164,7 @@ public interface SyncDAO {
 	
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, RemoteServer server)
 	                                                                                                      throws DAOException;
+	
 	/**
 	 * Deletes all sync records that have the given state and are before the given date
 	 * 
@@ -189,8 +190,8 @@ public interface SyncDAO {
 	 *         timestamp and up to and including the to timestamp
 	 * @throws DAOException
 	 */
-	public List<SyncRecord> getSyncRecords(Date from, Date to, Integer firstRecordId, Integer numberToReturn, boolean oldestToNewest)
-	                                                                                                         throws DAOException;
+	public List<SyncRecord> getSyncRecords(Date from, Date to, Integer firstRecordId, Integer numberToReturn,
+	                                       boolean oldestToNewest) throws DAOException;
 	
 	/**
 	 * Retrieve value of given global property using synchronization data access meachnisms.
@@ -356,70 +357,70 @@ public interface SyncDAO {
 	 * @param <T> the {@link OpenmrsObject} to return
 	 * @param clazz the class of object to return/lookup
 	 * @param id the primary key value
-	 * @return the uuid for the given class with given id 
+	 * @return the uuid for the given class with given id
 	 */
 	public <T extends OpenmrsObject> String getUuidForOpenmrsObject(Class<T> clazz, String id);
 	
-	 /**
-     * Processes the serializes state of a collection.
-     * <p>(This typically handles two types of hibernate collections: PersistentSortedSet and PersistentSet.)
-     * </br>
-     * Processing of collections is handled as follows based on the serialized info stored in incoming:
-     * <p>1. Pull out owner info, and collection action (i.e. update, recreate). 
-     * Attempt to create instance of the owner using openmrs API and retrieve the reference 
-     * to the existing collection that is associated with the owner.
-     * <br/>2. Iterate owner serialized entries and process actions (i.e entry update, delete)
-     * <br/>3. Record the original uuid using owner finally, trigger owner update using openmrs api
-     * <br/>For algorithmic details, see code comments as the implementation is extensively commented.
-     * 
-     * @param type collection type.
-     * @param incoming serialized state, interceptor implementation for serialization details
-     * @param originalRecordUuid unique uuid assigned to this update (i.e. sync record) that will be propagated 
-     * throughout the synchronization to avoid duplicating this change
-     */
-    public void processCollection(Class collectionType, String incoming, String originalRecordUuid) throws Exception;
-    
 	/**
-	 * Dumps the entire database, much like what you'd get from the mysqldump
-	 * command, and adds a few lines to set the child's GUID, and delete sync
-	 * history
+	 * Processes the serializes state of a collection.
+	 * <p>
+	 * (This typically handles two types of hibernate collections: PersistentSortedSet and
+	 * PersistentSet.) </br> Processing of collections is handled as follows based on the serialized
+	 * info stored in incoming:
+	 * <p>
+	 * 1. Pull out owner info, and collection action (i.e. update, recreate). Attempt to create
+	 * instance of the owner using openmrs API and retrieve the reference to the existing collection
+	 * that is associated with the owner. <br/>
+	 * 2. Iterate owner serialized entries and process actions (i.e entry update, delete) <br/>
+	 * 3. Record the original uuid using owner finally, trigger owner update using openmrs api <br/>
+	 * For algorithmic details, see code comments as the implementation is extensively commented.
 	 * 
-	 * @param guidForChild if not null, use this as the guid for the child
-	 *        server, otherwise autogenerate one
+	 * @param type collection type.
+	 * @param incoming serialized state, interceptor implementation for serialization details
+	 * @param originalRecordUuid unique uuid assigned to this update (i.e. sync record) that will be
+	 *            propagated throughout the synchronization to avoid duplicating this change
+	 */
+	public void processCollection(Class collectionType, String incoming, String originalRecordUuid) throws Exception;
+	
+	/**
+	 * Dumps the entire database, much like what you'd get from the mysqldump command, and adds a
+	 * few lines to set the child's GUID, and delete sync history
+	 * 
+	 * @param guidForChild if not null, use this as the guid for the child server, otherwise
+	 *            autogenerate one
 	 * @param out write the sql here
 	 * @throws DAOException
 	 */
-	public void exportChildDB(String guidForChild, OutputStream os)
-	        throws DAOException;
-
+	public void exportChildDB(String guidForChild, OutputStream os) throws DAOException;
+	
 	/**
 	 * imports a synchronization database backup from the parent
 	 * 
 	 * @throws DAOException
 	 */
 	public void importParentDB(InputStream in) throws DAOException;
-
+	
 	public void generateDataFile(File outFile, String[] ignoreTables);
-
+	
 	public void execGeneratedFile(File generatedDataFile);
 	
 	/**
-	 * Mimics the hack for saving patients who are already users/persons. For full description of how 
-	 * this works see {@link SyncPatientStub}. 
+	 * Mimics the hack for saving patients who are already users/persons. For full description of
+	 * how this works see {@link SyncPatientStub}.
 	 * 
 	 * @see SyncPatientStub
-	 * 
 	 * @param stub
 	 */
 	public void processSyncPatientStub(SyncPatientStub stub);
-
+	
 	/**
-	 * See {@link org.openmrs.module.sync.api.SyncIngestService#isConceptIdValidForUuid(int, String)}
+	 * See
+	 * {@link org.openmrs.module.sync.api.SyncIngestService#isConceptIdValidForUuid(int, String)}
 	 */
 	public boolean isConceptIdValidForUuid(Integer conceptId, String uuid);
-
+	
 	public Integer getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states);
-
+	
 	/**
 	 * @see SyncService#getOlderSyncRecordInState(SyncRecord, EnumSet)
 	 */

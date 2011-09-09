@@ -17,34 +17,41 @@ import java.util.List;
 
 import org.openmrs.module.sync.server.RemoteServer;
 
-
 /**
  * Represents a source of sync items; can be either 'child' or 'parent'.
- *
  */
 public interface SyncSource {
-
-    //sync point helpers
-    public SyncPoint<?> getLastSyncLocal();
-    public void setLastSyncLocal(SyncPoint<?> p);
-    public SyncPoint<?> getLastSyncRemote();
-    public void setLastSyncRemote(SyncPoint<?> p);
-    public SyncPoint<?> moveSyncPoint();
-    
-    //unique ID of the source
-    public String getSyncSourceUuid();
-    public void setSyncSourceUuid(String uuid);
-    
-    //change set methods
-    public List<SyncRecord> getDeleted(SyncPoint<?> from , SyncPoint<?> to) throws SyncException ;
-    public List<SyncRecord> getChanged(SyncPoint<?> from , SyncPoint<?> to) throws SyncException ; //note this has new items also
-
-    //state-based changeset methods
-    public List<SyncRecord> getDeleted() throws SyncException ;
-    public List<SyncRecord> getChanged() throws SyncException ; //note this has new items also
-    public List<SyncRecord> getChanged(RemoteServer server) throws SyncException ; //note this has new items also
-
-    //Methods used to apply changes
-    public void applyDeleted(List<SyncRecord> records) throws SyncException ;
-    public void applyChanged(List<SyncRecord> records) throws SyncException ;
+	
+	//sync point helpers
+	public SyncPoint<?> getLastSyncLocal();
+	
+	public void setLastSyncLocal(SyncPoint<?> p);
+	
+	public SyncPoint<?> getLastSyncRemote();
+	
+	public void setLastSyncRemote(SyncPoint<?> p);
+	
+	public SyncPoint<?> moveSyncPoint();
+	
+	//unique ID of the source
+	public String getSyncSourceUuid();
+	
+	public void setSyncSourceUuid(String uuid);
+	
+	//change set methods
+	public List<SyncRecord> getDeleted(SyncPoint<?> from, SyncPoint<?> to) throws SyncException;
+	
+	public List<SyncRecord> getChanged(SyncPoint<?> from, SyncPoint<?> to) throws SyncException; //note this has new items also
+	
+	//state-based changeset methods
+	public List<SyncRecord> getDeleted() throws SyncException;
+	
+	public List<SyncRecord> getChanged() throws SyncException; //note this has new items also
+	
+	public List<SyncRecord> getChanged(RemoteServer server) throws SyncException; //note this has new items also
+	
+	//Methods used to apply changes
+	public void applyDeleted(List<SyncRecord> records) throws SyncException;
+	
+	public void applyChanged(List<SyncRecord> records) throws SyncException;
 }
