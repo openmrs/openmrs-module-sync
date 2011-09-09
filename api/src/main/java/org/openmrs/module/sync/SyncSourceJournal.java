@@ -169,12 +169,12 @@ public class SyncSourceJournal implements SyncSource {
 	}
 	
 	// state-based version that takes into consideration what should/shouldn't be sent to a given server
-	public List<SyncRecord> getChanged(RemoteServer server) throws SyncException {
+	public List<SyncRecord> getChanged(RemoteServer server, Integer maxResults) throws SyncException {
 		List<SyncRecord> changed = new ArrayList<SyncRecord>();
 		
 		try {
 			SyncService syncService = Context.getService(SyncService.class);
-			changed = syncService.getSyncRecords(SyncConstants.SYNC_TO_PARENT_STATES, server);
+			changed = syncService.getSyncRecords(SyncConstants.SYNC_TO_PARENT_STATES, server, maxResults);
 			
 		}
 		catch (Exception e) {

@@ -249,14 +249,15 @@ public class SyncServiceImpl implements SyncService {
 	 * @see org.openmrs.api.SyncService#getSyncRecords(org.openmrs.module.sync.engine.SyncRecordState)
 	 */
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states) throws APIException {
-		return this.getSyncRecords(states, false);
+		return this.getSyncRecords(states, false, null);
 	}
 	
 	/**
 	 * @see org.openmrs.module.sync.api.SyncService#getSyncRecords(org.openmrs.module.sync.SyncRecordState[],
-	 *      org.openmrs.module.sync.server.RemoteServer)
+	 *      org.openmrs.module.sync.server.RemoteServer, java.lang.Integer)
 	 */
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, RemoteServer server) throws APIException {
+	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, RemoteServer server, Integer maxSyncRecords)
+	                                                                                                             throws APIException {
 		List<SyncRecord> temp = null;
 		List<SyncRecord> ret = null;
 		
@@ -264,7 +265,7 @@ public class SyncServiceImpl implements SyncService {
 			if (server.getServerType().equals(RemoteServerType.PARENT)) {
 				ret = this.getSyncRecords(states);
 			} else {
-				ret = getSynchronizationDAO().getSyncRecords(states, false, server);
+				ret = getSynchronizationDAO().getSyncRecords(states, false, maxSyncRecords, server);
 			}
 		}
 		
@@ -302,10 +303,12 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
-	 * @see org.openmrs.api.SyncService#getSyncRecords(org.openmrs.module.sync.engine.SyncRecordState)
+	 * @see org.openmrs.module.sync.api.SyncService#getSyncRecords(org.openmrs.module.sync.SyncRecordState[],
+	 *      boolean, java.lang.Integer)
 	 */
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse) throws APIException {
-		return getSynchronizationDAO().getSyncRecords(states, inverse);
+	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords)
+	                                                                                                         throws APIException {
+		return getSynchronizationDAO().getSyncRecords(states, inverse, maxSyncRecords);
 	}
 	
 	/**

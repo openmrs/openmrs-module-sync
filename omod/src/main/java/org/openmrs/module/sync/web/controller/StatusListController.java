@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.APIAuthenticationException;
@@ -296,7 +297,18 @@ public class StatusListController extends SimpleFormController {
 			RemoteServer parent = Context.getService(SyncService.class).getParentServer();
 			if (parent != null) {
 				SyncSource source = new SyncSourceJournal();
-				recordList = source.getChanged(parent);
+				Integer maxResults = null;
+				String maxResultsString = Context.getAdministrationService().getGlobalProperty(
+				    SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB);
+				try {
+					maxResults = Integer.valueOf(maxResultsString);
+				}
+				catch (NumberFormatException e) {
+					if (StringUtils.isNotBlank(maxResultsString))
+						log.warn("Only Integers are allowed as values for the global property '"
+						        + SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB + "'");
+				}
+				recordList = source.getChanged(parent, maxResults);
 			}
 			
 			//SyncService ss = Context.getService(SyncService.class);

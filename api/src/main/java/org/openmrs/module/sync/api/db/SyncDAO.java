@@ -156,14 +156,17 @@ public interface SyncDAO {
 	/**
 	 * Get all SyncRecords in specific SyncRecordStates
 	 * 
-	 * @param state SyncRecordStates for the SyncRecords to be returned
+	 * @param states SyncRecordStates for the SyncRecords to be returned
+	 * @param inverse
+	 * @param maxSyncRecords
 	 * @return SyncRecord A list containing all SyncRecords with the given states
 	 * @throws DAOException
 	 */
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse) throws DAOException;
+	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords)
+	                                                                                                         throws DAOException;
 	
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, RemoteServer server)
-	                                                                                                      throws DAOException;
+	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords,
+	                                       RemoteServer server) throws DAOException;
 	
 	/**
 	 * Deletes all sync records that have the given state and are before the given date

@@ -237,22 +237,27 @@ public interface SyncService {
 	 * 
 	 * @param states SyncRecordStates for the SyncRecords to be returned
 	 * @param server Server these records will be sent to, so we can filter on Class
+	 * @param maxSyncRecords
 	 * @return SyncRecord A list containing all SyncRecords with the given states
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, RemoteServer server) throws APIException;
+	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, RemoteServer server, Integer maxSyncRecords)
+	                                                                                                             throws APIException;
 	
 	/**
 	 * Get all SyncRecords in a specific SyncRecordStates
 	 * 
 	 * @param states SyncRecordStates for the SyncRecords to be returned
+	 * @param inverse
+	 * @param maxSyncRecords
 	 * @return SyncRecord A list containing all SyncRecords with the given states
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})
 	@Transactional(readOnly = true)
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse) throws APIException;
+	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords)
+	                                                                                                         throws APIException;
 	
 	/**
 	 * Get all SyncRecords after a given timestamp

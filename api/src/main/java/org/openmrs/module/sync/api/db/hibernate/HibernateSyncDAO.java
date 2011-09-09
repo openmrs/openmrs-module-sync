@@ -273,61 +273,47 @@ public class HibernateSyncDAO implements SyncDAO {
 	}
 	
 	/**
-	 * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecords(org.openmrs.module.sync.engine.SyncRecordState)
+	 * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecords(org.openmrs.module.sync.SyncRecordState[],
+	 *      boolean, java.lang.Integer)
 	 */
 	@SuppressWarnings("unchecked")
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse) throws DAOException {
-		String maxResultsString = Context.getAdministrationService().getGlobalProperty(
-		    SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE);
-		int maxResults = 0;
-		
-		if (maxResultsString == null) {
-			maxResults = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT);
-		} else {
-			maxResults = Integer.parseInt(maxResultsString);
-		}
-		
-		if (maxResults < 1) {
-			maxResults = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT);
+	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords)
+	                                                                                                         throws DAOException {
+		if (maxSyncRecords < 1) {
+			maxSyncRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT);
 		}
 		
 		if (inverse) {
 			return sessionFactory.getCurrentSession().createCriteria(SyncRecord.class)
 			        .add(Restrictions.not(Restrictions.in("state", states))).addOrder(Order.asc("timestamp"))
-			        .addOrder(Order.asc("recordId")).setMaxResults(maxResults).list();
+			        .addOrder(Order.asc("recordId")).setMaxResults(maxSyncRecords).list();
 		} else {
 			return sessionFactory.getCurrentSession().createCriteria(SyncRecord.class).add(Restrictions.in("state", states))
-			        .addOrder(Order.asc("timestamp")).addOrder(Order.asc("recordId")).setMaxResults(maxResults).list();
+			        .addOrder(Order.asc("timestamp")).addOrder(Order.asc("recordId")).setMaxResults(maxSyncRecords).list();
 		}
 	}
 	
+	/**
+	 * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecords(org.openmrs.module.sync.SyncRecordState[],
+	 *      boolean, java.lang.Integer, org.openmrs.module.sync.server.RemoteServer)
+	 */
 	@SuppressWarnings("unchecked")
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, RemoteServer server)
-	                                                                                                      throws DAOException {
-		String maxResultsString = Context.getAdministrationService().getGlobalProperty(
-		    SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB);
-		int maxResults = 0;
-		
-		if (maxResultsString == null) {
-			maxResults = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT);
-		} else {
-			maxResults = Integer.parseInt(maxResultsString);
-		}
-		
-		if (maxResults < 1) {
-			maxResults = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT);
+	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords,
+	                                       RemoteServer server) throws DAOException {
+		if (maxSyncRecords == null || maxSyncRecords < 1) {
+			maxSyncRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT);
 		}
 		
 		if (inverse) {
 			return sessionFactory.getCurrentSession().createCriteria(SyncRecord.class, "s")
 			        .createCriteria("serverRecords", "sr").add(Restrictions.not(Restrictions.in("sr.state", states)))
 			        .add(Restrictions.eq("sr.syncServer", server)).addOrder(Order.asc("s.timestamp"))
-			        .addOrder(Order.asc("s.recordId")).setMaxResults(maxResults).list();
+			        .addOrder(Order.asc("s.recordId")).setMaxResults(maxSyncRecords).list();
 		} else {
 			return sessionFactory.getCurrentSession().createCriteria(SyncRecord.class, "s")
 			        .createCriteria("serverRecords", "sr").add(Restrictions.in("sr.state", states))
 			        .add(Restrictions.eq("sr.syncServer", server)).addOrder(Order.asc("s.timestamp"))
-			        .addOrder(Order.asc("s.recordId")).setMaxResults(maxResults).list();
+			        .addOrder(Order.asc("s.recordId")).setMaxResults(maxSyncRecords).list();
 		}
 	}
 	

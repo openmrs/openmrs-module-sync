@@ -48,7 +48,7 @@ public interface SyncSource {
 	
 	public List<SyncRecord> getChanged() throws SyncException; //note this has new items also
 	
-	public List<SyncRecord> getChanged(RemoteServer server) throws SyncException; //note this has new items also
+	public List<SyncRecord> getChanged(RemoteServer server, Integer maxResults) throws SyncException; //note this has new items also
 	
 	//Methods used to apply changes
 	public void applyDeleted(List<SyncRecord> records) throws SyncException;

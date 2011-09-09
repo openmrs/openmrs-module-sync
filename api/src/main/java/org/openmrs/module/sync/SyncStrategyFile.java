@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
@@ -208,7 +209,18 @@ public class SyncStrategyFile {
 		
 		//get all local deletes, inserts and updates
 		deleted = source.getDeleted();
-		changed = source.getChanged(server);
+		Integer maxResults = null;
+		String maxResultsString = Context.getAdministrationService().getGlobalProperty(
+		    SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE);
+		try {
+			maxResults = Integer.valueOf(maxResultsString);
+		}
+		catch (NumberFormatException e) {
+			if (StringUtils.isNotBlank(maxResultsString))
+				log.warn("Only Integers are allowed as values for the global property '"
+				        + SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE + "'");
+		}
+		changed = source.getChanged(server, maxResults);
 		
 		//merge
 		changeset = deleted;
