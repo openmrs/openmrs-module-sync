@@ -444,6 +444,7 @@ public class SyncUtilTransmission {
                     importRecord.setState(SyncRecordState.FAILED);  // by default, until we know otherwise
                     importRecord.setRetryCount(record.getRetryCount());
                     importRecord.setTimestamp(record.getTimestamp());
+                    importRecord.setSourceServer(origin);
                     
                     //TODO: write record as pending to prevent someone else trying to process this record at the same time
                     

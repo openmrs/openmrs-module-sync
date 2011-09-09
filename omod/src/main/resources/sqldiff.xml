@@ -295,4 +295,17 @@
 		</sql>
 	</diff>
 	
+	<diff>
+		<version>0.975</version>
+		<author>Rafal Korytkowski</author>
+		<date>September 09 2011</date>
+		<description>
+			Add source_server_id to sync_import
+		</description>
+		<sql>
+			ALTER TABLE `sync_import` ADD COLUMN `source_server_id` int(11),
+				ADD CONSTRAINT `sync_import_source_server` FOREIGN KEY (`source_server_id`) REFERENCES `sync_server` (`server_id`);
+		</sql>
+	</diff>
+	
 </sqldiff>

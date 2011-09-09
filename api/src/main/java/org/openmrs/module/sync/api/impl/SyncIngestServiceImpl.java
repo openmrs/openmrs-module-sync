@@ -131,6 +131,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         importRecord.setRetryCount(record.getRetryCount());
         importRecord.setTimestamp(record.getTimestamp());
         importRecord.setUuid(record.getOriginalUuid());
+        importRecord.setSourceServer(server);
         
         // map of class name to objects of the classes that were updated in this record
         Map<String, List<SyncProcessedObject>> processedObjects = new HashMap<String, List<SyncProcessedObject>>();
@@ -159,6 +160,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     importRecord = new SyncImportRecord(record);
                     importRecord.setState(SyncRecordState.FAILED);
                     importRecord.setUuid(record.getOriginalUuid());
+                    importRecord.setSourceServer(server);
                     syncService.createSyncImportRecord(importRecord);
                 } else {
                 	if(log.isWarnEnabled()) {

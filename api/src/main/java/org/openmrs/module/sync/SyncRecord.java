@@ -412,6 +412,10 @@ public class SyncRecord implements Serializable, IItem {
     	
     }
     
+    public boolean isOutgoing() {
+    	return getUuid().equals(getOriginalUuid());
+    }
+    
     @Override
     public String toString() {
     	return "SyncRecord(" + getRecordId() + ") contains " + getContainedClasses();

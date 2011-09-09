@@ -128,11 +128,29 @@
 									<td valign="middle" nowrap style="background-color: #<c:if test="${server.serverType == 'PARENT'}">${bgStyleParent}</c:if><c:if test="${server.serverType != 'PARENT'}">${bgStyle}</c:if>;" align="center">
 										<c:choose>
 											<c:when test="${server.serverType == 'PARENT'}">
-												<span class="sync${syncRecord.state}"><spring:message code="sync.record.state_${syncRecord.state}" /></span>
+												<span class="sync${syncRecord.state}"><spring:message code="sync.record.state_${syncRecord.state}" /> </span>
+												<br>
+												<c:choose>
+													<c:when test="${syncRecord.outgoing}">
+														<span style="color: #bbb"><spring:message code="sync.record.direction.outgoing"/></span>
+													</c:when>
+													<c:otherwise>
+														<spring:message code="sync.record.direction.incoming"/>
+													</c:otherwise>
+												</c:choose>
 											</c:when>
 											<c:otherwise>
 												<c:if test="${not empty syncRecord.remoteRecords[server]}">
-													<span class="sync${syncRecord.remoteRecords[server].state}"><spring:message code="sync.record.state_${syncRecord.remoteRecords[server].state}" /></span>
+													<span class="sync${syncRecord.remoteRecords[server].state}"><spring:message code="sync.record.state_${syncRecord.remoteRecords[server].state}" /> </span>
+													<br>
+													<c:choose>
+														<c:when test="${syncRecord.remoteRecords[server].outgoing}">
+															<span style="color: #bbb"><spring:message code="sync.record.direction.outgoing"/></span>
+														</c:when>
+														<c:otherwise>
+															<spring:message code="sync.record.direction.incoming"/>
+														</c:otherwise>
+													</c:choose>
 												</c:if>
 												<c:if test="${empty syncRecord.remoteRecords[server]}">
 													<span style="color: #bbb"><i><spring:message code="sync.record.server.didNotExist" /></i></span>
@@ -162,7 +180,7 @@
 			</c:if>
 			<c:if test="${empty syncRecords}">
 				<tr>
-					<td colspan="5" align="left">
+					<td colspan="2" align="left">
 						<i><spring:message code="sync.history.noItems" /></i>
 					</td>
 				</tr>

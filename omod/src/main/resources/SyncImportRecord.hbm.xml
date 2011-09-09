@@ -34,6 +34,10 @@
 
 		<property name="errorMessage" type="java.lang.String"
 			column="error_message" length="255" />
+			
+		<many-to-one name="sourceServer" class="org.openmrs.module.sync.server.RemoteServer">
+			<column name="source_server_id" />
+		</many-to-one>
 
 	</class>
 </hibernate-mapping>
