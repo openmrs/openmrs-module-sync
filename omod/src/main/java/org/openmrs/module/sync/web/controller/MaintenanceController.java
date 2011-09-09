@@ -260,7 +260,9 @@ public class MaintenanceController extends SimpleFormController {
 		for (GlobalProperty prop : globalPropList) {
 			if (prop.getProperty().equals(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS))
 				syncPropList.add(prop);
-			else if (prop.getProperty().equals(SyncConstants.PROPERTY_NAME_MAX_RECORDS))
+			else if (prop.getProperty().equals(SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB))
+				syncPropList.add(prop);
+			else if (prop.getProperty().equals(SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE))
 				syncPropList.add(prop);
 			else if (prop.getProperty().equals(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT))
 				syncPropList.add(prop);

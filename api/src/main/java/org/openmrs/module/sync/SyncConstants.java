@@ -128,7 +128,9 @@ public class SyncConstants {
 	
 	public static final String PROPERTY_SYNC_ADMIN_EMAIL = "sync.admin_email";
 	
-	public static final String PROPERTY_NAME_MAX_RECORDS = "sync.max_records";
+	public static final String PROPERTY_NAME_MAX_RECORDS_WEB = "sync.max_records.web";
+	
+	public static final String PROPERTY_NAME_MAX_RECORDS_FILE = "sync.max_records.file";
 	
 	public static final String PROPERTY_NAME_MAX_RECORDS_DEFAULT = "50";
 	

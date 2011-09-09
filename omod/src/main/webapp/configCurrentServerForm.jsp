@@ -42,9 +42,14 @@
 					<td><spring:message code="sync.config.advanced.maxPageRecords.info" /></td>
 				</tr>
 				<tr>
-					<td align="right" nowrap><b><spring:message code="sync.config.advanced.maxRecords" /></b></td>
-					<td><input type="text" size="6" name="maxRecords" id="maxRecords" value="${maxRecords}" /></td>
-					<td><spring:message code="sync.config.advanced.maxRecords.info" /></td>
+					<td align="right" nowrap><b><spring:message code="sync.config.advanced.maxRecordsWeb" /></b></td>
+					<td><input type="text" size="6" name="maxRecordsWeb" id="maxRecordsWeb" value="${maxRecordsWeb}" /></td>
+					<td><spring:message code="sync.config.advanced.maxRecordsWeb.info" /></td>
+				</tr>
+				<tr>
+					<td align="right" nowrap><b><spring:message code="sync.config.advanced.maxRecordsFile" /></b></td>
+					<td><input type="text" size="6" name="maxRecordsFile" id="maxRecordsFile" value="${maxRecordsFile}" /></td>
+					<td><spring:message code="sync.config.advanced.maxRecordsFile.info" /></td>
 				</tr>
 				<tr>
 					<td align="right" nowrap><b><spring:message code="sync.config.advanced.maxRetryCount" /></b></td>

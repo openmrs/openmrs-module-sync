@@ -13,17 +13,13 @@
  */
 package org.openmrs.module.sync.web.controller;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
-import org.openmrs.OpenmrsObject;
 import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
@@ -60,7 +56,8 @@ public class ConfigCurrentServerFormController {
 	                                @RequestParam("serverUuid") String serverUuid,
 	                                @RequestParam(value = "serverAdminEmail", required = false) String serverAdminEmail,
 	                                @RequestParam(value = "maxPageRecords", required = false) Integer maxPageRecords,
-	                                @RequestParam(value = "maxRecords", required = false) Integer maxRecords,
+	                                @RequestParam(value = "maxRecordsWeb", required = false) Integer maxRecordsWeb,
+	                                @RequestParam(value = "maxRecordsFile", required = false) Integer maxRecordsFile,
 	                                @RequestParam(value = "maxRetryCount", required = false) Integer maxRetryCount,
 	                                HttpSession httpSession) throws Exception {
 		
@@ -96,12 +93,22 @@ public class ConfigCurrentServerFormController {
 			}
 		}
 		
-		if (maxRecords != null) {
-			GlobalProperty gp = as.getGlobalPropertyObject(SyncConstants.PROPERTY_NAME_MAX_RECORDS);
+		if (maxRecordsWeb != null) {
+			GlobalProperty gp = as.getGlobalPropertyObject(SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB);
 			if (gp == null)
-				gp = new GlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS);
-			if (!maxRecords.toString().equals(gp.getPropertyValue())) {
-				gp.setPropertyValue(maxRecords.toString());
+				gp = new GlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB);
+			if (!maxRecordsWeb.toString().equals(gp.getPropertyValue())) {
+				gp.setPropertyValue(maxRecordsWeb.toString());
+				as.saveGlobalProperty(gp);
+			}
+		}
+		
+		if (maxRecordsFile != null) {
+			GlobalProperty gp = as.getGlobalPropertyObject(SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE);
+			if (gp == null)
+				gp = new GlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE);
+			if (!maxRecordsFile.toString().equals(gp.getPropertyValue())) {
+				gp.setPropertyValue(maxRecordsFile.toString());
 				as.saveGlobalProperty(gp);
 			}
 		}
@@ -133,10 +140,15 @@ public class ConfigCurrentServerFormController {
 			modelMap.put("localServerUuid", syncService.getServerUuid());
 			modelMap.put("localServerName", syncService.getServerName());
 			modelMap.put("localServerAdminEmail", syncService.getAdminEmail());
-			modelMap.put("maxPageRecords", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS, SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT));
-			modelMap.put("maxRecords", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS, SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT));
-			modelMap.put("maxRetryCount", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT, SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT_DEFAULT));
-
+			modelMap.put("maxPageRecords", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS,
+			    SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT));
+			modelMap.put("maxRecordsWeb", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB,
+			    SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT));
+			modelMap.put("maxRecordsFile", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE,
+			    SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT));
+			modelMap.put("maxRetryCount", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT,
+			    SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT_DEFAULT));
+			
 			// advanced section
 			
 			// default classes

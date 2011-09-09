@@ -175,7 +175,7 @@ public class ServerConnection {
 		Double timeout = 300000.0; // let's just default at 5 min for now
 		try {
 			Integer maxRecords = new Integer(Context.getAdministrationService()
-			                                        .getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS,
+			                                       .getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB,
 			                                                           SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT));
 			timeout = (3 + (maxRecords * 0.1)) * 6000;	// formula we cooked
 														// up after running

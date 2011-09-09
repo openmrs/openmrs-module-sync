@@ -46,13 +46,14 @@ public class ConfigCurrentServerFormControllerTest extends BaseModuleContextSens
 		
 		ConfigCurrentServerFormController controller = new ConfigCurrentServerFormController();
 		
-		controller.onSaveSettings("new server name", "some uuid", "the server email address", 98, 99, 100, new MockHttpSession());
+		controller.onSaveSettings("new server name", "some uuid", "the server email address", 97, 98, 99, 100, new MockHttpSession());
 		
 		Assert.assertNotNull(syncService.getServerName());
 		Assert.assertNotNull(syncService.getServerUuid());
 		Assert.assertNotNull(syncService.getAdminEmail());
-		Assert.assertEquals("98", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS));
-		Assert.assertEquals("99", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS));
+		Assert.assertEquals("97", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS));
+		Assert.assertEquals("98", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB));
+		Assert.assertEquals("99", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE));
 		Assert.assertEquals("100", as.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT));
 	}
 	

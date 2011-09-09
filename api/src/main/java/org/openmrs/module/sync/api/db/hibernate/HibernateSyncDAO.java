@@ -265,7 +265,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	@SuppressWarnings("unchecked")
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse) throws DAOException {
 		String maxResultsString = Context.getAdministrationService().getGlobalProperty(
-		    SyncConstants.PROPERTY_NAME_MAX_RECORDS);
+		    SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE);
 		int maxResults = 0;
 		
 		if (maxResultsString == null) {
@@ -292,7 +292,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, RemoteServer server)
 	    throws DAOException {
 		String maxResultsString = Context.getAdministrationService().getGlobalProperty(
-		    SyncConstants.PROPERTY_NAME_MAX_RECORDS);
+		    SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB);
 		int maxResults = 0;
 		
 		if (maxResultsString == null) {
