@@ -1516,9 +1516,9 @@ public class HibernateSyncDAO implements SyncDAO {
 	 */
 	public SyncRecord getOlderSyncRecordInState(SyncRecord syncRecord, EnumSet<SyncRecordState> states) {
 		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(SyncRecord.class);
-		criteria.add(Restrictions.lt("timestamp", syncRecord.getTimestamp()));
+		criteria.add(Restrictions.lt("recordId", syncRecord.getRecordId()));
 		criteria.add(Restrictions.in("state", states));
-		criteria.addOrder(Order.desc("timestamp"));
+		criteria.addOrder(Order.desc("recordId"));
 		criteria.setMaxResults(1);
 		return (SyncRecord) criteria.uniqueResult();
 	}
