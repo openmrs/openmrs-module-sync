@@ -52,6 +52,9 @@ public class SyncConstants {
 	public static final EnumSet<SyncRecordState> SYNC_RECORD_ERROR_STATES = EnumSet.of(SyncRecordState.SEND_FAILED,
 	    SyncRecordState.FAILED, SyncRecordState.FAILED_AND_STOPPED, SyncRecordState.REJECTED);
 	
+	public static final EnumSet<SyncTransmissionState> SYNC_TRANSMISSION_OK_STATES = EnumSet.of(SyncTransmissionState.OK,
+	    SyncTransmissionState.OK_NOTHING_TO_DO, SyncTransmissionState.PENDING);
+	
 	// error message codes
 	public static final String ERROR_NO_RESPONSE = "sync.status.transmission.noResponseError";
 	

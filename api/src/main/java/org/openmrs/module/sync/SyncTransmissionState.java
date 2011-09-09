@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.sync;
 
+
 /**
  * TODO: Comment
  */
@@ -84,7 +85,7 @@ public enum SyncTransmissionState {
     INVALID_SERVER,
     
     /**
-     * Transmission to be sent would contain records that have been retried too many times (see global property SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT)
+     * Transmission sent/received contains records that have been retried too many times (see global property SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT)
      */
     MAX_RETRY_REACHED,
     /**
@@ -95,5 +96,9 @@ public enum SyncTransmissionState {
     /**
      * Cannot run more than one sync task at the same time.
      */
-    ERROR_CANNOT_RUN_PARALLEL
+    ERROR_CANNOT_RUN_PARALLEL;
+    
+    public boolean isError() {
+    	return !SyncConstants.SYNC_TRANSMISSION_OK_STATES.contains(this);
+    }
 }

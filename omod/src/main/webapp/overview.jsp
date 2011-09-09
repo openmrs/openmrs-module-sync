@@ -127,7 +127,7 @@
 											</c:if>
 										</td>
 										<!-- Last Attempt Status -->
-										<td style="background-color: #${bgStyle}; text-align:center; <c:if test="${server.lastSyncState == 'FAILED'}">color: red;</c:if>">
+										<td style="background-color: #${bgStyle}; text-align:center; <c:if test="${server.lastSyncState.error}">color: red;</c:if>">
 											<c:if test="${wroteServerInfo == false}">
 												<c:set var="wroteServerInfo" value="true" />
 												${server.lastSyncState} 

@@ -500,7 +500,9 @@ public class SyncUtilTransmission {
         }
         
         //update the last sync status appropriately
-        if (success && !st.getIsMaxRetryReached()) {
+        if (st.getIsMaxRetryReached()) {
+        	origin.setLastSyncState(SyncTransmissionState.MAX_RETRY_REACHED);
+        } else if (success) {
         	origin.setLastSyncState(SyncTransmissionState.OK);	
         } else {
         	origin.setLastSyncState(SyncTransmissionState.FAILED); //set it failed to start with
