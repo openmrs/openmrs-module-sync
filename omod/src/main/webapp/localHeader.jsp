@@ -2,7 +2,7 @@
 	<li class="first">
 		<a href="${pageContext.request.contextPath}/admin"><spring:message code="admin.title.short"/></a>
 	</li>
-	<openmrs:hasPrivilege privilege="View Synchronization Status">
+	<openmrs:hasPrivilege privilege="View Synchronization Records">
 		<li <c:if test='<%= request.getRequestURI().contains("overview") %>'>class="active"</c:if>>
 			<a href="${pageContext.request.contextPath}/module/sync/overview.htm">
 				<spring:message code="sync.overview.title"/>

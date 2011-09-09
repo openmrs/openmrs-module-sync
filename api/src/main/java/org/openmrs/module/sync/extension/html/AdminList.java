@@ -29,7 +29,7 @@ public class AdminList extends AdministrationSectionExt {
 		
 		Map<String, String> links = new LinkedHashMap<String, String>();
 		
-		if (Context.hasPrivilege("View Synchronization Status")) {
+		if (Context.hasPrivilege("View Synchronization Records")) {
 			links.put("module/sync/overview.htm", "sync.overview.title");
 			links.put("module/sync/config.list", "sync.config.title");
 			links.put("module/sync/statistics.list", "sync.statistics.title");

@@ -365,72 +365,75 @@ public class ConfigServerFormController {
 		Integer serverId = server.getServerId();
 		MessageSourceService mss = Context.getMessageSourceService();
 		
-		//Add privilege to enable us access the registered tasks
-        Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
-        
-		TaskDefinition serverSchedule = null;
-		Collection<TaskDefinition> tasks = Context.getSchedulerService().getRegisteredTasks();
-		if (tasks != null) {
-			for (TaskDefinition task : tasks) {
-				if (task.getTaskClass().equals(SyncConstants.SCHEDULED_TASK_CLASS)) {
-					if (serverId.toString().equals(task.getProperty(SyncConstants.SCHEDULED_TASK_PROPERTY_SERVER_ID))) {
-						serverSchedule = task;
+		try {
+			//Add privilege to enable us access the registered tasks
+	        Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+	        
+	        TaskDefinition serverSchedule = null;
+			Collection<TaskDefinition> tasks = Context.getSchedulerService().getRegisteredTasks();
+			if (tasks != null) {
+				for (TaskDefinition task : tasks) {
+					if (task.getTaskClass().equals(SyncConstants.SCHEDULED_TASK_CLASS)) {
+						if (serverId.toString().equals(task.getProperty(SyncConstants.SCHEDULED_TASK_PROPERTY_SERVER_ID))) {
+							serverSchedule = task;
+						} else {
+							log.warn("not equal comparing " + serverId + " to "
+							        + task.getProperty(SyncConstants.SCHEDULED_TASK_PROPERTY_SERVER_ID));
+						}
 					} else {
-						log.warn("not equal comparing " + serverId + " to "
-						        + task.getProperty(SyncConstants.SCHEDULED_TASK_PROPERTY_SERVER_ID));
+						log.warn("not equal comparing " + task.getTaskClass() + " to " + SyncConstants.SCHEDULED_TASK_CLASS);
 					}
-				} else {
-					log.warn("not equal comparing " + task.getTaskClass() + " to " + SyncConstants.SCHEDULED_TASK_CLASS);
 				}
+			} else {
+				log.warn("tasks is null");
 			}
-		} else {
-			log.warn("tasks is null");
-		}
 		
-		//We no longer need this privilege.
-        Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
-		
-		Map<String, String> props = new HashMap<String, String>();
-		props.put(SyncConstants.SCHEDULED_TASK_PROPERTY_SERVER_ID, serverId.toString());
-		if (serverSchedule != null) {
-			if (log.isInfoEnabled())
-				log.info("Sync scheduled task exists, and started is " + started + " and interval is " + repeatInterval);
-			try {
-				Context.getSchedulerService().shutdownTask(serverSchedule);
-			}
-			catch (Exception e) {
-				log.warn("Sync task had run wild, couldn't stop it because it wasn't really running", e);
-				// nothing to do - means something was wrong or not yet started
-				//TODO: is this right? should we report error here on 'STRICT'?
-			}
-			serverSchedule.setStarted(started);
-			serverSchedule.setRepeatInterval((long) repeatInterval);
-			serverSchedule.setStartOnStartup(started);
-			serverSchedule.setProperties(props);
-			if (started) {
-				serverSchedule.setStartTime(new Date());
-			}
-			Context.getSchedulerService().saveTask(serverSchedule);
-			if (started) {
-				Context.getSchedulerService().scheduleTask(serverSchedule);
-			}
-		} else {
-			if (log.isInfoEnabled())
-				log.info("Sync scheduled task does not exists, and started is " + started + " and interval is "
-				        + repeatInterval);
-			if (started) {
-				serverSchedule = new TaskDefinition();
-				serverSchedule.setName(server.getNickname() + " " + mss.getMessage("sync.config.server.scheduler"));
-				serverSchedule.setDescription(mss.getMessage("sync.config.server.scheduler.description"));
-				serverSchedule.setRepeatInterval((long) repeatInterval);
-				serverSchedule.setStartTime(new Date());
-				serverSchedule.setTaskClass(SyncConstants.SCHEDULED_TASK_CLASS);
+			Map<String, String> props = new HashMap<String, String>();
+			props.put(SyncConstants.SCHEDULED_TASK_PROPERTY_SERVER_ID, serverId.toString());
+			if (serverSchedule != null) {
+				if (log.isInfoEnabled())
+					log.info("Sync scheduled task exists, and started is " + started + " and interval is " + repeatInterval);
+				try {
+					Context.getSchedulerService().shutdownTask(serverSchedule);
+				}
+				catch (Exception e) {
+					log.warn("Sync task had run wild, couldn't stop it because it wasn't really running", e);
+					// nothing to do - means something was wrong or not yet started
+					//TODO: is this right? should we report error here on 'STRICT'?
+				}
 				serverSchedule.setStarted(started);
+				serverSchedule.setRepeatInterval((long) repeatInterval);
 				serverSchedule.setStartOnStartup(started);
 				serverSchedule.setProperties(props);
+				if (started) {
+					serverSchedule.setStartTime(new Date());
+				}
 				Context.getSchedulerService().saveTask(serverSchedule);
-				Context.getSchedulerService().scheduleTask(serverSchedule);
+				if (started) {
+					Context.getSchedulerService().scheduleTask(serverSchedule);
+				}
+			} else {
+				if (log.isInfoEnabled())
+					log.info("Sync scheduled task does not exists, and started is " + started + " and interval is "
+					        + repeatInterval);
+				if (started) {
+					serverSchedule = new TaskDefinition();
+					serverSchedule.setName(server.getNickname() + " " + mss.getMessage("sync.config.server.scheduler"));
+					serverSchedule.setDescription(mss.getMessage("sync.config.server.scheduler.description"));
+					serverSchedule.setRepeatInterval((long) repeatInterval);
+					serverSchedule.setStartTime(new Date());
+					serverSchedule.setTaskClass(SyncConstants.SCHEDULED_TASK_CLASS);
+					serverSchedule.setStarted(started);
+					serverSchedule.setStartOnStartup(started);
+					serverSchedule.setProperties(props);
+					Context.getSchedulerService().saveTask(serverSchedule);
+					Context.getSchedulerService().scheduleTask(serverSchedule);
+				}
 			}
+		}
+		finally {
+			//We no longer need this privilege.
+			Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
 		}
 	}
 	
@@ -499,37 +502,40 @@ public class ConfigServerFormController {
 				connectionState.put(ServerConnectionState.NO_ADDRESS.toString(),
 				    mss.getMessage("sync.config.server.connection.status.noAddress"));
 				
-				//Add privilege to enable us access the registered tasks
-		        Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
-		        
-				// get repeatInterval for tasks taskConfig for automated syncing
-				TaskDefinition serverSchedule = new TaskDefinition();
-				String repeatInterval = "";
-				if (server != null) {
-					if (server.getServerId() != null) {
-						Collection<TaskDefinition> tasks = Context.getSchedulerService().getRegisteredTasks();
-						if (tasks != null) {
-							String serverId = server.getServerId().toString();
-							for (TaskDefinition task : tasks) {
-								if (task.getTaskClass().equals(SyncConstants.SCHEDULED_TASK_CLASS)) {
-									if (serverId.equals(task.getProperty(SyncConstants.SCHEDULED_TASK_PROPERTY_SERVER_ID))) {
-										serverSchedule = task;
-										Long repeat = serverSchedule.getRepeatInterval() / 60;
-										repeatInterval = repeat.toString();
-										if (repeatInterval.indexOf(".") > -1)
-											repeatInterval = repeatInterval.substring(0, repeatInterval.indexOf("."));
+				try {
+					//Add privilege to enable us access the registered tasks
+			        Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+			        
+					// get repeatInterval for tasks taskConfig for automated syncing
+					TaskDefinition serverSchedule = new TaskDefinition();
+					String repeatInterval = "";
+					if (server != null) {
+						if (server.getServerId() != null) {
+							Collection<TaskDefinition> tasks = Context.getSchedulerService().getRegisteredTasks();
+							if (tasks != null) {
+								String serverId = server.getServerId().toString();
+								for (TaskDefinition task : tasks) {
+									if (task.getTaskClass().equals(SyncConstants.SCHEDULED_TASK_CLASS)) {
+										if (serverId.equals(task.getProperty(SyncConstants.SCHEDULED_TASK_PROPERTY_SERVER_ID))) {
+											serverSchedule = task;
+											Long repeat = serverSchedule.getRepeatInterval() / 60;
+											repeatInterval = repeat.toString();
+											if (repeatInterval.indexOf(".") > -1)
+												repeatInterval = repeatInterval.substring(0, repeatInterval.indexOf("."));
+										}
 									}
 								}
 							}
 						}
 					}
+					modelMap.put("connectionState", connectionState.entrySet());
+					modelMap.put("serverSchedule", serverSchedule);
+					modelMap.put("repeatInterval", repeatInterval);
 				}
-				modelMap.put("connectionState", connectionState.entrySet());
-				modelMap.put("serverSchedule", serverSchedule);
-				modelMap.put("repeatInterval", repeatInterval);
-				
-				//We no longer need this privilege.
-		        Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+				finally {
+					//We no longer need this privilege.
+					Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+				}
 			}
 			
 			modelMap.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);

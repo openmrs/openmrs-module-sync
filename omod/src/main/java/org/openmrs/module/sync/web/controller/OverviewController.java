@@ -151,42 +151,45 @@ public class OverviewController extends SimpleFormController {
 	        connectionState.put(ServerConnectionState.MALFORMED_URL.toString(), msa.getMessage("sync.config.server.connection.status.badUrl"));
 	        connectionState.put(ServerConnectionState.NO_ADDRESS.toString(), msa.getMessage("sync.config.server.connection.status.noAddress"));
 	        
-	        //Add privilege to enable us access the registered tasks
-	        Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+	        try {
+		        //Add privilege to enable us access the registered tasks
+		        Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+		        
+		        //taskConfig for automated syncing
+		        TaskDefinition parentSchedule = new TaskDefinition();
+		        String repeatInterval = "";
+		        if ( parent != null ) {
+		        	Collection<TaskDefinition> tasks = Context.getSchedulerService().getRegisteredTasks();
+		        	if ( tasks != null ) {
+		        		String serverId = parent.getServerId().toString();
+		            	for ( TaskDefinition task : tasks ) {
+		            		if ( task.getTaskClass().equals(SyncConstants.SCHEDULED_TASK_CLASS) ) {
+		            			if ( serverId.equals(task.getProperty(SyncConstants.SCHEDULED_TASK_PROPERTY_SERVER_ID)) ) {
+		            				parentSchedule = task;
+		            				Long repeat = parentSchedule.getRepeatInterval() / 60;
+		            				repeatInterval = repeat.toString();
+		            				if ( repeatInterval.indexOf(".") > -1 ) repeatInterval = repeatInterval.substring(0, repeatInterval.indexOf("."));
+		            			}
+		            		}
+		            	}
+		        	}
+		        }
 	        
-	        //taskConfig for automated syncing
-	        TaskDefinition parentSchedule = new TaskDefinition();
-	        String repeatInterval = "";
-	        if ( parent != null ) {
-	        	Collection<TaskDefinition> tasks = Context.getSchedulerService().getRegisteredTasks();
-	        	if ( tasks != null ) {
-	        		String serverId = parent.getServerId().toString();
-	            	for ( TaskDefinition task : tasks ) {
-	            		if ( task.getTaskClass().equals(SyncConstants.SCHEDULED_TASK_CLASS) ) {
-	            			if ( serverId.equals(task.getProperty(SyncConstants.SCHEDULED_TASK_PROPERTY_SERVER_ID)) ) {
-	            				parentSchedule = task;
-	            				Long repeat = parentSchedule.getRepeatInterval() / 60;
-	            				repeatInterval = repeat.toString();
-	            				if ( repeatInterval.indexOf(".") > -1 ) repeatInterval = repeatInterval.substring(0, repeatInterval.indexOf("."));
-	            			}
-	            		}
-	            	}
-	        	}
+		        ret.put("connectionState", connectionState.entrySet());
+				ret.put("parent", parent);
+		        ret.put("parentSchedule", parentSchedule);
+		        ret.put("repeatInterval", repeatInterval);
+	            ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
+	            
+	            //sync status staff
+		        ret.put("localServerUuid", ref.get("localServerUuid"));
+		        ret.put("localServerName", Context.getService(SyncService.class).getServerName());           
+		        ret.put("localServerAdminEmail", Context.getService(SyncService.class).getAdminEmail()); 
 	        }
-	        
-	        //We no longer need this privilege.
-	        Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
-	        
-	        ret.put("connectionState", connectionState.entrySet());
-			ret.put("parent", parent);
-	        ret.put("parentSchedule", parentSchedule);
-	        ret.put("repeatInterval", repeatInterval);
-            ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
-            
-            //sync status staff
-	        ret.put("localServerUuid", ref.get("localServerUuid"));
-	        ret.put("localServerName", Context.getService(SyncService.class).getServerName());           
-	        ret.put("localServerAdminEmail", Context.getService(SyncService.class).getAdminEmail());           
+	        finally {
+	        	//We no longer need this privilege.
+	        	Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+	        }
 		}
         
 	    return ret;

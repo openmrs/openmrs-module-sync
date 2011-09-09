@@ -51,12 +51,12 @@
 							<th><spring:message code="sync.config.server.lastSync" /></th>
 							<openmrs:hasPrivilege privilege="Manage Synchronization">
 								<th style="background-color: #eef;"><img src="${pageContext.request.contextPath}/images/save.gif" border="0" style="margin-bottom: -3px;">
-									<spring:message code="sync.config.server.syncViaFile" />
+									<spring:message code="sync.config.server.syncViaFile" /></th>
 								<th style="background-color: #efe;"><img src="${pageContext.request.contextPath}/images/lookup.gif" border="0" style="margin-bottom: -3px;">
-									<spring:message code="sync.config.server.syncViaWeb" />
+									<spring:message code="sync.config.server.syncViaWeb" /></th>
 								<th style="background-color: #fee;"><img src="${pageContext.request.contextPath}/moduleResources/sync/scheduled_send.gif" border="0" style="margin-bottom: -3px;">
 									<spring:message code="sync.config.server.syncAutomatic" />
-									(<spring:message code="sync.general.scheduled" />)
+									(<spring:message code="sync.general.scheduled" />)</th>
 								<th><spring:message code="sync.config.server.delete" /></th>
 							</openmrs:hasPrivilege>
 						</tr>
