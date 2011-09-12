@@ -17,38 +17,26 @@
     	var ddVal = dropdown.options[index].value;
 		document.location = "?firstRecordId=" + firstRecordId + "&size=" + ddVal;
 	}
-
-	function getQueryParameter() {
-		  var queryString = window.top.location.search.substring(1);
-		  var parameterName = "size=";
-		  if ( queryString.length > 0 ) {
-		    begin = queryString.indexOf ( parameterName );
-		    if ( begin != -1 ) {
-		      begin += parameterName.length;
-		      end = queryString.indexOf ( "&" , begin );
-		        if ( end == -1 ) {
-		        end = queryString.length
-		      }
-		      var size = unescape ( queryString.substring ( begin, end ) );
-				var dropdown = document.getElementById("itemsPerPage");
-				document.getElementById('itemsPerPage').value = size;
-		    }
-		  }
-	}
  
-	function getNewerItemsList(firstRecordId,flag) {
+	function getNewerItemsList(firstRecordId) {
 		var firstRecordNum = parseInt(firstRecordId);
 		var dropdown = document.getElementById("itemsPerPage");
     	var index = dropdown.selectedIndex;
     	var ddVal = dropdown.options[index].value;
     	var ddNum = parseInt(ddVal);
     	parseInt(ddNum);
-    	
-    	if(flag == false){
-    		firstRecordNum = firstRecordNum + ddNum;
-    	}if(flag == true){
-    		firstRecordNum -= ddNum;
-   		}
+    	firstRecordNum = firstRecordNum + ddNum;
+   		document.location = "?firstRecordId=" + firstRecordNum + "&size=" + ddNum;   
+	}
+	
+	function getOlderItemsList(firstRecordId) {
+		var firstRecordNum = parseInt(firstRecordId);
+		var dropdown = document.getElementById("itemsPerPage");
+    	var index = dropdown.selectedIndex;
+    	var ddVal = dropdown.options[index].value;
+    	var ddNum = parseInt(ddVal);
+    	parseInt(ddNum);
+    	firstRecordNum = firstRecordNum - ddNum;
    		document.location = "?firstRecordId=" + firstRecordNum + "&size=" + ddNum;   
 	}
 </script>
@@ -62,9 +50,9 @@
 </td>
 <td>&nbsp;&nbsp;&nbsp;&nbsp;<spring:message code="sync.history.recordsPerPage"/>
 <select id="itemsPerPage" name="itemsPerPage" onchange="reloadPage(${firstRecordId})">
-	<option value="10">10</option>
-	<option value="50">50</option>
-	<option value="100">100</option>
+	<option value="10" ${param.size == 10 ? 'selected' : ''}> 10</option>
+	<option value="50" ${param.size == 50 ? 'selected' : ''}> 50</option>
+	<option value="100" ${param.size == 100 ? 'selected' : ''}> 100</option>
 	</select>
 </td>
 </tr>
@@ -73,10 +61,10 @@
 </b>
 <div class="box">
 	<c:if test="${syncRecords[0].recordId != latestRecordId}">
-	<a href="javascript: getNewerItemsList(${firstRecordId}, false)">&larr; <spring:message code="sync.general.newer"/></a>
+	<a href="javascript: getNewerItemsList(${firstRecordId})">&larr; <spring:message code="sync.general.newer"/></a>
 	</c:if>
 	<c:if test="${isEarliestRecord != true}">
-	<a href="javascript: getNewerItemsList(${firstRecordId}, true)"><spring:message code="sync.general.older"/> &rarr;</a>
+	<a href="javascript: getOlderItemsList(${firstRecordId})"><spring:message code="sync.general.older"/> &rarr;</a>
 	</c:if>
 	&#124;
 	<a href="historyNextError.list?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.nextError"/> &rarr;</a>
@@ -189,18 +177,14 @@
 	</table>
 	
 	<c:if test="${syncRecords[0].recordId != latestRecordId}">
-	<a href="javascript: getNewerItemsList(${firstRecordId}, false)">&larr; <spring:message code="sync.general.newer"/></a>
+	<a href="javascript: getNewerItemsList(${firstRecordId})">&larr; <spring:message code="sync.general.newer"/></a>
 	</c:if>
 	<c:if test="${isEarliestRecord != true}">
-	<a href="javascript: getNewerItemsList(${firstRecordId}, true)"><spring:message code="sync.general.older"/> &rarr;</a>
+	<a href="javascript: getOlderItemsList(${firstRecordId})"><spring:message code="sync.general.older"/> &rarr;</a>
 	</c:if>
 	&#124;
 	<a href="historyNextError.list?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.nextError"/> &rarr;</a>
 	
 </div>
-
-<script>
-window.onload=getQueryParameter(); 
-</script>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>
