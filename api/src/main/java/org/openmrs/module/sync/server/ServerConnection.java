@@ -162,12 +162,20 @@ public class ServerConnection {
 		return syncResponse;
 	}
 
+	
+	/**
+	 * Gets the sync server connection timeout.
+	 * 
+	 * @return the connection timeout in milliseconds.
+	 * 
+	 * @should not throw NPE when timeout global property is not set
+	 */
 	public static Double getTimeout() {
 		// let's figure out a suitable timeout
-		String timeoutGP = Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_CONNECTION_TIMEOUT).trim();
+		String timeoutGP = Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_CONNECTION_TIMEOUT);
 		try {
 			if (StringUtils.hasText(timeoutGP))
-				return Double.valueOf(timeoutGP);
+				return Double.valueOf(timeoutGP.trim());
 			
 		} catch (Exception ex){
 			log.error("Could not convert " + timeoutGP + " to Double.  Please enter a valid number of miliseconds, or leave " + SyncConstants.PROPERTY_CONNECTION_TIMEOUT + " blank to use the default.");
