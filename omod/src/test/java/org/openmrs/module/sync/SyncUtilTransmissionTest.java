@@ -14,17 +14,13 @@
 package org.openmrs.module.sync;
 
 import junit.framework.Assert;
-import org.junit.Ignore;
 
+import org.junit.Ignore;
 import org.junit.Test;
-import org.openmrs.api.AdministrationService;
-import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.SyncTransmissionState;
 import org.openmrs.module.sync.SyncUtilTransmission.ReceivingSize;
-import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.ingest.SyncTransmissionResponse;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
-import org.springframework.test.annotation.NotTransactional;
+import org.openmrs.api.context.Context;
 
 
 /**
@@ -32,19 +28,38 @@ import org.springframework.test.annotation.NotTransactional;
  */
 public class SyncUtilTransmissionTest extends BaseModuleContextSensitiveTest implements Runnable {
 	
-	@Ignore
+	
 	@Test
-	public void doFullSynchronize_shouldRunOneSyncTask() throws Exception {
+	public void doFullSynchronize_shouldRunOneSyncTaskAtATime() throws Exception {
 		executeDataSet("org/openmrs/module/sync/include/SyncRemoteChildServer.xml");
 		
 		new Thread(this).start();
 		
-		SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(new ReceivingSize());
-		Assert.assertEquals(SyncTransmissionState.ERROR_CANNOT_RUN_PARALLEL, response.getState());
+		try{
+			//Pause to ensure that we do not execute the statements below before
+			//the thread, started above, runs.
+			Thread.sleep(500);
+		}
+		catch(Exception ex){}
+		
+		try{
+			Context.openSession();
+			SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(new ReceivingSize());
+			Assert.assertEquals(SyncTransmissionState.ERROR_CANNOT_RUN_PARALLEL, response.getState());
+		}
+		finally{
+			Context.closeSession();
+		}
 	}
 	
 	public void run() {	
-		SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(new ReceivingSize());
-		Assert.assertEquals(SyncTransmissionState.OK_NOTHING_TO_DO, response.getState());
+		try{
+			Context.openSession();
+			SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(new ReceivingSize());
+			Assert.assertEquals(SyncTransmissionState.OK_NOTHING_TO_DO, response.getState());
+		}
+		finally{
+			Context.closeSession();
+		}
     }
 }

@@ -533,6 +533,7 @@ public class SyncUtilTransmission {
      * @return the {@link SyncTransmissionResponse} from the parent
      * 
      * @see #doFullSynchronize(RemoteServer)
+     * @should run one sync task at a time
      */
     public static SyncTransmissionResponse doFullSynchronize(ReceivingSize size) {
         // sends to parent server (by default)
