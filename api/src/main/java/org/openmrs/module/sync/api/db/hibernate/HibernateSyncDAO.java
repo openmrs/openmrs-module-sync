@@ -279,7 +279,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	@SuppressWarnings("unchecked")
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords)
 	                                                                                                         throws DAOException {
-		if (maxSyncRecords < 1) {
+		if (maxSyncRecords == null || maxSyncRecords < 1) {
 			maxSyncRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT);
 		}
 		
