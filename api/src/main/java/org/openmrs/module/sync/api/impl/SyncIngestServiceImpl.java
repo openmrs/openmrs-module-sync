@@ -27,6 +27,7 @@ import org.openmrs.OpenmrsObject;
 import org.openmrs.Person;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
+import org.openmrs.api.db.SerializedObject;
 import org.openmrs.module.ModuleUtil;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
@@ -203,7 +204,8 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     			|| "org.openmrs.PersonName".equals(item.getContainedType().getName())
                     			)) {
                     		treeSetItems.add(item);
-                    	} else if (Person.class.isAssignableFrom(item.getContainedType()) || Concept.class.isAssignableFrom(item.getContainedType()) || SyncPatientStub.class.isAssignableFrom(item.getContainedType())){
+                    	} else if (Person.class.isAssignableFrom(item.getContainedType()) || Concept.class.isAssignableFrom(item.getContainedType()) || SyncPatientStub.class.isAssignableFrom(item.getContainedType())
+                    			|| SerializedObject.class.isAssignableFrom(item.getContainedType())){
                     		//Sync-180: Person items need to be processed first, Concept exhibited same behavior.
 		                    SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
 		                    importedItem.setKey(item.getKey());
