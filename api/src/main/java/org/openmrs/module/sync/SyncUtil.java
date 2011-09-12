@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Vector;
@@ -84,6 +85,7 @@ import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.LocaleNormalizer;
 import org.openmrs.module.sync.serialization.MapNormalizer;
 import org.openmrs.module.sync.serialization.Normalizer;
+import org.openmrs.module.sync.serialization.PropertiesNormalizer;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.module.sync.server.RemoteServer;
@@ -112,6 +114,7 @@ public class SyncUtil {
 		BinaryNormalizer byteN = new BinaryNormalizer();
 		MapNormalizer mapN = new MapNormalizer();
 		ClassNormalizer classN = new ClassNormalizer();
+		PropertiesNormalizer propN = new PropertiesNormalizer();
 		
 		safetypes = new HashMap<String, Normalizer>();
 		// safetypes.put("binary", defN);
@@ -139,7 +142,7 @@ public class SyncUtil {
 		safetypes.put("timestamp", dateN);
 		// time
 		// timezone
-		
+		safetypes.put("properties", propN);
 		safetypes.put("map", mapN);
 		safetypes.put("class", classN);
 	}
@@ -447,8 +450,7 @@ public class SyncUtil {
 					}
 					
 					o = tmpCollection;
-				} else if (Map.class.isAssignableFrom(classType)) {
-					//use MapNormalizer to de-serialize
+				} else if (Map.class.isAssignableFrom(classType) || Properties.class.isAssignableFrom(classType)) {
 					Object tmpMap = SyncUtil.getNormalizer(classType).fromString(classType, fieldVal);
 					
 					//if we were able to convert and got anything at all back, assign it

@@ -421,9 +421,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 			if (!pendingFlushHolder.get().contains(entity)) {
 				pendingFlushHolder.get().add(entity);
 			}
-
-			packageObject((OpenmrsObject) entity, currentState, propertyNames,
-					types, id, SyncItemState.UPDATED);
+			
+				packageObject((OpenmrsObject) entity, currentState, propertyNames,
+						types, id, SyncItemState.UPDATED);
 
 		}
 
@@ -814,6 +814,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 			// boolean/String/integer/timestamp via Normalizers
 			values.put(propertyName, new PropertyClassValue(propertyTypeName, n
 					.toString(propertyValue)));
+		} else if ((n = SyncUtil.getNormalizer(propertyValue.getClass())) != null) {
+				values.put(propertyName, new PropertyClassValue(propertyValue.getClass().getName(), n.toString(propertyValue)));	
 		} else if (propertyType.isCollectionType()
 				&& (n = isCollectionOfSafeTypes(entity, propertyName)) != null) {
 			// if the property is a list/set/collection AND the members of that
