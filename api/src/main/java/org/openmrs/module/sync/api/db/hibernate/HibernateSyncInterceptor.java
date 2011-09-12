@@ -422,6 +422,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements
 				pendingFlushHolder.get().add(entity);
 			}
 			
+			//NPE can only happen if flush is called outside of transaction.  SYNC-194.
+			if (syncRecordHolder.get() != null)
 				packageObject((OpenmrsObject) entity, currentState, propertyNames,
 						types, id, SyncItemState.UPDATED);
 
