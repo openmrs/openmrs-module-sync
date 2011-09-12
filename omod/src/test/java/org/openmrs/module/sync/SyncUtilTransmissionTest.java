@@ -38,7 +38,7 @@ public class SyncUtilTransmissionTest extends BaseModuleContextSensitiveTest imp
 		try{
 			//Pause to ensure that we do not execute the statements below before
 			//the thread, started above, runs.
-			Thread.sleep(500);
+			Thread.sleep(1000);
 		}
 		catch(Exception ex){}
 		
