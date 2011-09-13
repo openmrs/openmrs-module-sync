@@ -21,7 +21,6 @@ import org.openmrs.module.sync.SyncUtilTransmission.ReceivingSize;
 import org.openmrs.module.sync.ingest.SyncTransmissionResponse;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.api.SyncService;
 
 
 /**
