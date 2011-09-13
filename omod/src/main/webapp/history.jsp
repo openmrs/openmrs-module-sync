@@ -63,12 +63,13 @@
 	<c:if test="${syncRecords[0].recordId != latestRecordId}">
 	<a href="javascript: getNewerItemsList(${firstRecordId})">&larr; <spring:message code="sync.general.newer"/></a>
 	</c:if>
+	<c:if test="${firstRecordId != null}">
 	<c:if test="${isEarliestRecord != true}">
 	<a href="javascript: getOlderItemsList(${firstRecordId})"><spring:message code="sync.general.older"/> &rarr;</a>
 	</c:if>
 	&#124;
 	<a href="historyNextError.list?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.nextError"/> &rarr;</a>
-	
+	</c:if>
 	<table id="syncChangesTable" cellpadding="7" cellspacing="0">
 		<thead>
 			<tr>
@@ -179,12 +180,13 @@
 	<c:if test="${syncRecords[0].recordId != latestRecordId}">
 	<a href="javascript: getNewerItemsList(${firstRecordId})">&larr; <spring:message code="sync.general.newer"/></a>
 	</c:if>
+	<c:if test="${firstRecordId != null}">
 	<c:if test="${isEarliestRecord != true}">
 	<a href="javascript: getOlderItemsList(${firstRecordId})"><spring:message code="sync.general.older"/> &rarr;</a>
 	</c:if>
 	&#124;
 	<a href="historyNextError.list?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.nextError"/> &rarr;</a>
-	
+	</c:if>
 </div>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>
