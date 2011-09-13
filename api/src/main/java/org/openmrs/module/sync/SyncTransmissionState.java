@@ -96,7 +96,12 @@ public enum SyncTransmissionState {
     /**
      * Cannot run more than one sync task at the same time.
      */
-    ERROR_CANNOT_RUN_PARALLEL;
+    ERROR_CANNOT_RUN_PARALLEL,
+    
+    /**
+     * Got sync request from child server whose uuid does not match with any of our registered child servers.
+     */    
+    CANNOT_FIND_SERVER_WITH_UUID;
     
     public boolean isError() {
     	return !SyncConstants.SYNC_TRANSMISSION_OK_STATES.contains(this);

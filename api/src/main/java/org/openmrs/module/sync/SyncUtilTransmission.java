@@ -328,32 +328,34 @@ public class SyncUtilTransmission {
 						parent = syncService.getRemoteServer(parentId);
                         SyncTransmission st = SyncUtilTransmission.createSyncTransmission(parent, false);
                         if ( str != null ) {
-                            log.info("Received updates from parent, so replying and sending updates of our own: " + st.getFileOutput());
-                            str.setSyncTransmission(st);
-                            str.createFile(false, "/receiveAndSend");
-                            //reload parent
-                            //parent = syncService.getRemoteServer(parentId);
-                            response = SyncUtilTransmission.sendSyncTransmission(parent, null, str);
-                            
-                            // add all changes from parent into response
-                            if (str.getSyncImportRecords() != null) {
-                            	if (response.getSyncImportRecords() == null)
-                            		response.setSyncImportRecords(str.getSyncImportRecords());
-                            	else
-                            		response.getSyncImportRecords().addAll(str.getSyncImportRecords());
-                            	
-                            	// mark all of these imported records as "committed plus confirmed"
-                            	for (SyncImportRecord record : str.getSyncImportRecords()) {
-                            		if (record.getState().equals(SyncRecordState.COMMITTED) ||
-                            				record.getState().equals(SyncRecordState.ALREADY_COMMITTED)) {
-	                                	record.setState(SyncRecordState.COMMITTED_AND_CONFIRMATION_SENT);
-	                                	syncService.updateSyncImportRecord(record);
-                            		}
-                            		else {
-                            			response.setState(SyncTransmissionState.FAILED_RECORDS);
-                            		}
-                                }
-                            }
+                        	if (str.getState() != SyncTransmissionState.CANNOT_FIND_SERVER_WITH_UUID) {
+	                            log.info("Received updates from parent, so replying and sending updates of our own: " + st.getFileOutput());
+	                            str.setSyncTransmission(st);
+	                            str.createFile(false, "/receiveAndSend");
+	                            //reload parent
+	                            //parent = syncService.getRemoteServer(parentId);
+	                            response = SyncUtilTransmission.sendSyncTransmission(parent, null, str);
+	                            
+	                            // add all changes from parent into response
+	                            if (str.getSyncImportRecords() != null) {
+	                            	if (response.getSyncImportRecords() == null)
+	                            		response.setSyncImportRecords(str.getSyncImportRecords());
+	                            	else
+	                            		response.getSyncImportRecords().addAll(str.getSyncImportRecords());
+	                            	
+	                            	// mark all of these imported records as "committed plus confirmed"
+	                            	for (SyncImportRecord record : str.getSyncImportRecords()) {
+	                            		if (record.getState().equals(SyncRecordState.COMMITTED) ||
+	                            				record.getState().equals(SyncRecordState.ALREADY_COMMITTED)) {
+		                                	record.setState(SyncRecordState.COMMITTED_AND_CONFIRMATION_SENT);
+		                                	syncService.updateSyncImportRecord(record);
+	                            		}
+	                            		else {
+	                            			response.setState(SyncTransmissionState.FAILED_RECORDS);
+	                            		}
+	                                }
+	                            }
+                        	}
                         } else {
                             log.info("No updates from parent, generating our own transmission");
                             response = SyncUtilTransmission.sendSyncTransmission(parent, st, null);
@@ -424,6 +426,11 @@ public class SyncUtilTransmission {
         } else {
             if ( origin != null ) log.debug("ORIGIN SERVER IS " + origin.getNickname());
             else log.debug("ORIGIN SERVER IS STILL NULL");
+        }
+        
+        if (origin == null) {
+        	str.setState(SyncTransmissionState.CANNOT_FIND_SERVER_WITH_UUID);
+        	return str;
         }
         
         //update timestamp for origin server, set the status to processing

@@ -21,6 +21,7 @@ import org.openmrs.module.sync.SyncUtilTransmission.ReceivingSize;
 import org.openmrs.module.sync.ingest.SyncTransmissionResponse;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.api.SyncService;
 
 
 /**
@@ -62,4 +63,10 @@ public class SyncUtilTransmissionTest extends BaseModuleContextSensitiveTest imp
 			Context.closeSession();
 		}
     }
+	
+	@Test
+	public void processSyncTransmission_shouldNotThrowNPEWhenGivenInvalidRemoteServerUuid() {
+		SyncTransmissionResponse response = SyncUtilTransmission.processSyncTransmission(new SyncTransmission("11111111111", true));
+		Assert.assertEquals(SyncTransmissionState.CANNOT_FIND_SERVER_WITH_UUID, response.getState());
+	}
 }
