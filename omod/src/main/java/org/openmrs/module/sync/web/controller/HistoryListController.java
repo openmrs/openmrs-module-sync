@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,6 +28,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncRecord;
+import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
@@ -192,5 +194,40 @@ public class HistoryListController {
 		
 		return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + recordId + "&size=" + size;
 	}
-	
+    
+    @SuppressWarnings("unchecked")
+	@RequestMapping(value = "/module/sync/historyResetRemoveRecords", method = RequestMethod.GET)
+	public String historyRemoveRecords(ModelMap modelMap, HttpServletRequest request, 
+							@RequestParam String uuids,
+							@RequestParam String action,
+							@RequestParam Integer recordId,
+	                        @RequestParam Integer size) throws Exception {
+    	
+    	if (Context.isAuthenticated()) {
+         	SyncService syncService=Context.getService(SyncService.class);
+         	
+         	SyncRecordState state = SyncRecordState.NEW;
+         	if (action.equals("remove")) {
+         		state = SyncRecordState.NOT_SUPPOSED_TO_SYNC;
+         	}
+         	
+         	String[] uuidArray = uuids.split(" ");
+         	for (String uuid : uuidArray) {
+         		
+         		SyncRecord record = syncService.getSyncRecord(uuid);
+             	if (record != null) {
+             		record.setRetryCount(0);
+ 					record.setState(state);
+ 					
+ 					for (SyncServerRecord serverRecord : record.getServerRecords()) {
+ 						serverRecord.setState(state);
+ 					}
+ 					
+ 					syncService.updateSyncRecord(record);
+             	}
+         	}
+    	}
+    	
+    	return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + recordId + "&size=" + size;
+    }
 }

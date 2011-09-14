@@ -39,6 +39,47 @@
     	firstRecordNum = firstRecordNum - ddNum;
    		document.location = "?firstRecordId=" + firstRecordNum + "&size=" + ddNum;   
 	}
+	
+	function resetRecords(){
+		resetRemoveRecords('NEW', 
+				'<spring:message code="sync.history.resetErrorMessage"/>',
+				'reset');
+	}
+	
+	function removeRecords(){
+		resetRemoveRecords('NOT_SUPPOSED_TO_SYNC', 
+				'<spring:message code="sync.history.removeErrorMessage"/>',
+				'remove');		
+	}
+	
+	function resetRemoveRecords(invalidState, invalidStateMessage, action){
+		var inputs = document.getElementsByTagName('input');
+		var i = 0;
+		var input;
+		var uuids = null;
+		
+		while(input = inputs[i++]){
+			if(input.type == 'checkbox' && input.checked){
+				if(input.value == invalidState){
+					alert(invalidStateMessage);
+					return;
+				}
+				
+				if(uuids == null)
+					uuids = '';
+				else
+					uuids += ' ';
+				
+				uuids += input.id;
+			}
+		}
+		
+		if(uuids == null)
+			alert('<spring:message code="sync.history.selectRecords"/>');
+		else
+			document.location = "historyResetRemoveRecords.list?recordId=" + ${firstRecordId} + "&size=" + ${size} + "&uuids="+uuids + "&action=" + action;
+	}
+	
 </script>
 
 <h2><spring:message code="sync.history.title"/></h2>
@@ -147,6 +188,11 @@
 											</c:otherwise>
 										</c:choose>
 									</td>
+									<td>
+										<c:if test="${syncRecord.state!='COMMITTED' && syncRecord.state!='ALREADY_COMMITTED'}">
+											<input type="checkbox" id="${syncRecord.uuid}" value="${syncRecord.state}" />
+										</c:if>
+									</td>
 								</c:forEach>
 							</c:if>
 							<c:if test="${empty servers}">
@@ -185,7 +231,10 @@
 	<a href="javascript: getOlderItemsList(${firstRecordId})"><spring:message code="sync.general.older"/> &rarr;</a>
 	</c:if>
 	&#124;
-	<a href="historyNextError.list?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.nextError"/> &rarr;</a>
+	<a href="historyNextError.list?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.nextError"/> &rarr;</a> |
+	<b><spring:message code="sync.records.action"/>:</b>
+	<b><a href="#" onclick="resetRecords();"><spring:message code="sync.record.details.reset" /></a></b> |
+	<b><a href="#" onclick="removeRecords();"><spring:message code="sync.record.details.remove" /></a></b>
 	</c:if>
 </div>
 
