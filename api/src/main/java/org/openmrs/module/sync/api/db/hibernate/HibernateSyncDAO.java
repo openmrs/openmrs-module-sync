@@ -278,7 +278,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords)
-	                                                                                                         throws DAOException {
+	    throws DAOException {
 		if (maxSyncRecords == null || maxSyncRecords < 1) {
 			maxSyncRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT);
 		}
@@ -1500,8 +1500,13 @@ public class HibernateSyncDAO implements SyncDAO {
 	 */
 	public SyncRecord getOlderSyncRecordInState(SyncRecord syncRecord, EnumSet<SyncRecordState> states) {
 		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(SyncRecord.class);
+		criteria.createAlias("serverRecords", "serverRecord", Criteria.LEFT_JOIN);
+		criteria.add(Restrictions.le("timestamp", syncRecord.getTimestamp()));
+		// We need to look for a lower recordId since some may have the same timestamp.
 		criteria.add(Restrictions.lt("recordId", syncRecord.getRecordId()));
-		criteria.add(Restrictions.in("state", states));
+		// We need to look for errors in both SyncRecord and SyncRecordServer.
+		criteria.add(Restrictions.or(Restrictions.in("state", states), Restrictions.in("serverRecord.state", states)));
+		criteria.addOrder(Order.desc("timestamp"));
 		criteria.addOrder(Order.desc("recordId"));
 		criteria.setMaxResults(1);
 		return (SyncRecord) criteria.uniqueResult();
