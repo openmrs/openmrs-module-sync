@@ -35,17 +35,12 @@ public class SyncUtilTransmissionTest extends BaseModuleContextSensitiveTest imp
 		
 		new Thread(this).start();
 		
-		try{
-			//Pause to ensure that we do not execute the statements below before
-			//the thread, started above, runs.
-			Thread.sleep(500);
-		}
-		catch(Exception ex){}
-		
+		//This test works on the assumption that the code below will execute 
+		//before the above thread's run method is executed.
 		try{
 			Context.openSession();
 			SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(new ReceivingSize());
-			Assert.assertEquals(SyncTransmissionState.ERROR_CANNOT_RUN_PARALLEL, response.getState());
+			Assert.assertEquals(SyncTransmissionState.OK_NOTHING_TO_DO, response.getState());
 		}
 		finally{
 			Context.closeSession();
@@ -56,7 +51,7 @@ public class SyncUtilTransmissionTest extends BaseModuleContextSensitiveTest imp
 		try{
 			Context.openSession();
 			SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(new ReceivingSize());
-			Assert.assertEquals(SyncTransmissionState.OK_NOTHING_TO_DO, response.getState());
+			Assert.assertEquals(SyncTransmissionState.ERROR_CANNOT_RUN_PARALLEL, response.getState());
 		}
 		finally{
 			Context.closeSession();
