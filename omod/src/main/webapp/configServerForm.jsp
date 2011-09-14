@@ -13,6 +13,17 @@
 <script language="JavaScript">
 	<!--
 		
+	function showHideDiv(id) {
+		var div = document.getElementById(id);
+		if ( div ) {
+			if ( div.style.display != "none" ) {
+				div.style.display = "none";
+			} else { 
+				div.style.display = "";
+			}
+		}
+	}
+	
     function enableInput(id) {
         var el = document.getElementById(id);
         if ( el ) {
