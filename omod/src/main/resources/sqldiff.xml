@@ -308,4 +308,17 @@
 		</sql>
 	</diff>
 	
+	<diff>
+		<version>0.976</version>
+		<author>Daniel Kayiwa</author>
+		<date>September 14 2011</date>
+		<description>
+			Adding the org.openmrs.notification.Alert class to the list to be ignored by sync.
+		</description>
+		<sql>
+			INSERT INTO `sync_class` (`name`,`default_send_to`,`default_receive_from`) values
+			('org.openmrs.notification.Alert', 0, 0);
+		</sql>
+	</diff>
+	
 </sqldiff>
