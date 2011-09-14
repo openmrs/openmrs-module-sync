@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.sync.web.controller;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -37,6 +38,7 @@ import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
+import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.scheduler.TaskDefinition;
 import org.openmrs.scheduler.web.controller.SchedulerFormController;
 import org.openmrs.util.OpenmrsConstants;
@@ -64,6 +66,9 @@ public class MaintenanceController extends SimpleFormController {
 	protected final Log log = LogFactory.getLog(getClass());
 	
 	public Integer maxPageRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT);
+	
+	// also in StatsController.  Should be moved to GP
+	public static String DEFAULT_DATE_PATTERN = "MM/dd/yyyy HH:mm:ss";
 	
 	/**
 	 * @see org.springframework.web.servlet.mvc.BaseCommandController#initBinder(javax.servlet.http.HttpServletRequest,
@@ -282,6 +287,7 @@ public class MaintenanceController extends SimpleFormController {
 		ret.put("recordChangeType", recordChangeType);
 		ret.put("parent", Context.getService(SyncService.class).getParentServer());
 		ret.put("servers", Context.getService(SyncService.class).getRemoteServers());
+		ret.put("datePattern", DEFAULT_DATE_PATTERN);
 		ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
 		ret.put("synchronizationMaintenanceList", returnList);
 		
@@ -316,26 +322,45 @@ public class MaintenanceController extends SimpleFormController {
 	protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, Object command,
 	                                BindException errors) throws Exception {
 		
-		try {
-			TaskDefinition task = (TaskDefinition) command;
+		SyncService syncService = Context.getService(SyncService.class);
+		
+		String action = ServletRequestUtils.getStringParameter(request, "action");
+		
+		if ("backporting".equals(action)) {
+			Integer serverId = ServletRequestUtils.getRequiredIntParameter(request, "server");
+			String dateString = ServletRequestUtils.getRequiredStringParameter(request, "date");
 			
-			Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+			RemoteServer server = syncService.getRemoteServer(serverId);
+			Date date = new SimpleDateFormat(DEFAULT_DATE_PATTERN).parse(dateString);
 			
-			//only reschedule a task if it is started, is not running and the time is not in the past
-			if (task.getStarted() && OpenmrsUtil.compareWithNullAsEarliest(task.getStartTime(), new Date()) > 0
-			        && (task.getTaskInstance() == null || !task.getTaskInstance().isExecuting()))
-				Context.getSchedulerService().rescheduleTask(task);
-			else
-				Context.getSchedulerService().saveTask(task);
+			Integer numberBackproted = syncService.backportSyncRecords(server, date);
+			request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.maintenance.backport.success");
+			request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ARGS, numberBackproted);
 			
-			request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.maintenance.manage.changesSaved");
 		}
-		catch (APIException e) {
-			errors.reject("sync.maintenance.manage.failedToSaveTaskProperties");
-			return showForm(request, errors, getFormView());
-		}
-		finally {
-			Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+		else {
+			// doing an archive task
+			try {
+				TaskDefinition task = (TaskDefinition) command;
+				
+				Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+				
+				//only reschedule a task if it is started, is not running and the time is not in the past
+				if (task.getStarted() && OpenmrsUtil.compareWithNullAsEarliest(task.getStartTime(), new Date()) > 0
+				        && (task.getTaskInstance() == null || !task.getTaskInstance().isExecuting()))
+					Context.getSchedulerService().rescheduleTask(task);
+				else
+					Context.getSchedulerService().saveTask(task);
+				
+				request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.maintenance.manage.changesSaved");
+			}
+			catch (APIException e) {
+				errors.reject("sync.maintenance.manage.failedToSaveTaskProperties");
+				return showForm(request, errors, getFormView());
+			}
+			finally {
+				Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+			}
 		}
 		
 		return new ModelAndView(new RedirectView(getSuccessView()));

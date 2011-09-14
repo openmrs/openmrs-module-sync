@@ -69,7 +69,7 @@ public class SyncOnDeleteTest extends SyncBaseTest {
     @NotTransactional
 	public void shouldDeleteRelationshipType() throws Exception {
 		runSyncTest(new SyncTestHelper() {
-			public void runOnChild(){				
+			public void runOnChild(){
 				// make sure the patient identifier type is there
 				RelationshipType rt = Context.getPersonService().getRelationshipType(1);
 				assertNotNull("The relationship type could not be found in child server!", rt);
@@ -90,10 +90,10 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 	
 	@Test
     @NotTransactional
-    @Ignore
+    @Ignore("This test fails when run in a maven batch, but passes when run alone in IDE or in just this class by maven")
 	public void shouldDeletePersonAttributeType() throws Exception {
 		runSyncTest(new SyncTestHelper() {
-			public void runOnChild(){				
+			public void runOnChild(){
 				// make sure the patient identifier type is there
 				PersonAttributeType pat = Context.getPersonService().getPersonAttributeType(1);
 				assertNotNull("The PersonAttributeType could not be found in child server!", pat);

@@ -85,7 +85,7 @@ public class HistoryListController {
 			SyncService ss = Context.getService(SyncService.class);
 			recordList = ss.getSyncRecords(firstRecordId, size);
 			latestRecord = ss.getLatestRecord();
-			earliestRecord = ss.getEarliestRecord();
+			earliestRecord = ss.getEarliestRecord(null);
 			
 		}
 		

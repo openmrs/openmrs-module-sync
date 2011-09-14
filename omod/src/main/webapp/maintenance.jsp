@@ -210,6 +210,43 @@
 </div>
 <openmrs:hasPrivilege privilege="Manage Synchronization">
 	<br/>
+	<b class="boxHeader"><spring:message code="sync.maintenance.backport"/></b>
+	<div class="box">
+		<br/>
+		<span><spring:message code="sync.maintenance.backport.description" /></span>
+			<form method="post" action="">
+				<table>
+					<tr>
+						<td><spring:message code="sync.config.server.name" /></td>
+						<td>
+							<select name="server">
+								<option value=""><spring:message code="sync.maintenance.backport.chooseServer" /></option>
+								<c:forEach var="server" items="${servers}">
+									<option value="${server.serverId}">${server.nickname}</option>
+								</c:forEach>
+							</select>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td><spring:message code="sync.maintenance.backport.date" /></td>
+						<td><input type="text" name="date" value="" id="backport_date_input"/></td>
+						<td class="description">${datePattern}</td>
+					</tr>
+					<tr>
+						<td></td>
+						<td>
+							<input type="hidden" value="backporting" name="action"/>
+							<input type="submit" value="<spring:message code="general.submit"/>"/>
+						</td>
+						<td></td>
+					</tr>
+				</table>
+				
+			</form>
+	</div>
+	
+	<br/>
 	<b class="boxHeader"><spring:message code="sync.maintenance.archive.title"/></b>
 	<div class="box"><br/>
 	<span><spring:message code="sync.maintenance.archive.description" /></span>

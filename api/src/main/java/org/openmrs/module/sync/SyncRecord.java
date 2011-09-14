@@ -420,4 +420,15 @@ public class SyncRecord implements Serializable, IItem {
     public String toString() {
     	return "SyncRecord(" + getRecordId() + ") contains " + getContainedClasses();
     }
+
+	/**
+	 * Adds a SyncServerRecord to this SyncRecord for the given <code>server</code>
+	 * 
+	 * @param server the RemoteServer to make this get sent to
+	 */
+	public void addServerRecord(RemoteServer server) {
+		// only add this if there isn't one for this server already
+		if (getServerRecord(server) == null)
+			serverRecords.add(new SyncServerRecord(server, this));
+	}
 }

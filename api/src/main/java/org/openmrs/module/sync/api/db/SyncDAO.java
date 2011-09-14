@@ -26,6 +26,7 @@ import org.openmrs.OpenmrsObject;
 import org.openmrs.api.APIException;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.sync.SyncClass;
+import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncPatientStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
@@ -86,7 +87,7 @@ public interface SyncDAO {
 	 * @return The earliest SyncRecord or null if not found
 	 * @throws DAOException
 	 */
-	public SyncRecord getEarliestRecord() throws DAOException;
+	public SyncRecord getEarliestRecord(Date afterDate) throws DAOException;
 	
 	/**
 	 * Create a new SyncImportRecord
@@ -157,14 +158,12 @@ public interface SyncDAO {
 	 * Get all SyncRecords in specific SyncRecordStates
 	 * 
 	 * @param states SyncRecordStates for the SyncRecords to be returned
-	 * @param inverse
-	 * @param maxSyncRecords
+	 * @param inverse if true, will get all records that DO NOT have the given states
+	 * @param maxSyncRecords if less than 1 will use {@link SyncConstants#PROPERTY_NAME_MAX_RECORDS_DEFAULT
+	 * @param server if not null, will restrict records to only those for the given server (optional)
 	 * @return SyncRecord A list containing all SyncRecords with the given states
 	 * @throws DAOException
 	 */
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords)
-	                                                                                                         throws DAOException;
-	
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords,
 	                                       RemoteServer server) throws DAOException;
 	

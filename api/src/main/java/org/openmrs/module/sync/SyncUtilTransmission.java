@@ -75,7 +75,7 @@ public class SyncUtilTransmission {
             SyncStrategyFile strategy = new SyncStrategyFile();
 
             try {
-                tx = strategy.createStateBasedSyncTransmission(source, false, server, requestResponseWithTransmission);
+                tx = strategy.createStateBasedSyncTransmission(source, true, server, requestResponseWithTransmission);
             } catch (Exception e) {
             	log.error("Error while creating state based sync", e);
                 // difference is that this time we'll do this without trying to create a file (just getting the output)

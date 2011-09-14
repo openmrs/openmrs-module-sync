@@ -122,10 +122,11 @@ public interface SyncService {
 	public SyncRecord getLatestRecord() throws APIException;
 	
 	/**
+	 * @param afterDate Optional. If specified, will get the earliest record after the given date
 	 * @return SyncRecord The earliest SyncRecord or null if not found
 	 * @throws APIException
 	 */
-	public SyncRecord getEarliestRecord() throws APIException;
+	public SyncRecord getEarliestRecord(Date afterDate) throws APIException;
 	
 	/**
 	 * Returns a sync record which is older than the given sync record and is in one of the given
@@ -222,12 +223,13 @@ public interface SyncService {
 	 * Get all SyncRecords in a specific SyncRecordStates
 	 * 
 	 * @param states SyncRecordStates for the SyncRecords to be returned
+	 * @param maxSyncRecords the number of results to restrict to. (optional/nullable)
 	 * @return SyncRecord A list containing all SyncRecords with the given states
 	 * @throws APIException
 	 */
 	@Authorized({ "View Synchronization Records" })
 	@Transactional(readOnly = true)
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states) throws APIException;
+	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, Integer maxSyncRecords) throws APIException;
 	
 	/**
 	 * Get all SyncRecords in a specific SyncRecordStates, that the server allows sending for
@@ -662,4 +664,14 @@ public interface SyncService {
 	// because things are not actually written to the db, just memory
 	@Logging(ignoreAllArgumentValues = true)
 	public void handleInsertPatientStubIfNeeded(Patient p) throws APIException;
+
+	/**
+	 * This method copies SyncRecords after the given <code>date</code> into SyncServerRecords for the given <code>server</code>.
+	 * This is needed when a server is using data that was copied BEFORE the server was set up in the sync admin pages.
+	 * 
+	 * @param server the server to copy the records tos
+	 * @param date the exact datetime to start copying records
+	 * @return the number of records changed
+	 */
+	public Integer backportSyncRecords(RemoteServer server, Date date);
 }

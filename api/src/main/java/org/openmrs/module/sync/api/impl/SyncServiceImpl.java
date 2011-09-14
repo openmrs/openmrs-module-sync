@@ -203,10 +203,10 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
-	 * @see org.openmrs.api.SyncService#getEarliestRecord()
+	 * @see org.openmrs.api.SyncService#getEarliestRecord(Date)
 	 */
-	public SyncRecord getEarliestRecord() throws APIException {
-		return getSynchronizationDAO().getEarliestRecord();
+	public SyncRecord getEarliestRecord(Date afterDate) throws APIException {
+		return getSynchronizationDAO().getEarliestRecord(afterDate);
 	}
 	
 	/**
@@ -246,10 +246,10 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
-	 * @see org.openmrs.api.SyncService#getSyncRecords(org.openmrs.module.sync.engine.SyncRecordState)
+	 * @see org.openmrs.api.SyncService#getSyncRecords(org.openmrs.module.sync.engine.SyncRecordState, Integer maxSyncRecords)
 	 */
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states) throws APIException {
-		return this.getSyncRecords(states, false, null);
+	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, Integer maxSyncRecords) throws APIException {
+		return this.getSyncRecords(states, false, maxSyncRecords);
 	}
 	
 	/**
@@ -263,7 +263,7 @@ public class SyncServiceImpl implements SyncService {
 		
 		if (server != null) {
 			if (server.getServerType().equals(RemoteServerType.PARENT)) {
-				ret = this.getSyncRecords(states);
+				ret = this.getSyncRecords(states, maxSyncRecords);
 			} else {
 				ret = getSynchronizationDAO().getSyncRecords(states, false, maxSyncRecords, server);
 			}
@@ -308,7 +308,7 @@ public class SyncServiceImpl implements SyncService {
 	 */
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords)
 	                                                                                                         throws APIException {
-		return getSynchronizationDAO().getSyncRecords(states, inverse, maxSyncRecords);
+		return getSynchronizationDAO().getSyncRecords(states, inverse, maxSyncRecords, null);
 	}
 	
 	/**
@@ -827,8 +827,6 @@ public class SyncServiceImpl implements SyncService {
 		// to the db while we are checking for the uuids
 		boolean wasFlushModeManualAlready = dao.setFlushModeManual();
 		try {
-			AdministrationService as = Context.getAdministrationService();
-			
 			//check if person obj exists
 			Object personId = null;
 			Object patientId = null;
@@ -888,6 +886,56 @@ public class SyncServiceImpl implements SyncService {
 			
 		} else
 			return Context.getAdministrationService().executeSQL(sql, selectOnly);
+	}
+
+	
+	public Integer backportSyncRecords(RemoteServer server, Date date) {
+		int count = 0;
+		SyncRecord firstRecord = getEarliestRecord(date);
+		SyncRecord latestRecord = getLatestRecord();
+		
+		// we have no sync records, quit early
+		if (firstRecord == null)
+			return 0;
+		
+		// not sure how this would happen without the previous one, but just in case.
+		if (latestRecord == null)
+			return 0;
+		
+		Integer firstRecordId = 0;
+		Integer latestRecordId = latestRecord.getRecordId();
+		
+		System.out.println("first record id: " + firstRecord.getRecordId());
+		System.out.println("latest record id: " + latestRecord.getRecordId());
+		
+		boolean recordsFound = false;
+		
+		do {
+			recordsFound = false;
+			
+			// only getting a small number at a time so that we don't get an OOM
+			for (SyncRecord record : getSynchronizationDAO().getSyncRecords(null, null, firstRecordId, 35, true)) {
+				recordsFound = true;
+				System.out.println("record id: " + record.getRecordId());
+				firstRecordId = record.getRecordId();
+				SyncServerRecord serverRecord = record.getServerRecord(server);
+				if (serverRecord == null) {
+					// if this record is not being sent to this server yet, add it as a SyncServerRecord and send it
+					record.addServerRecord(server);
+					updateSyncRecord(record); // persist to the db
+					count++;
+					System.out.println("saved record id: " + record.getRecordId());
+				}
+				if (count % 50 == 0) {
+					// flush every so often so we don't get an OOM
+					Context.flushSession();
+					Context.clearSession();
+				}
+			}
+			
+		} while (recordsFound == true && firstRecordId != latestRecordId);
+		
+		return count;
 	}
 	
 }

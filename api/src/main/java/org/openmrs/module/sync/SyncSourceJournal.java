@@ -157,7 +157,7 @@ public class SyncSourceJournal implements SyncSource {
 		
 		try {
 			SyncService syncService = Context.getService(SyncService.class);
-			changed = syncService.getSyncRecords(SyncConstants.SYNC_TO_PARENT_STATES);
+			changed = syncService.getSyncRecords(SyncConstants.SYNC_TO_PARENT_STATES, null);
 			
 		}
 		catch (Exception e) {

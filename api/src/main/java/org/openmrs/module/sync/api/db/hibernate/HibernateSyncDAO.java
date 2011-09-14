@@ -195,9 +195,14 @@ public class HibernateSyncDAO implements SyncDAO {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public SyncRecord getEarliestRecord() throws DAOException {
-		List<Integer> result = sessionFactory.getCurrentSession().createCriteria(SyncRecord.class)
-		        .setProjection(Projections.min("recordId")).list();
+	public SyncRecord getEarliestRecord(Date afterDate) throws DAOException {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(SyncRecord.class)
+		        .setProjection(Projections.min("recordId"));
+		
+		if (afterDate != null)
+			criteria.add(Restrictions.ge("timestamp", afterDate));
+		
+		List<Integer> result = criteria.list();
 		
 		if (result.size() < 1) {
 			return null;
@@ -274,27 +279,6 @@ public class HibernateSyncDAO implements SyncDAO {
 	
 	/**
 	 * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecords(org.openmrs.module.sync.SyncRecordState[],
-	 *      boolean, java.lang.Integer)
-	 */
-	@SuppressWarnings("unchecked")
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords)
-	    throws DAOException {
-		if (maxSyncRecords == null || maxSyncRecords < 1) {
-			maxSyncRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT);
-		}
-		
-		if (inverse) {
-			return sessionFactory.getCurrentSession().createCriteria(SyncRecord.class)
-			        .add(Restrictions.not(Restrictions.in("state", states))).addOrder(Order.asc("timestamp"))
-			        .addOrder(Order.asc("recordId")).setMaxResults(maxSyncRecords).list();
-		} else {
-			return sessionFactory.getCurrentSession().createCriteria(SyncRecord.class).add(Restrictions.in("state", states))
-			        .addOrder(Order.asc("timestamp")).addOrder(Order.asc("recordId")).setMaxResults(maxSyncRecords).list();
-		}
-	}
-	
-	/**
-	 * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecords(org.openmrs.module.sync.SyncRecordState[],
 	 *      boolean, java.lang.Integer, org.openmrs.module.sync.server.RemoteServer)
 	 */
 	@SuppressWarnings("unchecked")
@@ -304,17 +288,23 @@ public class HibernateSyncDAO implements SyncDAO {
 			maxSyncRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT);
 		}
 		
-		if (inverse) {
-			return sessionFactory.getCurrentSession().createCriteria(SyncRecord.class, "s")
-			        .createCriteria("serverRecords", "sr").add(Restrictions.not(Restrictions.in("sr.state", states)))
-			        .add(Restrictions.eq("sr.syncServer", server)).addOrder(Order.asc("s.timestamp"))
-			        .addOrder(Order.asc("s.recordId")).setMaxResults(maxSyncRecords).list();
-		} else {
-			return sessionFactory.getCurrentSession().createCriteria(SyncRecord.class, "s")
-			        .createCriteria("serverRecords", "sr").add(Restrictions.in("sr.state", states))
-			        .add(Restrictions.eq("sr.syncServer", server)).addOrder(Order.asc("s.timestamp"))
-			        .addOrder(Order.asc("s.recordId")).setMaxResults(maxSyncRecords).list();
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(SyncRecord.class, "s");
+		
+		if (inverse)
+			criteria.add(Restrictions.not(Restrictions.in("sr.state", states)));
+		else
+			criteria.add(Restrictions.in("sr.state", states));
+		
+		if (server != null) {
+	        criteria.createAlias("serverRecords", "sr");
+			criteria.add(Restrictions.eq("sr.syncServer", server));
 		}
+		
+		criteria.addOrder(Order.asc("s.timestamp"));
+        criteria.addOrder(Order.asc("s.recordId"));
+        criteria.setMaxResults(maxSyncRecords);
+        
+        return criteria.list();
 	}
 	
 	/**

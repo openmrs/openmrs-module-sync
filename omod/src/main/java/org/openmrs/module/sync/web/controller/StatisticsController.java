@@ -71,6 +71,7 @@ public class StatisticsController extends SimpleFormController {
 	}
     
     // Move this to message.properties or OpenmrsConstant
+    // also in Maintenance Controller
 	public static String DEFAULT_DATE_PATTERN = "MM/dd/yyyy HH:mm:ss";
 	public static DateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat(DEFAULT_DATE_PATTERN);
 	
