@@ -299,7 +299,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	@SuppressWarnings("unchecked")
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords,
 	                                       RemoteServer server) throws DAOException {
-		if (maxSyncRecords == null || maxSyncRecords < 1) {
+		if (maxSyncRecords == null) {
 			maxSyncRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT);
 		}
 		
@@ -320,7 +320,10 @@ public class HibernateSyncDAO implements SyncDAO {
 		
 		criteria.addOrder(Order.asc("s.timestamp"));
 		criteria.addOrder(Order.asc("s.recordId"));
-		criteria.setMaxResults(maxSyncRecords);
+		
+		// if the user sets -1 as the max records, don't restrict the number of records downloaded/transferred
+		if (maxSyncRecords > 0)
+			criteria.setMaxResults(maxSyncRecords);
 		
 		return criteria.list();
 	}
@@ -449,9 +452,9 @@ public class HibernateSyncDAO implements SyncDAO {
 	/**
 	 * @see org.openmrs.module.sync.api.db.SyncDAO#deleteRemoteServer(org.openmrs.module.sync.engine.RemoteServer)
 	 */
-	public void deleteRemoteServer(RemoteServer record) throws DAOException {
+	public void deleteRemoteServer(RemoteServer server) throws DAOException {
 		Session session = sessionFactory.getCurrentSession();
-		session.delete(record);
+		session.delete(server);
 	}
 	
 	/**
