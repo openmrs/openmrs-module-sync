@@ -46,22 +46,18 @@ public class DWRSyncService {
 	protected final Log log = LogFactory.getLog(getClass());
 	
 	/**
-	 * Used when doing a full synchronize to get the number of objects the 
-	 * parent server is sending down to us before the actual update is done
+	 * Used when doing a full synchronize to get the number of objects the parent server is sending
+	 * down to us before the actual update is done
 	 */
 	private static ReceivingSize receivingSize = new ReceivingSize();
 	
-	public SyncCloneItem cloneParentDB(String address, String username,
-	        String password) {
+	public SyncCloneItem cloneParentDB(String address, String username, String password) {
 		SyncCloneItem item = new SyncCloneItem();
 		if (address != null && address.length() > 0) {
 			File dir = SyncUtil.getSyncApplicationDir();
 			File file = new File(dir, SyncConstants.CLONE_IMPORT_FILE_NAME
-			        + SyncConstants.SYNC_FILENAME_MASK.format(new Date())
-			        + ".sql");
-			ConnectionResponse connResponse = ServerConnection.cloneParentDB(address,
-			                                                                 username,
-			                                                                 password);
+			        + SyncConstants.SYNC_FILENAME_MASK.format(new Date()) + ".sql");
+			ConnectionResponse connResponse = ServerConnection.cloneParentDB(address, username, password);
 			item.setConnectionState(connResponse.getState().toString());
 			item.setErrorMessage(connResponse.getErrorMessage());
 			
@@ -70,26 +66,25 @@ public class DWRSyncService {
 				byte sql[] = connResponse.getResponsePayload().getBytes();
 				try {
 					IOUtils.write(sql, new FileOutputStream(file));
-
+					
 					Context.getService(SyncService.class).execGeneratedFile(file);
 					item.setResponsefileName(file.getName());
 					item.setErrorMessage("Parent data cloned successfully");
-				} catch (FileNotFoundException e) {
+				}
+				catch (FileNotFoundException e) {
 					item.setErrorMessage("Unable to save file(" + file.getAbsolutePath() + ")");
-					log.error("Unable to save file(" + file.getAbsolutePath()
-					        + ") : Error generated", e);
-				} catch (IOException e) {
-					item.setErrorMessage("Unable to save file(" + file.getAbsolutePath()
-					        + ")");
-					log.error("Unable to save file(" + file.getAbsolutePath()
-					        + ") : Error generated", e);
+					log.error("Unable to save file(" + file.getAbsolutePath() + ") : Error generated", e);
+				}
+				catch (IOException e) {
+					item.setErrorMessage("Unable to save file(" + file.getAbsolutePath() + ")");
+					log.error("Unable to save file(" + file.getAbsolutePath() + ") : Error generated", e);
 				}
 			}
 		}
-
+		
 		return item;
 	}
-
+	
 	/**
 	 * Pings the given server with the given username/password to make sure the settings are correct
 	 * 
@@ -116,9 +111,8 @@ public class DWRSyncService {
 	}
 	
 	/**
-	 * Call this method after initiating {@link #syncToParent()} to get the number
-	 * of objects that the parent is sending to us.  This value is updated mid-method
-	 * for display to the end user.
+	 * Call this method after initiating {@link #syncToParent()} to get the number of objects that
+	 * the parent is sending to us. This value is updated mid-method for display to the end user.
 	 * 
 	 * @return integer number of records being sent to us (or null if none)
 	 */
@@ -127,10 +121,9 @@ public class DWRSyncService {
 	}
 	
 	/**
-	 * Used by the status.list page to send data to the parent and show the
-	 * results. <br/>
-	 * Use #getNumberOfObjectsBeingReceived() before this method is done to know
-	 * how many objects the parent is sending to our server.
+	 * Used by the status.list page to send data to the parent and show the results. <br/>
+	 * Use #getNumberOfObjectsBeingReceived() before this method is done to know how many objects
+	 * the parent is sending to our server.
 	 * 
 	 * @return results of the transmission
 	 */
@@ -153,15 +146,13 @@ public class DWRSyncService {
 			return transmissionResponse;
 		}
 		
-		
 	}
 	
 	public String getSyncItemContent(String guid, String key) {
 		String content = "";
 		Collection<SyncItem> itemList;
 		if (guid != null && guid != "" && key != null && key != "") {
-			itemList = Context.getService(SyncService.class).getSyncRecord(guid)
-			                  .getItems();
+			itemList = Context.getService(SyncService.class).getSyncRecord(guid).getItems();
 			for (SyncItem item : itemList) {
 				if (item.getKey().getKeyValue().equals(key))
 					content = item.getContent();
@@ -169,13 +160,12 @@ public class DWRSyncService {
 		}
 		return content;
 	}
-
+	
 	public String setSyncItemContent(String guid, String key, String content) {
 		String ret = "Error: Not saved";
 		Collection<SyncItem> itemList;
 		if (guid != null && guid != "" && key != null && key != "") {
-			itemList = Context.getService(SyncService.class).getSyncRecord(guid)
-			                  .getItems();
+			itemList = Context.getService(SyncService.class).getSyncRecord(guid).getItems();
 			for (SyncItem item : itemList) {
 				if (item.getKey().getKeyValue().equals(key))
 					item.setContent(content);
@@ -187,15 +177,15 @@ public class DWRSyncService {
 		}
 		return ret;
 	}
-
+	
 	public boolean archiveSyncJournal(boolean clearDir) {
-		return new ZipPackage(org.openmrs.util.OpenmrsUtil.getDirectoryInApplicationDataDirectory("sync"),
-		                      "journal").zip(clearDir);
+		return new ZipPackage(org.openmrs.util.OpenmrsUtil.getDirectoryInApplicationDataDirectory("sync"), "journal")
+		        .zip(clearDir);
 	}
-
+	
 	public boolean archiveSyncImport(boolean clearDir) {
-		return new ZipPackage(org.openmrs.util.OpenmrsUtil.getDirectoryInApplicationDataDirectory("sync"),
-		                      "import").zip(clearDir);
+		return new ZipPackage(org.openmrs.util.OpenmrsUtil.getDirectoryInApplicationDataDirectory("sync"), "import")
+		        .zip(clearDir);
 	}
 	
 }
