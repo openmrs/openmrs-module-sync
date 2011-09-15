@@ -925,6 +925,11 @@ public class SyncUtil {
 				        .getGlobalProperty(SyncConstants.ROLE_TO_SEND_TO_MAIL_ALERTS);
 				if (!StringUtils.hasText(role))
 					role = OpenmrsConstants.SUPERUSER_ROLE;
+				else {
+					Role roleObj = Context.getUserService().getRole(role);
+					if (roleObj == null)
+						role = OpenmrsConstants.SUPERUSER_ROLE;
+				}
 				sendAlert(
 				    Context.getMessageSourceService().getMessage("sync.mail.sentErrorMessageTo",
 				        new Object[] { adminEmail }, null), Context.getUserService().getUsersByRole(new Role(role)));

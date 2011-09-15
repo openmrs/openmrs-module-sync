@@ -171,5 +171,5 @@ public class SyncConstants {
 	
 	public static final String PRIV_VIEW_SYNC_RECORDS = "View Synchronization Records";
 	
-	public static final String ROLE_TO_SEND_TO_MAIL_ALERTS = "sync.roleToSendToMailAlerts";
+	public static final String ROLE_TO_SEND_TO_MAIL_ALERTS = "sync.roleToReceiveAlerts";
 }

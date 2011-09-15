@@ -83,7 +83,7 @@
 		<description>Timeout before sync process gives up trying to connect to parent server.  If null, sync default formula is used.  Units are milliseconds (remember, 6000 represents a minute).</description>
 	</globalProperty>
 	<globalProperty>
-		<property>sync.roleToSendToMailAlerts</property>
+		<property>sync.roleToReceiveAlerts</property>
 		<defaultValue></defaultValue>
 		<description>The role for the users to receive alerts generated when the Sync module sends out an email</description>
 	</globalProperty>
