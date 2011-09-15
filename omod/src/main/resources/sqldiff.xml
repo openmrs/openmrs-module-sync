@@ -321,4 +321,21 @@
 		</sql>
 	</diff>
 	
+	<diff>
+		<version>0.977</version>
+		<author>Daniel Kayiwa</author>
+		<date>September 15 2011</date>
+		<description>
+			Adding the org.openmrs.notification.Alert class to the sync_server_class table.
+		</description>
+		<sql>
+			INSERT INTO sync_server_class (class_id, server_id, send_to, receive_from)
+			SELECT (SELECT class_id FROM sync_class WHERE name = 'org.openmrs.notification.Alert'), server_id, 0, 0
+			FROM sync_server_class 
+			GROUP by server_id
+			HAVING server_id not in (SELECT server_id FROM sync_server_class 
+			WHERE class_id = (SELECT class_id FROM sync_class WHERE name = 'org.openmrs.notification.Alert'));
+		</sql>
+	</diff>
+	
 </sqldiff>
