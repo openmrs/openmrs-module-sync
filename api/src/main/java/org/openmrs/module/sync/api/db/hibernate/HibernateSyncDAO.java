@@ -305,15 +305,18 @@ public class HibernateSyncDAO implements SyncDAO {
 		
 		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(SyncRecord.class, "s");
 		
-		if (inverse)
-			criteria.add(Restrictions.not(Restrictions.in("s.state", states)));
-		else
-			criteria.add(Restrictions.in("s.state", states));
+		String column = "s.state";
 		
 		if (server != null) {
-			criteria.createAlias("serverRecords", "sr");
+			criteria = criteria.createCriteria("serverRecords", "sr");
 			criteria.add(Restrictions.eq("sr.syncServer", server));
+			column = "sr.state";
 		}
+		
+		if (inverse)
+			criteria.add(Restrictions.not(Restrictions.in(column, states)));
+		else
+			criteria.add(Restrictions.in(column, states));
 		
 		criteria.addOrder(Order.asc("s.timestamp"));
 		criteria.addOrder(Order.asc("s.recordId"));
