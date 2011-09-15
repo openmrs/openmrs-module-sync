@@ -73,9 +73,14 @@
 		<description>Number of sync items to be shown per page.</description>
 	</globalProperty>
 	<globalProperty>
-		<property>sync.max_records</property>
+		<property>sync.max_records.web</property>
 		<defaultValue>50</defaultValue>
-		<description>Number of records to package up and send at a time.</description>
+		<description>Number of records to package up and send at a time via the web.</description>
+	</globalProperty>
+	<globalProperty>
+		<property>sync.max_records.file</property>
+		<defaultValue>50</defaultValue>
+		<description>Number of records to package up and send at a time via a file.</description>
 	</globalProperty>
 	<globalProperty>
 		<property>sync.connection_timeout</property>
