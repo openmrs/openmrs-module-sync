@@ -57,6 +57,7 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.impl.CriteriaImpl;
 import org.hibernate.impl.SessionImpl;
 import org.hibernate.loader.OuterJoinLoader;
@@ -115,7 +116,21 @@ public class HibernateSyncDAO implements SyncDAO {
 		}
 		
 		Session session = sessionFactory.getCurrentSession();
-		session.save(record);
+		try {
+			session.save(record);
+		}
+		catch (ConstraintViolationException e) {
+			sessionFactory.getCurrentSession().clear();
+			SyncRecord existingRecord = getSyncRecord(record.getUuid());
+			if (existingRecord != null) {
+				//compare the contents
+				if (existingRecord.equals(record)) {
+					//this was an identical record getting re-saved, ignore the exception
+					return;
+				}
+			}
+			throw e;
+		}
 	}
 	
 	/**
@@ -296,15 +311,15 @@ public class HibernateSyncDAO implements SyncDAO {
 			criteria.add(Restrictions.in("sr.state", states));
 		
 		if (server != null) {
-	        criteria.createAlias("serverRecords", "sr");
+			criteria.createAlias("serverRecords", "sr");
 			criteria.add(Restrictions.eq("sr.syncServer", server));
 		}
 		
 		criteria.addOrder(Order.asc("s.timestamp"));
-        criteria.addOrder(Order.asc("s.recordId"));
-        criteria.setMaxResults(maxSyncRecords);
-        
-        return criteria.list();
+		criteria.addOrder(Order.asc("s.recordId"));
+		criteria.setMaxResults(maxSyncRecords);
+		
+		return criteria.list();
 	}
 	
 	/**
