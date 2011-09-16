@@ -114,6 +114,15 @@ public interface SyncDAO {
 	public void deleteSyncImportRecord(SyncImportRecord record) throws DAOException;
 	
 	/**
+	 * Delete SyncImportRecords for a given server
+	 * 
+	 * @param serverId the serverId of records to delete
+	 * @throws DAOException
+	 */
+
+	public void deleteSyncImportRecordsByServer(Integer serverId) throws DAOException;
+	
+	/**
 	 * @param uuid of the SyncImportRecord to retrieve
 	 * @return SyncImportRecord The SyncImportRecord or null if not found
 	 * @throws DAOException

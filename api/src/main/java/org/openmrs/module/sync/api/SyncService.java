@@ -169,6 +169,14 @@ public interface SyncService {
 	public void deleteSyncImportRecord(SyncImportRecord record) throws APIException;
 	
 	/**
+	 * Deletes SyncImportRecords by ServerId
+	 * 
+	 * @param serverId The serverId of SyncImportRecords to delete
+	 * @throws APIException
+	 */
+	public void deleteSyncImportRecordsByServer(Integer serverId) throws APIException;
+	
+	/**
 	 * @param uuid of the SyncImportRecord to retrieve
 	 * @return SyncRecord The SyncImportRecord or null if not found
 	 * @throws APIException

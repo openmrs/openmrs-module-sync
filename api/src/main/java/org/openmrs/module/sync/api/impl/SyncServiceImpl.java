@@ -340,6 +340,13 @@ public class SyncServiceImpl implements SyncService {
 	}
 	
 	/**
+	 * @see org.openmrs.api.SyncService#deleteSyncImportRecordsByServer(java.lang.Integer)
+	 */
+	public void deleteSyncImportRecordsByServer(Integer serverId) throws APIException {
+		getSynchronizationDAO().deleteSyncImportRecordsByServer(serverId);
+	}
+	
+	/**
 	 * @see org.openmrs.api.SyncService#getSyncRecordsSince(java.util.Date)
 	 */
 	public List<SyncRecord> getSyncRecordsSince(Date from) throws APIException {

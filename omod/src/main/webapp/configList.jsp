@@ -17,10 +17,20 @@
 </style>
 
 <script language="JavaScript">
-	function confirmDelete(id) {
-		var isConfirmed = confirm("<spring:message code="sync.config.server.confirmDelete" />");
+	function confirmChildServerDeletetion(id) {
+		var isConfirmed = confirm("<spring:message code="sync.config.child.server.confirmDelete" />");
 		if ( isConfirmed ) {
 			document.getElementById("deleteServer" + id).submit();
+		}
+	}
+	
+	function confirmParentServerDeletetion(id) {
+		var isConfirmed = confirm("<spring:message code="sync.config.parent.server.confirmDelete" />");
+		if ( isConfirmed ) {
+			var isTwiceConfirmed = confirm("<spring:message code="sync.config.parent.server.SecondConfirmation" />");
+			if ( isTwiceConfirmed ) {
+			document.getElementById("deleteServer" + id).submit();
+			}
 		}
 	}
 </script>
@@ -138,18 +148,16 @@
 										</c:choose>
 									</td>
 									<td style="padding-bottom: 0px;">
-										<c:choose>
-											<c:when test="${server.serverType != 'PARENT'}">
 												<form id="deleteServer${server.serverId}" action="config.list" method="post">
 													<input type="hidden" name="action" value="deleteServer" />
 													<input type="hidden" id="serverId" name="serverId" value="${server.serverId}" />
-													<a href="javascript:confirmDelete('${server.serverId}');"><img src="<%= request.getContextPath() %>/images/trash.gif" alt="delete" border="0" /></a>
+													
+													<c:if test="${server.serverType == 'CHILD'}">
+													<a href="javascript:confirmChildServerDeletetion('${server.serverId}');"><img src="<%= request.getContextPath() %>/images/trash.gif" alt="delete" border="0" /></a>
+													</c:if>
+													<c:if test="${server.serverType == 'PARENT'}">
+													<a href="javascript:confirmParentServerDeletetion('${server.serverId}');"><img src="<%= request.getContextPath() %>/moduleResources/sync/trash_warning.gif" alt="delete" border="0" /></a>													</c:if>	
 												</form>
-											</c:when>
-											<c:otherwise>
-												&nbsp;
-											</c:otherwise>
-										</c:choose>
 									</td>
 								</openmrs:hasPrivilege>								
 							</tr>

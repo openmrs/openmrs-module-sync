@@ -178,6 +178,20 @@ public class HibernateSyncDAO implements SyncDAO {
 	}
 	
 	/**
+	 * @see org.openmrs.module.sync.api.db.SyncDAO#deleteSyncImportRecordsByServer(java.lang.Integer)
+	 */
+	public void deleteSyncImportRecordsByServer(Integer serverId) throws DAOException {
+		Session session = sessionFactory.getCurrentSession();
+		
+		List<SyncImportRecord> records = sessionFactory.getCurrentSession().createCriteria(SyncImportRecord.class)
+        .add( Expression.eq( "sourceServer.serverId", serverId ) ).list();
+
+		for(SyncImportRecord  record : records ){
+			deleteSyncImportRecord(record);
+			}
+	}
+	
+	/**
 	 * @see org.openmrs.module.sync.api.db.SyncDAO#getNextSyncRecord()
 	 */
 	@SuppressWarnings("unchecked")
@@ -454,6 +468,8 @@ public class HibernateSyncDAO implements SyncDAO {
 	 */
 	public void deleteRemoteServer(RemoteServer server) throws DAOException {
 		Session session = sessionFactory.getCurrentSession();
+		deleteSyncImportRecordsByServer(server.getServerId());
+		session.flush();
 		session.delete(server);
 	}
 	
