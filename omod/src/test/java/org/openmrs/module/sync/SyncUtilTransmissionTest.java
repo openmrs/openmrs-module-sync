@@ -15,19 +15,16 @@ package org.openmrs.module.sync;
 
 import junit.framework.Assert;
 
-import org.junit.Ignore;
 import org.junit.Test;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncUtilTransmission.ReceivingSize;
 import org.openmrs.module.sync.ingest.SyncTransmissionResponse;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
-import org.openmrs.api.context.Context;
-
 
 /**
  * Tests methods on the SyncUtilTransmission class.
  */
 public class SyncUtilTransmissionTest extends BaseModuleContextSensitiveTest implements Runnable {
-	
 	
 	@Test
 	public void doFullSynchronize_shouldRunOneSyncTaskAtATime() throws Exception {
@@ -37,30 +34,31 @@ public class SyncUtilTransmissionTest extends BaseModuleContextSensitiveTest imp
 		
 		//This test works on the assumption that the code below will execute 
 		//before the above thread's run method is executed.
-		try{
+		try {
 			Context.openSession();
 			SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(new ReceivingSize());
 			Assert.assertEquals(SyncTransmissionState.OK_NOTHING_TO_DO, response.getState());
 		}
-		finally{
+		finally {
 			Context.closeSession();
 		}
 	}
 	
-	public void run() {	
-		try{
+	public void run() {
+		try {
 			Context.openSession();
 			SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(new ReceivingSize());
 			Assert.assertEquals(SyncTransmissionState.ERROR_CANNOT_RUN_PARALLEL, response.getState());
 		}
-		finally{
+		finally {
 			Context.closeSession();
 		}
-    }
+	}
 	
 	@Test
 	public void processSyncTransmission_shouldNotThrowNPEWhenGivenInvalidRemoteServerUuid() {
-		SyncTransmissionResponse response = SyncUtilTransmission.processSyncTransmission(new SyncTransmission("11111111111", true));
+		SyncTransmissionResponse response = SyncUtilTransmission.processSyncTransmission(new SyncTransmission("11111111111",
+		        true));
 		Assert.assertEquals(SyncTransmissionState.CANNOT_FIND_SERVER_WITH_UUID, response.getState());
 	}
 }
