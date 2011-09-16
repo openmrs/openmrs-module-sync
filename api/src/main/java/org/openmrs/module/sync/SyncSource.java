@@ -46,7 +46,7 @@ public interface SyncSource {
 	//state-based changeset methods
 	public List<SyncRecord> getDeleted() throws SyncException;
 	
-	public List<SyncRecord> getChanged() throws SyncException; //note this has new items also
+	public List<SyncRecord> getChanged(Integer maxSyncRecords) throws SyncException; //note this has new items also
 	
 	public List<SyncRecord> getChanged(RemoteServer server, Integer maxResults) throws SyncException; //note this has new items also
 	

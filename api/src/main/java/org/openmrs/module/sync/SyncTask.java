@@ -66,7 +66,9 @@ public class SyncTask extends AbstractTask {
 			
 			RemoteServer server = Context.getService(SyncService.class).getRemoteServer(serverId);
 			if (server != null) {
-				SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(server, null);
+				//auto syncing is only via web, so apply the web limit for sync records to send
+				SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(server, null,
+				    SyncUtil.getGlobalPropetyValueAsInteger(SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB));
 				try {
 					response.createFile(false, SyncConstants.DIR_JOURNAL);
 				}

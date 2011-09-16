@@ -62,9 +62,11 @@ public class SyncUtilTransmission {
 	 * Prepares a sync transmission containing local changes to be sent to the remote server.
 	 * 
 	 * @param server
+	 * @param maxSyncRecords The maximum number of sync records to include in the Sync Transmission
 	 * @return
 	 */
-	public static SyncTransmission createSyncTransmission(RemoteServer server, boolean requestResponseWithTransmission) {
+	public static SyncTransmission createSyncTransmission(RemoteServer server, boolean requestResponseWithTransmission,
+	                                                      Integer maxSyncRecords) {
 		SyncTransmission tx = null;
 		long maxRetryCount = 0;
 		boolean maxRetryCountReached = false;
@@ -74,13 +76,15 @@ public class SyncUtilTransmission {
 			SyncStrategyFile strategy = new SyncStrategyFile();
 			
 			try {
-				tx = strategy.createStateBasedSyncTransmission(source, true, server, requestResponseWithTransmission);
+				tx = strategy.createStateBasedSyncTransmission(source, true, server, requestResponseWithTransmission,
+				    maxSyncRecords);
 			}
 			catch (Exception e) {
 				log.error("Error while creating state based sync", e);
 				// difference is that this time we'll do this without trying to create a file (just getting the output)
 				// if it works, that probably means that there was a problem writing file to disk
-				tx = strategy.createStateBasedSyncTransmission(source, false, server, requestResponseWithTransmission);
+				tx = strategy.createStateBasedSyncTransmission(source, false, server, requestResponseWithTransmission,
+				    maxSyncRecords);
 			}
 			finally {
 				if (tx != null) {
@@ -278,9 +282,10 @@ public class SyncUtilTransmission {
 	 * 
 	 * @param parent the server to do send/receive to/from
 	 * @param size (nullable) updated mid-method to be the number of objects coming from the parent
+	 * @param maxSyncRecords The maximum number of sync records to include in the SyncTransmission
 	 * @return
 	 */
-	public static SyncTransmissionResponse doFullSynchronize(RemoteServer parent, ReceivingSize size) {
+	public static SyncTransmissionResponse doFullSynchronize(RemoteServer parent, ReceivingSize size, Integer maxSyncRecords) {
 		SyncTransmissionResponse response = new SyncTransmissionResponse();
 		response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
 		response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
@@ -325,7 +330,7 @@ public class SyncUtilTransmission {
 							// process syncTx from parent, and generate response
 							// tx may be null - meaning no updates from parent
 							parent = null; //for SYNC-175
-							str = SyncUtilTransmission.processSyncTransmission(initialTxFromParent);
+							str = SyncUtilTransmission.processSyncTransmission(initialTxFromParent, maxSyncRecords);
 							
 						} else {
 							log.info("initialTxFromParent was null coming back from parent(?)");
@@ -335,7 +340,7 @@ public class SyncUtilTransmission {
 						
 						// now get local changes destined for parent, and package those inside
 						parent = syncService.getRemoteServer(parentId);
-						SyncTransmission st = SyncUtilTransmission.createSyncTransmission(parent, false);
+						SyncTransmission st = SyncUtilTransmission.createSyncTransmission(parent, false, maxSyncRecords);
 						if (str != null) {
 							if (str.getState() != SyncTransmissionState.CANNOT_FIND_SERVER_WITH_UUID) {
 								log.info("Received updates from parent, so replying and sending updates of our own: "
@@ -404,10 +409,11 @@ public class SyncUtilTransmission {
 	 * new incoming records from parent; on parent it is used to process child's changes.
 	 * 
 	 * @param st transmission to process.
+	 * @param maxSyncRecords The maximum number of sync records to include in the SyncTransmission
 	 * @return Returns SyncTransmissionResponse object that represents the confirmation status for
 	 *         the records that were sent.
 	 */
-	public static SyncTransmissionResponse processSyncTransmission(SyncTransmission st) {
+	public static SyncTransmissionResponse processSyncTransmission(SyncTransmission st, Integer maxSyncRecords) {
 		SyncTransmissionResponse str = new SyncTransmissionResponse(st);
 		
 		//fill-in the server uuid for the response AGAIN
@@ -506,7 +512,7 @@ public class SyncUtilTransmission {
 		// now we're ready to see if we need to fire back a response transmission
 		if (origin != null) {
 			if (!origin.getDisabled() && st.getIsRequestingTransmission()) {
-				SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(origin, false);
+				SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(origin, false, maxSyncRecords);
 				if (tx != null) {
 					log.info("processing transmission with this many records: " + tx.getSyncRecords().size());
 					str.setSyncTransmission(tx);
@@ -553,11 +559,12 @@ public class SyncUtilTransmission {
 	 * 
 	 * @param receivingSize (nullable) updated mid-method to be the number of objects coming in from
 	 *            the parent
+	 * @param maxSyncRecords The maximum number of sync records to sync from child to parent server
 	 * @return the {@link SyncTransmissionResponse} from the parent
 	 * @see #doFullSynchronize(RemoteServer)
 	 * @should run one sync task at a time
 	 */
-	public static SyncTransmissionResponse doFullSynchronize(ReceivingSize size) {
+	public static SyncTransmissionResponse doFullSynchronize(ReceivingSize size, Integer maxSyncRecords) {
 		// sends to parent server (by default)
 		RemoteServer parent = Context.getService(SyncService.class).getParentServer();
 		
@@ -572,7 +579,7 @@ public class SyncUtilTransmission {
 				return response;
 			}
 			
-			return SyncUtilTransmission.doFullSynchronize(parent, size);
+			return SyncUtilTransmission.doFullSynchronize(parent, size, maxSyncRecords);
 		} else {
 			SyncTransmissionResponse response = new SyncTransmissionResponse();
 			response.setErrorMessage(SyncConstants.ERROR_NO_PARENT_DEFINED.toString());

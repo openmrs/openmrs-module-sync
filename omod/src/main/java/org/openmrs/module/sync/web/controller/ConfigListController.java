@@ -35,6 +35,7 @@ import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncTransmission;
+import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.SyncUtilTransmission;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
@@ -42,8 +43,8 @@ import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.ServerConnectionState;
 import org.openmrs.scheduler.TaskDefinition;
-import org.openmrs.web.WebConstants;
 import org.openmrs.util.OpenmrsConstants;
+import org.openmrs.web.WebConstants;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
@@ -112,7 +113,8 @@ public class ConfigListController extends SimpleFormController {
 				log.warn("IN MANUAL-TX WITH SERVERID: " + serverId);
 				
 				// we are creating a sync-transmission, so start by generating a SyncTransmission object
-				SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(server, true);
+				SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(server, true,
+				    SyncUtil.getGlobalPropetyValueAsInteger(SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE));
 				String toTransmit = tx.getFileOutput();
 				
 				// Record last attempt
@@ -190,23 +192,23 @@ public class ConfigListController extends SimpleFormController {
 			// testConnection error messages
 			MessageSourceAccessor msa = getMessageSourceAccessor();
 			Map<String, String> connectionState = new HashMap<String, String>();
-			connectionState.put(ServerConnectionState.OK.toString(), msa
-			        .getMessage("sync.config.server.connection.status.ok"));
-			connectionState.put(ServerConnectionState.AUTHORIZATION_FAILED.toString(), msa
-			        .getMessage("sync.config.server.connection.status.noAuth"));
-			connectionState.put(ServerConnectionState.CONNECTION_FAILED.toString(), msa
-			        .getMessage("sync.config.server.connection.status.noConnection"));
-			connectionState.put(ServerConnectionState.CERTIFICATE_FAILED.toString(), msa
-			        .getMessage("sync.config.server.connection.status.noCertificate"));
-			connectionState.put(ServerConnectionState.MALFORMED_URL.toString(), msa
-			        .getMessage("sync.config.server.connection.status.badUrl"));
-			connectionState.put(ServerConnectionState.NO_ADDRESS.toString(), msa
-			        .getMessage("sync.config.server.connection.status.noAddress"));
+			connectionState.put(ServerConnectionState.OK.toString(),
+			    msa.getMessage("sync.config.server.connection.status.ok"));
+			connectionState.put(ServerConnectionState.AUTHORIZATION_FAILED.toString(),
+			    msa.getMessage("sync.config.server.connection.status.noAuth"));
+			connectionState.put(ServerConnectionState.CONNECTION_FAILED.toString(),
+			    msa.getMessage("sync.config.server.connection.status.noConnection"));
+			connectionState.put(ServerConnectionState.CERTIFICATE_FAILED.toString(),
+			    msa.getMessage("sync.config.server.connection.status.noCertificate"));
+			connectionState.put(ServerConnectionState.MALFORMED_URL.toString(),
+			    msa.getMessage("sync.config.server.connection.status.badUrl"));
+			connectionState.put(ServerConnectionState.NO_ADDRESS.toString(),
+			    msa.getMessage("sync.config.server.connection.status.noAddress"));
 			
 			try {
 				//Add privilege to enable us access the registered tasks
-		        Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
-		        
+				Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+				
 				// taskConfig for automated syncing
 				TaskDefinition parentSchedule = new TaskDefinition();
 				String repeatInterval = "";
@@ -227,7 +229,7 @@ public class ConfigListController extends SimpleFormController {
 						}
 					}
 				}
-
+				
 				ret.put("connectionState", connectionState.entrySet());
 				ret.put("parent", parent);
 				ret.put("parentSchedule", parentSchedule);

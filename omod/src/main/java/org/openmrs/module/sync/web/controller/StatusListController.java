@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.APIAuthenticationException;
@@ -127,7 +126,9 @@ public class StatusListController extends SimpleFormController {
 				}
 				
 				// we are creating a sync-transmission, so start by generating a SyncTransmission object
-				SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(parent, true);
+				//and this is a sychronization via file	due the value of action being createTx	
+				SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(parent, true,
+				    SyncUtil.getGlobalPropetyValueAsInteger(SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE));
 				String toTransmit = null; // the actual text that will be sent (either an ST or an STR)
 				
 				// Pull out the committed records from parent that haven't been sent back for confirmation
@@ -244,7 +245,8 @@ public class StatusListController extends SimpleFormController {
 					
 					// now process the syncTransmission if one was received                    
 					if (st != null) {
-						str = SyncUtilTransmission.processSyncTransmission(st);
+						str = SyncUtilTransmission.processSyncTransmission(st,
+						    SyncUtil.getGlobalPropetyValueAsInteger(SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE));
 						// get some numbers about what was just processed to show user the results
 						if (str.getSyncImportRecords() != null) {
 							for (SyncImportRecord importRecord : str.getSyncImportRecords()) {
@@ -297,18 +299,8 @@ public class StatusListController extends SimpleFormController {
 			RemoteServer parent = Context.getService(SyncService.class).getParentServer();
 			if (parent != null) {
 				SyncSource source = new SyncSourceJournal();
-				Integer maxResults = null;
-				String maxResultsString = Context.getAdministrationService().getGlobalProperty(
-				    SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB);
-				try {
-					maxResults = Integer.valueOf(maxResultsString);
-				}
-				catch (NumberFormatException e) {
-					if (StringUtils.isNotBlank(maxResultsString))
-						log.warn("Only Integers are allowed as values for the global property '"
-						        + SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB + "'");
-				}
-				recordList = source.getChanged(parent, maxResults);
+				//should we be limiting here since we want to display to the user all sync records
+				recordList = source.getChanged(parent, null);
 			}
 			
 			//SyncService ss = Context.getService(SyncService.class);

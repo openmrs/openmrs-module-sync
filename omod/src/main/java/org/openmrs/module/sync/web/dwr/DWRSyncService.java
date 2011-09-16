@@ -131,7 +131,8 @@ public class DWRSyncService {
 		// the doFullSync method updates this 'objectsBeingReceived' so that the
 		// jsp page can know what we're dealing with
 		// before the whole SyncTransmissionsResponse is returned
-		SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(receivingSize);
+		SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(receivingSize,
+		    SyncUtil.getGlobalPropetyValueAsInteger(SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB));
 		
 		receivingSize.setSize(null); // reset variable
 		

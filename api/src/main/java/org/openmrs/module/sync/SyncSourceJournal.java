@@ -149,15 +149,12 @@ public class SyncSourceJournal implements SyncSource {
 		return changed;
 	}
 	
-	// state-based version
-	// retrieve journal records > 'from' && <= 'to' && record status = 'new' or
-	// 'failed'
-	public List<SyncRecord> getChanged() throws SyncException {
+	public List<SyncRecord> getChanged(Integer maxSyncRecords) throws SyncException {
 		List<SyncRecord> changed = new ArrayList<SyncRecord>();
 		
 		try {
 			SyncService syncService = Context.getService(SyncService.class);
-			changed = syncService.getSyncRecords(SyncConstants.SYNC_TO_PARENT_STATES, null);
+			changed = syncService.getSyncRecords(SyncConstants.SYNC_TO_PARENT_STATES, maxSyncRecords);
 			
 		}
 		catch (Exception e) {

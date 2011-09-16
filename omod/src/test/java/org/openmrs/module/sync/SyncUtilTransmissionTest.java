@@ -36,7 +36,7 @@ public class SyncUtilTransmissionTest extends BaseModuleContextSensitiveTest imp
 		//before the above thread's run method is executed.
 		try {
 			Context.openSession();
-			SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(new ReceivingSize());
+			SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(new ReceivingSize(), null);
 			Assert.assertEquals(SyncTransmissionState.OK_NOTHING_TO_DO, response.getState());
 		}
 		finally {
@@ -47,7 +47,7 @@ public class SyncUtilTransmissionTest extends BaseModuleContextSensitiveTest imp
 	public void run() {
 		try {
 			Context.openSession();
-			SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(new ReceivingSize());
+			SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(new ReceivingSize(), null);
 			Assert.assertEquals(SyncTransmissionState.ERROR_CANNOT_RUN_PARALLEL, response.getState());
 		}
 		finally {
@@ -58,7 +58,7 @@ public class SyncUtilTransmissionTest extends BaseModuleContextSensitiveTest imp
 	@Test
 	public void processSyncTransmission_shouldNotThrowNPEWhenGivenInvalidRemoteServerUuid() {
 		SyncTransmissionResponse response = SyncUtilTransmission.processSyncTransmission(new SyncTransmission("11111111111",
-		        true));
+		        true), null);
 		Assert.assertEquals(SyncTransmissionState.CANNOT_FIND_SERVER_WITH_UUID, response.getState());
 	}
 }

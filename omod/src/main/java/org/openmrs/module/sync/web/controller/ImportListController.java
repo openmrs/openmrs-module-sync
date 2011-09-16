@@ -31,6 +31,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncTransmission;
 import org.openmrs.module.sync.SyncTransmissionState;
+import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.SyncUtilTransmission;
 import org.openmrs.module.sync.api.SyncIngestService;
 import org.openmrs.module.sync.api.SyncService;
@@ -299,7 +300,8 @@ public class ImportListController extends SimpleFormController {
 		
 		// now process the syncTransmission if one was received                    
 		if (st != null) {
-			str = SyncUtilTransmission.processSyncTransmission(st);
+			str = SyncUtilTransmission.processSyncTransmission(st,
+			    SyncUtil.getGlobalPropetyValueAsInteger(SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE));
 		} else
 			log.info("st was null");
 		

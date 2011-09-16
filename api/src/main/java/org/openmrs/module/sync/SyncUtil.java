@@ -1230,4 +1230,23 @@ public class SyncUtil {
 		}
 	}
 	
+	/**
+	 * Gets the global property value as an integer for the specified global property name
+	 * 
+	 * @param globalPropertyName the global property name
+	 * @return the integer value
+	 */
+	public static Integer getGlobalPropetyValueAsInteger(String globalPropertyName) {
+		Integer intValue = null;
+		String stringValue = Context.getAdministrationService().getGlobalProperty(globalPropertyName);
+		try {
+			intValue = Integer.valueOf(stringValue);
+		}
+		catch (NumberFormatException e) {
+			if (StringUtils.hasText(stringValue))
+				log.warn("Only Integers are allowed as values for the global property '" + globalPropertyName + "'");
+		}
+		return intValue;
+	}
+	
 }

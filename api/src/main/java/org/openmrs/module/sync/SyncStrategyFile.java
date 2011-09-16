@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
@@ -79,11 +78,12 @@ public class SyncStrategyFile {
 	 * @param source server from where changes are to be retrieved (local server)
 	 * @param writeFileToo flag to dump file or not
 	 * @param server server to send Tx to
+	 * @param maxSyncRecords The maximum number of sync records to include in the Sync Transmission
 	 * @return
 	 * @see org.openmrs.module.sync.SyncConstants#SYNC_TO_PARENT_STATES
 	 */
 	public SyncTransmission createStateBasedSyncTransmission(SyncSource source, boolean writeFileToo, RemoteServer server,
-	                                                         boolean requestResponseWithTransmission) {
+	                                                         boolean requestResponseWithTransmission, Integer maxSyncRecords) {
 		
 		SyncTransmission syncTx = null;
 		boolean isMaxRetryReached = false;
@@ -93,7 +93,7 @@ public class SyncStrategyFile {
 			List<SyncRecord> filteredChangeset = new ArrayList<SyncRecord>();
 			
 			//get changeset for sourceA
-			changeset = this.getStateBasedChangeset(source, server);
+			changeset = this.getStateBasedChangeset(source, server, maxSyncRecords);
 			
 			// need to check each SyncRecord to see if it's eligible for sync'ing
 			if (changeset != null) {
@@ -186,14 +186,14 @@ public class SyncStrategyFile {
 		return changeset;
 	}
 	
-	private List<SyncRecord> getStateBasedChangeset(SyncSource source) {
+	private List<SyncRecord> getStateBasedChangesets(SyncSource source, Integer maxSyncRecords) {
 		List<SyncRecord> deleted = null;
 		List<SyncRecord> changed = null;
 		List<SyncRecord> changeset = null;
 		
 		//get all local deletes, inserts and updates
 		deleted = source.getDeleted();
-		changed = source.getChanged();
+		changed = source.getChanged(maxSyncRecords);
 		
 		//merge
 		changeset = deleted;
@@ -202,24 +202,13 @@ public class SyncStrategyFile {
 		return changeset;
 	}
 	
-	private List<SyncRecord> getStateBasedChangeset(SyncSource source, RemoteServer server) {
+	private List<SyncRecord> getStateBasedChangeset(SyncSource source, RemoteServer server, Integer maxResults) {
 		List<SyncRecord> deleted = null;
 		List<SyncRecord> changed = null;
 		List<SyncRecord> changeset = null;
 		
 		//get all local deletes, inserts and updates
 		deleted = source.getDeleted();
-		Integer maxResults = null;
-		String maxResultsString = Context.getAdministrationService().getGlobalProperty(
-		    SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE);
-		try {
-			maxResults = Integer.valueOf(maxResultsString);
-		}
-		catch (NumberFormatException e) {
-			if (StringUtils.isNotBlank(maxResultsString))
-				log.warn("Only Integers are allowed as values for the global property '"
-				        + SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE + "'");
-		}
 		changed = source.getChanged(server, maxResults);
 		
 		//merge
