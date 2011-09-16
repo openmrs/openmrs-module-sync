@@ -39,11 +39,13 @@ import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.module.sync.server.RemoteServer;
+import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.scheduler.TaskDefinition;
 import org.openmrs.scheduler.web.controller.SchedulerFormController;
 import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
 import org.openmrs.web.WebConstants;
+import org.openmrs.api.context.Context;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.util.StringUtils;
@@ -66,9 +68,6 @@ public class MaintenanceController extends SimpleFormController {
 	protected final Log log = LogFactory.getLog(getClass());
 	
 	public Integer maxPageRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT);
-	
-	// also in StatsController.  Should be moved to GP
-	public static String DEFAULT_DATE_PATTERN = "MM/dd/yyyy HH:mm:ss";
 	
 	/**
 	 * @see org.springframework.web.servlet.mvc.BaseCommandController#initBinder(javax.servlet.http.HttpServletRequest,
@@ -287,7 +286,10 @@ public class MaintenanceController extends SimpleFormController {
 		ret.put("recordChangeType", recordChangeType);
 		ret.put("parent", Context.getService(SyncService.class).getParentServer());
 		ret.put("servers", Context.getService(SyncService.class).getRemoteServers());
-		ret.put("datePattern", DEFAULT_DATE_PATTERN);
+		ret.put(
+		    "datePattern",
+		    Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_DATE_PATTERN,
+		        SyncConstants.DEFAULT_DATE_PATTERN));
 		ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
 		ret.put("synchronizationMaintenanceList", returnList);
 		
@@ -331,14 +333,14 @@ public class MaintenanceController extends SimpleFormController {
 			String dateString = ServletRequestUtils.getRequiredStringParameter(request, "date");
 			
 			RemoteServer server = syncService.getRemoteServer(serverId);
-			Date date = new SimpleDateFormat(DEFAULT_DATE_PATTERN).parse(dateString);
+			Date date = new SimpleDateFormat(Context.getAdministrationService().getGlobalProperty(
+			    SyncConstants.PROPERTY_DATE_PATTERN, SyncConstants.DEFAULT_DATE_PATTERN)).parse(dateString);
 			
 			Integer numberBackproted = syncService.backportSyncRecords(server, date);
 			request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.maintenance.backport.success");
 			request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ARGS, numberBackproted);
 			
-		}
-		else {
+		} else {
 			// doing an archive task
 			try {
 				TaskDefinition task = (TaskDefinition) command;

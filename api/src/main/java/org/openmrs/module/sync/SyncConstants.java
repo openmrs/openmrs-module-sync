@@ -172,4 +172,8 @@ public class SyncConstants {
 	public static final String PRIV_VIEW_SYNC_RECORDS = "View Synchronization Records";
 	
 	public static final String ROLE_TO_SEND_TO_MAIL_ALERTS = "sync.roleToReceiveAlerts";
+	
+	public static final String PROPERTY_DATE_PATTERN = "sync.date_pattern";
+	
+	public static final String DEFAULT_DATE_PATTERN = "MM/dd/yyyy HH:mm:ss";
 }

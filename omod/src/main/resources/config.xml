@@ -92,6 +92,11 @@
 		<defaultValue></defaultValue>
 		<description>The role for the users to receive alerts generated when the Sync module sends out an email</description>
 	</globalProperty>
+	<globalProperty>
+		<property>sync.date_pattern</property>
+		<defaultValue>MM/dd/yyyy HH:mm:ss</defaultValue>
+		<description>The date format</description>
+	</globalProperty>
 	
 	
 	<dwr>

@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.api.SyncService;
+import org.openmrs.module.sync.SyncConstants;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
@@ -39,123 +40,135 @@ import org.springframework.web.servlet.mvc.SimpleFormController;
  *
  */
 public class StatisticsController extends SimpleFormController {
-
-    /** Logger for this class and subclasses */
-    protected final Log log = LogFactory.getLog(getClass());
-
-    public class SyncStatisticsCommand {
+	
+	/** Logger for this class and subclasses */
+	protected final Log log = LogFactory.getLog(getClass());
+	
+	public class SyncStatisticsCommand {
+		
 		private String datePattern;
+		
 		private Date fromDate;
+		
 		private Date toDate;
 		
-		public SyncStatisticsCommand() { }
+		public SyncStatisticsCommand() {
+		}
+		
 		public Date getFromDate() {
 			return fromDate;
 		}
+		
 		public void setFromDate(Date fromDate) {
 			this.fromDate = fromDate;
 		}
+		
 		public Date getToDate() {
 			return toDate;
 		}
+		
 		public void setToDate(Date toDate) {
 			this.toDate = toDate;
 		}
+		
 		public String getDatePattern() {
 			return datePattern;
 		}
+		
 		public void setDatePattern(String datePattern) {
 			this.datePattern = datePattern;
 		}
 		
 	}
-    
-    // Move this to message.properties or OpenmrsConstant
-    // also in Maintenance Controller
-	public static String DEFAULT_DATE_PATTERN = "MM/dd/yyyy HH:mm:ss";
-	public static DateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat(DEFAULT_DATE_PATTERN);
 	
-    /**
-     * @see org.springframework.web.servlet.mvc.BaseCommandController#initBinder(javax.servlet.http.HttpServletRequest,
-     *      org.springframework.web.bind.ServletRequestDataBinder)
-     */
-    protected void initBinder(HttpServletRequest request, ServletRequestDataBinder binder) throws Exception {
-		super.initBinder(request, binder);
-		binder.registerCustomEditor(java.util.Date.class, new CustomDateEditor(DEFAULT_DATE_FORMAT, true));
-	}
-
-    /**
-     * 
-     * This is called prior to displaying a form for the first time. It tells
-     * Spring the form/command object to load into the request
-     * 
-     * @see org.springframework.web.servlet.mvc.AbstractFormController#formBackingObject(javax.servlet.http.HttpServletRequest)
-     */
-    protected Object formBackingObject(HttpServletRequest request)
-            throws ServletException {
-    	
-    	SyncStatisticsCommand command = new SyncStatisticsCommand();
-    	command.setDatePattern(DEFAULT_DATE_PATTERN);
-        command.setFromDate(null);
-        command.setToDate(new Date());
-
-        return command;
-    }
-    
 	/**
-	 * @see org.springframework.web.servlet.mvc.SimpleFormController#onSubmit(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.Object, org.springframework.validation.BindException)
+	 * @see org.springframework.web.servlet.mvc.BaseCommandController#initBinder(javax.servlet.http.HttpServletRequest,
+	 *      org.springframework.web.bind.ServletRequestDataBinder)
 	 */
-	protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, Object obj, BindException errors) throws Exception {
+	protected void initBinder(HttpServletRequest request, ServletRequestDataBinder binder) throws Exception {
+		super.initBinder(request, binder);
+		binder.registerCustomEditor(
+		    java.util.Date.class,
+		    new CustomDateEditor(new SimpleDateFormat(Context.getAdministrationService().getGlobalProperty(
+		        SyncConstants.PROPERTY_DATE_PATTERN, SyncConstants.DEFAULT_DATE_PATTERN)), true));
+	}
+	
+	/**
+	 * This is called prior to displaying a form for the first time. It tells Spring the
+	 * form/command object to load into the request
+	 * 
+	 * @see org.springframework.web.servlet.mvc.AbstractFormController#formBackingObject(javax.servlet.http.HttpServletRequest)
+	 */
+	protected Object formBackingObject(HttpServletRequest request) throws ServletException {
+		
+		SyncStatisticsCommand command = new SyncStatisticsCommand();
+		command.setDatePattern(Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_DATE_PATTERN,
+		    SyncConstants.DEFAULT_DATE_PATTERN));
+		command.setFromDate(null);
+		command.setToDate(new Date());
+		
+		return command;
+	}
+	
+	/**
+	 * @see org.springframework.web.servlet.mvc.SimpleFormController#onSubmit(javax.servlet.http.HttpServletRequest,
+	 *      javax.servlet.http.HttpServletResponse, java.lang.Object,
+	 *      org.springframework.validation.BindException)
+	 */
+	protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, Object obj,
+	                                BindException errors) throws Exception {
 		
 		return showForm(request, response, errors);
 	}
-
+	
 	@Override
-    protected Map<String, Object> referenceData(HttpServletRequest request, Object obj, Errors errors) throws Exception {
-		Map<String,Object> ret = new HashMap<String,Object>();
+	protected Map<String, Object> referenceData(HttpServletRequest request, Object obj, Errors errors) throws Exception {
+		Map<String, Object> ret = new HashMap<String, Object>();
 		
 		SyncService ss = Context.getService(SyncService.class);
-		SyncStatisticsCommand command = (SyncStatisticsCommand)obj;
+		SyncStatisticsCommand command = (SyncStatisticsCommand) obj;
 		
 		Date startDate = command.getFromDate();
 		Date endDate = command.getToDate();
 		
-        // Sync statistics 
-        Integer totalRecords = ss.getCountOfSyncRecords(null, startDate, endDate, null);
-        
-        Integer synchronizedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.ALREADY_COMMITTED, SyncRecordState.COMMITTED, SyncRecordState.COMMITTED_AND_CONFIRMATION_SENT);
-        Integer newRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.NEW);
-        Integer pendingRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.PENDING_SEND);
-        Integer sentRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.SENT);
-        Integer sendFailedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.SEND_FAILED);
-        Integer ingestFailedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.FAILED);
-        Integer retriedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.SENT_AGAIN);
-        Integer failedStoppedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.FAILED_AND_STOPPED);
-        Integer notSyncRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.NOT_SUPPOSED_TO_SYNC);
-        Integer rejectedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.REJECTED);
-        
-        // all "other" ones from some other state
-        Integer unknownstateRecords = totalRecords - synchronizedRecords - newRecords
-        - pendingRecords - sentRecords - sendFailedRecords - ingestFailedRecords - retriedRecords
-        - failedStoppedRecords - notSyncRecords - rejectedRecords;
-        
-        // reference statistics
-        ret.put("totalRecords", totalRecords );
-        ret.put("synchronizedRecords", synchronizedRecords);
-        ret.put("newRecords",  newRecords);
-        ret.put("pendingRecords",  pendingRecords);
-        ret.put("sentRecords",  sentRecords);
-        ret.put("sendFailedRecords",  sendFailedRecords);
-        ret.put("ingestFailedRecords",  ingestFailedRecords);
-        ret.put("retriedRecords",  retriedRecords);
-        ret.put("failedStoppedRecords", failedStoppedRecords);
-        ret.put("notSyncRecords", notSyncRecords);
-        ret.put("rejectedRecords",  rejectedRecords);
-        ret.put("unknownstateRecords", unknownstateRecords);
-        
-        ret.put("parent", Context.getService(SyncService.class).getParentServer());
-        
-	    return ret;
-    }
-
+		// Sync statistics 
+		Integer totalRecords = ss.getCountOfSyncRecords(null, startDate, endDate, null);
+		
+		Integer synchronizedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.ALREADY_COMMITTED,
+		    SyncRecordState.COMMITTED, SyncRecordState.COMMITTED_AND_CONFIRMATION_SENT);
+		Integer newRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.NEW);
+		Integer pendingRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.PENDING_SEND);
+		Integer sentRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.SENT);
+		Integer sendFailedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.SEND_FAILED);
+		Integer ingestFailedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.FAILED);
+		Integer retriedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.SENT_AGAIN);
+		Integer failedStoppedRecords = ss
+		        .getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.FAILED_AND_STOPPED);
+		Integer notSyncRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.NOT_SUPPOSED_TO_SYNC);
+		Integer rejectedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.REJECTED);
+		
+		// all "other" ones from some other state
+		Integer unknownstateRecords = totalRecords - synchronizedRecords - newRecords - pendingRecords - sentRecords
+		        - sendFailedRecords - ingestFailedRecords - retriedRecords - failedStoppedRecords - notSyncRecords
+		        - rejectedRecords;
+		
+		// reference statistics
+		ret.put("totalRecords", totalRecords);
+		ret.put("synchronizedRecords", synchronizedRecords);
+		ret.put("newRecords", newRecords);
+		ret.put("pendingRecords", pendingRecords);
+		ret.put("sentRecords", sentRecords);
+		ret.put("sendFailedRecords", sendFailedRecords);
+		ret.put("ingestFailedRecords", ingestFailedRecords);
+		ret.put("retriedRecords", retriedRecords);
+		ret.put("failedStoppedRecords", failedStoppedRecords);
+		ret.put("notSyncRecords", notSyncRecords);
+		ret.put("rejectedRecords", rejectedRecords);
+		ret.put("unknownstateRecords", unknownstateRecords);
+		
+		ret.put("parent", Context.getService(SyncService.class).getParentServer());
+		
+		return ret;
+	}
+	
 }
