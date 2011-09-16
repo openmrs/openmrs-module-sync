@@ -71,6 +71,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         if ( importRecord != null ) {
             if ( importRecord.getUuid() != null && importRecord.getState() != null ) {
                 SyncRecord record = Context.getService(SyncService.class).getSyncRecordByOriginalUuid(importRecord.getUuid());
+                if (record == null) return;
                 if ( server.getServerType().equals(RemoteServerType.PARENT) ) {
                     // with parents, we set the actual state of the record
                     if ( importRecord.getState().equals(SyncRecordState.ALREADY_COMMITTED) ) record.setState(SyncRecordState.COMMITTED);
