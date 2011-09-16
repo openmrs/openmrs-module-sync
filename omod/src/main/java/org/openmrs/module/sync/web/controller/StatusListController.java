@@ -299,7 +299,7 @@ public class StatusListController extends SimpleFormController {
 			RemoteServer parent = Context.getService(SyncService.class).getParentServer();
 			if (parent != null) {
 				SyncSource source = new SyncSourceJournal();
-				//should we be limiting here since we want to display to the user all sync records
+				//setting maxSyncRecord to null defaults to the default GP value which is 50
 				recordList = source.getChanged(parent, null);
 			}
 			
