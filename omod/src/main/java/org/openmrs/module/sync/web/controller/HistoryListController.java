@@ -197,7 +197,7 @@ public class HistoryListController {
     
     @SuppressWarnings("unchecked")
 	@RequestMapping(value = "/module/sync/historyResetRemoveRecords", method = RequestMethod.GET)
-	public String historyRemoveRecords(ModelMap modelMap, HttpServletRequest request, 
+	public String historyResetRemoveRecords(ModelMap modelMap, HttpServletRequest request, 
 							@RequestParam String uuids,
 							@RequestParam String action,
 							@RequestParam Integer recordId,
