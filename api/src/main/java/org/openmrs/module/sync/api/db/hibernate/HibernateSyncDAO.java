@@ -182,13 +182,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	 */
 	public void deleteSyncImportRecordsByServer(Integer serverId) throws DAOException {
 		Session session = sessionFactory.getCurrentSession();
-		
-		List<SyncImportRecord> records = sessionFactory.getCurrentSession().createCriteria(SyncImportRecord.class)
-        .add( Expression.eq( "sourceServer.serverId", serverId ) ).list();
-
-		for(SyncImportRecord  record : records ){
-			deleteSyncImportRecord(record);
-			}
+		session.createSQLQuery("delete from sync_import where source_server_id =:serverId").setInteger("serverId",serverId).executeUpdate();                    
 	}
 	
 	/**
@@ -469,7 +463,6 @@ public class HibernateSyncDAO implements SyncDAO {
 	public void deleteRemoteServer(RemoteServer server) throws DAOException {
 		Session session = sessionFactory.getCurrentSession();
 		deleteSyncImportRecordsByServer(server.getServerId());
-		session.flush();
 		session.delete(server);
 	}
 	
