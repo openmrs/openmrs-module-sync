@@ -8,7 +8,7 @@
 	</parent>
 	<groupId>org.openmrs.module</groupId>
 	<artifactId>sync</artifactId>
-	<packaging>omod</packaging>
+	<packaging>jar</packaging>
 	<name>Synchronization Module OMOD</name>
 	<description>OpenMRS module project for Synchronization Module</description>
 
@@ -105,11 +105,23 @@
 			<plugin>
 				<groupId>org.openmrs.maven.plugins</groupId>
 				<artifactId>maven-openmrs-plugin</artifactId>
-				<version>1.0.1</version> <!-- needed so that .12 m2e users don't get an NPE on checkout and then no .classpath file -->
 				<extensions>true</extensions>
-				<configuration>
-					<verifyOmod>false</verifyOmod>
-				</configuration>
+				<executions>
+					<execution>
+						<id>init</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>initialize-module</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>pack</id>
+						<phase>package</phase>
+						<goals>
+							<goal>package-module</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
