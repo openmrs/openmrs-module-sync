@@ -187,8 +187,6 @@
 												</c:if>
 											</c:otherwise>
 										</c:choose>
-									</td>
-									<td>
 										<c:if test="${syncRecord.state!='COMMITTED' && syncRecord.state!='ALREADY_COMMITTED'}">
 											<input type="checkbox" id="${syncRecord.uuid}" value="${syncRecord.state}" />
 										</c:if>
