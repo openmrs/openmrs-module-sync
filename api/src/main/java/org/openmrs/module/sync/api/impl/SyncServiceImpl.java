@@ -140,7 +140,8 @@ public class SyncServiceImpl implements SyncService {
 						// we only need to create extra server-records for servers that are NOT the parent - the parent state is kept in the actual sync record
 						if (!server.getServerType().equals(RemoteServerType.PARENT)) {
 							SyncServerRecord serverRecord = new SyncServerRecord(server, record);
-							if (server.equals(origin)) {
+							// can't compare with .equals because of so many variables in it. SYNC-227
+							if (server.getServerId().equals(origin.getServerId())) {
 								log.info("this record came from server " + origin.getNickname()
 								        + ", so we will set its status to commmitted");
 								serverRecord.setState(SyncRecordState.COMMITTED);

@@ -369,7 +369,8 @@ public class SyncRecord implements Serializable, IItem {
         
         if ( server != null && this.serverRecords != null ) {
             for ( SyncServerRecord record : this.serverRecords ) {
-                if ( record.getSyncServer().equals(server)) {
+            	// changed to using server ids to avoid an NPE in file transfers
+                if ( server.getServerId().equals(record.getSyncServer().getServerId())) {
                     ret = record;
                 }
             }

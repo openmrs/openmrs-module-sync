@@ -126,7 +126,7 @@ public class StatusListController extends SimpleFormController {
 				}
 				
 				// we are creating a sync-transmission, so start by generating a SyncTransmission object
-				//and this is a sychronization via file	due the value of action being createTx	
+				// and this is a sychronization via file	due the value of action being createTx	
 				SyncTransmission tx = SyncUtilTransmission.createSyncTransmission(parent, true,
 				    SyncUtil.getGlobalPropetyValueAsInteger(SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE));
 				String toTransmit = null; // the actual text that will be sent (either an ST or an STR)
