@@ -141,7 +141,7 @@ public class SyncServiceImpl implements SyncService {
 						if (!server.getServerType().equals(RemoteServerType.PARENT)) {
 							SyncServerRecord serverRecord = new SyncServerRecord(server, record);
 							// can't compare with .equals because of so many variables in it. SYNC-227
-							if (server.getServerId().equals(origin.getServerId())) {
+							if (server != null && origin != null && server.getServerId().equals(origin.getServerId())) {
 								log.info("this record came from server " + origin.getNickname()
 								        + ", so we will set its status to commmitted");
 								serverRecord.setState(SyncRecordState.COMMITTED);
