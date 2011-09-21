@@ -463,6 +463,8 @@ public class HibernateSyncDAO implements SyncDAO {
 	public void deleteRemoteServer(RemoteServer server) throws DAOException {
 		Session session = sessionFactory.getCurrentSession();
 		deleteSyncImportRecordsByServer(server.getServerId());
+		// trying to speed up the deletion process...
+		session.createSQLQuery("delete from sync_server_record where server_id =:serverId").setInteger("serverId", server.getServerId()).executeUpdate();
 		session.delete(server);
 	}
 	
