@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncServerClass;
 import org.openmrs.module.sync.SyncTransmissionState;
+import org.openmrs.util.OpenmrsUtil;
 
 /**
  * Represents another server that we are going to sync to/from.  
@@ -286,55 +287,18 @@ public class RemoteServer {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof RemoteServer))
 			return false;
 		final RemoteServer other = (RemoteServer) obj;
-		if (address == null) {
-			if (other.address != null)
-				return false;
-		} else if (!address.equals(other.address))
-			return false;
-		if (uuid == null) {
-			if (other.uuid != null)
-				return false;
-		} else if (!uuid.equals(other.uuid))
-			return false;
-		if (lastSync == null) {
-			if (other.lastSync != null)
-				return false;
-		} else if (!lastSync.equals(other.lastSync))
-			return false;
-		if (nickname == null) {
-			if (other.nickname != null)
-				return false;
-		} else if (!nickname.equals(other.nickname))
-			return false;
-		if (password == null) {
-			if (other.password != null)
-				return false;
-		} else if (!password.equals(other.password))
-			return false;
-		if (serverClasses == null) {
-			if (other.serverClasses != null)
-				return false;
-		} else if (!serverClasses.equals(other.serverClasses))
-			return false;
-		if (serverId == null) {
-			if (other.serverId != null)
-				return false;
-		} else if (!serverId.equals(other.serverId))
-			return false;
-		if (serverType == null) {
-			if (other.serverType != null)
-				return false;
-		} else if (!serverType.equals(other.serverType))
-			return false;
-		if (username == null) {
-			if (other.username != null)
-				return false;
-		} else if (!username.equals(other.username))
-			return false;
-		return true;
+		
+		if (OpenmrsUtil.nullSafeEquals(uuid, other.uuid))
+			return true;
+		
+		if (OpenmrsUtil.nullSafeEquals(serverId, other.serverId))
+			return true;
+		
+		// both the uuid and id are not equal, return false
+		return false;
 	}
 	
 	public String getChildUsername() {
