@@ -172,22 +172,34 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	}
 	
 	/**
-	 * Intercepts right before a commit is done. Not called in case of a rollback pr. Hibernate
-	 * documentation. If synchronization is not disabled for this transaction/thread the SyncRecord
-	 * kept ThreadLocal will be saved to the database, if it contains changes (SyncItems).
+	 * Convenience method to get the {@link SyncService} from the {@link Context}.
 	 * 
-	 * @see org.hibernate.EmptyInterceptor#beforeTransactionCompletion(org.hibernate.Transaction)
+	 * @return the syncService (may be cached)
+	 */
+	private SyncService getSyncService() {
+		if (syncService == null)
+			syncService = Context.getService(SyncService.class);
+		
+		return syncService;
+	}
+	
+	/**
+	 * Intercepts after the transaction is completed, also called on rollback. Clean up any
+	 * remaining ThreadLocal objects/reset.
+	 * 
+	 * @see org.hibernate.EmptyInterceptor#afterTransactionCompletion(org.hibernate.Transaction)
 	 */
 	@Override
-	public void beforeTransactionCompletion(Transaction tx) {
+	public void afterTransactionCompletion(Transaction tx) {
 		if (log.isDebugEnabled())
 			log.debug("beforeTransactionCompletion: " + tx + " deactivated: " + deactivated.get());
 		
 		try {
 			// If synchronization is NOT deactivated
-			if (deactivated.get() == null) {
+			if (deactivated.get() == null && !tx.wasRolledBack()) {
 				SyncRecord record = syncRecordHolder.get();
-				syncRecordHolder.remove();
+				//avoid calling this method again when tx.commit is called below
+				deactivated.set(true);
 				
 				// Does this transaction contain any serialized changes?
 				if (record.hasItems()) {
@@ -223,9 +235,11 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 					record.setState(SyncRecordState.NEW);
 					record.setTimestamp(new Date());
 					record.setRetryCount(0);
-					
 					// Save SyncRecord
 					getSyncService().createSyncRecord(record, record.getOriginalUuid());
+					
+					//at this point, the tx is already committed, so we need to manually recall commit()
+					tx.commit();
 				} else {
 					// note: this will happen all the time with read-only
 					// transactions
@@ -240,38 +254,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 		finally {
 			this.postInsertModifications.remove();
+			syncRecordHolder.remove();
+			deactivated.remove();
 		}
-	}
-	
-	/**
-	 * Convenience method to get the {@link SyncService} from the {@link Context}.
-	 * 
-	 * @return the syncService (may be cached)
-	 */
-	private SyncService getSyncService() {
-		if (syncService == null)
-			syncService = Context.getService(SyncService.class);
-		
-		return syncService;
-	}
-	
-	/**
-	 * Intercepts after the transaction is completed, also called on rollback. Clean up any
-	 * remaining ThreadLocal objects/reset.
-	 * 
-	 * @see org.hibernate.EmptyInterceptor#afterTransactionCompletion(org.hibernate.Transaction)
-	 */
-	@Override
-	public void afterTransactionCompletion(Transaction tx) {
-		if (log.isTraceEnabled())
-			log.trace("afterTransactionCompletion: " + tx + " committed: " + tx.wasCommitted() + " rolledback: "
-			        + tx.wasRolledBack() + " deactivated: " + deactivated.get());
-		
-		// clean out SyncRecord in case of rollback
-		syncRecordHolder.remove();
-		
-		// reactivate the interceptor
-		deactivated.remove();
 	}
 	
 	/**
