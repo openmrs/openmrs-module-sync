@@ -228,7 +228,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#getSyncImportRecords(org.openmrs.module.sync.engine.SyncRecordState)
 	 */
-	public List<SyncImportRecord> getSyncImportRecords(SyncRecordState state) throws APIException {
+	public List<SyncImportRecord> getSyncImportRecords(SyncRecordState... state) throws APIException {
 		return getSynchronizationDAO().getSyncImportRecords(state);
 	}
 	

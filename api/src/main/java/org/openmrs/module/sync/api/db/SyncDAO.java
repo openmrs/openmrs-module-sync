@@ -136,7 +136,7 @@ public interface SyncDAO {
 	 * @return SyncRecord A list containing all SyncImportRecords with the given state
 	 * @throws DAOException
 	 */
-	public List<SyncImportRecord> getSyncImportRecords(SyncRecordState state) throws DAOException;
+	public List<SyncImportRecord> getSyncImportRecords(SyncRecordState... state) throws DAOException;
 	
 	/**
 	 * Returns the first SyncRecord in either the PENDING SEND or the NEW state

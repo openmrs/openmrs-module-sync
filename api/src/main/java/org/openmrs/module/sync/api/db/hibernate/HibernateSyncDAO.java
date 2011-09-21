@@ -276,9 +276,9 @@ public class HibernateSyncDAO implements SyncDAO {
 	 * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncImportRecords(org.openmrs.module.sync.engine.SyncRecordState)
 	 */
 	@SuppressWarnings("unchecked")
-	public List<SyncImportRecord> getSyncImportRecords(SyncRecordState state) throws DAOException {
+	public List<SyncImportRecord> getSyncImportRecords(SyncRecordState... state) throws DAOException {
 		return sessionFactory.getCurrentSession().createCriteria(SyncImportRecord.class)
-		        .add(Restrictions.eq("state", state)).addOrder(Order.asc("timestamp")).addOrder(Order.asc("importId"))
+		        .add(Restrictions.in("state", state)).addOrder(Order.asc("timestamp")).addOrder(Order.asc("importId"))
 		        .list();
 	}
 	

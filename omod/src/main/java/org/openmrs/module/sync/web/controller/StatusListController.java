@@ -133,7 +133,7 @@ public class StatusListController extends SimpleFormController {
 				
 				// Pull out the committed records from parent that haven't been sent back for confirmation
 				// these are all the records we've received and are not sending a confirmation of receipt
-				List<SyncImportRecord> syncImportRecords = syncService.getSyncImportRecords(SyncRecordState.COMMITTED);
+				List<SyncImportRecord> syncImportRecords = syncService.getSyncImportRecords(SyncRecordState.COMMITTED, SyncRecordState.ALREADY_COMMITTED);
 				
 				SyncTransmissionResponse str = new SyncTransmissionResponse();
 				str.setState(SyncTransmissionState.OK);

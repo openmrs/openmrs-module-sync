@@ -194,7 +194,7 @@ public interface SyncService {
 	 */
 	//@Authorized({"View Synchronization Records"})
 	@Transactional(readOnly = true)
-	public List<SyncImportRecord> getSyncImportRecords(SyncRecordState state) throws APIException;
+	public List<SyncImportRecord> getSyncImportRecords(SyncRecordState... state) throws APIException;
 	
 	/**
 	 * Returns the first SyncRecord in either the PENDING SEND or the NEW state
