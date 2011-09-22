@@ -330,10 +330,24 @@
 		</description>
 		<sql>
 			INSERT INTO sync_server_class (class_id, server_id, send_to, receive_from)
-			SELECT (SELECT class_id FROM sync_class WHERE name = 'org.openmrs.notification.Alert'), server_id, 0, 0
+			SELECT 
+			  (SELECT min(class_id) FROM sync_class WHERE name = 'org.openmrs.notification.Alert'), 
+			  server_id, 
+			  0, 
+			  0
 			FROM sync_server
-			WHERE server_id not in (SELECT server_id FROM sync_server_class 
-			WHERE class_id = (SELECT class_id FROM sync_class WHERE name = 'org.openmrs.notification.Alert'));
+			WHERE 
+			  server_id not in 
+			     (SELECT
+			        server_id
+			      FROM sync_server_class 
+			      WHERE 
+			        class_id = 
+			          (SELECT min(class_id)
+			           FROM sync_class
+			           WHERE name = 'org.openmrs.notification.Alert'
+			          )
+			     );
 		</sql>
 	</diff>
 	
