@@ -377,7 +377,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			}
 			
 			//NPE can only happen if flush is called outside of transaction.  SYNC-194.
-			if (syncRecordHolder.get() != null)
+			if (syncRecordHolder.get() == null)
+				log.warn("Unable to save record a flush of " + entity.getClass().getName() + " because it occurs outside of the normal transaction boundaries");
+			else
 				packageObject((OpenmrsObject) entity, currentState, propertyNames, types, id, SyncItemState.UPDATED);
 			
 		}
@@ -542,18 +544,17 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 				originalRecordUuid = this.syncRecordHolder.get().getOriginalUuid();
 			}
 			
-			// build up a starting msg for all logging:
-			StringBuilder sb = new StringBuilder();
-			sb.append("In PackageObject, entity type:");
-			sb.append(entity.getClass().getName());
-			sb.append(", entity uuid:");
-			sb.append(objectUuid);
-			sb.append(", originalUuid uuid:");
-			sb.append(originalRecordUuid);
-			infoMsg = sb.toString();
-			
-			if (log.isInfoEnabled())
-				log.info(infoMsg);
+			if (log.isInfoEnabled()) {
+				// build up a starting msg for all logging:
+				StringBuilder sb = new StringBuilder();
+				sb.append("In PackageObject, entity type:");
+				sb.append(entity.getClass().getName());
+				sb.append(", entity uuid:");
+				sb.append(objectUuid);
+				sb.append(", originalUuid uuid:");
+				sb.append(originalRecordUuid);
+				log.info(sb.toString());
+			}
 			
 			// Transient properties are not serialized.
 			transientProps = new HashSet<String>();
