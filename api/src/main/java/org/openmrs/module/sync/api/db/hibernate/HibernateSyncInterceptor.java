@@ -378,7 +378,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			
 			//NPE can only happen if flush is called outside of transaction.  SYNC-194.
 			if (syncRecordHolder.get() == null)
-				log.warn("Unable to save record a flush of " + entity.getClass().getName() + " because it occurs outside of the normal transaction boundaries");
+				log.warn("Unable to save record a flush of " + entity.getClass().getName() + " with id: " + id + " because it occurs outside of the normal transaction boundaries");
 			else
 				packageObject((OpenmrsObject) entity, currentState, propertyNames, types, id, SyncItemState.UPDATED);
 			
