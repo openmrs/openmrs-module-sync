@@ -1203,8 +1203,15 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		// retrieve owner and original uuid if there is one
 		if (collection.getOwner() instanceof OpenmrsObject) {
 			owner = (OpenmrsObject) collection.getOwner();
-			if (this.syncRecordHolder.get() != null) {
-				originalRecordUuid = this.syncRecordHolder.get().getOriginalUuid();
+			
+			if (!this.shouldSynchronize(owner)) {
+				if (log.isDebugEnabled())
+					log.debug("Determined entity not to be journaled, exiting onDelete.");
+				return;
+			}
+			
+			if (syncRecordHolder.get() != null) {
+				originalRecordUuid = syncRecordHolder.get().getOriginalUuid();
 			}
 			
 		} else {
