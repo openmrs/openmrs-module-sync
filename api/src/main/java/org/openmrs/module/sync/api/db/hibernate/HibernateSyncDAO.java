@@ -454,7 +454,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	 */
 	public void saveRemoteServer(RemoteServer server) throws DAOException {
 		Session session = sessionFactory.getCurrentSession();
-		session.saveOrUpdate(server);
+		session.merge(server);
 	}
 	
 	/**

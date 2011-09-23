@@ -361,6 +361,6 @@ public class RemoteServer {
 
 	@Override
 	public String toString() {
-		return "RemotServer(" + getServerId() + "): " + getNickname();
+		return "RemoteServer(" + getServerId() + "): " + getNickname();
 	}
 }

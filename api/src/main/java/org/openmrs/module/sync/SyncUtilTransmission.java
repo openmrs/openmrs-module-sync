@@ -147,7 +147,7 @@ public class SyncUtilTransmission {
 		}
 		catch (Exception e) {
 			log.error("Error while writing creating sync transmission for server: " + server.getNickname(), e);
-			throw (new SyncException("Error while performing synchronization, see log messages and callstack.", e));
+			throw new SyncException("Error while performing synchronization, see log messages and callstack.", e);
 		}
 		
 		return tx;
@@ -203,7 +203,7 @@ public class SyncUtilTransmission {
 							connResponse = ServerConnection.sendExportedData(server, toTransmit, isResponse);
 						}
 						catch (Exception e) {
-							e.printStackTrace();
+							log.error("Unable to get send exported data over connection to: " + server, e);
 							// no need to change state or error message - it's already set properly; just update last sync state
 							server.setLastSyncState(SyncTransmissionState.FAILED);
 							syncService.saveRemoteServer(server);
@@ -252,21 +252,15 @@ public class SyncUtilTransmission {
 					response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
 				}
 			} else {
-				if (server == null) {
-					response.setErrorMessage(SyncConstants.ERROR_INVALID_SERVER.toString());
-					response.setFileName(SyncConstants.FILENAME_INVALID_SERVER);
-					response.setUuid(SyncConstants.UUID_UNKNOWN);
-					response.setState(SyncTransmissionState.INVALID_SERVER);
-				} else if (transmission == null) {
-					response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
-					response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
-					response.setUuid(SyncConstants.UUID_UNKNOWN);
-					response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
-				}
+				// server is null
+				response.setErrorMessage(SyncConstants.ERROR_INVALID_SERVER.toString());
+				response.setFileName(SyncConstants.FILENAME_INVALID_SERVER);
+				response.setUuid(SyncConstants.UUID_UNKNOWN);
+				response.setState(SyncTransmissionState.INVALID_SERVER);
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			log.error("Unable to send sync transmission to: " + server, e);
 			if (server != null) {
 				server.setLastSyncState(SyncTransmissionState.FAILED);
 				syncService.saveRemoteServer(server);
@@ -391,8 +385,8 @@ public class SyncUtilTransmission {
 			}
 		}
 		catch (Exception e) {
-			log.error("Unexpected Error during full synchronize.", e);
-			throw (new SyncException("Error while performing synchronization, see log messages and callstack.", e));
+			//log.error("Unexpected Error during full synchronize.", e);
+			throw (new SyncException("Error while performing synchronization to parent, see log messages and callstack.", e));
 		}
 		finally {
 			// unset the flag so we know that sync'ing is done
@@ -476,7 +470,8 @@ public class SyncUtilTransmission {
 					//reload origin for SYNC-175
 					Integer originId = origin.getServerId();
 					//now attempt to process
-					log.info("Processing record " + record.getUuid() + " which contains "
+					if (log.isInfoEnabled())
+						log.info("Processing record " + record.getUuid() + " which contains "
 					        + record.getContainedClassSet().toString());
 					importRecord = Context.getService(SyncIngestService.class).processSyncRecord(record, origin);
 					origin = syncService.getRemoteServer(originId);
@@ -523,8 +518,6 @@ public class SyncUtilTransmission {
 				log.info("Did not create transmission. orgin is disabled? " + origin.getDisabled()
 				        + " && st.isRequestingTransmission? " + st.getIsRequestingTransmission());
 			}
-		} else {
-			log.info("For some reason the origin is null");
 		}
 		
 		//update the last sync status appropriately
