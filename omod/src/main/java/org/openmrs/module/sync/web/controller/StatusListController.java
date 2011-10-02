@@ -296,11 +296,23 @@ public class StatusListController extends SimpleFormController {
 		
 		// only fill the Object if the user has authenticated properly
 		if (Context.isAuthenticated()) {
+			
+			String mode = ServletRequestUtils.getStringParameter(request, "mode", "SEND_FILE");
+			
 			RemoteServer parent = Context.getService(SyncService.class).getParentServer();
 			if (parent != null) {
 				SyncSource source = new SyncSourceJournal();
-				//setting maxSyncRecord to null defaults to the default GP value which is 50
-				recordList = source.getChanged(parent, null);
+				
+				Integer maxConfigured = 0;
+				if ("SEND_WEB".equals(mode))
+					maxConfigured = SyncUtil.getGlobalPropetyValueAsInteger(SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB);
+				else
+					maxConfigured = SyncUtil.getGlobalPropetyValueAsInteger(SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE);
+				Integer maxDefault = Integer.valueOf(SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT);
+				if (maxConfigured > maxDefault)
+					maxConfigured = maxDefault; // limit to default value of 50 because we don't really need everything on this page
+				
+				recordList = source.getChanged(parent, maxConfigured);
 			}
 			
 			//SyncService ss = Context.getService(SyncService.class);

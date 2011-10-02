@@ -302,11 +302,11 @@ public class HibernateSyncDAO implements SyncDAO {
 	
 	/**
 	 * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecords(org.openmrs.module.sync.SyncRecordState[],
-	 *      boolean, java.lang.Integer, org.openmrs.module.sync.server.RemoteServer)
+	 *      boolean, java.lang.Integer, org.openmrs.module.sync.server.RemoteServer, java.lang.Integer)
 	 */
 	@SuppressWarnings("unchecked")
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords,
-	                                       RemoteServer server) throws DAOException {
+	                                       RemoteServer server, Integer firstRecordId) throws DAOException {
 		if (maxSyncRecords == null) {
 			maxSyncRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT);
 		}
@@ -325,6 +325,9 @@ public class HibernateSyncDAO implements SyncDAO {
 			criteria.add(Restrictions.not(Restrictions.in(column, states)));
 		else
 			criteria.add(Restrictions.in(column, states));
+		
+		if (firstRecordId != null)
+			criteria.add(Restrictions.ge("s.recordId", firstRecordId));
 		
 		criteria.addOrder(Order.asc("s.timestamp"));
 		criteria.addOrder(Order.asc("s.recordId"));

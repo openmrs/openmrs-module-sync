@@ -18,8 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,16 +28,17 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncRecord;
-import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
+import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.web.WebConstants;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -64,7 +65,8 @@ public class HistoryListController {
 	@RequestMapping(value = Views.HISTORY, method = RequestMethod.GET)
 	public void showThePage(ModelMap modelMap,
 	                        @RequestParam(value = "firstRecordId", required = false) Integer firstRecordId,
-	                        @RequestParam(value = "size", required = false) Integer size) throws Exception {
+	                        @RequestParam(value = "size", required = false) Integer size,
+	                        @RequestParam(value = "state", required = false) String state) throws Exception {
 		
 		SyncRecord latestRecord = null;
 		SyncRecord earliestRecord  = null;
@@ -80,10 +82,15 @@ public class HistoryListController {
 		
 		List<SyncRecord> recordList = null;
 		
-		// only fill the Object if the user has authenticated properly
+		// only fill the record list if the user has authenticated properly
 		if (Context.isAuthenticated()) {
 			SyncService ss = Context.getService(SyncService.class);
-			recordList = ss.getSyncRecords(firstRecordId, size);
+			if (!StringUtils.hasText(state)) 
+				recordList = ss.getSyncRecords(firstRecordId, size);
+			else {
+				SyncRecordState[] states = new SyncRecordState[] { SyncRecordState.valueOf(state) };
+				recordList = ss.getSyncRecords(states, size, firstRecordId);
+			}
 			latestRecord = ss.getLatestRecord();
 			earliestRecord = ss.getEarliestRecord(null);
 			

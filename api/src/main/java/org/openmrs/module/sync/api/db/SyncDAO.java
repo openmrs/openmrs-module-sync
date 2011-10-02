@@ -170,11 +170,12 @@ public interface SyncDAO {
 	 * @param inverse if true, will get all records that DO NOT have the given states
 	 * @param maxSyncRecords if less than 1 will use {@link SyncConstants#PROPERTY_NAME_MAX_RECORDS_DEFAULT
 	 * @param server if not null, will restrict records to only those for the given server (optional)
+	 * @param firstRecordId the id of the first record to return, if null, assumes 0
 	 * @return SyncRecord A list containing all SyncRecords with the given states
 	 * @throws DAOException
 	 */
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords,
-	                                       RemoteServer server) throws DAOException;
+	                                       RemoteServer server, Integer firstRecordId) throws DAOException;
 	
 	/**
 	 * Deletes all sync records that have the given state and are before the given date

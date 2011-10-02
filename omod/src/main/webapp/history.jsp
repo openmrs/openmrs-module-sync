@@ -26,7 +26,7 @@
     	var ddNum = parseInt(ddVal);
     	parseInt(ddNum);
     	firstRecordNum = firstRecordNum + ddNum;
-   		document.location = "?firstRecordId=" + firstRecordNum + "&size=" + ddNum;   
+   		document.location = "?firstRecordId=" + firstRecordNum + "&size=" + ddNum + "&state=${param.state}";   
 	}
 	
 	function getOlderItemsList(firstRecordId) {
@@ -37,7 +37,7 @@
     	var ddNum = parseInt(ddVal);
     	parseInt(ddNum);
     	firstRecordNum = firstRecordNum - ddNum;
-   		document.location = "?firstRecordId=" + firstRecordNum + "&size=" + ddNum;   
+   		document.location = "?firstRecordId=" + firstRecordNum + "&size=" + ddNum + "&state=${param.state}";
 	}
 	
 	function resetRecords(){

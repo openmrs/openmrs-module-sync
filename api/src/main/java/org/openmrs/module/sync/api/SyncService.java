@@ -232,12 +232,13 @@ public interface SyncService {
 	 * 
 	 * @param states SyncRecordStates for the SyncRecords to be returned
 	 * @param maxSyncRecords the number of results to restrict to. (optional/nullable)
+	 * @param firstRecordId The index in the search results to start returning from. if null, assumes 0
 	 * @return SyncRecord A list containing all SyncRecords with the given states
 	 * @throws APIException
 	 */
 	@Authorized({ "View Synchronization Records" })
 	@Transactional(readOnly = true)
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, Integer maxSyncRecords) throws APIException;
+	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, Integer maxSyncRecords, Integer firstRecordId) throws APIException;
 	
 	/**
 	 * Get all SyncRecords in a specific SyncRecordStates, that the server allows sending for
@@ -248,11 +249,12 @@ public interface SyncService {
 	 * @param states SyncRecordStates for the SyncRecords to be returned
 	 * @param server Server these records will be sent to, so we can filter on Class
 	 * @param maxSyncRecords
+	 * @param firstRecordId the start of the result set. if null, starts from 0
 	 * @return SyncRecord A list containing all SyncRecords with the given states
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, RemoteServer server, Integer maxSyncRecords)
+	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, RemoteServer server, Integer maxSyncRecords, Integer firstRecordId)
 	                                                                                                             throws APIException;
 	
 	/**
@@ -261,12 +263,13 @@ public interface SyncService {
 	 * @param states SyncRecordStates for the SyncRecords to be returned
 	 * @param inverse
 	 * @param maxSyncRecords
+	 * @param firstRecordId the syncrecord id of the first record to return
 	 * @return SyncRecord A list containing all SyncRecords with the given states
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})
 	@Transactional(readOnly = true)
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords)
+	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords, Integer firstRecordId)
 	                                                                                                         throws APIException;
 	
 	/**

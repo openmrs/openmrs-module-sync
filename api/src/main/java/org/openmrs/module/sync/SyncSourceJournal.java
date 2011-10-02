@@ -154,7 +154,7 @@ public class SyncSourceJournal implements SyncSource {
 		
 		try {
 			SyncService syncService = Context.getService(SyncService.class);
-			changed = syncService.getSyncRecords(SyncConstants.SYNC_TO_PARENT_STATES, maxSyncRecords);
+			changed = syncService.getSyncRecords(SyncConstants.SYNC_TO_PARENT_STATES, maxSyncRecords, null);
 			
 		}
 		catch (Exception e) {
@@ -171,7 +171,7 @@ public class SyncSourceJournal implements SyncSource {
 		
 		try {
 			SyncService syncService = Context.getService(SyncService.class);
-			changed = syncService.getSyncRecords(SyncConstants.SYNC_TO_PARENT_STATES, server, maxResults);
+			changed = syncService.getSyncRecords(SyncConstants.SYNC_TO_PARENT_STATES, server, maxResults, null);
 			
 		}
 		catch (Exception e) {
