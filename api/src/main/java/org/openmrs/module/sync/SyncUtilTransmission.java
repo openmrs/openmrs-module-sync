@@ -70,6 +70,7 @@ public class SyncUtilTransmission {
 		SyncTransmission tx = null;
 		long maxRetryCount = 0;
 		boolean maxRetryCountReached = false;
+		Exception exceptionThrown = null; // the exception thrown
 		
 		try {
 			SyncSource source = new SyncSourceJournal();
@@ -80,6 +81,8 @@ public class SyncUtilTransmission {
 				    maxSyncRecords);
 			}
 			catch (Exception e) {
+				exceptionThrown = e; // save the exception so we can check if one happened in the finally block
+				
 				log.error("Error while creating state based sync", e);
 				// difference is that this time we'll do this without trying to create a file (just getting the output)
 				// if it works, that probably means that there was a problem writing file to disk
@@ -87,63 +90,79 @@ public class SyncUtilTransmission {
 				    maxSyncRecords);
 			}
 			finally {
-				if (tx != null) {
-					if (server != null) {
-						tx.setSyncTargetUuid(server.getUuid());
-					}
-					// let's update SyncRecords to reflect the fact that we now have tried to sync them, by setting state to SENT or SENT_AGAIN
-					maxRetryCount = Long.parseLong(Context.getAdministrationService().getGlobalProperty(
-					    SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT, SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT_DEFAULT));
+				boolean incrementRetryCount = true;
+				
+				if (exceptionThrown != null) {
 					
-					log.info("Max retry count: " + maxRetryCount);
-					if (tx.getSyncRecords() != null) {
-						for (SyncRecord record : tx.getSyncRecords()) {
-							//if max re-try was reached stop now: 
-							//a) mark the record as failed save it to DB, 
-							//b) clear out the Tx we are creating
-							//c) decrement the retry count on records 'after' the one that failed -- they never really got a chance
-							//  and if offending record is fixed, the dudes that follow would fail with max retry error
-							
-							log.info("Checking record retry count (" + record.getRetryCount()
-							        + ") against max retry count (" + maxRetryCount + ")");
-							if (record.getRetryCount() >= maxRetryCount) {
-								record.setState(SyncRecordState.FAILED_AND_STOPPED);
-								Context.getService(SyncService.class).updateSyncRecord(record);
-								maxRetryCountReached = true;
-								SyncUtil.sendSyncErrorMessage(record, server, new SyncException("Max retry count reached"));
-								continue;
-							}
-							if (record.getServerRecords() != null && !server.getServerType().equals(RemoteServerType.PARENT)) {
-								//parent -> child: this Tx is part of exchange where where parent is sending its changes down to child
-								//mark row in the synchronization_server_record table as being sent, 
-								for (SyncServerRecord serverRecord : record.getServerRecords()) {
-									if (serverRecord.getSyncServer().equals(server)) {
-										serverRecord.setRetryCount(serverRecord.getRetryCount() + 1);
-										if (serverRecord.getState().equals(SyncRecordState.NEW))
-											serverRecord.setState(SyncRecordState.SENT);
-										else
-											serverRecord.setState(SyncRecordState.SENT_AGAIN);
-									}
-								}
-								Context.getService(SyncService.class).updateSyncRecord(record);
-							} else if (server.getServerType().equals(RemoteServerType.PARENT)) {
-								//child -> parent scenario: we are about to send data from child to parent
-								record.setRetryCount(record.getRetryCount() + 1);
-								if (record.getState().equals(SyncRecordState.NEW))
-									record.setState(SyncRecordState.SENT);
-								else
-									record.setState(SyncRecordState.SENT_AGAIN);
-								Context.getService(SyncService.class).updateSyncRecord(record);
-							} else {
-								log.error("Odd state: trying to get syncRecords for a non-parent server with no corresponding server-records");
-							}
+					// check to see if this exception should be ignored and so NOT increment the retry count
+					String ignoredExceptionClassNames = Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_NAME_IGNORED_JAVA_EXCEPTIONS, "");
+					String[] exceptionNames = ignoredExceptionClassNames.split(",");
+					for (String exname : exceptionNames) {
+						if (exname.trim().equals(exceptionThrown.getClass().getName())) {
+							incrementRetryCount = false;
+							break;
 						}
-						if (tx.getIsMaxRetryReached() || maxRetryCountReached) {
-							tx.setSyncRecords(null);
+					}
+					
+				}
+				if (incrementRetryCount && tx != null) {
+						
+						if (server != null) {
+							tx.setSyncTargetUuid(server.getUuid());
+						}
+						// let's update SyncRecords to reflect the fact that we now have tried to sync them, by setting state to SENT or SENT_AGAIN
+						maxRetryCount = Long.parseLong(Context.getAdministrationService().getGlobalProperty(
+						    SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT, SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT_DEFAULT));
+						
+						log.info("Max retry count: " + maxRetryCount);
+						if (tx.getSyncRecords() != null) {
+							for (SyncRecord record : tx.getSyncRecords()) {
+								//if max re-try was reached stop now: 
+								//a) mark the record as failed save it to DB, 
+								//b) clear out the Tx we are creating
+								//c) decrement the retry count on records 'after' the one that failed -- they never really got a chance
+								//  and if offending record is fixed, the dudes that follow would fail with max retry error
+								
+								log.info("Checking record retry count (" + record.getRetryCount()
+								        + ") against max retry count (" + maxRetryCount + ")");
+								if (record.getRetryCount() >= maxRetryCount) {
+									record.setState(SyncRecordState.FAILED_AND_STOPPED);
+									Context.getService(SyncService.class).updateSyncRecord(record);
+									maxRetryCountReached = true;
+									SyncUtil.sendSyncErrorMessage(record, server, new SyncException("Max retry count reached"));
+									continue;
+								}
+								if (record.getServerRecords() != null && !server.getServerType().equals(RemoteServerType.PARENT)) {
+									//parent -> child: this Tx is part of exchange where parent is sending its changes down to child
+									//mark row in the synchronization_server_record table as being sent, 
+									for (SyncServerRecord serverRecord : record.getServerRecords()) {
+										if (serverRecord.getSyncServer().equals(server)) {
+											serverRecord.incrementRetryCount();
+											if (serverRecord.getState().equals(SyncRecordState.NEW))
+												serverRecord.setState(SyncRecordState.SENT);
+											else
+												serverRecord.setState(SyncRecordState.SENT_AGAIN);
+										}
+									}
+									Context.getService(SyncService.class).updateSyncRecord(record);
+								} else if (server.getServerType().equals(RemoteServerType.PARENT)) {
+									//child -> parent scenario: we are about to send data from child to parent
+									record.incrementRetryCount();
+									if (record.getState().equals(SyncRecordState.NEW))
+										record.setState(SyncRecordState.SENT);
+									else
+										record.setState(SyncRecordState.SENT_AGAIN);
+									Context.getService(SyncService.class).updateSyncRecord(record);
+								} else {
+									log.error("Odd state: trying to get syncRecords for a non-parent server with no corresponding server-records");
+								}
+							}
+							if (tx.getIsMaxRetryReached() || maxRetryCountReached) {
+								tx.setSyncRecords(null);
+							}
 						}
 					}
 				}
-			}
 		}
 		catch (Exception e) {
 			log.error("Error while writing creating sync transmission for server: " + server.getNickname(), e);
