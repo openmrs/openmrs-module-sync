@@ -141,6 +141,8 @@ public class SyncConstants {
 	
 	public static final String PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT = "10";
 	
+	public static final String PROPERTY_NAME_IGNORED_JAVA_EXCEPTIONS = "sync.ignored_java_exceptions";
+	
 	public static final String PROPERTY_ENABLE_COMPRESSION = "sync.enable_compression";
 	
 	public static final String PROPERTY_VERSION = "sync.version";
@@ -176,4 +178,5 @@ public class SyncConstants {
 	public static final String PROPERTY_DATE_PATTERN = "sync.date_pattern";
 	
 	public static final String DEFAULT_DATE_PATTERN = "MM/dd/yyyy HH:mm:ss";
+	
 }

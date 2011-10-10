@@ -84,6 +84,10 @@ public class SyncServerRecord implements Serializable {
 		this.retryCount = retryCount;
 	}
 	
+	public void incrementRetryCount() {
+		this.retryCount++;
+	}
+	
 	public Integer getServerRecordId() {
 		return serverRecordId;
 	}

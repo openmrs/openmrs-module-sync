@@ -97,6 +97,11 @@
 		<defaultValue>MM/dd/yyyy HH:mm:ss</defaultValue>
 		<description>The date format</description>
 	</globalProperty>
+	<globalProperty>
+		<property>sync.ignored_java_exceptions</property>
+		<defaultValue>javax.net.ssl.SSLHandshakeException, org.apache.commons.httpclient.ConnectTimeoutException</defaultValue>
+		<description>Comma separated list of exceptions that will not cause an increment of the retryCount on sync records. (exact matches on class names only, no child classes matched)</description>
+	</globalProperty>
 	
 	
 	<dwr>

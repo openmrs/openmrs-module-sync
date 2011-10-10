@@ -143,6 +143,10 @@ public class SyncRecord implements Serializable, IItem {
     public void setRetryCount(int retryCount) {
         this.retryCount = retryCount;
     }
+    
+    public void incrementRetryCount() {
+    	this.retryCount++;
+    }
 
     //state
     public SyncRecordState getState() {
