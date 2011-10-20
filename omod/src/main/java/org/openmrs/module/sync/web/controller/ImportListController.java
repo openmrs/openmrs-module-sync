@@ -301,7 +301,7 @@ public class ImportListController extends SimpleFormController {
 		// now process the syncTransmission if one was received                    
 		if (st != null) {
 			str = SyncUtilTransmission.processSyncTransmission(st,
-			    SyncUtil.getGlobalPropetyValueAsInteger(SyncConstants.PROPERTY_NAME_MAX_RECORDS_FILE));
+			    SyncUtil.getGlobalPropetyValueAsInteger(SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB));
 		} else
 			log.info("st was null");
 		
