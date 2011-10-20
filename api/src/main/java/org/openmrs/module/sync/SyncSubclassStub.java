@@ -215,6 +215,9 @@ public class SyncSubclassStub extends BaseOpenmrsData implements
 	 * @param columnValue
 	 */
 	public void addColumn(String columnName, Object columnValue) {
+		if (columnName == null || columnValue == null)
+			return;
+		
 		if (requiredColumnNames == null)
 			requiredColumnNames = new ArrayList<String>();
 		if (requiredColumnValues == null)

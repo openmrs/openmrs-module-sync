@@ -829,7 +829,13 @@ public class SyncServiceImpl implements SyncService {
 		
 		SyncSubclassStub stub = new SyncSubclassStub(p, "person", "person_id", "patient", "patient_id", null, null, null);
 		stub.addColumn("voided", 0);
-		stub.addColumn("creator", p.getCreator().getUserId());
+		Integer userId = 0;
+		if (p.getCreator() != null)
+			userId = p.getCreator().getUserId();
+		else
+			userId = Context.getAuthenticatedUser().getUserId();
+		
+		stub.addColumn("creator", userId);
 		stub.addColumn("date_created", p.getDateCreated());
 		
 		handleInsertSubclassIfNeeded(stub);
