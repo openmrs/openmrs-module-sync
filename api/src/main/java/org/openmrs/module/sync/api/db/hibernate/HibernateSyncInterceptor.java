@@ -56,7 +56,7 @@ import org.openmrs.module.sync.SyncException;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemKey;
 import org.openmrs.module.sync.SyncItemState;
-import org.openmrs.module.sync.SyncPatientStub;
+import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncUtil;
@@ -1548,12 +1548,12 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	
 	/**
 	 * Adds syncItem to pending sync record for the patient stub necessary to handle new patient
-	 * from the existing user scenario. See SyncPatientStub class comments for detailed description
+	 * from the existing user scenario. See {@link SyncSubclassStub} class comments for detailed description
 	 * of how this works.
 	 * 
-	 * @see SyncPatientStub
+	 * @see SyncSubclassStub
 	 */
-	public static void addSyncItemForPatientStub(SyncPatientStub stub) {
+	public static void addSyncItemForSubclassStub(SyncSubclassStub stub) {
 		
 		try {
 			
@@ -1561,44 +1561,80 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			Package pkg = new Package();
 			String className = stub.getClass().getName();
 			Record xml = pkg.createRecordForWrite(className);
-			Item ParentItem = xml.getRootItem();
+			Item parentItem = xml.getRootItem();
 			Item item = null;
 			
 			//uuid
-			item = xml.createItem(ParentItem, "uuid");
+			item = xml.createItem(parentItem, "uuid");
 			item.setAttribute("type", stub.getUuid().getClass().getName());
 			xml.createText(item, stub.getUuid());
 			
-			//creator
-			User creator = stub.getCreator();
-			if (creator == null) {
-				creator = Context.getAuthenticatedUser();
+			//requiredColumnNames
+			item = xml.createItem(parentItem, "requiredColumnNames");
+			item.setAttribute("type", "java.util.List<java.lang.String>");
+			String value = "[";
+			for (int x=0; x < stub.getRequiredColumnNames().size(); x++) {
+				if (x != 0)
+					value += ",";
+				//value += "\"" + stub.getRequiredColumnNames().get(x) + "\"";
+				value += stub.getRequiredColumnNames().get(x);
 			}
-			if (creator == null) {
-				throw (new SyncException("Error generating patient stub. Creator is null. patient stub uuid: "
-				        + stub.getUuid()));
-			}
-			item = xml.createItem(ParentItem, "creator");
-			item.setAttribute("type", creator.getClass().getName());
-			xml.createText(item, creator.getUuid());
+			value += "]";
 			
-			//date created
-			Date dateCreated = stub.getDateCreated();
-			if (dateCreated == null) {
-				dateCreated = new Date();
+			xml.createText(item, value);
+			
+			//requiredColumnValues
+			item = xml.createItem(parentItem, "requiredColumnValues");
+			item.setAttribute("type", "java.util.List<java.lang.String>");
+			value = "[";
+			for (int x=0; x < stub.getRequiredColumnValues().size(); x++) {
+				String columnvalue = stub.getRequiredColumnValues().get(x);
+				if (x != 0)
+					value += ",";
+				value += columnvalue;
 			}
-			item = xml.createItem(ParentItem, "dateCreated");
-			item.setAttribute("type", dateCreated.getClass().getName());
-			xml.createText(item, SyncUtil.getNormalizer(dateCreated.getClass()).toString(dateCreated));
+			value += "]";
+			xml.createText(item, value);
+			
+			//requiredColumnClasses
+			item = xml.createItem(parentItem, "requiredColumnClasses");
+			item.setAttribute("type", "java.util.List<java.lang.String>");
+			value = "[";
+			for (int x=0; x < stub.getRequiredColumnClasses().size(); x++) {
+				String columnvalue = stub.getRequiredColumnClasses().get(x);
+				if (x != 0)
+					value += ",";
+				//value += "\"" + columnvalue + "\"";
+				value += columnvalue;
+			}
+			value += "]";
+			xml.createText(item, value);
+			
+			//parentTable
+			item = xml.createItem(parentItem, "parentTable");
+			item.setAttribute("type", stub.getParentTable().getClass().getName());
+			xml.createText(item, stub.getParentTable());
+			//parentTableId
+			item = xml.createItem(parentItem, "parentTableId");
+			item.setAttribute("type", stub.getParentTableId().getClass().getName());
+			xml.createText(item, stub.getParentTableId());
+			//subclassTable
+			item = xml.createItem(parentItem, "subclassTable");
+			item.setAttribute("type", stub.getSubclassTable().getClass().getName());
+			xml.createText(item, stub.getSubclassTable());
+			//subclassTableId
+			item = xml.createItem(parentItem, "subclassTableId");
+			item.setAttribute("type", stub.getSubclassTableId().getClass().getName());
+			xml.createText(item, stub.getSubclassTableId());
 			
 			SyncItem syncItem = new SyncItem();
 			syncItem.setKey(new SyncItemKey<String>(stub.getUuid(), String.class));
 			syncItem.setState(SyncItemState.NEW);
 			syncItem.setContent(xml.toStringAsDocumentFragement());
-			syncItem.setContainedType(SyncPatientStub.class);
+			syncItem.setContainedType(stub.getClass());
 			
 			syncRecordHolder.get().addItem(syncItem);
-			syncRecordHolder.get().addContainedClass(SyncPatientStub.class.getName());
+			syncRecordHolder.get().addContainedClass(stub.getClass().getName());
 			
 		}
 		catch (SyncException syncEx) {

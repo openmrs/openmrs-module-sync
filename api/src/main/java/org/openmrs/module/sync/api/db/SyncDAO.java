@@ -27,7 +27,7 @@ import org.openmrs.api.APIException;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncConstants;
-import org.openmrs.module.sync.SyncPatientStub;
+import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
@@ -418,12 +418,12 @@ public interface SyncDAO {
 	
 	/**
 	 * Mimics the hack for saving patients who are already users/persons. For full description of
-	 * how this works see {@link SyncPatientStub}.
+	 * how this works see {@link SyncSubclassStub}.
 	 * 
-	 * @see SyncPatientStub
+	 * @see SyncSubclassStub
 	 * @param stub
 	 */
-	public void processSyncPatientStub(SyncPatientStub stub);
+	public void processSyncSubclassStub(SyncSubclassStub stub);
 	
 	/**
 	 * See

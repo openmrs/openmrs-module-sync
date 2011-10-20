@@ -30,7 +30,7 @@ import org.openmrs.api.APIException;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncConstants;
-import org.openmrs.module.sync.SyncPatientStub;
+import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
@@ -663,11 +663,11 @@ public interface SyncService {
 	public String getPrimaryKey(OpenmrsObject obj) throws APIException;
 	
 	/**
-	 * Handles the odd case of saving patient who already has person record. See SyncPatientStub
+	 * Handles the odd case of saving patient who already has person record. See {@link SyncSubclassStub}
 	 * class comments for detailed description of how this works. Note this service is marked as
 	 * transactional read only to avoid spring trying to flush/commit on exit.
 	 * 
-	 * @see SyncPatientStub
+	 * @see SyncSubclassStub
 	 * @param p Patient for which stub ought to be created
 	 * @throws APIException
 	 */
@@ -675,7 +675,25 @@ public interface SyncService {
 	// because things are not actually written to the db, just memory
 	@Logging(ignoreAllArgumentValues = true)
 	public void handleInsertPatientStubIfNeeded(Patient p) throws APIException;
-
+	
+	/**
+	 * Handles the odd case of saving patient who already has person record (or
+	 * a concept who is a concept numeric already). See {@link SyncSubclassStub}
+	 * class comments for detailed description of how this works. Note this
+	 * service is marked as transactional read only to avoid spring trying to
+	 * flush/commit on exit.
+	 * 
+	 * @see SyncSubclassStub
+	 * @param stub
+	 *            a SyncPatientStub class containing any Auditable object for
+	 *            which stub ought to be created
+	 * @throws APIException
+	 */
+	@Transactional(readOnly = true)
+	// because things are not actually written to the db, just memory
+	@Logging(ignoreAllArgumentValues = true)
+	public void handleInsertSubclassIfNeeded(SyncSubclassStub stub) throws APIException;
+	
 	/**
 	 * This method copies SyncRecords after the given <code>date</code> into SyncServerRecords for the given <code>server</code>.
 	 * This is needed when a server is using data that was copied BEFORE the server was set up in the sync admin pages.

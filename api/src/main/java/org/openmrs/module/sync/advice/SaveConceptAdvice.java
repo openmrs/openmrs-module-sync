@@ -17,6 +17,9 @@ import java.lang.reflect.Method;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.Concept;
+import org.openmrs.ConceptComplex;
+import org.openmrs.ConceptNumeric;
 import org.openmrs.Patient;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
@@ -25,44 +28,58 @@ import org.openmrs.module.sync.api.SyncService;
 import org.springframework.aop.MethodBeforeAdvice;
 
 /**
- * This class intercepts {@link PatientService#savePatient(Patient)}. Sync does this in
- *  order to handle the special  case of saving patient who is already
- * user in the system. See {@link SyncSubclassStub} class comments for detailed description 
- * of how this works.
+ * This class intercepts {@link ConceptService#saveConcept(Concept)}. Sync does
+ * this in order to handle the special case of saving concept numerics who is
+ * already concept in the system (e.g. someone changes the datatype to/from a
+ * concept numeric). See {@link SyncSubclassStub} class comments for detailed
+ * description of how this works.
  * 
  * @see org.openmrs.module.sync.SyncSubclassStub
  */
-public class SavePatientAdvice implements MethodBeforeAdvice  {
-	
+public class SaveConceptAdvice implements MethodBeforeAdvice {
+
 	private static final long serialVersionUID = 38539204394323L;
-	
+
 	private Log log = LogFactory.getLog(this.getClass());
-	
 
 	/**
 	 * @see org.springframework.aop.MethodBeforeAdvice#before(java.lang.reflect.Method,
 	 *      java.lang.Object[], java.lang.Object)
 	 * @should not fail on update method with no arguments
 	 */
-	public void before(Method method, Object[] args, Object target) throws Throwable {
+	public void before(Method method, Object[] args, Object target)
+			throws Throwable {
 
-		if (!method.getName().equals("savePatient")) {
+		if (!method.getName().equals("saveConcept")) {
 			return;
 		}
-		
-		log.debug("Executing advice on savePatient() " + args[0].toString());
-		
-		//pull out the patient object that is being saved, double check type safety
+
+		log.debug("Executing advice on saveConcept() " + args[0].toString());
+
+		// pull out the concept object that is being saved, double check type
+		// safety
 		if (args[0] == null) {
 			return;
 		}
-		if (!Patient.class.isAssignableFrom(args[0].getClass())) {
+		if (!Concept.class.isAssignableFrom(args[0].getClass())) {
 			return;
 		}
-		
-		Context.getService(SyncService.class).handleInsertPatientStubIfNeeded((Patient)args[0]);
-		
+
+		SyncSubclassStub stub = null;
+		if (ConceptNumeric.class.isAssignableFrom(args[0].getClass())) {
+			stub = new SyncSubclassStub((Concept) args[0], "concept",
+					"concept_id", "concept_numeric", "concept_id", null, null,
+					null);
+			stub.addColumn("precise", 0);
+		} else if (ConceptComplex.class.isAssignableFrom(args[0].getClass())) {
+			stub = new SyncSubclassStub((Concept) args[0], "concept",
+					"concept_id", "concept_complex", "concept_id", null, null,
+					null);
+		}
+		Context.getService(SyncService.class)
+				.handleInsertSubclassIfNeeded(stub);
+
 		return;
 	}
-		
+
 }

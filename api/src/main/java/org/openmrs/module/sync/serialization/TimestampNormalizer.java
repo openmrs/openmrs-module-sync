@@ -64,7 +64,7 @@ public class TimestampNormalizer extends Normalizer
 
         if (StringUtils.isBlank(s)) return null;
         
-        if ("java.util.Date".equals(clazz.getName())) {
+        if ("java.util.Date".equals(clazz.getName()) || "java.sql.Timestamp".equals(clazz.getName())) {
             //result = d.toString() + ' ' + t.toString();
             Date result = null;                          
             SimpleDateFormat dfm = new SimpleDateFormat(DATETIME_MASK);

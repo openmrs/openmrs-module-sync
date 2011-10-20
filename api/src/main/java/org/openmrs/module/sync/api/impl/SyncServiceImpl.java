@@ -41,7 +41,7 @@ import org.openmrs.api.db.DAOException;
 import org.openmrs.api.db.SerializedObjectDAO;
 import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncConstants;
-import org.openmrs.module.sync.SyncPatientStub;
+import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncServerClass;
@@ -823,11 +823,20 @@ public class SyncServiceImpl implements SyncService {
 	 * sync item for the actions taken inside of
 	 * {@link org.openmrs.api.db.hibernate.HibernatePatientDAO#savePatient(Patient)}. The
 	 * compensating logic resides in
-	 * {@link HibernateSyncInterceptor#addSyncItemForPatientStub(SyncPatientStub)}.
+	 * {@link HibernateSyncInterceptor#addSyncItemForSubclassStub(SyncSubclassStub)}.
 	 */
 	public void handleInsertPatientStubIfNeeded(Patient p) throws APIException {
 		
-		if (p == null || p.getPatientId() == null || p.getUuid() == null) {
+		SyncSubclassStub stub = new SyncSubclassStub(p, "person", "person_id", "patient", "patient_id", null, null, null);
+		stub.addColumn("voided", 0);
+		stub.addColumn("creator", p.getCreator().getUserId());
+		stub.addColumn("date_created", p.getDateCreated());
+		
+		handleInsertSubclassIfNeeded(stub);
+	}
+	
+	public void handleInsertSubclassIfNeeded(SyncSubclassStub stub) {
+		if (stub == null || stub.getId() == null || stub.getUuid() == null) {
 			return;
 		}
 		
@@ -836,27 +845,27 @@ public class SyncServiceImpl implements SyncService {
 		boolean wasFlushModeManualAlready = dao.setFlushModeManual();
 		try {
 			//check if person obj exists
-			Object personId = null;
-			Object patientId = null;
+			Object parentId = null;
+			Object subclassId = null;
 			
 			// TODO: Fix this logic when patient_id != person_id anymore
-			List<List<Object>> rows = executeSQLPrivilegeSafe("select person_id from person where uuid = '" + p.getUuid()
+			List<List<Object>> rows = executeSQLPrivilegeSafe("select " + stub.getParentTableId() + " from " + stub.getParentTable() + " where uuid = '" + stub.getUuid()
 			        + "'", true);
 			if (rows.size() > 0)
-				personId = rows.get(0).get(0);
+				parentId = rows.get(0).get(0);
 			
 			rows = executeSQLPrivilegeSafe(
-			    "select patient_id from patient where patient_id = (select person_id from person where uuid = '"
-			            + p.getUuid() + "')", true);
+			    "select " + stub.getSubclassTableId() + " from " + stub.getSubclassTable() + " where " + stub.getSubclassTableId() + " = (select " + stub.getParentTableId() + " from " + stub.getParentTable() + " where uuid = '"
+			            + stub.getUuid() + "')", true);
 			
 			if (rows.size() > 0)
-				patientId = rows.get(0).get(0);
+				subclassId = rows.get(0).get(0);
 			
-			if (personId != null && patientId == null) {
+			if (parentId != null && subclassId == null) {
 				//bingo!
-				log.info("Create of new patient who is already user detected, uuid: " + p.getUuid());
-				SyncPatientStub stub = new SyncPatientStub(p);
-				HibernateSyncInterceptor.addSyncItemForPatientStub(stub);
+				log.info("Create of new parent " + stub.getParentTable() + " who is already other object detected, uuid: " + stub.getUuid());
+				
+				HibernateSyncInterceptor.addSyncItemForSubclassStub(stub);
 			}
 		}
 		finally {

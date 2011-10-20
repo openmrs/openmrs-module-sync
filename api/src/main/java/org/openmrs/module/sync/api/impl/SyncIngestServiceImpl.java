@@ -32,7 +32,7 @@ import org.openmrs.module.ModuleUtil;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemState;
-import org.openmrs.module.sync.SyncPatientStub;
+import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncProcessedObject;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
@@ -206,7 +206,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     			|| "org.openmrs.PersonName".equals(item.getContainedType().getName())
                     			)) {
                     		treeSetItems.add(item);
-                    	} else if (Person.class.isAssignableFrom(item.getContainedType()) || Concept.class.isAssignableFrom(item.getContainedType()) || SyncPatientStub.class.isAssignableFrom(item.getContainedType())
+                    	} else if (Person.class.isAssignableFrom(item.getContainedType()) || Concept.class.isAssignableFrom(item.getContainedType()) || SyncSubclassStub.class.isAssignableFrom(item.getContainedType())
                     			|| SerializedObject.class.isAssignableFrom(item.getContainedType())){
                     		//Sync-180: Person items need to be processed first, Concept exhibited same behavior.
 		                    SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
@@ -450,13 +450,13 @@ public class SyncIngestServiceImpl implements SyncIngestService {
     }
 
     /**
-     * Takes steps necessary to handle ingest of SyncPatientStub by calling 
-     * {@link SyncDAO#processSyncPatientStub(SyncPatientStub)} 
+     * Takes steps necessary to handle ingest of {@link SyncSubclassStub} by calling 
+     * {@link SyncDAO#processSyncSubclassStub(SyncSubclassStub)} 
      * 
-     * param stub SyncPatientStub to be saved.
+     * param stub {@link SyncSubclassStub} to be saved.
      */
-    public void processSyncPatientStub(SyncPatientStub stub) throws APIException {
-    	dao.processSyncPatientStub(stub);
+    public void processSyncSubclassStub(SyncSubclassStub stub) throws APIException {
+    	dao.processSyncSubclassStub(stub);
     	return;
     }
     

@@ -19,7 +19,7 @@ import java.util.Map;
 import org.openmrs.annotation.Logging;
 import org.openmrs.api.APIException;
 import org.openmrs.module.sync.SyncItem;
-import org.openmrs.module.sync.SyncPatientStub;
+import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncProcessedObject;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.ingest.SyncImportItem;
@@ -84,16 +84,16 @@ public interface SyncIngestService {
     
 
     /**
-     * Takes steps necessary to handle ingest of SyncPatientStub. This is special
+     * Takes steps necessary to handle ingest of {@link SyncSubclassStub}. This is special
      * purpose object to handle processing of new patients who are already users.
      * 
-     * @see SyncPatientStub
+     * @see SyncSubclassStub
      * 
      * @param stub
      * @throws APIException
      */
     @Logging(ignoreAllArgumentValues=true)
-	public void processSyncPatientStub(SyncPatientStub stub) throws APIException;
+	public void processSyncSubclassStub(SyncSubclassStub stub) throws APIException;
 
     /**
      * Validates that database does not already contain concept with mismatched

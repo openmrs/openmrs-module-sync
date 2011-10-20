@@ -44,6 +44,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
@@ -69,7 +70,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncConstants;
-import org.openmrs.module.sync.SyncPatientStub;
+import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
@@ -1338,34 +1339,35 @@ public class HibernateSyncDAO implements SyncDAO {
 	}
 	
 	/* For full description of how this works read class comments for 
-	 * {@link SyncPatientStub}.
+	 * {@link SyncSubclassStub}.
 	 * 
 	 * (non-Javadoc)
-	 * @see org.openmrs.module.sync.api.db.SyncDAO#processSyncPatientStub(org.openmrs.module.sync.SyncPatientStub)
+	 * @see org.openmrs.module.sync.api.db.SyncDAO#processSyncSubclassStub(org.openmrs.module.sync.SyncSubclassStub)
 	 */
-	public void processSyncPatientStub(SyncPatientStub stub) {
+	public void processSyncSubclassStub(SyncSubclassStub stub) {
 		Connection connection = sessionFactory.getCurrentSession().connection();
 		
 		boolean stubInsertNeeded = false;
 		PreparedStatement ps = null;
-		int personId = 0;
+		int internalDatabaseId = 0;
 		
 		// check if there is a row with a matching person record and no patient record 
 		try {
-			ps = connection.prepareStatement("SELECT person_id FROM person WHERE uuid = ?");
+			// becomes something like "select person_id from person where uuid = x" or "select concept_id from concept where uuid = x"
+			ps = connection.prepareStatement("SELECT " + stub.getParentTableId() + " FROM " + stub.getParentTable() + " WHERE uuid = ?");
 			ps.setString(1, stub.getUuid());
 			ps.execute();
 			ResultSet rs = ps.getResultSet();
 			if (rs.next()) {
 				stubInsertNeeded = true;
-				personId = rs.getInt("person_id");
+				internalDatabaseId = rs.getInt(stub.getParentTableId());
 			} else {
 				stubInsertNeeded = false;
 			}
 			
 			//this should get no rows
-			ps = connection.prepareStatement("SELECT patient_id FROM patient WHERE patient_id = ?");
-			ps.setInt(1, personId);
+			ps = connection.prepareStatement("SELECT " + stub.getSubclassTableId() + " FROM " + stub.getSubclassTable() + " WHERE " + stub.getSubclassTableId() + " = ?");
+			ps.setInt(1, internalDatabaseId);
 			ps.execute();
 			if (ps.getResultSet().next()) {
 				stubInsertNeeded = false;
@@ -1375,7 +1377,7 @@ public class HibernateSyncDAO implements SyncDAO {
 			
 		}
 		catch (SQLException e) {
-			log.error("Error while trying to see if this person is a patient already", e);
+			log.error("Error while trying to see if this person is a patient already (or concept is a concept numeric already)", e);
 		}
 		if (ps != null) {
 			try {
@@ -1389,20 +1391,51 @@ public class HibernateSyncDAO implements SyncDAO {
 		if (stubInsertNeeded) {
 			try {
 				//insert the stub
-				ps = connection
-				        .prepareStatement("INSERT INTO patient (patient_id, creator, voided, date_created) VALUES (?, ?, 0, ?)");
+				String sql = "INSERT INTO " + stub.getSubclassTable() + " (" + stub.getSubclassTableId() + "COLUMNNAMEGOESHERE) VALUES (?COLUMNVALUEGOESHERE)";
+
+				if (CollectionUtils.isNotEmpty(stub.getRequiredColumnNames())
+						&& CollectionUtils.isNotEmpty(stub.getRequiredColumnValues())
+						&& CollectionUtils.isNotEmpty(stub.getRequiredColumnClasses())) {
+					for (int x = 0; x < stub.getRequiredColumnNames().size(); x++) {
+						String column = stub.getRequiredColumnNames().get(x);
+						sql = sql.replace("COLUMNNAMEGOESHERE", ", " + column + "COLUMNNAMEGOESHERE");
+						sql = sql.replace("COLUMNVALUEGOESHERE", ", ?COLUMNVALUEGOESHERE");
+					}
+				}
 				
-				ps.setInt(1, personId);
-				ps.setInt(2, stub.getCreator().getUserId());
-				ps.setDate(3, new java.sql.Date(stub.getDateCreated().getTime()));
+				sql = sql.replace("COLUMNNAMEGOESHERE", "");
+				sql = sql.replace("COLUMNVALUEGOESHERE", "");
+				
+				ps = connection.prepareStatement(sql);
+				
+				ps.setInt(1, internalDatabaseId);
+				
+				if (CollectionUtils.isNotEmpty(stub.getRequiredColumnNames())
+						&& CollectionUtils.isNotEmpty(stub.getRequiredColumnValues())
+						&& CollectionUtils.isNotEmpty(stub.getRequiredColumnClasses())) {
+					
+					for (int x = 0; x < stub.getRequiredColumnValues().size(); x++) {
+						String value = stub.getRequiredColumnValues().get(x);
+						String className = stub.getRequiredColumnClasses().get(x);
+						Class c;
+						try {
+							c = Context.loadClass(className);
+							ps.setObject(x + 2, SyncUtil.getNormalizer(c).fromString(c, value));
+						} catch (ClassNotFoundException e) {
+							log.error("Unable to convert classname into a Class object " + className);
+						}
+						
+					}
+				}
+
 				ps.executeUpdate();
 				
 				//*and* create sync item for this
-				HibernateSyncInterceptor.addSyncItemForPatientStub(stub);
-				log.debug("Sync Inserted Person Stub for " + stub.getUuid());
+				HibernateSyncInterceptor.addSyncItemForSubclassStub(stub);
+				log.debug("Sync Inserted " + stub.getParentTable() + " Stub for " + stub.getUuid());
 			}
 			catch (SQLException e) {
-				log.warn("SQL Exception while trying to create a patient stub", e);
+				log.warn("SQL Exception while trying to create a " + stub.getParentTable() + " stub", e);
 			}
 			finally {
 				if (ps != null) {

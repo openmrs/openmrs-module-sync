@@ -644,10 +644,10 @@ public class SyncUtil {
 	 * Uses the generic hibernate API to perform the save with the following exceptions.<br/>
 	 * Remarks: <br/>
 	 * Obs: if an obs comes through with a non-null voidReason, make sure we change it back to using
-	 * a PK. SyncPatientStub: this is a 'special' utility object that sync uses to compensate for
+	 * a PK. SyncSubclassStub: this is a 'special' utility object that sync uses to compensate for
 	 * presence of the prepare stmt in HibernatePatientDAO.insertPatientStubIfNeeded() that
 	 * by-passes normal hibernate interceptor behavior. For full description of how this works read
-	 * class comments for {@link SyncPatientStub}.
+	 * class comments for {@link SyncSubclassStub}.
 	 * 
 	 * @param o object to save
 	 * @param className type
@@ -698,10 +698,10 @@ public class SyncUtil {
 		//    		
 		//    	}
 		
-		//now do the save; see method comments to see why SyncPatientStub is handled differently
-		if ("org.openmrs.module.sync.SyncPatientStub".equals(className)) {
-			SyncPatientStub stub = (SyncPatientStub) o;
-			Context.getService(SyncIngestService.class).processSyncPatientStub(stub);
+		//now do the save; see method comments to see why SyncSubclassStub is handled differently
+		if ("org.openmrs.module.sync.SyncSubclassStub".equals(className)) {
+			SyncSubclassStub stub = (SyncSubclassStub) o;
+			Context.getService(SyncIngestService.class).processSyncSubclassStub(stub);
 		} else {
 			Context.getService(SyncService.class).saveOrUpdate(o);
 		}

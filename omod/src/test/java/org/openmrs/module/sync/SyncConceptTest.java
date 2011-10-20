@@ -349,7 +349,7 @@ public class SyncConceptTest extends SyncBaseTest {
 				Concept wt = cs.getConceptByName("WEIGHT");
 				assertNotNull(wt);
 				assertEquals("Should be one more name than before", numNamesBefore + 1, wt.getNames().size());
-				assertEquals("Incorrect french name", wt.getName(Locale.FRENCH).getName(), "POIDS");
+				assertEquals("Incorrect french name", "POIDS", wt.getName(Locale.FRENCH, true).getName());
 			}
 		});
 	}
@@ -470,40 +470,72 @@ public class SyncConceptTest extends SyncBaseTest {
 	@Test
 	@NotTransactional
 	public void shouldAddAndRemoveConceptAnswer() throws Exception {
-			runSyncTest(new SyncTestHelper() {
+		runSyncTest(new SyncTestHelper() {
+			
+			ConceptService cs;
+			
+			public void runOnChild() {
+				cs = Context.getConceptService();
 				
-				ConceptService cs;
+				Concept coded = cs.getConcept(1);
 				
-				public void runOnChild() {
-					cs = Context.getConceptService();
-					
-					Concept coded = cs.getConcept(1);
-					
-					// remove the first answer
-					coded.removeAnswer(coded.getAnswers().toArray(new ConceptAnswer[]{})[0]);
-					
-					// add a new answer
-					Concept other = cs.getConceptByName("WEIGHT");
-					assertNotNull("Failed to get concept WEIGHT", other);
-					coded.addAnswer(new ConceptAnswer(other));
-					
-					cs.saveConcept(coded);
+				// remove the first answer
+				coded.removeAnswer(coded.getAnswers().toArray(new ConceptAnswer[]{})[0]);
+				
+				// add a new answer
+				Concept other = cs.getConceptByName("WEIGHT");
+				assertNotNull("Failed to get concept WEIGHT", other);
+				coded.addAnswer(new ConceptAnswer(other));
+				
+				cs.saveConcept(coded);
+			}
+			
+			public void runOnParent() {
+				Context.clearSession();
+				
+				Concept conceptCoded = cs.getConcept(1);
+				
+				Set<String> answers = new HashSet<String>();
+				for (ConceptAnswer a : conceptCoded.getAnswers()) {
+					answers.add(a.getAnswerConcept().getName().getName());
 				}
+				Assert.assertTrue(answers.contains("WEIGHT")); // we added this as a new answer
+				Assert.assertFalse(answers.contains("OTHER NON-CODED")); // we removed this
+				Assert.assertTrue(answers.contains("NONE")); // was already on the concept
 				
-				public void runOnParent() {
-					Context.clearSession();
-					
-					Concept conceptCoded = cs.getConcept(1);
-					
-					Set<String> answers = new HashSet<String>();
-					for (ConceptAnswer a : conceptCoded.getAnswers()) {
-						answers.add(a.getAnswerConcept().getName().getName());
-					}
-					Assert.assertTrue(answers.contains("WEIGHT")); // we added this as a new answer
-					Assert.assertFalse(answers.contains("OTHER NON-CODED")); // we removed this
-					Assert.assertTrue(answers.contains("NONE")); // was already on the concept
-					
-				}
-			});
-		}
+			}
+		});
+	}
+	
+	@Test
+	@NotTransactional
+	public void shouldTurnConceptIntoConceptNumericWithoutFrakkingUuids() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			
+			ConceptService cs = Context.getConceptService();
+			
+			Integer conceptId = 2;
+			String oldUuid = null;
+			
+			public void runOnChild() {
+				Concept concept = cs.getConcept(conceptId);
+				oldUuid = concept.getUuid();
+				ConceptNumeric cn = new ConceptNumeric(concept);
+				cn.setHiAbsolute(10.0);
+				cs.saveConcept(cn);
+				Assert.assertEquals(conceptId, cn.getConceptId());
+				//Assert.assertEquals(oldUuid, cn.getUuid());
+				Assert.assertEquals(oldUuid, concept.getUuid());
+			}
+			
+			public void runOnParent() {
+				Concept originalConcept = cs.getConcept(conceptId);
+				ConceptNumeric originalConceptByUuid = cs.getConceptNumericByUuid(oldUuid);
+				Assert.assertNotNull("The numeric concept does not have the right uuid, something got frakked", originalConceptByUuid);
+				Assert.assertEquals(oldUuid, originalConcept.getUuid());
+				Assert.assertEquals(conceptId, originalConceptByUuid.getConceptId());
+				Assert.assertEquals(10.0, originalConceptByUuid.getHiAbsolute().doubleValue(), 0.001);
+			}
+		});
+	}
 }

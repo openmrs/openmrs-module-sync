@@ -30,7 +30,11 @@
 	<advice>
 		<point>org.openmrs.api.PatientService</point>
 		<class>@MODULE_PACKAGE@.advice.SavePatientAdvice</class>
-	</advice>	<!-- /AOP -->
+	</advice>
+	<advice>
+		<point>org.openmrs.api.ConceptService</point>
+		<class>@MODULE_PACKAGE@.advice.SaveConceptAdvice</class>
+	</advice>
 	
 	<privilege>
 		<name>View Synchronization Status</name>
