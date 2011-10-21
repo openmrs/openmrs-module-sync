@@ -349,7 +349,7 @@ public class SyncConceptTest extends SyncBaseTest {
 				Concept wt = cs.getConceptByName("WEIGHT");
 				assertNotNull(wt);
 				assertEquals("Should be one more name than before", numNamesBefore + 1, wt.getNames().size());
-				assertEquals("Incorrect french name", "POIDS", wt.getName(Locale.FRENCH, true).getName());
+				assertEquals("Incorrect french name", "POIDS", wt.getName(Locale.FRENCH).getName());
 			}
 		});
 	}
