@@ -30,6 +30,9 @@ public class DefaultNormalizer extends Normalizer {
 	 * @see org.openmrs.module.sync.serialization.Normalizer#toString(java.lang.Object)
 	 */
 	public String toString(Object o) {
+		if (o == null)
+			return "";
+		
 		return o.toString();
 	}
 	
