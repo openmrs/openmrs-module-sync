@@ -130,7 +130,7 @@ public class SyncPatientTest extends SyncBaseTest {
 						compare = OpenmrsUtil.compare(  pp.getDateEnrolled(), dateEnrolled);						
 						assertEquals("Failed to change date", compare, 0);
 							
-						assertNull("Failed to change date",pp.getDateCompleted());
+						assertNotNull("Failed to change date", pp.getDateCompleted());
 
 						assertEquals("Wrong state", pp.getCurrentState(txStat).getState(), curedState);						
 					}
