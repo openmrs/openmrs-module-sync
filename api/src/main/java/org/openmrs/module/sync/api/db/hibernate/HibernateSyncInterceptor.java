@@ -630,7 +630,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 					// want to serialize
 					if (propertyNames[i].equals(idPropertyName)
 					        || ("personId".equals(idPropertyName) && "patientId".equals(propertyNames[i]))
-					        || ("personId".equals(idPropertyName) && "userId".equals(propertyNames[i]))
+					        //|| ("personId".equals(idPropertyName) && "userId".equals(propertyNames[i]))
 					        || transientProps.contains(propertyNames[i])) {
 						// if (log.isInfoEnabled())
 						log.info("Skipping property (" + propertyNames[i]

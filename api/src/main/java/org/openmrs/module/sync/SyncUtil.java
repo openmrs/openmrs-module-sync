@@ -717,67 +717,72 @@ public class SyncUtil {
 		return UUID.randomUUID().toString();
 	}
 	
-	public static String displayName(String className, String Uuid) {
+	public static String displayName(String className, String uuid) {
 		
 		String ret = "";
 		
 		// get more identifying info about this object so it's more user-friendly
-		if (className.equals("Person") || className.equals("User") || className.equals("Patient")) {
-			Person person = Context.getPersonService().getPersonByUuid(Uuid);
+		if (className.equals("Person") || className.equals("Patient")) {
+			Person person = Context.getPersonService().getPersonByUuid(uuid);
 			if (person != null)
 				ret = person.getPersonName().toString();
 		}
+		if (className.equals("User")) {
+			User user = Context.getUserService().getUserByUuid(uuid);
+			if (user != null)
+				ret = user.getPersonName().toString();
+		}
 		if (className.equals("Encounter")) {
-			Encounter encounter = Context.getEncounterService().getEncounterByUuid(Uuid);
+			Encounter encounter = Context.getEncounterService().getEncounterByUuid(uuid);
 			if (encounter != null) {
 				ret = encounter.getEncounterType().getName()
 				        + (encounter.getForm() == null ? "" : " (" + encounter.getForm().getName() + ")");
 			}
 		}
 		if (className.equals("Concept")) {
-			Concept concept = Context.getConceptService().getConceptByUuid(Uuid);
+			Concept concept = Context.getConceptService().getConceptByUuid(uuid);
 			if (concept != null)
 				ret = concept.getName(Context.getLocale()).getName();
 		}
 		if (className.equals("Drug")) {
-			Drug drug = Context.getConceptService().getDrugByUuid(Uuid);
+			Drug drug = Context.getConceptService().getDrugByUuid(uuid);
 			if (drug != null)
 				ret = drug.getName();
 		}
 		if (className.equals("Obs")) {
-			Obs obs = Context.getObsService().getObsByUuid(Uuid);
+			Obs obs = Context.getObsService().getObsByUuid(uuid);
 			if (obs != null)
 				ret = obs.getConcept().getName(Context.getLocale()).getName();
 		}
 		if (className.equals("DrugOrder")) {
-			DrugOrder drugOrder = (DrugOrder) Context.getOrderService().getOrderByUuid(Uuid);
+			DrugOrder drugOrder = (DrugOrder) Context.getOrderService().getOrderByUuid(uuid);
 			if (drugOrder != null)
 				ret = drugOrder.getDrug().getConcept().getName(Context.getLocale()).getName();
 		}
 		if (className.equals("Program")) {
-			Program program = Context.getProgramWorkflowService().getProgramByUuid(Uuid);
+			Program program = Context.getProgramWorkflowService().getProgramByUuid(uuid);
 			if (program != null)
 				ret = program.getConcept().getName(Context.getLocale()).getName();
 		}
 		if (className.equals("ProgramWorkflow")) {
-			ProgramWorkflow workflow = Context.getProgramWorkflowService().getWorkflowByUuid(Uuid);
+			ProgramWorkflow workflow = Context.getProgramWorkflowService().getWorkflowByUuid(uuid);
 			if (workflow != null)
 				ret = workflow.getConcept().getName(Context.getLocale()).getName();
 		}
 		if (className.equals("ProgramWorkflowState")) {
-			ProgramWorkflowState state = Context.getProgramWorkflowService().getStateByUuid(Uuid);
+			ProgramWorkflowState state = Context.getProgramWorkflowService().getStateByUuid(uuid);
 			if (state != null)
 				ret = state.getConcept().getName(Context.getLocale()).getName();
 		}
 		if (className.equals("PatientProgram")) {
-			PatientProgram patientProgram = Context.getProgramWorkflowService().getPatientProgramByUuid(Uuid);
+			PatientProgram patientProgram = Context.getProgramWorkflowService().getPatientProgramByUuid(uuid);
 			String pat = patientProgram.getPatient().getPersonName().toString();
 			String prog = patientProgram.getProgram().getConcept().getName(Context.getLocale()).getName();
 			if (pat != null && prog != null)
 				ret = pat + " - " + prog;
 		}
 		if (className.equals("PatientState")) {
-			PatientState patientState = Context.getProgramWorkflowService().getPatientStateByUuid(Uuid);
+			PatientState patientState = Context.getProgramWorkflowService().getPatientStateByUuid(uuid);
 			String pat = patientState.getPatientProgram().getPatient().getPersonName().toString();
 			String st = patientState.getState().getConcept().getName(Context.getLocale()).getName();
 			if (pat != null && st != null)
@@ -785,7 +790,7 @@ public class SyncUtil {
 		}
 		
 		if (className.equals("PersonAddress")) {
-			PersonAddress address = Context.getPersonService().getPersonAddressByUuid(Uuid);
+			PersonAddress address = Context.getPersonService().getPersonAddressByUuid(uuid);
 			String name = address.getPerson().getFamilyName() + " " + address.getPerson().getGivenName();
 			name += address.getAddress1() != null && address.getAddress1().length() > 0 ? address.getAddress1() + " " : "";
 			name += address.getAddress2() != null && address.getAddress2().length() > 0 ? address.getAddress2() + " " : "";
@@ -798,14 +803,14 @@ public class SyncUtil {
 		}
 		
 		if (className.equals("PersonName")) {
-			PersonName personName = Context.getPersonService().getPersonNameByUuid(Uuid);
+			PersonName personName = Context.getPersonService().getPersonNameByUuid(uuid);
 			String name = personName.getFamilyName() + " " + personName.getGivenName();
 			if (name != null)
 				ret = name;
 		}
 		
 		if (className.equals("Relationship")) {
-			Relationship relationship = Context.getPersonService().getRelationshipByUuid(Uuid);
+			Relationship relationship = Context.getPersonService().getRelationshipByUuid(uuid);
 			String from = relationship.getPersonA().getFamilyName() + " " + relationship.getPersonA().getGivenName();
 			String to = relationship.getPersonB().getFamilyName() + " " + relationship.getPersonB().getGivenName();
 			if (from != null && to != null)
@@ -813,27 +818,27 @@ public class SyncUtil {
 		}
 		
 		if (className.equals("RelationshipType")) {
-			RelationshipType type = Context.getPersonService().getRelationshipTypeByUuid(Uuid);
+			RelationshipType type = Context.getPersonService().getRelationshipTypeByUuid(uuid);
 			ret += type.getaIsToB() + " - " + type.getbIsToA();
 		}
 		
 		if (className.equals("PersonAttributeType")) {
-			PersonAttributeType type = Context.getPersonService().getPersonAttributeTypeByUuid(Uuid);
+			PersonAttributeType type = Context.getPersonService().getPersonAttributeTypeByUuid(uuid);
 			ret += type.getName();
 		}
 		
 		if (className.equals("Location")) {
-			Location loc = Context.getLocationService().getLocationByUuid(Uuid);
+			Location loc = Context.getLocationService().getLocationByUuid(uuid);
 			ret += loc.getName();
 		}
 		
 		if (className.equals("EncounterType")) {
-			EncounterType type = Context.getEncounterService().getEncounterTypeByUuid(Uuid);
+			EncounterType type = Context.getEncounterService().getEncounterTypeByUuid(uuid);
 			ret += type.getName();
 		}
 		
 		if (className.equals("OrderType")) {
-			OrderType type = Context.getOrderService().getOrderTypeByUuid(Uuid);
+			OrderType type = Context.getOrderService().getOrderTypeByUuid(uuid);
 			ret += type.getName();
 		}
 		
