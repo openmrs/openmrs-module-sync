@@ -11,7 +11,7 @@
 	<description>Synchronize data between a parent and multiple child servers</description>
 	<activator>@MODULE_PACKAGE@.SyncModuleActivator</activator>
 	<updateURL>http://modules.openmrs.org/modules/download/@MODULE_ID@/update.rdf</updateURL>
-	<require_version>1.5.2</require_version>
+	<require_version>1.8.2</require_version>
 	
 	<mandatory>true</mandatory>
 	<!-- /Synchronization Module Properties -->
