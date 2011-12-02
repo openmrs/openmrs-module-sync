@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.openmrs.module</groupId>
-		<artifactId>sync-parent</artifactId>
+		<artifactId>sync</artifactId>
 		<version>0.975-SNAPSHOT</version>
 	</parent>
 	<groupId>org.openmrs.module</groupId>

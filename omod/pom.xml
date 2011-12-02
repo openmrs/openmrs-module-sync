@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.openmrs.module</groupId>
-		<artifactId>sync-parent</artifactId>
+		<artifactId>sync</artifactId>
 		<version>0.975-SNAPSHOT</version>
 	</parent>
 	<groupId>org.openmrs.module</groupId>
-	<artifactId>sync</artifactId>
+	<artifactId>sync-omod</artifactId>
 	<packaging>jar</packaging>
 	<name>Synchronization Module OMOD</name>
 	<description>OpenMRS module project for Synchronization Module</description>
@@ -47,6 +47,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>${project.parent.artifactId}-${project.parent.version}</finalName>
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
@@ -123,10 +124,10 @@
 	</build>
 
 	<properties>
-		<MODULE_ID>${project.artifactId}</MODULE_ID>
+		<MODULE_ID>${project.parent.artifactId}</MODULE_ID>
 		<MODULE_NAME>${project.parent.name}</MODULE_NAME>
 		<MODULE_VERSION>${project.parent.version}</MODULE_VERSION>
-		<MODULE_PACKAGE>${project.parent.groupId}.${project.artifactId}</MODULE_PACKAGE>
+		<MODULE_PACKAGE>${project.parent.groupId}.${project.parent.artifactId}</MODULE_PACKAGE>
 	</properties>
 
 </project>
