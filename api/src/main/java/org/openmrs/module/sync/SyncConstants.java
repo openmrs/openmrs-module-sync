@@ -149,6 +149,10 @@ public class SyncConstants {
 	
 	public static final String PROPERTY_CONNECTION_TIMEOUT = "sync.connection_timeout";
 	
+	public static final String PROPERTY_SYSTEM_ID_TEMPLATE = "sync.system_id_template";
+	
+	public static final String PROPERTY_SYSTEM_ID_TEMPLATE_DEFAULT = "{SYNCSERVERNAME}_{NEXTUSERID}{CHECKDIGIT}";
+	
 	public static final String RESPONSE_SUFFIX = "_response";
 	
 	public static final String DIR_IMPORT = "import";

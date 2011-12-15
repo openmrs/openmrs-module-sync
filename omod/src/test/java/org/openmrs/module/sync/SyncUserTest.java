@@ -197,14 +197,107 @@ public class SyncUserTest extends SyncBaseTest {
 	 */
 	@Test
 	@NotTransactional
-	public void shouldNotFileGeneratingSystemIdIfServerIdNotDefined() throws Exception {
+	public void shouldNotGenerateSystemIdIfGPNotDefined() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			String EXPECTED_SYSTEM_ID = "2-6";
 			
 			UserService us = Context.getUserService();
 			public void runOnChild() {
 				// override the xml defined server id with a blank server id
-				Context.getAdministrationService().saveGlobalProperty(new GlobalProperty(SyncConstants.PROPERTY_SERVER_NAME, ""));
+				Context.getAdministrationService().saveGlobalProperty(new GlobalProperty(SyncConstants.PROPERTY_SYSTEM_ID_TEMPLATE, ""));
+				
+				User u = new User();
+				u.setPerson(new Person());
+				u.setUsername("djazayeri");
+				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
+				u.getPerson().setGender("M");
+				us.saveUser(u, "Test1234");
+				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
+			}
+			public void runOnParent() {
+				User u = us.getUserByUsername("djazayeri");
+				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
+			}
+		});
+	}
+	
+	/**
+	 * This validates that the {@link GenerateSystemIdAdvisor} is is replacing the SYNCSERVERUUID var
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	@NotTransactional
+	public void shouldAddServerUuidToGeneratedSystemId() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			String EXPECTED_SYSTEM_ID = "46b16ac6144e102b8d9ce44ed545d86c_2-5";
+			
+			UserService us = Context.getUserService();
+			public void runOnChild() {
+				// override the xml defined server id with a blank server id
+				Context.getAdministrationService().saveGlobalProperty(new GlobalProperty(SyncConstants.PROPERTY_SYSTEM_ID_TEMPLATE, "{SYNCSERVERUUID}_{NEXTUSERID}{CHECKDIGIT}"));
+				
+				User u = new User();
+				u.setPerson(new Person());
+				u.setUsername("djazayeri");
+				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
+				u.getPerson().setGender("M");
+				us.saveUser(u, "Test1234");
+				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
+			}
+			public void runOnParent() {
+				User u = us.getUserByUsername("djazayeri");
+				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
+			}
+		});
+	}
+	
+	/**
+	 * This validates that the {@link GenerateSystemIdAdvisor} is is replacing the CHECKDIGIT var
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	@NotTransactional
+	public void shouldGenerateCheckDigitInGeneratedSystemId() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			String EXPECTED_SYSTEM_ID = "parent-2";
+			
+			UserService us = Context.getUserService();
+			public void runOnChild() {
+				// override the xml defined server id with a blank server id
+				Context.getAdministrationService().saveGlobalProperty(new GlobalProperty(SyncConstants.PROPERTY_SYSTEM_ID_TEMPLATE, "{CHECKDIGIT}{SYNCSERVERNAME}"));
+				
+				User u = new User();
+				u.setPerson(new Person());
+				u.setUsername("djazayeri");
+				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
+				u.getPerson().setGender("M");
+				us.saveUser(u, "Test1234");
+				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
+			}
+			public void runOnParent() {
+				User u = us.getUserByUsername("djazayeri");
+				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
+			}
+		});
+	}
+	
+	/**
+	 * This validates that the {@link GenerateSystemIdAdvisor} is is replacing the CHECKDIGIT var
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	@NotTransactional
+	public void shouldGenerateCheckDigitWithNextUserIdInGeneratedSystemId() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			String EXPECTED_SYSTEM_ID = "2-6";
+			
+			UserService us = Context.getUserService();
+			public void runOnChild() {
+				// override the xml defined server id with a blank server id
+				Context.getAdministrationService().saveGlobalProperty(new GlobalProperty(SyncConstants.PROPERTY_SYSTEM_ID_TEMPLATE, "{NEXTUSERID}{CHECKDIGIT}"));
 				
 				User u = new User();
 				u.setPerson(new Person());

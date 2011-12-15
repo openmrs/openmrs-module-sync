@@ -21,8 +21,10 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.User;
+import org.openmrs.api.AdministrationService;
 import org.openmrs.api.UserService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.patient.impl.LuhnIdentifierValidator;
 import org.springframework.aop.Advisor;
@@ -65,24 +67,44 @@ public class GenerateSystemIdAdvisor extends StaticMethodMatcherPointcutAdvisor 
 		 */
 		public Object invoke(MethodInvocation invocation) throws Throwable {
 			
-			// the system id to return
-			String systemId = null;
+			AdministrationService adminService = Context.getAdministrationService();
+			
+			// ultimately, this is what will be returned
+			String systemId = adminService.getGlobalProperty(SyncConstants.PROPERTY_SYSTEM_ID_TEMPLATE, SyncConstants.PROPERTY_SYSTEM_ID_TEMPLATE_DEFAULT);
+			
+			// user cleared the property (and hopefully knows what they're doing), so use the built-in openmrs generator
+			if (!StringUtils.hasLength(systemId))
+				return (String) invocation.proceed();
 			
 			UserService userService = Context.getUserService();
 			SyncService syncService = Context.getService(SyncService.class);
+			LuhnIdentifierValidator liv = new LuhnIdentifierValidator();
+			
+			boolean generateCheckdigit = false;
+			if (systemId.contains("{CHECKDIGIT}")) {
+				generateCheckdigit = true;
+				systemId = systemId.replaceAll("\\{CHECKDIGIT\\}", "");
+			}
 			
 			String serverName = syncService.getServerName();
 			
-			if (!StringUtils.hasLength(serverName)) {
-				// if serverName is empty or null, use the standard method implementation
-				systemId = (String) invocation.proceed();
-			} else {
-				// Hardcoding Luhn algorithm since all existing openmrs user ids have
-				// had check digits generated this way.
-				LuhnIdentifierValidator liv = new LuhnIdentifierValidator();
+			if (systemId.contains("{SYNCSERVERNAME}") && StringUtils.hasLength(serverName)) {
+				systemId = systemId.replaceAll("\\{SYNCSERVERNAME\\}", serverName);
+			}
+			
+			if (systemId.contains("{SYNCSERVERUUID}")) {
+				systemId = systemId.replaceAll("\\{SYNCSERVERUUID\\}", syncService.getServerUuid());
+			}
+			
+			systemId = systemId.replaceAll(" ", ""); // drop all spaces so that we can generate the checkdigit if needed
+			systemId = systemId.replaceAll("-", ""); // drop all hyphens so that we can generate the checkdigit if needed
+			
+			if (systemId.contains("{NEXTUSERID}")) {
+				Integer offset = 0;
 				User user = new User(); // temporary user to do the duplicate checking with
 				
-				Integer offset = 0;
+				String tempSystemId; // this is used in case we have to loop
+				
 				do {
 					// mimic what dao.generateSystemId does
 					Integer numberOfUsers = userService.getAllUsers().size() + 1;
@@ -90,21 +112,38 @@ public class GenerateSystemIdAdvisor extends StaticMethodMatcherPointcutAdvisor 
 					// generate and increment the system id if necessary
 					Integer generatedId = numberOfUsers + offset++;
 					
-					systemId = serverName + "_" + generatedId.toString();
+					// apply this to a diff var in case we have to loop
+					tempSystemId = systemId.replaceAll("\\{NEXTUSERID\\}", generatedId.toString());
 					
-					try {
-						systemId = liv.getValidIdentifier(systemId);
+					if (generateCheckdigit) {
+						try {
+							tempSystemId = liv.getValidIdentifier(tempSystemId);
+						}
+						catch (Exception e) {
+							log.error("error getting check digit", e);
+							// just continue and keep trying other numbers
+						}
 					}
-					catch (Exception e) {
-						log.error("error getting check digit", e);
-						return systemId;
-					}
-					
 					// loop until we find a system id that no one has
-					user.setSystemId(systemId);
+					user.setSystemId(tempSystemId);
 				} while (userService.hasDuplicateUsername(user));
+				
+				systemId = tempSystemId;
+				
+				// set this to false so that a second checkdigit isn't generated
+				generateCheckdigit = false;
 			}
 			
+			if (generateCheckdigit) {
+				try {
+					systemId = liv.getValidIdentifier(systemId);
+				}
+				catch (Exception e) {
+					log.error("error getting check digit", e);
+					// just continue on without the checkdigit
+				}
+			}
+				
 			return systemId;
 		}
 	}
