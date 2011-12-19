@@ -139,5 +139,31 @@
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
+	
+	<!-- different profiles for building/testing against different version of openmrs -->
+	<profiles>
+		<profile>
+			<id>openmrs-1.8</id>
+			<properties>
+				<openMRSVersion>1.8.3</openMRSVersion>
+			</properties>
+		</profile>
+		
+		<profile>
+			<id>openmrs-1.9</id>
+			<properties>
+				<openMRSVersion>1.9.0-alpha</openMRSVersion>
+			</properties>
+		</profile>
+		
+		<profile>
+			<id>openmrs-1.10</id>
+			<properties>
+				<openMRSVersion>1.10.0-SNAPSHOT</openMRSVersion>
+			</properties>
+		</profile>
+	</profiles>
+	
 
 </project>
+

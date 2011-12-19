@@ -589,7 +589,12 @@ public class SyncPatientTest extends SyncBaseTest {
 				pis.addAll(p1.getIdentifiers());
 				pis.addAll(p2.getIdentifiers());
 				
-				Context.getPatientService().mergePatients(p2, p1);
+				try {
+					Context.getPatientService().mergePatients(p2, p1);
+				}
+				catch (Exception e) {
+					throw new RuntimeException(e);
+				}
 			}
 			public void runOnParent() {
 				Patient p1 = Context.getPatientService().getPatient(2);
