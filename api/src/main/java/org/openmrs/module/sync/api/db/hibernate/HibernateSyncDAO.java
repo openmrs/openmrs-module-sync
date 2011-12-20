@@ -1532,6 +1532,11 @@ public class HibernateSyncDAO implements SyncDAO {
 	
 	//this is a utility method that i used for Sync-180
 	//won't hurt to leave it around -- may be useful in the future
+	// MG: I'm commenting this out since the CriteriaLoader method signature has 
+	// changed in the most recent version of Hibernate and so this method
+	// now causes a compile issue
+	
+	/**
 	private String getSQL(Criteria crit) {
 		String ret = "";
 		CriteriaImpl c = (CriteriaImpl) crit;
@@ -1551,6 +1556,7 @@ public class HibernateSyncDAO implements SyncDAO {
 		}
 		return ret;
 	}
+	*/
 	
 	/**
 	 * @see org.openmrs.module.sync.api.db.SyncDAO#getOlderSyncRecordInState(org.openmrs.module.sync.SyncRecord,
