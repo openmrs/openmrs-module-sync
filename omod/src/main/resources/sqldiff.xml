@@ -351,4 +351,16 @@
 		</sql>
 	</diff>
 	
+	<diff>
+		<version>1.1</version>
+		<author>Mark Goodrich</author>
+		<date>February 29 2012</date>
+		<description>
+			Add unique constraint to sync_import.uuid column
+		</description>
+		<sql>
+			ALTER TABLE `sync_import` ADD UNIQUE (`uuid`);
+		</sql>
+	</diff>
+	
 </sqldiff>
