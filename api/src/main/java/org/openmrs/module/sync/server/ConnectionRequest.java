@@ -66,11 +66,11 @@ public class ConnectionRequest {
 			
 			if (useCompression) { 
 				this.zos = new GZIPOutputStream(new BufferedOutputStream(cos));			
-				IOUtils.copy(new ByteArrayInputStream(content.getBytes()), zos);
+				IOUtils.copy(new ByteArrayInputStream(content.getBytes("UTF-8")), zos);
 				IOUtils.closeQuietly(zos);		
 			} 
 			else { 
-				IOUtils.copy(new ByteArrayInputStream(content.getBytes()), baos);
+				IOUtils.copy(new ByteArrayInputStream(content.getBytes("UTF-8")), baos);
 				IOUtils.closeQuietly(baos);
 			}
 			this.checksum = cos.getChecksum().getValue();

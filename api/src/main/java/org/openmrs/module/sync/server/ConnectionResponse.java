@@ -14,7 +14,6 @@
 package org.openmrs.module.sync.server;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.CRC32;
@@ -58,14 +57,14 @@ public class ConnectionResponse {
 
 			if (this.useCompression) { 
 		        GZIPInputStream zis = new GZIPInputStream(new BufferedInputStream(cis)); 	        
-		        this.responsePayload = IOUtils.toString(zis);
+		        this.responsePayload = IOUtils.toString(zis,"UTF-8");
 		        IOUtils.closeQuietly(zis);
 				IOUtils.closeQuietly(cis);
 		        log.info("**********************  CHECKSUM: " + cis.getChecksum().getValue() );
 		        this.checksum = cis.getChecksum().getValue();			
 			} 
 			else { 
-				this.responsePayload = IOUtils.toString(cis);				
+				this.responsePayload = IOUtils.toString(cis, "UTF-8");				
 			}
 			
 			log.info("Response compressed: " + useCompression);
