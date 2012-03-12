@@ -173,7 +173,10 @@ public class ConfigServerFormController {
 		
 		httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.config.server.saved");
 		
-		return "redirect:/module/sync/configServer.form?serverId=" + server.getServerId();
+		if (server.getServerId() != null)
+			return "redirect:/module/sync/configServer.form?serverId=" + server.getServerId();
+		else
+			return "redirect:/module/sync/config.list";
 	}
 	
 	@RequestMapping(value = "/module/sync/configServer", method = RequestMethod.POST, params = "action=editChild")
@@ -200,7 +203,10 @@ public class ConfigServerFormController {
 		
 		httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.config.server.saved");
 		
-		return "redirect:/module/sync/configServer.form?serverId=" + server.getServerId();
+		if (server.getServerId() != null)
+			return "redirect:/module/sync/configServer.form?serverId=" + server.getServerId();
+		else
+			return "redirect:/module/sync/config.list";
 		
 	}
 	
@@ -261,7 +267,10 @@ public class ConfigServerFormController {
 		
 		httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.config.parent.saved");
 		
-		return "redirect:/module/sync/configServer.form?serverId=" + server.getServerId();
+		if (server.getServerId() != null)
+			return "redirect:/module/sync/configServer.form?serverId=" + server.getServerId();
+		else
+			return "redirect:/module/sync/config.list";
 	}
 	
 	/**
