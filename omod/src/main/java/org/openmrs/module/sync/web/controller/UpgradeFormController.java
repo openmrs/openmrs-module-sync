@@ -50,6 +50,9 @@ public class UpgradeFormController {
 		// only make 1.5.* an option if running at least 1.6.0
 		if (ModuleUtil.compareVersion(OpenmrsConstants.OPENMRS_VERSION_SHORT, "1.6.0") >= 0) {
 			fromOptions.add("1.5.*");
+            fromOptions.add("1.6.*");
+            fromOptions.add("1.7.*");
+            fromOptions.add("1.8.*");
 		}
 		
 		modelMap.put("fromOptions", fromOptions);
@@ -81,6 +84,16 @@ public class UpgradeFormController {
 			
 			printUserUuidAdditions(writer);
 		}
+
+        if (("1.5.*".equals(fromVersion) || "1.6.*".equals(fromVersion)  || "1.7.*".equals(fromVersion) || "1.8.*".equals(fromVersion))
+                && ModuleUtil.compareVersion(OpenmrsConstants.OPENMRS_VERSION_SHORT, "1.6.0") >= 0) {
+            upgradePrinted =true;
+            if (writer == null) {
+                writer = response.getWriter();
+            }
+
+            printConceptReferenceTermUuids(writer);
+        }
 		
 		// nothing was printed, so the user will be sent back to upgrade.form
 		if (!upgradePrinted) {
@@ -98,8 +111,7 @@ public class UpgradeFormController {
 	 */
 	private void printUserUuidAdditions(PrintWriter writer) {
 		writer.println("-- Setting uuids on Users table for 1.5.* database upgrade to 1.6.0 database");
-		writer.println("-- This should be run on the child database BEFORE upgrading it to 1.6.0");
-		writer.println("-- The command to run this file is: mysql -u -p -e\"source thisfilename.sql\" openmrs  (Assuming openmrs is the name of your database)");
+		writer.println("-- This should be run on the child database BEFORE upgrading it to 1.6.0 (or above)");
 		writer.println("");
 		writer.println("ALTER TABLE users ADD uuid CHAR(38);");
 		
@@ -108,6 +120,31 @@ public class UpgradeFormController {
 		}
 		
 		writer.println("ALTER TABLE users MODIFY uuid char(38) NOT NULL;");
+
+        writer.println("");
+        writer.println("-- End of script to run on child database BEFORE upgrading it to 1.6.0 (or above)");
+        writer.println("");
+        writer.println("");
 	}
+
+    public void printConceptReferenceTermUuids(PrintWriter writer) {
+
+        writer.println("-- Updating uuids on Concept_Reference_Term table on child to match uuids on child");
+        writer.println("-- Necessary when upgrading to 1.9.0");
+        writer.println("-- This should be run on the child database IMMEDIATELY AFTER upgrading it to 1.9.0 (or above)");
+        writer.println("");
+
+        List<List<Object>>  results = Context.getAdministrationService().executeSQL("select code, cs.uuid, ct.uuid from concept_reference_term as ct, concept_reference_source as cs where ct.concept_source_id = cs.concept_source_id", true);
+
+        for (List<Object> result : results) {
+            writer.println("UPDATE concept_reference_term AS ct, concept_reference_source AS cs set ct.uuid = '" + result.get(2) + "'" +
+                    " WHERE ct.concept_source_id = cs.concept_source_id AND cs.uuid = '" + result.get(1) + "' AND ct.code = '" + result.get(0) + "';");
+        }
+
+        writer.println("");
+        writer.println("-- End of script to run on child database IMMEDIATELY AFTER upgrading it to 1.9.0 (or above)");
+        writer.println("");
+        writer.println("");
+    }
 	
 }
