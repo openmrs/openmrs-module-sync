@@ -5,6 +5,11 @@
 
 <hibernate-configuration>
 	<session-factory>
-		${hbmConfig}
+        <mapping resource="SyncClass.hbm.xml" />
+        <mapping resource="SyncImportRecord.hbm.xml" />
+        <mapping resource="SyncRecord.hbm.xml" />
+        <mapping resource="SyncServer.hbm.xml" />
+        <mapping resource="SyncServerClass.hbm.xml" />
+        <mapping resource="SyncServerRecord.hbm.xml" />
 	</session-factory>
 </hibernate-configuration>
