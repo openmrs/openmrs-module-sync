@@ -175,7 +175,11 @@ public class SyncEncounterTest extends SyncBaseTest {
 				e.setEncounterType(Context.getEncounterService().getEncounterType("ADULTINITIAL"));
 				
 				// add some observations
-				Obs o = new Obs(new Person(1), new Concept(1), new Date(), new Location(1));
+                Person person = Context.getPersonService().getPerson(2);
+                Concept concept = Context.getConceptService().getConcept(1);
+                Location loc = Context.getLocationService().getLocation(1);
+
+				Obs o = new Obs(person, concept, new Date(), loc);
 				e.addObs(o);
 				
 				Context.getEncounterService().saveEncounter(e);
