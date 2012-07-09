@@ -24,6 +24,9 @@ import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
 import org.springframework.test.annotation.NotTransactional;
 
+import java.util.Iterator;
+import java.util.Set;
+
 /**
  * Testing syncing of PersonAttributes via the Person object
  */
@@ -62,5 +65,83 @@ public class SyncPersonAttributeTest extends SyncBaseTest {
 			}
 		});
 	}
+
+    @Test
+    @NotTransactional
+    public void shouldUpdatePersonAttribute()throws Exception {
+
+        runSyncTest(new SyncTestHelper() {
+
+            public void runOnChild() throws Exception {
+                PersonService personService = Context.getPersonService();
+
+                PersonAttributeType type = personService.getPersonAttributeType(8); // favorite number
+
+                Person person = personService.getPerson(5);  // get a patient that already has favorite number defined
+                PersonAttribute attr = new PersonAttribute(type, "5");
+                person.addAttribute(attr);
+                personService.savePerson(person);
+
+                Set<PersonAttribute> attrs = person.getAttributes();
+
+                // patient should now have three attributes
+                Assert.assertEquals(3, attrs.size());
+
+                // as a sanity check, confirm that the patient has the right person attributes
+                Iterator<PersonAttribute> i = person.getAttributes().iterator();
+
+                while (i.hasNext()) {
+                    attr = i.next();
+                    int value = Integer.valueOf(attr.getValue());
+
+                    if (value == 3 || value == 4  || value == 5) {
+
+                        if (value == 3 || value == 4) {
+                            Assert.assertTrue(attr.isVoided());
+                        }
+                        else {
+                            Assert.assertFalse(attr.isVoided());
+                        }
+                        i.remove();
+                    }
+                }
+
+                // list should now be empty
+                Assert.assertEquals(0, attrs.size());
+            }
+
+            public void runOnParent() throws Exception {
+                PersonService personService = Context.getPersonService();
+
+                Person person = personService.getPerson(5);
+                Set<PersonAttribute> attrs = person.getAttributes();
+
+                // confirm that parent service has proper person attributes
+                Assert.assertEquals(3, attrs.size());
+
+                Iterator<PersonAttribute> i = person.getAttributes().iterator();
+
+                while (i.hasNext()) {
+                    PersonAttribute attr = i.next();
+                    int value = Integer.valueOf(attr.getValue());
+
+                    if (value == 3 || value == 4  || value == 5) {
+
+                        if (value == 3 || value == 4) {
+                            Assert.assertTrue(attr.isVoided());
+                        }
+                        else {
+                            Assert.assertFalse(attr.isVoided());
+                        }
+                        i.remove();
+                    }
+                }
+
+                // list should now be empty
+                Assert.assertEquals(0, attrs.size());
+            }
+        });
+
+    }
 	
 }

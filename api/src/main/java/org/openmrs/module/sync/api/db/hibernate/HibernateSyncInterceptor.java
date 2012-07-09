@@ -1395,7 +1395,10 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 							
 							// add it to the holder to avoid possible
 							// duplicates: key = uuid + action
-							entriesHolder.put(entryDeleteUuid + "|delete", objDelete);
+                            // also, only add if there is no update action for the same object: see SYNC-280
+                            if (!entriesHolder.containsKey(entryDeleteUuid + "|update")) {
+							    entriesHolder.put(entryDeleteUuid + "|delete", objDelete);
+                            }
 							
 						} else {
 							// TODO: more debug info

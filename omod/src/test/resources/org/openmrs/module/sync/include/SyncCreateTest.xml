@@ -147,6 +147,9 @@
   <person_attribute_type retired="false" person_attribute_type_id="7" name="Health Center" description="Specific Location of this person&apos;s home health center." format="org.openmrs.Location" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322ab426-144e-102b-8d9c-e44ed545d86c" sort_weight="2"/>
   <person_attribute_type retired="false" person_attribute_type_id="8" name="Favorite Number" description="Favorite Number" format="java.lang.Integer" searchable="0" creator="1" date_created="2007-05-04 9:59:23.0" uuid="322ab426-144e-102b-8d9c-e44ed545d86d" sort_weight="8"/>
 
+   <person_attribute person_attribute_id="101" person_id="5" value="3" person_attribute_type_id="8" creator="1" date_created="2008-08-18 12:25:57.0" voided="true" uuid="3d7c1fdc-accf-4ee6-83e4-1ee437452f29"/>
+   <person_attribute person_attribute_id="102" person_id="5" value="4" person_attribute_type_id="8" creator="1" date_created="2008-08-18 12:25:57.0" voided="false" uuid="3d5c1fdc-accf-4ee6-83e4-1ee437452f29"/>
+
   <person_name person_name_id="1" preferred="true" person_id="1" given_name="Super" middle_name="" family_name="User" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="3272ce85-144e-102b-8d9c-e44ed545d86c"/>
   <person_name person_name_id="2" preferred="true" person_id="2" given_name="Clark" middle_name="" family_name="Kent" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="5446aa86-15a6-102b-8d9c-e44ed545d86c"/>
   <person_name person_name_id="3" preferred="true" person_id="3" given_name="Lois" middle_name="" family_name="Lane" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="2e1ada24-168c-102b-8d9c-e44ed545d86c"/>
