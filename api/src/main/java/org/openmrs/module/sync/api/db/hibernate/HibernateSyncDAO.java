@@ -1273,6 +1273,7 @@ public class HibernateSyncDAO implements SyncDAO {
 						log.error("Was not able to retrieve reference to the collection entry object by uuid.");
 						log.error("Entry info: " + "\nentryClassName: " + entryClassName + "\nentryUuid: " + entryUuid
 						        + "\nentryAction: " + entryAction);
+                        log.error("Sync record original uuid: " + originalRecordUuid);
 						throw new SyncIngestException(SyncConstants.ERROR_ITEM_UUID_NOT_FOUND, ownerClassName + " missing "
 						        + entryClassName + "," + entryUuid, incoming, null);
 					}
@@ -1302,6 +1303,7 @@ public class HibernateSyncDAO implements SyncDAO {
 							        + "\nownerCollectionPropertyName:" + ownerCollectionPropertyName
 							        + "\nownerCollectionAction:" + ownerCollectionAction + "\nownerUuid:" + ownerUuid);
 							log.warn("entry info: " + "\nentryClassName:" + entryClassName + "\nentryUuid:" + entryUuid);
+                            log.warn("Sync record original uuid: " + originalRecordUuid);
 						} else {
 							//finally, remove it from the collection
 							entries.remove(toBeRemoved);
