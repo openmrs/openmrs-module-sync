@@ -332,8 +332,6 @@ public class SyncConceptTest extends SyncBaseTest {
 	
 	@Test
 	@NotTransactional
-	// TODO fix this test
-	@Ignore("failing for unknown reason after updating 1.8.x suport. works in webapp")
 	public void shouldAddNameToConcept() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -352,7 +350,7 @@ public class SyncConceptTest extends SyncBaseTest {
 				Concept wt = cs.getConceptByName("WEIGHT");
 				assertNotNull(wt);
 				assertEquals("Should be one more name than before", numNamesBefore + 1, wt.getNames().size());
-				assertEquals("Incorrect french name", "POIDS", wt.getName(Locale.FRENCH).getName());
+				assertEquals("Incorrect french name", "POIDS", wt.getName(Locale.FRENCH, true).getName());
 			}
 		});
 	}
@@ -414,7 +412,6 @@ public class SyncConceptTest extends SyncBaseTest {
 	
 	@Test
 	@NotTransactional
-	// TODO fix this test
 	public void shouldUpdateConceptWordsForNumericConcepts() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			

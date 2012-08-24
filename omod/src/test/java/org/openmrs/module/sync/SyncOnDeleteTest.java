@@ -90,7 +90,6 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 	
 	@Test
     @NotTransactional
-    @Ignore("This test fails when run in a maven batch, but passes when run alone in IDE or in just this class by maven")
 	public void shouldDeletePersonAttributeType() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild(){
