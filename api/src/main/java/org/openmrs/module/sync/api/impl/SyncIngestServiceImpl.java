@@ -26,6 +26,7 @@ import org.openmrs.ConceptName;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.Person;
 import org.openmrs.api.APIException;
+import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.SerializedObject;
 import org.openmrs.module.ModuleUtil;
@@ -374,8 +375,8 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 			for (SyncProcessedObject o : names) {
 				// we only want to update the concept words if this is NOT a delete action
 				if (o.getState() != SyncItemState.DELETED) {
-					Concept c = ((ConceptName)o.getObject()).getConcept();
-	    			c.addName((ConceptName)o.getObject());
+                    // we need to reload the concept here because the session has been cleared earlier
+					Concept c = Context.getConceptService().getConcept(((ConceptName) o.getObject()).getConcept().getId());
 					Context.getConceptService().updateConceptWord(c);
 				}
 			}

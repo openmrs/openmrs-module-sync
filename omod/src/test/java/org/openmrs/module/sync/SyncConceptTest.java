@@ -415,7 +415,6 @@ public class SyncConceptTest extends SyncBaseTest {
 	@Test
 	@NotTransactional
 	// TODO fix this test
-	@Ignore("failing for unknown reason after updating 1.8.x suport. works in webapp")
 	public void shouldUpdateConceptWordsForNumericConcepts() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
