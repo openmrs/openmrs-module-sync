@@ -345,6 +345,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 	 * @param preCommitRecordActions actions to be applied
 	 * 
 	 */
+    // TODO: does this really happen precommit?  wouldn't he call to updateConceptWord force a commit?
 	public void applyPreCommitRecordActions(Map<String, List<SyncProcessedObject>> processedObjects) {
 		
 		if (processedObjects == null)
