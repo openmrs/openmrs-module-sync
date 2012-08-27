@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
 import java.util.Date;
-import java.util.Map;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -35,7 +34,6 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.advice.GenerateSystemIdAdvisor;
 import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
-import org.openmrs.web.user.UserProperties;
 import org.springframework.test.annotation.NotTransactional;
 
 /**
@@ -45,7 +43,12 @@ public class SyncUserTest extends SyncBaseTest {
 
 	@Override
     public String getInitialDataset() {
-	    return "org/openmrs/module/sync/include/SyncCreateTest.xml";
+        try {
+            return "org/openmrs/module/sync/include/" + new TestUtil().getTestDatasetFilename("syncCreateTest");
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 	
 	@Test
@@ -205,7 +208,7 @@ public class SyncUserTest extends SyncBaseTest {
 			public void runOnChild() {
 				// override the xml defined server id with a blank server id
 				Context.getAdministrationService().saveGlobalProperty(new GlobalProperty(SyncConstants.PROPERTY_SYSTEM_ID_TEMPLATE, ""));
-				
+
 				User u = new User();
 				u.setPerson(new Person());
 				u.setUsername("djazayeri");

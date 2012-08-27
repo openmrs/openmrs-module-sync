@@ -19,7 +19,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openmrs.Concept;
 import org.openmrs.Location;
@@ -39,7 +38,12 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 
 	@Override
     public String getInitialDataset() {
-		return "org/openmrs/module/sync/include/SyncCreateTest.xml";
+        try {
+            return "org/openmrs/module/sync/include/" + new TestUtil().getTestDatasetFilename("syncCreateTest");
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 	@Test

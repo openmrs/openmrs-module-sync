@@ -18,15 +18,12 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.Date;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.SerializedObject;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.serialization.OpenmrsSerializer;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.test.annotation.NotTransactional;
 
 /**
@@ -37,7 +34,12 @@ public class SyncSerializedObjectTest extends SyncBaseTest {
 	
 	@Override
 	public String getInitialDataset() {
-		return "org/openmrs/module/sync/include/SyncCreateTest.xml";
+        try {
+            return "org/openmrs/module/sync/include/" + new TestUtil().getTestDatasetFilename("syncCreateTest");
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 	}
 	
 	@Test

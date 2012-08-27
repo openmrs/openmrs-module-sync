@@ -76,7 +76,8 @@
 				<includes>
 					<include>**/*.xml</include>
 					<include>**/*.txt</include>
-				</includes>
+                    <include>**/*.properties</include>
+                </includes>
 			</testResource>
 			<testResource>
 				<directory>src/test/resources</directory>
@@ -84,7 +85,8 @@
 				<excludes>
 					<exclude>**/*.xml</exclude>
 					<exclude>**/*.txt</exclude>
-				</excludes>
+                    <exclude>**/*.properties</exclude>
+                </excludes>
 			</testResource>
 		</testResources>
 		<pluginManagement>

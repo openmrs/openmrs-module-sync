@@ -11,6 +11,7 @@ import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
+import org.openmrs.module.sync.TestUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
@@ -34,7 +35,12 @@ public class ViewRecordControllerTest extends BaseModuleContextSensitiveTest {
 
 		// set up the basic test data, need to configure as a parent server so sync_server_records are created
 		deleteAllData();
-		executeDataSet("org/openmrs/module/sync/include/SyncCreateTest.xml");
+        try {
+            executeDataSet("org/openmrs/module/sync/include/" + new TestUtil().getTestDatasetFilename("syncCreateTest"));
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 		executeDataSet("org/openmrs/module/sync/include/SyncParentServer.xml");
 		authenticate();
 		
@@ -67,7 +73,12 @@ public class ViewRecordControllerTest extends BaseModuleContextSensitiveTest {
 
 		// set up the basic test data, need to configure as a parent server so sync_server_records are created
 		deleteAllData();
-		executeDataSet("org/openmrs/module/sync/include/SyncCreateTest.xml");
+        try {
+            executeDataSet("org/openmrs/module/sync/include/" + new TestUtil().getTestDatasetFilename("syncCreateTest"));
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 		executeDataSet("org/openmrs/module/sync/include/SyncParentServer.xml");
 		authenticate();
 		

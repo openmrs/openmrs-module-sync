@@ -32,7 +32,12 @@ public class SyncPersonTest extends SyncBaseTest {
 	
 	@Override
 	public String getInitialDataset() {
-		return "org/openmrs/module/sync/include/SyncCreateTest.xml";
+        try {
+            return "org/openmrs/module/sync/include/" + new TestUtil().getTestDatasetFilename("syncCreateTest");
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 	}
 	
 	@Test

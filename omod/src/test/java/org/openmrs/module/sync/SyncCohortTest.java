@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.openmrs.Cohort;
 import org.openmrs.api.CohortService;
 import org.openmrs.api.context.Context;
-import org.openmrs.test.TestUtil;
 import org.springframework.test.annotation.NotTransactional;
 
 /**
@@ -31,7 +30,12 @@ public class SyncCohortTest extends SyncBaseTest {
 	
 	@Override
 	public String getInitialDataset() {
-		return "org/openmrs/module/sync/include/SyncCreateTest.xml";
+        try {
+            return "org/openmrs/module/sync/include/" + new TestUtil().getTestDatasetFilename("syncCreateTest");
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 	}
 	
 	@Override

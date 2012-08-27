@@ -50,7 +50,7 @@ public class SyncServerClassTest extends SyncBaseTest {
 			PatientService patService = Context.getPatientService();
 			
 			String ATTR_TYPE_NAME = "A Person Attr type (skn3k2nfe)";
-			String PAT_ID_TYPE_NAME = " A patient identifier type (asdfde)";
+			String PAT_ID_TYPE_NAME = "A patient identifier type (asdfde)";
 			public void runOnChild() throws Exception {
 				PersonAttributeType attrType = new PersonAttributeType();
 				attrType.setName(ATTR_TYPE_NAME);

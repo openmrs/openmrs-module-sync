@@ -45,7 +45,12 @@ public class SyncCloneTest extends BaseContextSensitiveTest {
 	 */
 	@Before
 	public void setupInitialDataset() throws Exception {
-		executeDataSet("org/openmrs/module/sync/include/SyncCreateTest.xml");
+        try {
+            executeDataSet("org/openmrs/module/sync/include/" + new TestUtil().getTestDatasetFilename("syncCreateTest"));
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 	}
 
 	@Test

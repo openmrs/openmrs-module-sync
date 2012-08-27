@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import junit.framework.Assert;
 import org.junit.Test;
 import org.openmrs.Concept;
 import org.openmrs.Encounter;
@@ -51,10 +52,15 @@ import org.springframework.test.annotation.NotTransactional;
  * Tests creating various pieces of data via synchronization
  */
 public class SyncPatientTest extends SyncBaseTest {
-	
+
 	@Override
     public String getInitialDataset() {
-	    return "org/openmrs/module/sync/include/SyncCreateTest.xml";
+        try {
+            return "org/openmrs/module/sync/include/" + new TestUtil().getTestDatasetFilename("syncCreateTest");
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 	
 	@Test
@@ -423,7 +429,11 @@ public class SyncPatientTest extends SyncBaseTest {
 				
 				p.addIdentifier(new PatientIdentifier("999", pit, loc));
 				Context.getPatientService().savePatient(p);
-				List<PatientIdentifier> ids = Context.getPatientService().getPatientIdentifiers("999",pits,null,null,false);
+
+                Assert.assertEquals(1, p.getIdentifiers().size());
+                Assert.assertEquals("999", p.getPatientIdentifier().getIdentifier());
+
+				List<PatientIdentifier> ids = Context.getPatientService().getPatientIdentifiers("999",pits, null, null, null);
 				assertNotNull(ids);
 				
 				this.uuid = p.getUuid();
@@ -439,7 +449,7 @@ public class SyncPatientTest extends SyncBaseTest {
 				PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierType(2);
 				ArrayList<PatientIdentifierType> pits = new ArrayList<PatientIdentifierType>(); pits.add(pit);
 				PatientIdentifier id = new PatientIdentifier("999", pit, loc);
-				List<PatientIdentifier> ids = Context.getPatientService().getPatientIdentifiers("999",pits,null,null,false);
+				List<PatientIdentifier> ids = Context.getPatientService().getPatientIdentifiers("999",pits, null, null, null);
 				assertNotNull(ids);
 				if (ids.size() != 1)
 					assertFalse("Should only find one patient, not " + ids.size(), true);

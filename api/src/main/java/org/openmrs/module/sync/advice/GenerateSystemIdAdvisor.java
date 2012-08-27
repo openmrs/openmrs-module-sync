@@ -20,6 +20,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.GlobalProperty;
 import org.openmrs.User;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.UserService;
@@ -68,10 +69,18 @@ public class GenerateSystemIdAdvisor extends StaticMethodMatcherPointcutAdvisor 
 		public Object invoke(MethodInvocation invocation) throws Throwable {
 			
 			AdministrationService adminService = Context.getAdministrationService();
-			
-			// ultimately, this is what will be returned
-			String systemId = adminService.getGlobalProperty(SyncConstants.PROPERTY_SYSTEM_ID_TEMPLATE, SyncConstants.PROPERTY_SYSTEM_ID_TEMPLATE_DEFAULT);
-			
+
+            String systemId;
+
+            GlobalProperty systemIdTemplateGP = adminService.getGlobalPropertyObject(SyncConstants.PROPERTY_SYSTEM_ID_TEMPLATE);
+
+            if (systemIdTemplateGP != null) {
+                systemId = systemIdTemplateGP.getPropertyValue();
+            }
+            else {
+                systemId =  SyncConstants.PROPERTY_SYSTEM_ID_TEMPLATE_DEFAULT;
+            }
+
 			// user cleared the property (and hopefully knows what they're doing), so use the built-in openmrs generator
 			if (!StringUtils.hasLength(systemId))
 				return (String) invocation.proceed();
