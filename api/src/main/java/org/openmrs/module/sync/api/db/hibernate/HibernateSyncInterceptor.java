@@ -531,7 +531,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		HashMap<String, PropertyClassValue> values = new HashMap<String, PropertyClassValue>();
 		
 		try {
-			
+
 			// boolean isUuidAssigned = assignUUID(entity, currentState,
 			// propertyNames, state);
 			objectUuid = entity.getUuid();
@@ -1187,7 +1187,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			log.info("Unsupported collection type, collection type was:" + collection.getClass().getName());
 			return;
 		}
-		;
+
 		
 		OpenmrsObject owner = null;
 		String originalRecordUuid = null;
