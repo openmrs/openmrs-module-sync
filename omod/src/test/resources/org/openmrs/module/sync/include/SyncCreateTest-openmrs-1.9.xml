@@ -328,4 +328,7 @@
     <serialized_object serialized_object_id="3" name="TestReport3" description="Test Report 3 For Serialization" type="org.openmrs.report.ReportSchema" subtype="org.openmrs.report.ReportSchema" serialization_class="org.openmrs.module.serialization.xstream.XStreamSerializer" serialized_data="&lt;org.openmrs.report.ReportSchema&gt;&lt;name&gt;TestReport3&lt;/name&gt;&lt;description&gt;Test Report 3 For Serialization&lt;/description&gt;&lt;/org.openmrs.report.ReportSchema&gt;" date_created="2005-01-01 00:00:00.0" creator="1" retired="true" date_retired="2007-01-01 00:00:00.0" retired_by="1" retire_reason="A reason"  uuid="6d983876-6d5e-40b4-988b-4b144fefd360"/>
 
     <global_property property="sync.server_name" property_value="parent" uuid="cccc4f4c-fb9e-102a-b4cd-d5399a5cbbbb" />
+
+    <visit_type retired="false" visit_type_id="1" name="Unknown" description="Unknown" creator="1" date_created="2005-02-24 00:00:00.0" uuid="2a5cd7ea-144e-102b-8d9c-554ed545d86d"/>
+
 </dataset>

@@ -98,8 +98,8 @@
 	</dependencyManagement>
 
 	<properties>
-		<openMRSVersion>1.8.3</openMRSVersion>
-        <openMRSMinorVersion>1.8</openMRSMinorVersion>
+		<openMRSVersion>1.9.2-SNAPSHOT</openMRSVersion>
+        <openMRSMinorVersion>1.9</openMRSMinorVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
