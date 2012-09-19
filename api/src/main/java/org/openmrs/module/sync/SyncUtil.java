@@ -79,6 +79,7 @@ import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.BinaryNormalizer;
 import org.openmrs.module.sync.serialization.ClassNormalizer;
 import org.openmrs.module.sync.serialization.DefaultNormalizer;
+import org.openmrs.module.sync.serialization.EnumNormalizer;
 import org.openmrs.module.sync.serialization.FilePackage;
 import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.serialization.Item;
@@ -115,6 +116,7 @@ public class SyncUtil {
 		MapNormalizer mapN = new MapNormalizer();
 		ClassNormalizer classN = new ClassNormalizer();
 		PropertiesNormalizer propN = new PropertiesNormalizer();
+		EnumNormalizer enumN = new EnumNormalizer();
 		
 		safetypes = new HashMap<String, Normalizer>();
 		// safetypes.put("binary", defN);
@@ -132,6 +134,7 @@ public class SyncUtil {
 		safetypes.put("date", dateN);
 		// dbtimestamp
 		safetypes.put("double", defN);
+		safetypes.put("enum", enumN);
 		safetypes.put("float", defN);
 		safetypes.put("integer", defN);
 		safetypes.put("locale", new LocaleNormalizer());
@@ -156,6 +159,9 @@ public class SyncUtil {
 	 */
 	public static Normalizer getNormalizer(Class c) {
 		String simpleClassName = c.getSimpleName().toLowerCase();
+		if (c.isEnum()) {
+			simpleClassName = "enum";
+		}
 		return getNormalizer(simpleClassName);
 	}
 	

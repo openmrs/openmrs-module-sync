@@ -34,6 +34,7 @@ import org.openmrs.ConceptNameTag;
 import org.openmrs.ConceptNumeric;
 import org.openmrs.ConceptSet;
 import org.openmrs.ConceptWord;
+import org.openmrs.api.ConceptNameType;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
 import org.springframework.test.annotation.NotTransactional;
@@ -540,6 +541,42 @@ public class SyncConceptTest extends SyncBaseTest {
 				Assert.assertEquals(oldUuid, originalConcept.getUuid());
 				Assert.assertEquals(conceptId, originalConceptByUuid.getConceptId());
 				Assert.assertEquals(10.0, originalConceptByUuid.getHiAbsolute().doubleValue(), 0.001);
+			}
+		});
+	}
+	
+	@Test
+	@NotTransactional
+	public void shouldSyncConceptNameIndexTerm() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+			
+			ConceptService cs = Context.getConceptService();
+			
+			public void runOnChild() {
+				Concept married = cs.getConceptByName("MARRIED");
+				Assert.assertEquals(1, married.getNames().size());
+				
+				ConceptName cn = new ConceptName();
+				cn.setName("WEDDED");
+				cn.setConcept(married);
+				cn.setConceptNameType(ConceptNameType.INDEX_TERM);
+				cn.setLocale(Locale.ENGLISH);
+				cn.setLocalePreferred(false);
+				married.addName(cn);
+				cs.saveConcept(married);
+				
+				married = cs.getConceptByName("MARRIED");
+				Assert.assertEquals(2, married.getNames().size());
+			}
+			
+			public void runOnParent() {
+				Concept married = cs.getConceptByName("MARRIED");
+				Assert.assertEquals(2, married.getNames().size());
+				for (ConceptName cn : married.getNames()) {
+					if (cn.getName().equals("WEDDED")) {
+						Assert.assertEquals(ConceptNameType.INDEX_TERM, cn.getConceptNameType());
+					}
+				}
 			}
 		});
 	}
