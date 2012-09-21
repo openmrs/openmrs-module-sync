@@ -143,21 +143,8 @@
 	</pluginRepositories>
 	
 	<!-- different profiles for building/testing against different version of openmrs -->
-	<profiles>
-		<profile>
-			<id>openmrs-1.8</id>
-			<properties>
-				<openMRSVersion>1.8.3</openMRSVersion>
-			</properties>
-		</profile>
-		
-		<profile>
-			<id>openmrs-1.9</id>
-			<properties>
-				<openMRSVersion>1.9.0-alpha</openMRSVersion>
-			</properties>
-		</profile>
-		
+	<!-- (we only have 1.10 here because 1.9 is the default to build against, and earlier versions aren't supported -->
+    <profiles>
 		<profile>
 			<id>openmrs-1.10</id>
 			<properties>
