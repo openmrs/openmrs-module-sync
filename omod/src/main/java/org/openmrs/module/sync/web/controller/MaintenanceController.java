@@ -13,18 +13,6 @@
  */
 package org.openmrs.module.sync.web.controller;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
@@ -39,13 +27,11 @@ import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.module.sync.server.RemoteServer;
-import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.scheduler.TaskDefinition;
 import org.openmrs.scheduler.web.controller.SchedulerFormController;
 import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
 import org.openmrs.web.WebConstants;
-import org.openmrs.api.context.Context;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.util.StringUtils;
@@ -58,6 +44,12 @@ import org.springframework.web.servlet.mvc.SimpleFormController;
 import org.springframework.web.servlet.view.RedirectView;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 
@@ -299,17 +291,19 @@ public class MaintenanceController extends SimpleFormController {
 		
 		//Copied this from the scehduler controller but it displays the wrong value if the time 
 		//is not divisible by say 60, 3600 etc. E.g 1hr 30min may be displayed as just 1hr
-		if (interval == null || interval < 60)
+		if (interval == null || interval < 60) {
 			ret.put("units", "seconds");
+            ret.put("repeatInterval", interval);
+        }
 		else if (interval < 3600) {
 			ret.put("units", "minutes");
-			task.setRepeatInterval(interval / 60);
+            ret.put("repeatInterval", interval / 60);
 		} else if (interval < 86400) {
 			ret.put("units", "hours");
-			task.setRepeatInterval(interval / 3600);
+            ret.put("repeatInterval", interval / 3600);
 		} else {
 			ret.put("units", "days");
-			task.setRepeatInterval(interval / 86400);
+            ret.put("repeatInterval", interval / 86400);
 		}
 		
 		return ret;
@@ -344,10 +338,25 @@ public class MaintenanceController extends SimpleFormController {
 			// doing an archive task
 			try {
 				TaskDefinition task = (TaskDefinition) command;
-				
+
 				Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
-				
-				//only reschedule a task if it is started, is not running and the time is not in the past
+
+                // set the repeat interval
+                String units = request.getParameter("repeatIntervalUnits");
+                Long interval = Long.parseLong(request.getParameter("repeatInterval"));
+
+                if ("minutes".equals(units)) {
+                    interval = interval * 60;
+                } else if ("hours".equals(units)) {
+                    interval = interval * 60 * 60;
+                } else if ("days".equals(units)) {
+                    interval = interval * 60 * 60 * 24;
+                }
+
+                task.setRepeatInterval(interval);
+
+
+                //only reschedule a task if it is started, is not running and the time is not in the past
 				if (task.getStarted() && OpenmrsUtil.compareWithNullAsEarliest(task.getStartTime(), new Date()) > 0
 				        && (task.getTaskInstance() == null || !task.getTaskInstance().isExecuting()))
 					Context.getSchedulerService().rescheduleTask(task);
