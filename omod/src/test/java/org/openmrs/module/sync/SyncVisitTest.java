@@ -15,7 +15,6 @@
 package org.openmrs.module.sync;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openmrs.*;
 import org.openmrs.api.context.Context;
@@ -26,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Ignore
 public class SyncVisitTest extends SyncBaseTest {
 
     @Override

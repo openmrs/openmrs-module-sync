@@ -111,7 +111,7 @@
 
   <order_type retired="false" order_type_id="1" name="Drug" description="A drug order" creator="1" date_created="2008-01-14 17:56:26.0" uuid="2ef6da52-144e-102b-8d9c-e44ed545d86c"/>
   
-  <orders order_id="1" order_type_id="1" concept_id="9" start_date="2006-01-02 00:00:00" discontinued="0" patient_id="2" creator="1" date_created="2006-01-02 00:00:00" voided="0" uuid="fc905e87-11ef-102b-a33e-82966c5b8177"/>
+  <orders order_id="1" order_type_id="1" concept_id="9" start_date="2006-01-02 00:00:00" discontinued="0" patient_id="2" creator="1" date_created="2006-01-02 00:00:00" urgency="STAT" voided="0" uuid="fc905e87-11ef-102b-a33e-82966c5b8177"/>
   
   <patient patient_id="2" creator="1" date_created="2008-01-14 17:56:26.0" voided="0"/>
   <patient patient_id="3" creator="1" date_created="2008-01-14 17:56:26.0" voided="0"/>
