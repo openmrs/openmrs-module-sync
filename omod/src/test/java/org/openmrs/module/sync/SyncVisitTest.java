@@ -14,21 +14,19 @@
 
 package org.openmrs.module.sync;
 
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openmrs.*;
-import org.openmrs.api.AdministrationServiceTest;
-import org.openmrs.api.VisitService;
 import org.openmrs.api.context.Context;
-import org.openmrs.test.Verifies;
 import org.springframework.test.annotation.NotTransactional;
-import org.junit.Assert;
 
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Ignore
 public class SyncVisitTest extends SyncBaseTest {
 
     @Override
