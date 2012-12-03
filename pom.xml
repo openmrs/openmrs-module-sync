@@ -11,9 +11,9 @@
 	<url>http://openmrs.org</url>
 
 	<scm>
-		<connection>scm:svn:http://svn.openmrs.org/openmrs-modules/sync/trunk/</connection>
-		<developerConnection>scm:svn:http://svn.openmrs.org/openmrs-modules/sync/trunk/</developerConnection>
-		<url>http://svn.openmrs.org/openmrs-modules/sync/trunk/</url>
+		<connection>scm:git:https://github.com/openmrs/openmrs-module-sync/</connection>
+		<developerConnection>scm:git:https://github.com/openmrs/openmrs-module-sync/</developerConnection>
+		<url>https://github.com/openmrs/openmrs-module-sync/</url>
 	</scm>
 
 	<modules>
