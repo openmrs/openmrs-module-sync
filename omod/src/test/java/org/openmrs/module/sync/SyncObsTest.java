@@ -16,6 +16,7 @@ package org.openmrs.module.sync;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openmrs.Obs;
 import org.openmrs.api.ObsService;
@@ -37,10 +38,10 @@ public class SyncObsTest extends SyncBaseTest {
             throw new RuntimeException(e);
         }
 	}
-	
+
 	@Test
 	@NotTransactional
-	public void shouldSaveObsAndProtectObsIdInVoidReason() throws Exception {
+	public void shouldSyncVoidedObs() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
 			String uuid = null;
@@ -51,14 +52,13 @@ public class SyncObsTest extends SyncBaseTest {
 				Obs obs = os.getObs(3);
 				obs.setValueText("Some value");
 				Obs newlySavedObs = os.saveObs(obs, "testing the voiding process");
-				
+
 				// make sure the "new obsId:" in the voidReason gets changed to a uuid
 				SyncService ss = Context.getService(SyncService.class);
 				List<SyncRecord> records = ss.getSyncRecords();
 				SyncRecord record = records.get(records.size() - 1);
 				SyncItem item = record.getItems().toArray(new SyncItem[] {})[1];
-				Assert.assertTrue(item.getContent().contains("(new obsId: "));
-				Assert.assertFalse(item.getContent().contains("(new obsId: 4)"));
+				Assert.assertTrue(item.getContent().contains("testing the voiding process"));
 				
 				uuid = newlySavedObs.getUuid(); // we'll check the new obs on the other side for this uuid 
 			}
@@ -69,11 +69,11 @@ public class SyncObsTest extends SyncBaseTest {
 				
 				// test to make sure the voidReason references the right new obs
 
-				Obs newobs = ss.getOpenmrsObjectByUuid(Obs.class, uuid); // this is the new obs that was created by the update
-				Obs voidedobs = os.getObs(3); // this is the old obs that was edited and hence voided
+				Obs newObs = ss.getOpenmrsObjectByUuid(Obs.class, uuid); // this is the new obs that was created by the update
+				Obs voidedObs = os.getObs(3); // this is the old obs that was edited and hence voided
 				
 				// voidReason should be ".... (new obsId: 5)"
-				Assert.assertTrue(voidedobs.getVoidReason().endsWith("(new obsId: " + newobs.getObsId() + ")"));
+				Assert.assertTrue(voidedObs.getVoidReason().equals("testing the voiding process"));
 			}
 		});
 	}
