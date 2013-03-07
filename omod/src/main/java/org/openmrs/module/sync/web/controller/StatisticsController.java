@@ -132,23 +132,23 @@ public class StatisticsController extends SimpleFormController {
 		Date endDate = command.getToDate();
 		
 		// Sync statistics 
-		Integer totalRecords = ss.getCountOfSyncRecords(null, startDate, endDate, null);
-		
-		Integer synchronizedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.ALREADY_COMMITTED,
+		Long totalRecords = ss.getCountOfSyncRecords(null, startDate, endDate, null);
+
+		Long synchronizedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.ALREADY_COMMITTED,
 		    SyncRecordState.COMMITTED, SyncRecordState.COMMITTED_AND_CONFIRMATION_SENT);
-		Integer newRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.NEW);
-		Integer pendingRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.PENDING_SEND);
-		Integer sentRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.SENT);
-		Integer sendFailedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.SEND_FAILED);
-		Integer ingestFailedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.FAILED);
-		Integer retriedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.SENT_AGAIN);
-		Integer failedStoppedRecords = ss
+		Long newRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.NEW);
+		Long pendingRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.PENDING_SEND);
+		Long sentRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.SENT);
+		Long sendFailedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.SEND_FAILED);
+		Long ingestFailedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.FAILED);
+		Long retriedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.SENT_AGAIN);
+		Long failedStoppedRecords = ss
 		        .getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.FAILED_AND_STOPPED);
-		Integer notSyncRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.NOT_SUPPOSED_TO_SYNC);
-		Integer rejectedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.REJECTED);
+		Long notSyncRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.NOT_SUPPOSED_TO_SYNC);
+		Long rejectedRecords = ss.getCountOfSyncRecords(null, startDate, endDate, SyncRecordState.REJECTED);
 		
 		// all "other" ones from some other state
-		Integer unknownstateRecords = totalRecords - synchronizedRecords - newRecords - pendingRecords - sentRecords
+		Long unknownstateRecords = totalRecords - synchronizedRecords - newRecords - pendingRecords - sentRecords
 		        - sendFailedRecords - ingestFailedRecords - retriedRecords - failedStoppedRecords - notSyncRecords
 		        - rejectedRecords;
 		

@@ -115,7 +115,7 @@ public class HibernateSyncDAO implements SyncDAO {
 			//TODO: Create Uuid if missing?
 			throw new DAOException("SyncRecord must have a UUID");
 		}
-		
+
 		Session session = sessionFactory.getCurrentSession();
 		try {
 			session.save(record);
@@ -1509,7 +1509,7 @@ public class HibernateSyncDAO implements SyncDAO {
 		return ret;
 	}
 	
-	public Integer getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states) {
+	public Long getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states) {
 		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(SyncRecord.class);
 		criteria.setProjection(Projections.rowCount());
 		
@@ -1529,7 +1529,7 @@ public class HibernateSyncDAO implements SyncDAO {
 			criteria.add(Restrictions.eq("sr.syncServer", server));
 		}
 		
-		return (Integer) criteria.uniqueResult();
+		return (Long) criteria.uniqueResult();
 	}
 	
 	//this is a utility method that i used for Sync-180

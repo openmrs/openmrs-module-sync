@@ -306,7 +306,7 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	@Transactional(readOnly = true)
-	public Integer getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states)
+	public Long getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states)
 	                                                                                                        throws APIException;
 	
 	/**

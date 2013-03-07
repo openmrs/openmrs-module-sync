@@ -431,7 +431,7 @@ public interface SyncDAO {
 	 */
 	public boolean isConceptIdValidForUuid(Integer conceptId, String uuid);
 	
-	public Integer getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states);
+	public Long getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states);
 	
 	/**
 	 * @see SyncService#getOlderSyncRecordInState(SyncRecord, EnumSet)
