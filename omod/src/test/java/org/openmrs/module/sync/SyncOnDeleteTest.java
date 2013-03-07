@@ -91,7 +91,7 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 			}
 		});
 	}
-	
+
 	@Test
     @NotTransactional
 	public void shouldDeletePersonAttributeType() throws Exception {

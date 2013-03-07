@@ -19,7 +19,7 @@
 	<!-- Extensions -->
 	<extension>
 		<point>org.openmrs.admin.list</point>
-		<class>@MODULE_PACKAGE@.extension.html.AdminList</class>
+		<class>@MODULE_PACKAGE@.web.extension.AdminList</class>
 	</extension>
 	
 	<!-- AOP -->
@@ -145,7 +145,12 @@
 	</messages>
 	
 	<mappingFiles>
-		${omodHbmConfig}
+		SyncClass.hbm.xml
+		SyncImportRecord.hbm.xml
+		SyncRecord.hbm.xml
+		SyncServer.hbm.xml
+		SyncServerClass.hbm.xml
+		SyncServerRecord.hbm.xml
 	</mappingFiles>
 	
 </module>

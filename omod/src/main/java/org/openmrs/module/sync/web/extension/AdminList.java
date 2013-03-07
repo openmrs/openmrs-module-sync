@@ -11,7 +11,7 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.module.sync.extension.html;
+package org.openmrs.module.sync.web.extension;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
