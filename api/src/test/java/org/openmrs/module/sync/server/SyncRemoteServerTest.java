@@ -11,27 +11,18 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.module.sync.scheduler;
+package org.openmrs.module.sync.server;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Set;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+import java.util.Set;
 
+import org.junit.Test;
 import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncServerClass;
-import org.openmrs.module.sync.server.RemoteServer;
-
-import org.junit.Test;
 import org.openmrs.test.SkipBaseSetup;
 import org.springframework.test.annotation.NotTransactional;
 
