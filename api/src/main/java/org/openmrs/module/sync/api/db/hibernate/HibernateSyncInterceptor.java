@@ -190,16 +190,15 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 * @see org.hibernate.EmptyInterceptor#afterTransactionCompletion(org.hibernate.Transaction)
 	 */
 	@Override
-	public void afterTransactionCompletion(Transaction tx) {
+	public void beforeTransactionCompletion(Transaction tx) {
 		if (log.isDebugEnabled())
 			log.debug("beforeTransactionCompletion: " + tx + " deactivated: " + deactivated.get());
 		
 		try {
 			// If synchronization is NOT deactivated
-			if (deactivated.get() == null && !tx.wasRolledBack()) {
+			if (deactivated.get() == null) {
 				SyncRecord record = syncRecordHolder.get();
-				//avoid calling this method again when tx.commit is called below
-				deactivated.set(true);
+				syncRecordHolder.remove();
 				
 				// Does this transaction contain any serialized changes?
 				if (record.hasItems()) {
@@ -237,9 +236,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 					record.setRetryCount(0);
 					// Save SyncRecord
 					getSyncService().createSyncRecord(record, record.getOriginalUuid());
-					
-					//at this point, the tx is already committed, so we need to manually recall commit()
-					tx.commit();
 				} else {
 					// note: this will happen all the time with read-only
 					// transactions
@@ -254,8 +250,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 		finally {
 			this.postInsertModifications.remove();
-			syncRecordHolder.remove();
-			deactivated.remove();
 		}
 	}
 	
