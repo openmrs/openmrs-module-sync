@@ -362,5 +362,17 @@
 			ALTER TABLE `sync_import` ADD UNIQUE (`uuid`);
 		</sql>
 	</diff>
+        
+        <diff>
+		<version>1.1.1</version>
+		<author>Saptarshi Purkayastha</author>
+		<date>March 16 2013</date>
+		<description>
+			SYNC-278 - Add unique key to sync_record.original_uuid column
+		</description>
+		<sql>
+			ALTER TABLE `sync_record` ADD UNIQUE INDEX (`original_uuid`);
+		</sql>
+	</diff>
 	
 </sqldiff>
