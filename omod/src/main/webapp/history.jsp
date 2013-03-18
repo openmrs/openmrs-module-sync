@@ -114,6 +114,7 @@
 	<table id="syncChangesTable" cellpadding="7" cellspacing="0">
 		<thead>
 			<tr>
+                                <th><spring:message code="sync.record.details.record" /></th>
 				<th><spring:message code="sync.status.itemTypeAndUuid" /></th>
 				<%--
 				<th colspan="2" style="text-align: center;"><spring:message code="sync.status.timestamp" /></th>
@@ -141,6 +142,7 @@
 				<c:forEach var="syncRecord" items="${syncRecords}" varStatus="status">
 					<%--<c:forEach var="syncItem" items="${syncRecord.items}" varStatus="itemStatus">--%>
 						<tr>
+                                                        <td>${syncRecord.recordId}</td>
 							<td valign="middle" nowrap style="background-color: #${bgStyle};">
 								<b><a href="viewrecord.form?uuid=${syncRecord.uuid}">${recordTypes[syncRecord.uuid]}</a></b>
 								<c:if test="${not empty recordText[syncRecord.uuid]}">
