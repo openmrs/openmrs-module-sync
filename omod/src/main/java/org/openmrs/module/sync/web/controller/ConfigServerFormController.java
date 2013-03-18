@@ -306,6 +306,7 @@ public class ConfigServerFormController {
 		// unmark all currentSyncClasses that are in the sendTo list
 		for (String className : notSendTo) {
 			boolean foundClass = false;
+                        className = className.trim();
 			for (SyncServerClass currentClass : currentServerClasses) {
 				if (currentClass.getSyncClass().getName().equals(className)) {
 					foundClass = true;
@@ -334,6 +335,7 @@ public class ConfigServerFormController {
 		// unmark all currentSyncClasses that are in the sendTo list
 		for (String className : notReceiveFrom) {
 			boolean foundClass = false;
+                        className = className.trim();
 			for (SyncServerClass currentClass : currentServerClasses) {
 				if (currentClass.getSyncClass().getName().equals(className)) {
 					foundClass = true;
