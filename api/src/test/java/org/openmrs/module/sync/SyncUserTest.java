@@ -319,32 +319,24 @@ public class SyncUserTest extends SyncBaseTest {
 
 	@Test
 	@NotTransactional
-	// TODO fix this test
-	@Ignore("failing for unknown reason after updating 1.8.x suport. works in webapp")
 	public void shouldSyncUserPropertyUpdate() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
 			UserService us = Context.getUserService();
-			public void runOnChild() {
-				
+			
+			public void runOnChild() {				
 				User u = us.getUser(1);
-				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD, "true");
-				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_DEFAULT_LOCALE, "testing,test,");
-				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_LOGIN_ATTEMPTS, "0");
-				us.saveUser(u, null);
+				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_DEFAULT_LOCALE, "fr");
 				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD, "false");
-				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_LOGIN_ATTEMPTS, "1");
+				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_LOGIN_ATTEMPTS, "5");
 				us.saveUser(u, null);
 			}
+			
 			public void runOnParent() {
 				User u = us.getUser(1);
-				assertTrue(u.getUserProperties().containsKey(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD));
 				assertFalse(Boolean.valueOf(u.getUserProperties().get(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD)));
-				assertTrue(u.getUserProperties().containsKey(OpenmrsConstants.USER_PROPERTY_DEFAULT_LOCALE));
-				assertTrue("testing,test,".equals(u.getUserProperties().get(OpenmrsConstants.USER_PROPERTY_DEFAULT_LOCALE)));
-				assertTrue(u.getUserProperties().containsKey(OpenmrsConstants.USER_PROPERTY_LOGIN_ATTEMPTS));
-				assertTrue("1".equals(u.getUserProperties().get(OpenmrsConstants.USER_PROPERTY_LOGIN_ATTEMPTS)));
-
+				assertTrue("fr".equals(u.getUserProperties().get(OpenmrsConstants.USER_PROPERTY_DEFAULT_LOCALE)));
+				assertTrue("5".equals(u.getUserProperties().get(OpenmrsConstants.USER_PROPERTY_LOGIN_ATTEMPTS)));
 			}
 		});
 	}
