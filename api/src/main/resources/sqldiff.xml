@@ -374,5 +374,29 @@
 			ALTER TABLE `sync_record` ADD UNIQUE INDEX (`original_uuid`);
 		</sql>
 	</diff>
+        
+    <diff>
+		<version>1.1.2</version>
+		<author>Saptarshi Purkayastha</author>
+		<date>March 18 2013</date>
+		<description>
+			SYNC-279 - Add index to sync_record.timestamp and sync_record.state column
+		</description>
+		<sql>
+			ALTER TABLE `sync_record` ADD INDEX (`timestamp`), ADD INDEX (`state`);
+		</sql>
+	</diff>
+        
+    <diff>
+		<version>1.1.3</version>
+		<author>Saptarshi Purkayastha</author>
+		<date>March 18 2013</date>
+		<description>
+			SYNC-279 - Add index to sync_record.timestamp column
+		</description>
+		<sql>
+			ALTER TABLE `sync_server_record` ADD INDEX (`server_id`);
+		</sql>
+	</diff>
 	
 </sqldiff>
