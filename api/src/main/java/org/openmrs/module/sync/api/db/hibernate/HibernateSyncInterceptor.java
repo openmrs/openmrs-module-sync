@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.CallbackException;
 import org.hibernate.EmptyInterceptor;
 import org.hibernate.LazyInitializationException;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.collection.AbstractPersistentCollection;
@@ -51,24 +52,28 @@ import org.openmrs.PersonAttribute;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.User;
 import org.openmrs.api.APIException;
+import org.openmrs.api.UserService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncException;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemKey;
 import org.openmrs.module.sync.SyncItemState;
-import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
+import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Normalizer;
 import org.openmrs.module.sync.serialization.Package;
 import org.openmrs.module.sync.serialization.Record;
+import org.openmrs.notification.Alert;
 import org.openmrs.util.OpenmrsConstants;
+import org.openmrs.util.RoleConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -246,10 +251,41 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 		catch (Exception ex) {
 			log.error("Journal error\n", ex);
+			tx.rollback();//discard any changes
+			
+			//Create an alert for the user and super users in a new session and transaction
+			SessionFactory sf = ((SessionFactory) this.context.getBean("sessionFactory"));
+			Session session = SessionFactoryUtils.getNewSession(sf);
+			deactivated.set(true);
+			
+			try {
+				Set<User> uniqueUsersToAlert = new HashSet<User>();
+				User currentUser = Context.getAuthenticatedUser();
+				UserService us = Context.getUserService();
+				uniqueUsersToAlert.addAll(us.getUsersByRole(us.getRole(RoleConstants.SUPERUSER)));
+				//Dont't send alert to current user if this is being run by daemon user
+				if (currentUser != null && !"A4F30A1B-5EB9-11DF-A648-37A07F9C90FB".equalsIgnoreCase(currentUser.getUuid())) {
+					uniqueUsersToAlert.add(currentUser);
+				}
+				
+				Transaction newTx = session.beginTransaction();
+				String msg = Context.getMessageSourceService().getMessage("sync.record.notSaved");
+				session.save(new Alert(msg, uniqueUsersToAlert));
+				newTx.commit();
+				session.flush();
+			}
+			catch (Exception e) {
+				log.warn("Failed to create an alert after a failed attempt to create a sync record", e);
+			}
+			finally {
+				session.close();
+			}
+			
 			throw (new SyncException("Error in interceptor, see log messages and callstack.", ex));
 		}
 		finally {
 			this.postInsertModifications.remove();
+			deactivated.remove();
 		}
 	}
 	
