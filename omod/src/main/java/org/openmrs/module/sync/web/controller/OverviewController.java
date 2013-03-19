@@ -13,7 +13,13 @@
  */
 package org.openmrs.module.sync.web.controller;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -112,6 +118,8 @@ public class OverviewController extends SimpleFormController {
             //now add server stats
             Map<RemoteServer,LinkedHashSet<SyncStatistic>> stats = ss.getSyncStatistics(null, null);
             obj.put("syncStats", stats);
+
+            obj.put("currentTime",new Date());
         }
 
         return obj;
@@ -169,7 +177,6 @@ public class OverviewController extends SimpleFormController {
 		            	}
 		        	}
 		        }
-                Date currentTime = new Date();
 		        ret.put("connectionState", connectionState.entrySet());
 				ret.put("parent", parent);
 		        ret.put("parentSchedule", parentSchedule);
@@ -180,7 +187,6 @@ public class OverviewController extends SimpleFormController {
 		        ret.put("localServerUuid", ref.get("localServerUuid"));
 		        ret.put("localServerName", Context.getService(SyncService.class).getServerName());           
 		        ret.put("localServerAdminEmail", Context.getService(SyncService.class).getAdminEmail());
-                ref.put("currentTime",currentTime);
 	        }
 	        finally {
 	        	//We no longer need this privilege.
