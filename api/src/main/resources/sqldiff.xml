@@ -380,7 +380,7 @@
 		<author>Saptarshi Purkayastha</author>
 		<date>March 18 2013</date>
 		<description>
-			SYNC-279 - Add index to sync_record.timestamp and sync_record.state column
+			SYNC-279 - Add index to sync_record.timestamp and sync_record.state columns
 		</description>
 		<sql>
 			ALTER TABLE `sync_record` ADD INDEX (`timestamp`), ADD INDEX (`state`);
@@ -392,10 +392,10 @@
 		<author>Saptarshi Purkayastha</author>
 		<date>March 18 2013</date>
 		<description>
-			SYNC-279 - Add index to sync_record.timestamp column
+			SYNC-279 - Add index to sync_server_record.server_id and sync_server_record.state columns
 		</description>
 		<sql>
-			ALTER TABLE `sync_server_record` ADD INDEX (`server_id`);
+			ALTER TABLE `sync_server_record` ADD INDEX (`server_id`), ADD INDEX (`state`);
 		</sql>
 	</diff>
 	
