@@ -61,8 +61,8 @@ public enum SyncRecordState {
      * @param state
      * @return
      */
-    public static boolean isFinal(SyncRecordState state) {
-    	return state == COMMITTED || state == ALREADY_COMMITTED || state == COMMITTED_AND_CONFIRMATION_SENT;
+    public boolean isFinal() {
+    	return this == COMMITTED || this == ALREADY_COMMITTED || this == COMMITTED_AND_CONFIRMATION_SENT;
     }
     
 };
