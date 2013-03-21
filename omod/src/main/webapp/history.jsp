@@ -56,7 +56,8 @@
 		var inputs = document.getElementsByTagName('input');
 		var i = 0;
 		var input;
-		var uuids = null;
+		var syncRecordUuids = null;
+		var serverRecordIds = null;
 		
 		while(input = inputs[i++]){
 			if(input.type == 'checkbox' && input.checked){
@@ -65,19 +66,35 @@
 					return;
 				}
 				
-				if(uuids == null)
-					uuids = '';
-				else
-					uuids += ' ';
-				
-				uuids += input.id;
+				if(input.className != 'syncServerRecordCheckBox'){
+					if(syncRecordUuids == null)
+						syncRecordUuids = '';
+					else
+						syncRecordUuids += ' ';
+					
+					syncRecordUuids += input.id;
+				}else{
+					if(serverRecordIds == null)
+						serverRecordIds = '';
+					else
+						serverRecordIds += ' ';
+					
+					serverRecordIds += input.id;
+				}
 			}
 		}
 		
-		if(uuids == null)
+		if(syncRecordUuids == null && serverRecordIds == null)
 			alert('<spring:message code="sync.history.selectRecords"/>');
-		else
-			document.location = "historyResetRemoveRecords.list?recordId=" + ${firstRecordId} + "&size=" + ${size} + "&uuids="+uuids + "&action=" + action;
+		else{
+			var recordUuidsAndIds = '';
+			if(syncRecordUuids != null)
+				recordUuidsAndIds+=("&syncRecordUuids="+syncRecordUuids);
+			if(serverRecordIds != null)
+				recordUuidsAndIds+=("&serverRecordIds="+serverRecordIds);
+			
+			document.location = "historyResetRemoveRecords.list?recordId=" + ${firstRecordId} + "&size=" + ${size} + recordUuidsAndIds + "&action=" + action;
+		}
 	}
 	
 </script>
@@ -170,6 +187,9 @@
 														<spring:message code="sync.record.direction.incoming"/>
 													</c:otherwise>
 												</c:choose>
+												<c:if test="${!syncRecord.state.final}">
+													<input type="checkbox" class="syncRecordCheckBox" id="${syncRecord.uuid}" value="${syncRecord.state}" />
+												</c:if>
 											</c:when>
 											<c:otherwise>
 												<c:if test="${not empty syncRecord.remoteRecords[server]}">
@@ -187,11 +207,11 @@
 												<c:if test="${empty syncRecord.remoteRecords[server]}">
 													<span style="color: #bbb"><i><spring:message code="sync.record.server.didNotExist" /></i></span>
 												</c:if>
+												<c:if test="${not empty syncRecord.remoteRecords[server] && !syncRecord.remoteRecords[server].state.final}">
+													<input type="checkbox" class="syncServerRecordCheckBox" id="${syncRecord.remoteRecords[server].serverRecordId}" value="${syncRecord.remoteRecords[server].state}" />
+												</c:if>
 											</c:otherwise>
 										</c:choose>
-										<c:if test="${syncRecord.state!='COMMITTED' && syncRecord.state!='ALREADY_COMMITTED'}">
-											<input type="checkbox" id="${syncRecord.uuid}" value="${syncRecord.state}" />
-										</c:if>
 									</td>
 								</c:forEach>
 							</c:if>

@@ -80,6 +80,7 @@ import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.ingest.SyncIngestException;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
+import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.util.StringUtils;
@@ -1576,6 +1577,14 @@ public class HibernateSyncDAO implements SyncDAO {
 		criteria.addOrder(Order.desc("recordId"));
 		criteria.setMaxResults(1);
 		return (SyncRecord) criteria.uniqueResult();
+	}
+	
+	/**
+	 * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncServerRecord(java.lang.Integer)
+	 */
+	@Override
+	public SyncServerRecord getSyncServerRecord(Integer syncServerRecordId) throws DAOException {
+		return (SyncServerRecord) sessionFactory.getCurrentSession().get(SyncServerRecord.class, syncServerRecordId);
 	}
 	
 }

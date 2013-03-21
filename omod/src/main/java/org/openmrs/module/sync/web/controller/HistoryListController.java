@@ -15,8 +15,10 @@ package org.openmrs.module.sync.web.controller;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -201,40 +203,62 @@ public class HistoryListController {
 		
 		return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + recordId + "&size=" + size;
 	}
-    
-    @SuppressWarnings("unchecked")
+	
 	@RequestMapping(value = "/module/sync/historyResetRemoveRecords", method = RequestMethod.GET)
-	public String historyResetRemoveRecords(ModelMap modelMap, HttpServletRequest request, 
-							@RequestParam String uuids,
-							@RequestParam String action,
-							@RequestParam Integer recordId,
-	                        @RequestParam Integer size) throws Exception {
-    	
-    	if (Context.isAuthenticated()) {
-         	SyncService syncService=Context.getService(SyncService.class);
-         	
-         	SyncRecordState state = SyncRecordState.NEW;
-         	if (action.equals("remove")) {
-         		state = SyncRecordState.NOT_SUPPOSED_TO_SYNC;
-         	}
-         	
-         	String[] uuidArray = uuids.split(" ");
-         	for (String uuid : uuidArray) {
-         		
-         		SyncRecord record = syncService.getSyncRecord(uuid);
-             	if (record != null) {
-             		record.setRetryCount(0);
- 					record.setState(state);
- 					
- 					for (SyncServerRecord serverRecord : record.getServerRecords()) {
- 						serverRecord.setState(state);
- 					}
- 					
- 					syncService.updateSyncRecord(record);
-             	}
-         	}
-    	}
-    	
-    	return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + recordId + "&size=" + size;
-    }
+	public String historyResetRemoveRecords(ModelMap modelMap,
+	                                        HttpServletRequest request,
+	                                        @RequestParam(value = "syncRecordUuids", required = false) String syncRecordUuids,
+	                                        @RequestParam(value = "serverRecordIds", required = false) String serverRecordIds,
+	                                        @RequestParam String action, @RequestParam Integer recordId,
+	                                        @RequestParam Integer size) throws Exception {
+		
+		if (Context.isAuthenticated()) {
+			SyncService syncService = Context.getService(SyncService.class);
+			
+			SyncRecordState state = SyncRecordState.NEW;
+			if (action.equals("remove")) {
+				state = SyncRecordState.NOT_SUPPOSED_TO_SYNC;
+			}
+			
+			if (serverRecordIds != null || syncRecordUuids != null) {
+				Set<SyncRecord> recordsToUpdate = new HashSet<SyncRecord>();
+				//Process records for parent server
+				if (syncRecordUuids != null) {
+					String[] uuidArray = syncRecordUuids.split(" ");
+					for (String uuid : uuidArray) {
+						
+						SyncRecord record = syncService.getSyncRecord(uuid);
+						if (record != null) {
+							record.setRetryCount(0);
+							record.setState(state);
+							
+							recordsToUpdate.add(record);
+						}
+					}
+				}
+				
+				//Process records for child servers
+				if (serverRecordIds != null) {
+					String[] uuidArray = serverRecordIds.split(" ");
+					for (String id : uuidArray) {
+						
+						SyncServerRecord serverRecord = syncService.getSyncServerRecord(Integer.valueOf(id));
+						if (serverRecord != null) {
+							serverRecord.setRetryCount(0);
+							serverRecord.setState(state);
+							
+							recordsToUpdate.add(serverRecord.getSyncRecord());
+						}
+					}
+				}
+				
+				//update the parent record so that the changes cascaded to the server records
+				for (SyncRecord record : recordsToUpdate) {
+					syncService.updateSyncRecord(record);
+				}
+			}
+		}
+		
+		return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + recordId + "&size=" + size;
+	}
 }

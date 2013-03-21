@@ -34,6 +34,7 @@ import org.openmrs.module.sync.SyncStatistic;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
+import org.openmrs.module.sync.server.SyncServerRecord;
 
 /**
  * Synchronization related database functions
@@ -437,5 +438,11 @@ public interface SyncDAO {
 	 * @see SyncService#getOlderSyncRecordInState(SyncRecord, EnumSet)
 	 */
 	public SyncRecord getOlderSyncRecordInState(SyncRecord syncRecord, EnumSet<SyncRecordState> states);
+	
+	/**
+	 * @see SyncService#getSyncServerRecord(Integer)
+	 * @throws DAOException
+	 */
+	public SyncServerRecord getSyncServerRecord(Integer syncServerRecordId) throws DAOException;
 	
 }
