@@ -35,6 +35,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.collection.AbstractPersistentCollection;
+import org.hibernate.collection.PersistentList;
 import org.hibernate.collection.PersistentMap;
 import org.hibernate.collection.PersistentSet;
 import org.hibernate.criterion.Expression;
@@ -1213,7 +1214,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 */
 	protected void processHibernateCollection(AbstractPersistentCollection collection, Serializable key, String action) {
 		
-		if (!(collection instanceof PersistentSet || collection instanceof PersistentMap)) {
+		if (!(collection instanceof PersistentSet || collection instanceof PersistentMap || collection instanceof PersistentList)) {
 			log.info("Unsupported collection type, collection type was:" + collection.getClass().getName());
 			return;
 		}
@@ -1313,22 +1314,22 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 		
 		//now we know this needs to be processed. Proceed accordingly:
-		if (collection instanceof PersistentSet) {
-			processPersistentSet((PersistentSet) collection, key, action, originalRecordUuid, owner, ownerPropertyName);
+		if (collection instanceof PersistentSet || collection instanceof PersistentList) {
+			processPersistentCollection(collection, key, action, originalRecordUuid, owner, ownerPropertyName);
 		}
 		
 		return;
 	}
 	
 	/**
-	 * Processes changes to persistent sets that contains instances of OpenmrsObject objects.
+	 * Processes changes to persistent collection that contains instances of OpenmrsObject objects.
 	 * <p>
 	 * Remarks:
 	 * <p>
-	 * Xml 'schema' for the sync item content for the persisted set follows. Note that for persisted
-	 * sets syncItemKey is a composite of owner object uuid and the property name that contains the
+	 * Xml 'schema' for the sync item content for the persisted collection follows. Note that for persisted
+	 * collections syncItemKey is a composite of owner object uuid and the property name that contains the
 	 * collection. <br/>
-	 * &lt;persistent-set&gt; element: wrapper element <br/>
+	 * &lt;persistent-collection&gt; element: wrapper element <br/>
 	 * &lt;owner uuid='' propertyName='' type='' action='recreate|update' &gt; element: this
 	 * captures the information about the object that holds reference to the collection being
 	 * processed <br/>
@@ -1343,11 +1344,11 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 * -uuid: entry's uuid <br/>
 	 * -type: class name
 	 * 
-	 * @param set Instance of Hibernate PersistentSet to process.
-	 * @param key key of owner for the set.
-	 * @param action action being performed on the set: update, recreate
+	 * @param collection Instance of Hibernate AbstractPersistentCollection to process.
+	 * @param key key of owner for the collection.
+	 * @param action action being performed on the collection: update, recreate
 	 */
-	private void processPersistentSet(PersistentSet set, Serializable key, String action, String originalRecordUuid,
+	private void processPersistentCollection(AbstractPersistentCollection collection, Serializable key, String action, String originalRecordUuid,
 	                                  OpenmrsObject owner, String ownerPropertyName) {
 		
 		SessionFactory factory = null;
@@ -1361,7 +1362,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		try {
 			
 			// find out what entries need to be serialized
-			for (Object entry : set) {
+			for (Object entry : (Iterable)collection) {
 				if (entry instanceof OpenmrsObject) {
 					OpenmrsObject obj = (OpenmrsObject) entry;
 					
@@ -1377,30 +1378,30 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 					// well, this is messed up: have an instance of
 					// OpenmrsObject but has no uuid
 					if (entryUuid == null) {
-						log.error("Cannot handle set entries where uuid is null.");
-						throw new CallbackException("Cannot handle set entries where uuid is null.");
+						log.error("Cannot handle collection entries where uuid is null.");
+						throw new CallbackException("Cannot handle collection entries where uuid is null.");
 					}
 					
 					// add it to the holder to avoid possible duplicates: key =
 					// uuid + action
 					entriesHolder.put(entryUuid + "|update", obj);
 				} else if (SyncUtil.getNormalizer(entry.getClass()) == null) {
-					log.warn("Cannot handle sets where entries are not OpenmrsObject here. Type was " + entry.getClass()
+					log.warn("Cannot handle collections where entries are not OpenmrsObject here. Type was " + entry.getClass()
 					        + " in property " + ownerPropertyName + " in class " + owner.getClass());
 					// skip out early because we don't want to write any xml for it
 					// it was handled by the normal property writer hopefully
 					return;
 				} else {
-					// don't do anything else (recreating/packaging) with these sets
+					// don't do anything else (recreating/packaging) with these collections
 					return;
 				}
 			}
 			
 			// add on deletes
-			if (!"recreate".equals(action) && set.getRole() != null) {
+			if (!"recreate".equals(action) && collection.getRole() != null) {
 				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) factory)
-				        .getCollectionPersister(set.getRole());
-				Iterator it = set.getDeletes(persister, false);
+				        .getCollectionPersister(collection.getRole());
+				Iterator it = collection.getDeletes(persister, false);
 				if (it != null) {
 					while (it.hasNext()) {
 						Object entryDelete = it.next();
@@ -1419,8 +1420,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 							// well, this is messed up: have an instance of
 							// OpenmrsObject but has no uuid
 							if (entryDeleteUuid == null) {
-								log.error("Cannot handle set delete entries where uuid is null.");
-								throw new CallbackException("Cannot handle set delete entries where uuid is null.");
+								log.error("Cannot handle collection delete entries where uuid is null.");
+								throw new CallbackException("Cannot handle collection delete entries where uuid is null.");
 							}
 							
 							// add it to the holder to avoid possible
@@ -1432,7 +1433,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 							
 						} else {
 							// TODO: more debug info
-							log.warn("Cannot handle sets where entries are not OpenmrsObject!");
+							log.warn("Cannot handle collections where entries are not OpenmrsObject!");
 							// skip out early because we don't want to write any
 							// xml for it. it
 							// was handled by the normal property writer
@@ -1452,10 +1453,10 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			 */
 
 			// Setup the serialization data structures to hold the state
-			Record xml = pkg.createRecordForWrite(set.getClass().getName());
+			Record xml = pkg.createRecordForWrite(collection.getClass().getName());
 			Item entityItem = xml.getRootItem();
 			
-			// serialize owner info: we will need type, prop name where set
+			// serialize owner info: we will need type, prop name where collection
 			// goes, and owner uuid
 			Item item = xml.createItem(entityItem, "owner");
 			item.setAttribute("type", this.getType(owner));
@@ -1485,7 +1486,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			SyncItem syncItem = new SyncItem();
 			syncItem.setKey(new SyncItemKey<String>(owner.getUuid() + "|" + ownerPropertyName, String.class));
 			syncItem.setState(SyncItemState.UPDATED);
-			syncItem.setContainedType(set.getClass());
+			syncItem.setContainedType(collection.getClass());
 			syncItem.setContent(xml.toStringAsDocumentFragement());
 			
 			syncRecordHolder.get().addOrRemoveAndAddItem(syncItem);
@@ -1497,8 +1498,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			}
 		}
 		catch (Exception ex) {
-			log.error("Error processing Persistent set, see callstack and inner expection", ex);
-			throw new CallbackException("Error processing Persistent set, see callstack and inner expection.", ex);
+			log.error("Error processing Persistent collection, see callstack and inner expection", ex);
+			throw new CallbackException("Error processing Persistent collection, see callstack and inner expection.", ex);
 		}
 	}
 	
