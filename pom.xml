@@ -176,66 +176,28 @@
 	
 	<profiles>
     	<profile>
-        	<id>openmrs-1.10</id>
-        	<properties>
-            	<openMRSVersion>1.10.0-SNAPSHOT</openMRSVersion>
-        	</properties>
-        	<dependencyManagement>
-            	<dependencies>
-                	<dependency>
-                    	<groupId>org.openmrs.api</groupId>
-                    	<artifactId>openmrs-api</artifactId>
-                    	<version>${openMRSVersion}</version>
-                    	<type>test-jar</type>
-                    	<scope>test</scope>
-                	</dependency>
-                	<dependency>
-                    	<groupId>org.openmrs.web</groupId>
-                    	<artifactId>openmrs-web</artifactId>
-                    	<version>${openMRSVersion}</version>
-                    	<type>test-jar</type>
-                    	<scope>test</scope>
-                	</dependency>
-                	<dependency>
-                    	<groupId>org.openmrs.test</groupId>
-                    	<artifactId>openmrs-test</artifactId>
-                    	<version>${openMRSVersion}</version>
-                    	<type>pom</type>
-                    	<scope>test</scope>
-                	</dependency>
-            	</dependencies>
-        	</dependencyManagement>
-    	</profile>
-    	<profile>
         	<id>openmrs-1.9.0</id>
         	<properties>
             	<openMRSVersion>1.9.0</openMRSVersion>
         	</properties>
-        	<dependencyManagement>
-            	<dependencies>
-                	<dependency>
-                    	<groupId>org.openmrs.api</groupId>
-                    	<artifactId>openmrs-api</artifactId>
-                    	<version>${openMRSVersion}</version>
-                    	<type>test-jar</type>
-                    	<scope>test</scope>
-                	</dependency>
-                	<dependency>
-                    	<groupId>org.openmrs.web</groupId>
-                    	<artifactId>openmrs-web</artifactId>
-                    	<version>${openMRSVersion}</version>
-                    	<type>test-jar</type>
-                    	<scope>test</scope>
-                	</dependency>
-                	<dependency>
-                    	<groupId>org.openmrs.test</groupId>
-                    	<artifactId>openmrs-test</artifactId>
-                    	<version>${openMRSVersion}</version>
-                    	<type>pom</type>
-                    	<scope>test</scope>
-                	</dependency>
-            	</dependencies>
-        	</dependencyManagement>
+    	</profile>
+    	<profile>
+        	<id>openmrs-1.9.1</id>
+        	<properties>
+            	<openMRSVersion>1.9.1</openMRSVersion>
+        	</properties>
+    	</profile>
+    	<profile>
+        	<id>openmrs-1.9.2</id>
+        	<properties>
+            	<openMRSVersion>1.9.2</openMRSVersion>
+        	</properties>
+    	</profile>
+    	<profile>
+        	<id>openmrs-1.10</id>
+        	<properties>
+            	<openMRSVersion>1.10.0-SNAPSHOT</openMRSVersion>
+        	</properties>
     	</profile>
 	</profiles>
 
