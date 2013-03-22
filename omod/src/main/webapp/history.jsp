@@ -11,6 +11,18 @@
 
 <script type="text/javascript">
 
+	$j(document).ready( function() {
+		$j('.syncViewErrorsDialog').each(function(index, ele){
+			$j(ele).dialog({
+				autoOpen: false,
+				resizable: false,
+				width:'500px',
+				height:'auto',
+				modal: true
+			});
+		});
+	});
+
 	function reloadPage(firstRecordId) {
     	var dropdown = document.getElementById("itemsPerPage");
    		var index = dropdown.selectedIndex;
@@ -209,6 +221,17 @@
 												</c:if>
 												<c:if test="${not empty syncRecord.remoteRecords[server] && !syncRecord.remoteRecords[server].state.final}">
 													<input type="checkbox" class="syncServerRecordCheckBox" id="${syncRecord.remoteRecords[server].serverRecordId}" value="${syncRecord.remoteRecords[server].state}" />
+													<c:if test="${syncRecord.remoteRecords[server].outgoing 
+															&& (syncRecord.remoteRecords[server].state == 'FAILED' || syncRecord.remoteRecords[server].state == 'FAILED_AND_STOPPED') 
+															&& not empty syncRecord.remoteRecords[server].errorMessage
+															&& fn:trim(syncRecord.remoteRecords[server].errorMessage) != ''}">
+														<a style="float: right" href="javascript:void(0)" onclick="javascript:$j('#${syncRecord.remoteRecords[server].serverRecordId}-errorLog-dialog').dialog('open')">
+															<spring:message code="sync.record.viewErrors" />
+														</a>
+													 	<div class="syncViewErrorsDialog" id="${syncRecord.remoteRecords[server].serverRecordId}-errorLog-dialog" title="<openmrs:message code="sync.record.viewErrors.title"/>">
+													 		${syncRecord.remoteRecords[server].errorMessage}
+													 	</div>
+													</c:if>
 												</c:if>
 											</c:otherwise>
 										</c:choose>
