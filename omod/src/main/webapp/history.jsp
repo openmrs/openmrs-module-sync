@@ -120,10 +120,11 @@
 </td>
 <td>&nbsp;&nbsp;&nbsp;&nbsp;<spring:message code="sync.history.recordsPerPage"/>
 <select id="itemsPerPage" name="itemsPerPage" onchange="reloadPage(${firstRecordId})">
-	<option value="10" ${param.size == 10 ? 'selected' : ''}> 10</option>
-	<option value="50" ${param.size == 50 ? 'selected' : ''}> 50</option>
-	<option value="100" ${param.size == 100 ? 'selected' : ''}> 100</option>
-	</select>
+	<option value="10" ${size == 10 ? 'selected' : ''}> 10</option>
+	<option value="50" ${size == 50 ? 'selected' : ''}> 50</option>
+	<option value="100" ${size == 100 ? 'selected' : ''}> 100</option>
+	<option value="1000" ${size == 1000 ? 'selected' : ''}> 1000</option>
+</select>
 </td>
 </tr>
 </table>
