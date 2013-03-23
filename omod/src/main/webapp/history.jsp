@@ -144,7 +144,7 @@
 	<table id="syncChangesTable" cellpadding="7" cellspacing="0">
 		<thead>
 			<tr>
-                                <th><spring:message code="sync.record.details.record" /></th>
+				<th><spring:message code="sync.record.details.id" /></th>
 				<th><spring:message code="sync.status.itemTypeAndUuid" /></th>
 				<%--
 				<th colspan="2" style="text-align: center;"><spring:message code="sync.status.timestamp" /></th>
