@@ -251,7 +251,7 @@
     <program_workflow_state program_workflow_state_id="1" program_workflow_id="1" concept_id="7" initial="true" terminal="false" creator="1" date_created="2008-01-14 18:06:27.0" retired="false" uuid="33807f36-144e-102b-8d9c-e44ed545d86c"/>
     <program_workflow_state program_workflow_state_id="2" program_workflow_id="1" concept_id="8" initial="false" terminal="true" creator="1" date_created="2008-01-14 18:06:27.0" retired="false" uuid="33808343-144e-102b-8d9c-e44ed545d86c"/>
 
-    <provider provider_id="1" person_id="1" creator="1" date_created="2005-01-01 00:00:00.0" retired="false" uuid="31712910-144e-3333-8d9c-e44ed545d86c"/>
+    <provider provider_id="1" person_id="1" creator="1" date_created="2005-01-01 00:00:00.0" retired="false" identifier="1" uuid="31712910-144e-3333-8d9c-e44ed545d86c"/>
 
     <relationship/>
 

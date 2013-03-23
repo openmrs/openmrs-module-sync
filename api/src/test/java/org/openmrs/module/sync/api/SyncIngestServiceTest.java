@@ -33,12 +33,23 @@ import java.util.UUID;
 /**
  * Tests methods in the SyncIngestService
  */
-public class SyncIngestServiceTest extends BaseModuleContextSensitiveTest {
+public class SyncIngestServiceTest extends SyncBaseTest {
+
+	@Override
+	public String getInitialDataset() {
+		return null;
+	}
 
 	@Before
-	public void loadData() throws Exception {
+	public void before() throws Exception {
+		if (!Context.isSessionOpen()) {
+			Context.openSession();
+		}
+		initializeInMemoryDatabase();
 		executeDataSet("org/openmrs/module/sync/include/" + new TestUtil().getTestDatasetFilename("syncCreateTest"));
 		executeDataSet("org/openmrs/module/sync/include/SyncRemoteChildServer.xml");
+		authenticate();
+		Context.clearSession();
 	}
 
 	/**
