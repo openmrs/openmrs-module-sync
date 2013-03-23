@@ -97,7 +97,7 @@ public class StateController extends SimpleFormController {
         // warning: right now we are assuming there is only 1 item per record
         for ( SyncRecord record : recordList ) {
             SyncRecordState state=record.getState();
-        	if(state==SyncRecordState.ALREADY_COMMITTED||state==SyncRecordState.COMMITTED)
+        	if(state.isFinal())
         		synchronizedRecords++;
         	else if(state==SyncRecordState.NEW)
         		newRecords++;
