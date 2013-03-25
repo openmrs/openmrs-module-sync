@@ -111,7 +111,7 @@
     <obs obs_id="2" person_id="2" concept_id="10" encounter_id="1" obs_datetime="1978-05-11 00:00:00.0" location_id="2" value_numeric="23.4" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="11ce07ae-19c2-102b-8d9c-e44ed545d86c"/>
     <obs obs_id="3" person_id="2" concept_id="10" encounter_id="1" obs_datetime="1978-06-11 00:00:00.0" location_id="2" value_numeric="34.5" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="1a9c0d7b-19c2-102b-8d9c-e44ed545d86c"/>
 
-    <orders order_id="1" concept_id="9" order_number="001" order_action="action" start_date="2006-01-02 00:00:00" discontinued="0" patient_id="2" creator="1" date_created="2006-01-02 00:00:00" urgency="STAT" voided="0" uuid="fc905e87-11ef-102b-a33e-82966c5b8177"/>
+    <orders order_id="1" concept_id="9" order_number="001" urgency="urgency" order_action="action" start_date="2006-01-02 00:00:00" discontinued="0" patient_id="2" creator="1" date_created="2006-01-02 00:00:00" urgency="STAT" voided="0" uuid="fc905e87-11ef-102b-a33e-82966c5b8177"/>
 
     <patient patient_id="2" creator="1" date_created="2008-01-14 17:56:26.0" voided="0"/>
     <patient patient_id="3" creator="1" date_created="2008-01-14 17:56:26.0" voided="0"/>
