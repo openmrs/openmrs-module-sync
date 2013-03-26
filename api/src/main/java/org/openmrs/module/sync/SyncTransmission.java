@@ -33,8 +33,6 @@ import org.openmrs.util.OpenmrsUtil;
  */
 public class SyncTransmission implements IItem {
 
-    // consts
-
     // fields
     private final Log log = LogFactory.getLog(getClass());
      
@@ -49,25 +47,15 @@ public class SyncTransmission implements IItem {
     private Boolean isMaxRetryReached = false; 
 
     // constructor(s)
-    public SyncTransmission() {
-    }
+    public SyncTransmission() { }
 
     /* 
      * Create new SyncTransmission as a SyncTxRequest
      */
     public SyncTransmission(String sourceUuid, boolean isRequestingTransmission) {
-
         uuid = SyncUtil.generateUuid();        
         fileName = "sync_tx_" + SyncConstants.SYNC_FILENAME_MASK.format(new Date()) + "_request";
         this.syncSourceUuid  = sourceUuid;
-        this.isRequestingTransmission = isRequestingTransmission;
-    }
-    public SyncTransmission(String sourceUuid, boolean isRequestingTransmission, String targetUuid) {
-
-        uuid = SyncUtil.generateUuid();        
-        fileName = "sync_tx_" + SyncConstants.SYNC_FILENAME_MASK.format(new Date()) + "_request";
-        this.syncSourceUuid  = sourceUuid;
-        this.syncSourceUuid  = targetUuid;
         this.isRequestingTransmission = isRequestingTransmission;
     }
 
