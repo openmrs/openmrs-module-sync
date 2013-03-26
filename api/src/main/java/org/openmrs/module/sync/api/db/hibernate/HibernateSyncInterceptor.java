@@ -35,6 +35,7 @@ import org.hibernate.LazyInitializationException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.action.BeforeTransactionCompletionProcess;
 import org.hibernate.collection.AbstractPersistentCollection;
 import org.hibernate.collection.PersistentList;
 import org.hibernate.collection.PersistentMap;
@@ -42,6 +43,8 @@ import org.hibernate.collection.PersistentSet;
 import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Projections;
 import org.hibernate.engine.ForeignKeys;
+import org.hibernate.engine.SessionImplementor;
+import org.hibernate.event.EventSource;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.metadata.CollectionMetadata;
 import org.hibernate.proxy.HibernateProxy;
@@ -53,7 +56,6 @@ import org.openmrs.PersonAttribute;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.User;
 import org.openmrs.api.APIException;
-import org.openmrs.api.UserService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncException;
 import org.openmrs.module.sync.SyncItem;
@@ -68,9 +70,7 @@ import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Normalizer;
 import org.openmrs.module.sync.serialization.Package;
 import org.openmrs.module.sync.serialization.Record;
-import org.openmrs.notification.Alert;
 import org.openmrs.util.OpenmrsConstants;
-import org.openmrs.util.RoleConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -175,6 +175,12 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 		
 		syncRecordHolder.set(new SyncRecord());
+		
+		SessionFactory sf = (SessionFactory) this.context.getBean("sessionFactory");
+		
+		//This method can be called when there is no thread-bound session yet
+		((EventSource) SessionFactoryUtils.getSession(sf, true)).getActionQueue().registerProcess(
+		    new SyncBeforeTransactionCompletionProcess());
 	}
 	
 	/**
@@ -187,107 +193,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			syncService = Context.getService(SyncService.class);
 		
 		return syncService;
-	}
-	
-	/**
-	 * Intercepts after the transaction is completed, also called on rollback. Clean up any
-	 * remaining ThreadLocal objects/reset.
-	 * 
-	 * @see org.hibernate.EmptyInterceptor#afterTransactionCompletion(org.hibernate.Transaction)
-	 */
-	@Override
-	public void beforeTransactionCompletion(Transaction tx) {
-		if (log.isDebugEnabled())
-			log.debug("beforeTransactionCompletion: " + tx + " deactivated: " + deactivated.get());
-		
-		try {
-			// If synchronization is NOT deactivated
-			if (deactivated.get() == null) {
-				SyncRecord record = syncRecordHolder.get();
-				syncRecordHolder.remove();
-				
-				// Does this transaction contain any serialized changes?
-				if (record.hasItems()) {
-					
-					if (log.isDebugEnabled())
-						log.debug(record.getItems().size() + " SyncItems in SyncRecord, saving!");
-					
-					//update the record with any post-insert updates
-					if (this.postInsertModifications.get() != null && this.postInsertModifications.get().isEmpty() == false) {
-						processPostInsertModifications(record);
-					}
-					
-					// Grab user if we have one, and use the UUID of the user as
-					// creator of this SyncRecord
-					User user = Context.getAuthenticatedUser();
-					if (user != null) {
-						record.setCreator(user.getUuid());
-					}
-					
-					// Grab database version
-					record.setDatabaseVersion(OpenmrsConstants.OPENMRS_VERSION_SHORT);
-					
-					// Complete the record
-					record.setUuid(SyncUtil.generateUuid());
-					if (record.getOriginalUuid() == null) {
-						if (log.isInfoEnabled())
-							log.info("OriginalUuid is null, so assigning a new UUID: " + record.getUuid());
-						record.setOriginalUuid(record.getUuid());
-					} else {
-						if (log.isInfoEnabled())
-							log.info("OriginalUuid is: " + record.getOriginalUuid());
-					}
-					record.setState(SyncRecordState.NEW);
-					record.setTimestamp(new Date());
-					record.setRetryCount(0);
-					// Save SyncRecord
-					getSyncService().createSyncRecord(record, record.getOriginalUuid());
-				} else {
-					// note: this will happen all the time with read-only
-					// transactions
-					if (log.isTraceEnabled())
-						log.trace("No SyncItems in SyncRecord, save discarded (note: maybe a read-only transaction)!");
-				}
-			}
-		}
-		catch (Exception ex) {
-			log.error("Journal error\n", ex);
-			tx.rollback();//discard any changes
-			
-			//Create an alert for the user and super users in a new session and transaction
-			SessionFactory sf = ((SessionFactory) this.context.getBean("sessionFactory"));
-			Session session = SessionFactoryUtils.getNewSession(sf);
-			deactivated.set(true);
-			
-			try {
-				Set<User> uniqueUsersToAlert = new HashSet<User>();
-				User currentUser = Context.getAuthenticatedUser();
-				UserService us = Context.getUserService();
-				uniqueUsersToAlert.addAll(us.getUsersByRole(us.getRole(RoleConstants.SUPERUSER)));
-				//Dont't send alert to current user if this is being run by daemon user
-				if (currentUser != null && !"A4F30A1B-5EB9-11DF-A648-37A07F9C90FB".equalsIgnoreCase(currentUser.getUuid())) {
-					uniqueUsersToAlert.add(currentUser);
-				}
-				
-				Transaction newTx = session.beginTransaction();
-				String msg = Context.getMessageSourceService().getMessage("sync.record.notSaved");
-				session.save(new Alert(msg, uniqueUsersToAlert));
-				newTx.commit();
-				session.flush();
-			}
-			catch (Exception e) {
-				log.warn("Failed to create an alert after a failed attempt to create a sync record", e);
-			}
-			finally {
-				session.close();
-			}
-			
-			throw (new SyncException("Error in interceptor, see log messages and callstack.", ex));
-		}
-		finally {
-			this.postInsertModifications.remove();
-			deactivated.remove();
-		}
 	}
 	
 	/**
@@ -1780,5 +1685,86 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			return getCollectionMetadata(clazz.getSuperclass(), collPropertyName, sf);
 		}
 		return cmd;
+	}
+	
+	/**
+	 * Intercepts before the transaction is completed. Cleans up postInsertModifications and
+	 * deactivated ThreadLocal objects/reset. Note that uncaught Exceptions thrown from this process
+	 * are rethrown by hibernate as AssertionFailure exceptions except for HibernateException and
+	 * its subclasses
+	 */
+	private class SyncBeforeTransactionCompletionProcess implements BeforeTransactionCompletionProcess {
+		
+		/**
+		 * @see org.hibernate.action.BeforeTransactionCompletionProcess#doBeforeTransactionCompletion(org.hibernate.engine.SessionImplementor)
+		 */
+		@Override
+		public void doBeforeTransactionCompletion(SessionImplementor sessionImpl) {
+			if (log.isDebugEnabled())
+				log.debug("In doBeforeTransactionCompletion process: " + SessionFactoryUtils.toString((Session) sessionImpl)
+				        + " deactivated: " + deactivated.get());
+			
+			try {
+				// If synchronization is NOT deactivated
+				if (deactivated.get() == null) {
+					SyncRecord record = syncRecordHolder.get();
+					syncRecordHolder.remove();
+					
+					// Does this transaction contain any serialized changes?
+					if (record != null && record.hasItems()) {
+						
+						if (log.isDebugEnabled())
+							log.debug(record.getItems().size() + " SyncItems in SyncRecord, saving!");
+						
+						//update the record with any post-insert updates
+						if (postInsertModifications.get() != null && postInsertModifications.get().isEmpty() == false) {
+							processPostInsertModifications(record);
+						}
+						
+						// Grab user if we have one, and use the UUID of the user as
+						// creator of this SyncRecord
+						User user = Context.getAuthenticatedUser();
+						if (user != null) {
+							record.setCreator(user.getUuid());
+						}
+						
+						// Grab database version
+						record.setDatabaseVersion(OpenmrsConstants.OPENMRS_VERSION_SHORT);
+						
+						// Complete the record
+						record.setUuid(SyncUtil.generateUuid());
+						if (record.getOriginalUuid() == null) {
+							if (log.isInfoEnabled())
+								log.info("OriginalUuid is null, so assigning a new UUID: " + record.getUuid());
+							record.setOriginalUuid(record.getUuid());
+						} else {
+							if (log.isInfoEnabled())
+								log.info("OriginalUuid is: " + record.getOriginalUuid());
+						}
+						record.setState(SyncRecordState.NEW);
+						record.setTimestamp(new Date());
+						record.setRetryCount(0);
+						// Save SyncRecord
+						getSyncService().createSyncRecord(record, record.getOriginalUuid());
+					} else {
+						// note: this will happen all the time with read-only
+						// transactions
+						if (log.isTraceEnabled())
+							log.trace("No SyncItems in SyncRecord, save discarded (note: maybe a read-only transaction)!");
+					}
+				}
+			}
+			catch (Exception ex) {
+				log.error("Journal error\n", ex);
+				
+				throw (new SyncException("Error in interceptor, see log messages and callstack.", ex));
+			}
+			finally {
+				postInsertModifications.remove();
+				deactivated.remove();
+			}
+			
+		}
+		
 	}
 }
