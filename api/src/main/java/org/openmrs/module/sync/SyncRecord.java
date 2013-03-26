@@ -213,6 +213,21 @@ public class SyncRecord implements Serializable, IItem {
     	else
     		return false;
    }
+	
+	/**
+	 * Checks if the sync record contains an item with its key equal to the one that is generated
+	 * for the passed in SyncItem, ideally it checks if a sync item exists that matches the
+	 * uuid+action+containedType combination
+	 * 
+	 * @param syncItem the sync item to match against
+	 * @return true if the record contains the sync item otherwise false
+	 */
+	public boolean hasSyncItem(SyncItem syncItem) {
+		if (syncItem != null && items != null) {
+			return items.containsKey(SyncRecord.deriveMapKey(syncItem));
+		}
+		return false;
+	}
 
     // Methods
     @Override

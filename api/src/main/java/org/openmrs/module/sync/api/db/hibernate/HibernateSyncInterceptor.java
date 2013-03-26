@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.CallbackException;
 import org.hibernate.EmptyInterceptor;
+import org.hibernate.EntityMode;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -42,13 +43,12 @@ import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Projections;
 import org.hibernate.engine.ForeignKeys;
 import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.metadata.CollectionMetadata;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.EmbeddedComponentType;
 import org.hibernate.type.Type;
-import org.openmrs.Cohort;
 import org.openmrs.Obs;
 import org.openmrs.OpenmrsObject;
-import org.openmrs.Patient;
 import org.openmrs.PersonAttribute;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.User;
@@ -1004,35 +1004,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 					log.trace("unable to get uuid from obs pk: " + obsId, e);
 				}
 			}
-		} else if (entity instanceof Cohort && "memberIds".equals(property)) {
-			// convert integer patient ids to uuids
-			try {
-				item.setAttribute("type", "java.util.Set<org.openmrs.Patient>");
-				StringBuilder sb = new StringBuilder();
-				
-				data = data.replaceFirst("\\[", "").replaceFirst("\\]", "");
-				
-				sb.append("[");
-				String[] fieldVals = data.split(",");
-				for (int x = 0; x < fieldVals.length; x++) {
-					if (x >= 1)
-						sb.append(", ");
-					
-					String eachFieldVal = fieldVals[x].trim(); // take out whitespace
-					String uuid = fetchUuid(Patient.class, Integer.valueOf(eachFieldVal));
-					sb.append(uuid);
-					
-				}
-				
-				sb.append("]");
-				
-				return sb.toString();
-				
-			}
-			catch (Throwable t) {
-				log.warn("Unable to get Patient for sync'ing cohort.memberIds property", t);
-			}
-			
 		}
 		
 		return data;
@@ -1314,7 +1285,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 		
 		//now we know this needs to be processed. Proceed accordingly:
-		if (collection instanceof PersistentSet || collection instanceof PersistentList) {
+		if (collection instanceof PersistentSet || collection instanceof PersistentList
+		        || collection instanceof PersistentMap) {
 			processPersistentCollection(collection, key, action, originalRecordUuid, owner, ownerPropertyName);
 		}
 		
@@ -1361,6 +1333,42 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		entriesHolder = new LinkedHashMap<String, OpenmrsObject>();
 		try {
 			
+			CollectionMetadata collMD = getCollectionMetadata(owner.getClass(), ownerPropertyName, factory);
+			if (collMD == null) {
+				throw new SyncException("Can't find a collection with " + ownerPropertyName + " in class "
+				        + owner.getClass());
+			}
+			
+			Class<?> elementClass = collMD.getElementType().getReturnedClass();
+			//If this is a simple type like Integer, serialization of the collection will be as below: 
+			//<org.openmrs.Cohort>
+			//	<memberIds type="java.util.Set(org.openmrs.Cohort)">[2, 3]</memberIds>
+			//  ............. and more
+			//This should work just fine as long as there is a Normalizer registered for it
+			if (!OpenmrsObject.class.isAssignableFrom(elementClass) && SyncUtil.getNormalizer(elementClass) != null) {
+				
+				//Check if there is already a NEW/UPDATE sync item for the owner
+				SyncItem syncItem = new SyncItem();
+				syncItem.setKey(new SyncItemKey<String>(owner.getUuid(), String.class));
+				syncItem.setContainedType(owner.getClass());
+				syncItem.setState(SyncItemState.UPDATED);
+				
+				boolean ownerHasSyncItem = syncRecordHolder.get().hasSyncItem(syncItem);
+				syncItem.setState(SyncItemState.NEW);
+				if (!ownerHasSyncItem)
+					ownerHasSyncItem = syncRecordHolder.get().hasSyncItem(syncItem);
+				
+				if (!ownerHasSyncItem) {
+					ClassMetadata cmd = factory.getClassMetadata(owner.getClass());
+					//create an UPDATE sync item for the owner so that the collection changes get recorded along
+					packageObject(owner, cmd.getPropertyValues(owner, EntityMode.POJO), cmd.getPropertyNames(),
+					    cmd.getPropertyTypes(), syncService.getPrimaryKey(owner), SyncItemState.UPDATED);
+				} else {
+					//There is already an UPDATE OR NEW SyncItem for the owner containing the above updates
+				}
+				
+				return;
+			}
 			// find out what entries need to be serialized
 			for (Object entry : (Iterable)collection) {
 				if (entry instanceof OpenmrsObject) {
@@ -1385,14 +1393,11 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 					// add it to the holder to avoid possible duplicates: key =
 					// uuid + action
 					entriesHolder.put(entryUuid + "|update", obj);
-				} else if (SyncUtil.getNormalizer(entry.getClass()) == null) {
-					log.warn("Cannot handle collections where entries are not OpenmrsObject here. Type was " + entry.getClass()
-					        + " in property " + ownerPropertyName + " in class " + owner.getClass());
+				} else {
+					log.warn("Cannot handle collections where entries are not OpenmrsObject and have no Normalizers. Type was "
+					        + entry.getClass() + " in property " + ownerPropertyName + " in class " + owner.getClass());
 					// skip out early because we don't want to write any xml for it
 					// it was handled by the normal property writer hopefully
-					return;
-				} else {
-					// don't do anything else (recreating/packaging) with these collections
 					return;
 				}
 			}
@@ -1433,7 +1438,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 							
 						} else {
 							// TODO: more debug info
-							log.warn("Cannot handle collections where entries are not OpenmrsObject!");
+							log.warn("Cannot handle collections where entries are not OpenmrsObject and have no Normalizers!");
 							// skip out early because we don't want to write any
 							// xml for it. it
 							// was handled by the normal property writer
@@ -1757,5 +1762,23 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			//TODO: log info and continue: something went wrong, 
 			//one way or the other we weren't able to apply the mods; so just continue
 		}
+	}
+	
+	/**
+	 * Utility method that recursively fetches the CollectionMetadata for the specified collection
+	 * property and class from given SessionFactory object
+	 * 
+	 * @param clazz the class in which the collection is defined
+	 * @param collPropertyName the collection's property name
+	 * @param sf SessionFactory object
+	 * @return the CollectionMetadata if any
+	 */
+	private CollectionMetadata getCollectionMetadata(Class<?> clazz, String collPropertyName, SessionFactory sf) {
+		CollectionMetadata cmd = sf.getCollectionMetadata(clazz.getName() + "." + collPropertyName);
+		//Recursively check if there is collection metadata for the superclass
+		if (cmd == null && clazz.getSuperclass() != null && !Object.class.equals(clazz.getSuperclass())) {
+			return getCollectionMetadata(clazz.getSuperclass(), collPropertyName, sf);
+		}
+		return cmd;
 	}
 }
