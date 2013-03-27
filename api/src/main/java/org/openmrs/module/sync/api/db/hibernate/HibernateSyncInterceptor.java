@@ -50,8 +50,10 @@ import org.hibernate.metadata.CollectionMetadata;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.EmbeddedComponentType;
 import org.hibernate.type.Type;
+import org.openmrs.Cohort;
 import org.openmrs.Obs;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.Patient;
 import org.openmrs.PersonAttribute;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.User;
@@ -909,6 +911,35 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 					log.trace("unable to get uuid from obs pk: " + obsId, e);
 				}
 			}
+		} else if (entity instanceof Cohort && "memberIds".equals(property)) {
+			// convert integer patient ids to uuids
+			try {
+				item.setAttribute("type", "java.util.Set<org.openmrs.Patient>");
+				StringBuilder sb = new StringBuilder();
+				
+				data = data.replaceFirst("\\[", "").replaceFirst("\\]", "");
+				
+				sb.append("[");
+				String[] fieldVals = data.split(",");
+				for (int x = 0; x < fieldVals.length; x++) {
+					if (x >= 1)
+						sb.append(", ");
+					
+					String eachFieldVal = fieldVals[x].trim(); // take out whitespace
+					String uuid = fetchUuid(Patient.class, Integer.valueOf(eachFieldVal));
+					sb.append(uuid);
+					
+				}
+				
+				sb.append("]");
+				
+				return sb.toString();
+				
+			}
+			catch (Throwable t) {
+				log.warn("Unable to get Patient for sync'ing cohort.memberIds property", t);
+			}
+			
 		}
 		
 		return data;
@@ -1266,8 +1297,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 				if (!ownerHasSyncItem) {
 					ClassMetadata cmd = factory.getClassMetadata(owner.getClass());
 					//create an UPDATE sync item for the owner so that the collection changes get recorded along
+					Serializable primaryKeyValue = cmd.getIdentifier(owner, (SessionImplementor)factory.getCurrentSession());
 					packageObject(owner, cmd.getPropertyValues(owner, EntityMode.POJO), cmd.getPropertyNames(),
-					    cmd.getPropertyTypes(), syncService.getPrimaryKey(owner), SyncItemState.UPDATED);
+					    cmd.getPropertyTypes(), primaryKeyValue, SyncItemState.UPDATED);
 				} else {
 					//There is already an UPDATE OR NEW SyncItem for the owner containing the above updates
 				}

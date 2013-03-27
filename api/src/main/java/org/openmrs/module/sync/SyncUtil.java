@@ -442,6 +442,8 @@ public class SyncUtil {
 					
 					for (String eachFieldVal : fieldVal.split(",")) {
 						eachFieldVal = eachFieldVal.trim(); // take out whitespace
+						if(!StringUtils.hasText(eachFieldVal))
+							continue;
 						// try to convert to a simple object
 						Object tmpObject = convertStringToObject(eachFieldVal, (Class) collectionType);
 						

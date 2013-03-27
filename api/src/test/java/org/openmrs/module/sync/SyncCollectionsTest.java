@@ -59,9 +59,11 @@ public class SyncCollectionsTest extends SyncBaseTest {
 			CohortService cs = Context.getCohortService();
 			
 			public void runOnChild() throws Exception {
-				executeDataSet("org/openmrs/api/include/CohortServiceTest-cohort.xml");
+				executeDataSet("org/openmrs/api/include/PatientServiceTest-findPatients.xml");
+				executeDataSet("org/openmrs/api/include/CohortServiceTest-cohort.xml");;
 				
 				Cohort c = cs.getCohort(cohortId);
+				Assert.assertFalse(c.isEmpty());
 				Assert.assertFalse(c.contains(memberIdToAdd1));
 				Assert.assertFalse(c.contains(memberIdToAdd2));
 				
@@ -77,6 +79,7 @@ public class SyncCollectionsTest extends SyncBaseTest {
 				Assert.assertEquals(SyncItemState.UPDATED, syncRecords.get(0).getItems().iterator().next().getState());
 				
 				//Finally i can insert more test data into the parent and child2 before syncing
+				executeDataSet("org/openmrs/api/include/PatientServiceTest-findPatients.xml");
 				executeDataSet("org/openmrs/api/include/CohortServiceTest-cohort.xml");
 			}
 			
@@ -150,40 +153,6 @@ public class SyncCollectionsTest extends SyncBaseTest {
 			
 			public void runOnParent() throws Exception {
 				Assert.assertEquals(0, cs.getCohort(cohortId).getMemberIds().size());
-			}
-		});
-	}
-	
-	@Test
-	@NotTransactional
-	public void shouldSyncAnObjectThatIsCreatedAlongWithASetOfElements() throws Exception {
-		runSyncTest(new SyncTestHelper() {
-			
-			CohortService cs = Context.getCohortService();
-			
-			public void runOnChild() throws Exception {
-				
-				Cohort cohort = new Cohort();
-				cohort.addMember(2);
-				cohort.addMember(3);
-				cohort.setName("Dummy Name");
-				cohort.setDescription("Dummy Desc");
-				cs.saveCohort(cohort);
-			}
-			
-			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
-				Assert.assertEquals(1, syncRecords.get(0).getItems().size());
-				Assert.assertEquals(SyncItemState.NEW, syncRecords.get(0).getItems().iterator().next().getState());
-			}
-			
-			public void runOnParent() throws Exception {
-				
-				Cohort c = cs.getCohort("Dummy Name");
-				assertNotNull("Failed to create the cohort", c);
-				Assert.assertTrue("Failed to transfer cohort members", c.getMemberIds().size() == 2);
-				Assert.assertTrue("Failed to transfer cohort members with same patient id", c.getMemberIds().contains(3));
-				Assert.assertTrue("Failed to convert patient id from #2 to #5", c.getMemberIds().contains(2));
-				Assert.assertFalse("Failed to convert patient id from #2 to #5", c.getMemberIds().contains(5));
 			}
 		});
 	}
