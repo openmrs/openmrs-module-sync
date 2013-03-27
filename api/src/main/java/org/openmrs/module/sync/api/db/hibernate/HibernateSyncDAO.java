@@ -1028,9 +1028,13 @@ public class HibernateSyncDAO implements SyncDAO {
 		if (connectionUrl == null)
 			connectionUrl = (String) props.get("connection.url");
 		if (connectionUrl != null) {
-			int qmark = connectionUrl.lastIndexOf("?");
-			int slash = connectionUrl.lastIndexOf("/");
-			database = connectionUrl.substring(slash + 1, qmark);
+			//jdbc:mysql://localhost:3306/openmrs
+			//jdbc:mysql:mxj://127.0.0.1:3317/openmrs?
+			//Assuming the last full colon will be that before the port
+			int lastColonPos = connectionUrl.lastIndexOf(':');
+			int slash = connectionUrl.indexOf('/', lastColonPos);
+			int qmark = connectionUrl.indexOf('?', lastColonPos);
+			database = connectionUrl.substring(slash + 1, qmark != -1 ? qmark : connectionUrl.length());
 			connProps[2] = database;
 		}
 		
