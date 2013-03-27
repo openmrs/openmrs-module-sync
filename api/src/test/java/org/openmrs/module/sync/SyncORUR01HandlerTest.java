@@ -35,10 +35,17 @@ import ca.uhn.hl7v2.parser.GenericParser;
  * Tests the ORUR01 parser 
  */
 public class SyncORUR01HandlerTest extends SyncBaseTest {
-	
-	// hl7 parser to be used throughout
-	
-	
+
+	/**
+	 * Due to a bug in core, this unit test fails when run against OpenMRS versions 1.9.3 and earlier.
+	 * A fix was applied to the 1.9.4 line in this ticket:  https://tickets.openmrs.org/browse/TRUNK-3929
+	 * A full report of this issue can be found in https://tickets.openmrs.org/browse/SYNC-284
+	 */
+	@Override
+	public String minimumRequiredOpenmrsVersion() {
+		return "1.9.4";
+	}
+
 	@Override
 	public String getInitialDataset() {
         try {
@@ -51,8 +58,6 @@ public class SyncORUR01HandlerTest extends SyncBaseTest {
 
 	@Test
 	@NotTransactional
-    // still need to determine why this test is failing: SYNC-284
-    @Ignore
 	public void shouldFindUuidsOnConcepts() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			

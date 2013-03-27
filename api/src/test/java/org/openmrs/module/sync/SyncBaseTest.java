@@ -24,7 +24,6 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ReplacementDataSet;
 import org.dbunit.dataset.xml.FlatXmlDataSet;
 import org.junit.After;
@@ -61,6 +60,15 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	public DateFormat ymd = new SimpleDateFormat("yyyy-MM-dd");
 	
 	public abstract String getInitialDataset();
+
+	/**
+	 * This provides a mechanism for subclasses to indicate if they require a certain
+	 * minimum version of OpenMRS to run, for example if a core bug was fixed that the test requires
+	 * This is optional and by default the test will run for any supported OpenMRS version
+	 */
+	public String minimumRequiredOpenmrsVersion() {
+		return null;
+	}
 	
 	/**
 	 * The dataset to run after {@link SyncTestHelper#runOnChild()} is called but before
@@ -241,6 +249,11 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	public void runSyncTest(SyncTestHelper testMethods) throws Exception {
 		
 		this.beforeRunOnChild();
+
+		if (!TestUtil.isOpenmrsVersionAtLeast(minimumRequiredOpenmrsVersion())) {
+			System.out.println("Test: " + getClass() + " ignored as it is only applicable for OpenMRS versions >= " + minimumRequiredOpenmrsVersion());
+			return;
+		}
 		
 		this.runOnChild(testMethods);
 

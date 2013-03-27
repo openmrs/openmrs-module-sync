@@ -15,6 +15,8 @@
 package org.openmrs.module.sync;
 
 import org.junit.Ignore;
+import org.openmrs.module.ModuleUtil;
+import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
 
 import java.io.File;
@@ -57,4 +59,18 @@ public class TestUtil {
         return props.getProperty(testDatasetName);
     }
 
+	/**
+	 * @return true if the current openmrs version (stripped of any snapshot or build information)
+	 * is at least as high as the passed minimumVersion or if the passed minimumVersion is null
+	 */
+	public static boolean isOpenmrsVersionAtLeast(String minimumVersion) {
+		if (minimumVersion == null) {
+			return true;
+		}
+		String currentVersion = OpenmrsConstants.OPENMRS_VERSION;
+		String versionWithoutSnapshot = currentVersion.split("[\\s\\-]")[0];
+
+		boolean result =  (ModuleUtil.compareVersion(versionWithoutSnapshot, minimumVersion) >= 0);
+		return result;
+	}
 }
