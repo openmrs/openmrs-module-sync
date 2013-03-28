@@ -143,6 +143,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	
 	private ThreadLocal<HashSet<OpenmrsObject>> postInsertModifications = new ThreadLocal<HashSet<OpenmrsObject>>();
 	
+	private ThreadLocal<Boolean> isProcessRegistered = new ThreadLocal<Boolean>();
+	
 	public HibernateSyncInterceptor() {
 		log.info("Initializing the synchronization interceptor");
 	}
@@ -177,12 +179,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 		
 		syncRecordHolder.set(new SyncRecord());
-		
-		SessionFactory sf = (SessionFactory) this.context.getBean("sessionFactory");
-		
-		//This method can be called when there is no thread-bound session yet
-		((EventSource) SessionFactoryUtils.getSession(sf, true)).getActionQueue().registerProcess(
-		    new SyncBeforeTransactionCompletionProcess());
 	}
 	
 	/**
@@ -215,6 +211,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 				log.debug("Determined entity not to be journaled, exiting onDelete.");
 			return;
 		}
+		
+		registerBeforeTransactionCompletionProcess();
 		
 		// create new flush holder if needed
 		if (pendingFlushHolder.get() == null) {
@@ -254,6 +252,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			}
 		} else {
 			
+			registerBeforeTransactionCompletionProcess();
+			
 			// create new flush holder if needed
 			if (pendingFlushHolder.get() == null)
 				pendingFlushHolder.set(new HashSet<Object>());
@@ -271,6 +271,31 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		
 		// we didn't modify the object, so return false
 		return false;
+	}
+	
+	/**
+	 * Registers a {@link BeforeTransactionCompletionProcess} if non is yet set to the current
+	 * session, it uses ThreadLocal variable to check if it is already set since sessions are thread
+	 * bound
+	 */
+	private void registerBeforeTransactionCompletionProcess() {
+		if (log.isDebugEnabled())
+			log.debug("Registering SyncBeforeTransactionCompletionProcess with the current session");
+		
+		if (isProcessRegistered.get() != null) {
+			if (log.isDebugEnabled())
+				log.debug("SyncBeforeTransactionCompletionProcess is already registered with the current session");
+			return;
+		}
+		
+		SessionFactory sf = (SessionFactory) this.context.getBean("sessionFactory");
+		((EventSource) sf.getCurrentSession()).getActionQueue()
+		        .registerProcess(new SyncBeforeTransactionCompletionProcess());
+		
+		isProcessRegistered.set(true);
+		
+		if (log.isDebugEnabled())
+			log.debug("Successfully registered SyncBeforeTransactionCompletionProcess with the current session");
 	}
 	
 	/**
@@ -293,6 +318,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			if (log.isDebugEnabled())
 				log.debug("Determined entity not to be journaled, exiting onFlushDirty.");
 		} else {
+			
+			registerBeforeTransactionCompletionProcess();
+			
 			/*
 			 * NOTE: Accomodate Hibernate auto-flush semantics (as best as we
 			 * understand them): In case of sync ingest: When processing
@@ -316,7 +344,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			
 			//NPE can only happen if flush is called outside of transaction.  SYNC-194.
 			if (syncRecordHolder.get() == null)
-				log.warn("Unable to save record a flush of " + entity.getClass().getName() + " with id: " + id + " because it occurs outside of the normal transaction boundaries");
+				log.warn("Unable to save record a flush of " + entity.getClass().getName() + " with id: " + id
+				        + " because it occurs outside of the normal transaction boundaries");
 			else
 				packageObject((OpenmrsObject) entity, currentState, propertyNames, types, id, SyncItemState.UPDATED);
 			
@@ -399,6 +428,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 		;
 		
+		registerBeforeTransactionCompletionProcess();
+		
 		this.processHibernateCollection((AbstractPersistentCollection) collection, key, "recreate");
 		
 	}
@@ -424,6 +455,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			return;
 		}
 		;
+		
+		registerBeforeTransactionCompletionProcess();
 		
 		this.processHibernateCollection((AbstractPersistentCollection) collection, key, "update");
 	}
@@ -1720,10 +1753,10 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	}
 	
 	/**
-	 * Intercepts before the transaction is completed. Cleans up postInsertModifications and
-	 * deactivated ThreadLocal objects/reset. Note that uncaught Exceptions thrown from this process
-	 * are rethrown by hibernate as AssertionFailure exceptions except for HibernateException and
-	 * its subclasses
+	 * Intercepts before the transaction is completed. Cleans up postInsertModifications,
+	 * deactivated and isProcessRegistered ThreadLocal objects/reset. Note that uncaught Exceptions
+	 * thrown from this process are rethrown by hibernate as AssertionFailure exceptions except for
+	 * HibernateException and its subclasses
 	 */
 	private class SyncBeforeTransactionCompletionProcess implements BeforeTransactionCompletionProcess {
 		
@@ -1794,6 +1827,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			finally {
 				postInsertModifications.remove();
 				deactivated.remove();
+				isProcessRegistered.remove();
 			}
 			
 		}
