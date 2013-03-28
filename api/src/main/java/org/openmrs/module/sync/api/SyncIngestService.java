@@ -35,6 +35,7 @@ public interface SyncIngestService {
      * Processes SyncRecord and create corresponding sync import record.
      * @param SyncRecord The SyncRecord to create
      * @throws APIException
+     * @should log the full stacktrace when it fails
      */
     //@Authorized({"Manage Synchronization Records"})
     public SyncImportRecord processSyncRecord(SyncRecord record, RemoteServer server) throws SyncIngestException;

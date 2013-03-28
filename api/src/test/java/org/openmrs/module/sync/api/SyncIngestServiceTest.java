@@ -13,22 +13,28 @@
  */
 package org.openmrs.module.sync.api;
 
+import java.util.Date;
+import java.util.UUID;
+
+import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.openmrs.*;
+import org.openmrs.EncounterType;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.*;
+import org.openmrs.module.sync.SyncBaseTest;
+import org.openmrs.module.sync.SyncItem;
+import org.openmrs.module.sync.SyncItemKey;
+import org.openmrs.module.sync.SyncItemState;
+import org.openmrs.module.sync.SyncRecord;
+import org.openmrs.module.sync.SyncRecordState;
+import org.openmrs.module.sync.TestUtil;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.openmrs.test.Verifies;
 import org.openmrs.util.OpenmrsConstants;
 import org.springframework.test.annotation.NotTransactional;
-
-import java.util.Date;
-import java.util.UUID;
 
 /**
  * Tests methods in the SyncIngestService
@@ -104,6 +110,37 @@ public class SyncIngestServiceTest extends SyncBaseTest {
 		Assert.assertNotNull(importRecord);
 		Assert.assertEquals(SyncRecordState.FAILED, importRecord.getState());
 		//org.openmrs.test.TestUtil.printOutTableContents(getConnection(), "sync_import");
+	}
+	
+	/**
+	 * @see {@link SyncIngestService#processSyncRecord(SyncRecord,RemoteServer)}
+	 */
+	@Test
+	@Verifies(value = "should log the full stacktrace when it fails", method = "processSyncRecord(SyncRecord,RemoteServer)")
+	public void processSyncRecord_shouldLogTheFullStacktraceWhenItFails() throws Exception {
+		final String recordUuid = "someRandomUuid";
+		Throwable t = null;
+		try {
+			SyncIngestService sis = Context.getService(SyncIngestService.class);
+			SyncRecord record = new SyncRecord();
+			record.setOriginalUuid(recordUuid);
+			//This should force a NPE since server is null
+			sis.processSyncRecord(record, null);
+		}
+		catch (Exception e) {
+			//since sync re throws the exception as a SyncIngestException, 
+			//get the actual NPE exception that was thrown
+			t = e.getCause();
+		}
+		
+		Assert.assertNotNull(t);
+		Assert.assertTrue(StringUtils.isBlank(t.getMessage()));
+		Assert.assertTrue(t instanceof NullPointerException);
+		
+		SyncImportRecord importRecord = Context.getService(SyncService.class).getSyncImportRecord(recordUuid);
+		
+		Assert.assertNotNull(importRecord);
+		Assert.assertFalse(StringUtils.isBlank(importRecord.getErrorMessage()));
 	}
 
 	protected SyncRecord createValidSyncRecord() {

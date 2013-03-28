@@ -16,8 +16,8 @@
 			$j(ele).dialog({
 				autoOpen: false,
 				resizable: false,
-				width:'500px',
-				height:'auto',
+				width:'700px',
+				height:'500',
 				modal: true
 			});
 		});

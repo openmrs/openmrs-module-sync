@@ -32,8 +32,8 @@
 			</type>
 		</property>
 
-		<property name="errorMessage" type="java.lang.String"
-			column="error_message" length="255" />
+		<property name="errorMessage" type="text"
+			column="error_message" length="65535" />
 			
 		<many-to-one name="sourceServer" class="org.openmrs.module.sync.server.RemoteServer">
 			<column name="source_server_id" />
