@@ -274,9 +274,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	}
 	
 	/**
-	 * Registers a {@link BeforeTransactionCompletionProcess} if non is yet set to the current
-	 * session, it uses ThreadLocal variable to check if it is already set since sessions are thread
-	 * bound
+	 * Registers a {@link BeforeTransactionCompletionProcess} if none has been registered with the
+	 * current session, it uses ThreadLocal variable to check if it is already set since sessions
+	 * are thread bound
 	 */
 	private void registerBeforeTransactionCompletionProcess() {
 		if (log.isDebugEnabled())
