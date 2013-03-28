@@ -64,6 +64,14 @@
 						</td>
 					</tr>
 					</c:if>
+                                        <c:if test="${not empty commandObject.nextParentSyncTime}">
+                                        <tr>
+                                                <td style="font-weight: bold;"><spring:message code="sync.status.NextSync.time" /></td>
+                                                <td>
+                                                        <div><openmrs:formatDate date="${commandObject.nextParentSyncTime}" format="${syncDateDisplayFormat}" /></div>
+						</td>
+                                        </tr>
+                                        </c:if>
 				</tbody>
 			</table>
 			</c:otherwise>

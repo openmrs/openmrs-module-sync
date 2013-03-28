@@ -120,7 +120,23 @@ public class OverviewController extends SimpleFormController {
             obj.put("syncStats", stats);
 
             obj.put("currentTime",new Date());
-        }
+            
+            Collection<TaskDefinition> tasks = Context.getSchedulerService().getRegisteredTasks();
+			if (tasks != null) {
+				for (TaskDefinition task : tasks) {
+					if (task.getTaskClass().equals(SyncConstants.SCHEDULED_TASK_CLASS)) {
+						if(null != ss.getParentServer()) {
+							Integer serverId = ss.getParentServer().getServerId();
+							if (serverId.toString().equals(task.getProperty(SyncConstants.SCHEDULED_TASK_PROPERTY_SERVER_ID))){
+								if(task.getStarted()) {
+									obj.put("nextParentSyncTime", task.getNextExecutionTime());
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 
         return obj;
     }
