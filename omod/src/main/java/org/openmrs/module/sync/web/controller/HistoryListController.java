@@ -239,8 +239,8 @@ public class HistoryListController {
 				
 				//Process records for child servers
 				if (serverRecordIds != null) {
-					String[] uuidArray = serverRecordIds.split(" ");
-					for (String id : uuidArray) {
+					String[] idArray = serverRecordIds.split(" ");
+					for (String id : idArray) {
 						
 						SyncServerRecord serverRecord = syncService.getSyncServerRecord(Integer.valueOf(id));
 						if (serverRecord != null) {
