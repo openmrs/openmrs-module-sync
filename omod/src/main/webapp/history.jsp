@@ -27,7 +27,13 @@
     	var dropdown = document.getElementById("itemsPerPage");
    		var index = dropdown.selectedIndex;
     	var ddVal = dropdown.options[index].value;
-		document.location = "?firstRecordId=" + firstRecordId + "&size=" + ddVal;
+        if(firstRecordId==${latestRecordId})
+        {
+            document.location = "?size=" + ddVal;
+        }else{
+            document.location = "?firstRecordId=" + firstRecordId + "&size=" + ddVal;
+        }
+
 	}
  
 	function getNewerItemsList(firstRecordId) {
@@ -38,7 +44,11 @@
     	var ddNum = parseInt(ddVal);
     	parseInt(ddNum);
     	firstRecordNum = firstRecordNum + ddNum;
-   		document.location = "?firstRecordId=" + firstRecordNum + "&size=" + ddNum + "&state=${param.state}";   
+        if(firstRecordNum>${latestRecordId}){
+            document.location = "?size=" + ddNum + "&state=${param.state}";
+        }else{
+            document.location = "?firstRecordId=" + firstRecordNum + "&size=" + ddNum + "&state=${param.state}";
+        }
 	}
 	
 	function getOlderItemsList(firstRecordId) {
