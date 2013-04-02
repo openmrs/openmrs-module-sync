@@ -57,6 +57,7 @@ import org.openmrs.EncounterType;
 import org.openmrs.Form;
 import org.openmrs.Location;
 import org.openmrs.Obs;
+import org.openmrs.OpenmrsMetadata;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.OrderType;
 import org.openmrs.PatientProgram;
@@ -504,7 +505,6 @@ public class SyncUtil {
 	 * Finds property 'get' accessor based on target type and property name.
 	 * 
 	 * @return Method object matching name and param, else null
-	 * @see getPropertyAccessor(Class objType, String methodName, Class propValType)
 	 */
 	public static Method getGetterMethod(Class objType, String propName) {
 		String methodName = "get" + propCase(propName);
@@ -516,7 +516,6 @@ public class SyncUtil {
 	 * type.
 	 * 
 	 * @return Method object matching name and param, else null
-	 * @see getPropertyAccessor(Class objType, String methodName, Class propValType)
 	 */
 	public static Method getSetterMethod(Class objType, String propName, Class propValType) {
 		String methodName = "set" + propCase(propName);
@@ -659,8 +658,7 @@ public class SyncUtil {
 	 * 
 	 * @param o object to save
 	 * @param className type
-	 * @param Uuid unique id of the object that is being saved
-	 * @param true if it is an update scenario
+	 * @param uuid unique id of the object that is being saved
 	 */
 	public static synchronized void updateOpenmrsObject(OpenmrsObject o, String className, String uuid) {
 		
@@ -829,25 +827,20 @@ public class SyncUtil {
 			RelationshipType type = Context.getPersonService().getRelationshipTypeByUuid(uuid);
 			ret += type.getaIsToB() + " - " + type.getbIsToA();
 		}
-		
-		if (className.equals("PersonAttributeType")) {
-			PersonAttributeType type = Context.getPersonService().getPersonAttributeTypeByUuid(uuid);
-			ret += type.getName();
-		}
-		
-		if (className.equals("Location")) {
-			Location loc = Context.getLocationService().getLocationByUuid(uuid);
-			ret += loc.getName();
-		}
-		
-		if (className.equals("EncounterType")) {
-			EncounterType type = Context.getEncounterService().getEncounterTypeByUuid(uuid);
-			ret += type.getName();
-		}
-		
-		if (className.equals("OrderType")) {
-			OrderType type = Context.getOrderService().getOrderTypeByUuid(uuid);
-			ret += type.getName();
+
+		// If this is OpenMRS metadata, and nothing has yet been assigned, try to use the name by default
+		if (!StringUtils.hasText(ret)) {
+			try {
+				Class<?> clazz = Context.loadClass(className);
+				if (OpenmrsMetadata.class.isAssignableFrom(clazz)) {
+					Class<? extends OpenmrsMetadata> mdClass = (Class<? extends OpenmrsMetadata>) clazz;
+					OpenmrsMetadata md = Context.getService(SyncService.class).getOpenmrsObjectByUuid(mdClass, uuid);
+					ret = md.getName();
+				}
+			}
+			catch (Exception e) {
+				log.warn("An error occurred trying to get a name of a metadata item " + className);
+			}
 		}
 		
 		return ret;
