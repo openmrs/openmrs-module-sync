@@ -247,13 +247,13 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	 */
 	@NotTransactional
 	public void runSyncTest(SyncTestHelper testMethods) throws Exception {
-		
-		this.beforeRunOnChild();
 
 		if (!TestUtil.isOpenmrsVersionAtLeast(minimumRequiredOpenmrsVersion())) {
 			System.out.println("Test: " + getClass() + " ignored as it is only applicable for OpenMRS versions >= " + minimumRequiredOpenmrsVersion());
 			return;
 		}
+
+		this.beforeRunOnChild();
 		
 		this.runOnChild(testMethods);
 
