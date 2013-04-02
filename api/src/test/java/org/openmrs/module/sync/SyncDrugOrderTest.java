@@ -16,6 +16,7 @@ package org.openmrs.module.sync;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
 
@@ -50,18 +51,16 @@ public class SyncDrugOrderTest extends SyncBaseTest {
     @NotTransactional
 	public void shouldCreateDrugOrder() throws Exception {
 		runSyncTest(new SyncTestHelper() {			
+
 			OrderService orderService = Context.getOrderService();
+
 			public void runOnChild() {
 
-				
 				Patient patient = Context.getPatientService().getPatient(new Integer(2));
 				assertNotNull(patient);
 				
 				Drug drug = Context.getConceptService().getDrugByNameOrId("Advil");
 				assertNotNull(drug);
-				
-				OrderType orderType = Context.getOrderService().getOrderType(1);
-				assertNotNull(orderType);
 								
 				Concept concept = drug.getConcept();
 				assertNotNull(concept);
@@ -69,40 +68,44 @@ public class SyncDrugOrderTest extends SyncBaseTest {
 				DrugOrder drugOrder = new DrugOrder();
 				drugOrder.setDrug(drug);
 				drugOrder.setConcept(concept);
-				drugOrder.setOrderType(orderType);
 				drugOrder.setPatient(patient);
 				drugOrder.setDose(new Double(1.0));
-				drugOrder.setUnits("tabs");
 				drugOrder.setFrequency("4 times per day");
 				drugOrder.setInstructions("");				
 				drugOrder.setStartDate(new Date());	
 				drugOrder.setDateCreated(new Date());
 				drugOrder.setVoided(new Boolean(false));
-				
-				//Context.getOrderService().updateOrder(drugOrder);
 
+				// This is really annoying, but currently 1.10 is backwards incompatible in the OrderService
+				// and OrderType, Order, and DrugOrder classes, so this is to try to get it to work.  MS 2/April/2013
+				try {
+					Method getOrderType = OrderService.class.getDeclaredMethod("getOrderType", Integer.class);
+					Object orderType = getOrderType.invoke(orderService, 1);
+					assertNotNull(orderType);
+
+					for (Method m : DrugOrder.class.getMethods()) {
+						if (m.getName().equals("setOrderType")) {
+							m.invoke(drugOrder, orderType);
+						}
+						if (m.getName().equals("setUnits")) {
+							m.invoke(drugOrder, "tabs");
+						}
+					}
+				}
+				catch (Exception e) {
+					Assert.assertTrue(TestUtil.isOpenmrsVersionAtLeast("1.10"));
+				}
+
+				orderService.saveOrder(drugOrder);
 				
-				
-				orderService.createOrder(drugOrder);
-				
-				List<DrugOrder> orders = Context.getOrderService().getDrugOrders();
-				
+				List<DrugOrder> orders = Context.getOrderService().getDrugOrdersByPatient(patient);
 				assertTrue(orders.size() == 2);
-				
-				
-
 			}
 			public void runOnParent() {
 
-				//Patient patient = Context.getPatientService().getPatient(new Integer(2));
-				//assertNotNull(patient);
-				//List<DrugOrder> orders = Context.getOrderService().getDrugOrdersByPatient(patient);
-				
-				List<DrugOrder> orders = Context.getOrderService().getDrugOrders();
-				
-				//log.info("Orders: " + orders.size());
+				Patient patient = Context.getPatientService().getPatient(new Integer(2));
+				List<DrugOrder> orders = Context.getOrderService().getDrugOrdersByPatient(patient);
 				Assert.assertEquals(2, orders.size());
-				
 			}
 		});
 	}	
