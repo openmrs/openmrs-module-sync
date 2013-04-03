@@ -960,5 +960,11 @@ public class SyncServiceImpl implements SyncService {
 		
 		return count;
 	}
-	
+
+    /**
+     * @see SyncService#getAllCommittedSyncRecordId(java.util.EnumSet, boolean)
+     */
+     public int getAllCommittedSyncRecordId(EnumSet<SyncRecordState> states, boolean root) {
+        return getSynchronizationDAO().getAllCommittedSyncRecordId(states,root);
+     }
 }

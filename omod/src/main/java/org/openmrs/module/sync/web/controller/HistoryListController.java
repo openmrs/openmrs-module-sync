@@ -59,6 +59,8 @@ public class HistoryListController {
 		public static final String HISTORY = "/module/sync/history";
 		
 		public static final String HISTORY_ERROR = "/module/sync/historyNextError";
+
+        public static final String RECENT_ALL_COMMITTED = "/module/sync/historyRecentAllCommitted";
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -236,5 +238,26 @@ public class HistoryListController {
     	}
     	
     	return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + recordId + "&size=" + size;
+    }
+
+    @RequestMapping(value = Views.RECENT_ALL_COMMITTED, method = RequestMethod.GET)
+    public String historyRecentAllCommitted(@RequestParam("recordId") Integer recordId,@RequestParam("size") Integer size,
+                                            HttpSession session) throws Exception {
+        SyncService ss = Context.getService(SyncService.class);
+        int firstRecordId=recordId;
+        if(ss.getParentServer()!=null){
+            recordId=ss.getAllCommittedSyncRecordId(SyncConstants.SYNC_RECORD_RECENT_ALL_COMMITTED_STATES,false);
+        } else {
+            recordId=ss.getAllCommittedSyncRecordId(SyncConstants.SYNC_RECORD_RECENT_ALL_COMMITTED_STATES,true);
+        }
+        if(recordId==-1) {
+            session.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.general.noRecentAllCommitted");
+            recordId=firstRecordId;
+        } else {
+            if(recordId==firstRecordId) {
+                session.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.general.onRecentAllCommitted");
+            }
+        }
+        return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + recordId + "&size=" + size;
     }
 }
