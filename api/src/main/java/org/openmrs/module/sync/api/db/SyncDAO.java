@@ -438,6 +438,10 @@ public interface SyncDAO {
 	 * @see SyncService#getOlderSyncRecordInState(SyncRecord, EnumSet)
 	 */
 	public SyncRecord getOlderSyncRecordInState(SyncRecord syncRecord, EnumSet<SyncRecordState> states);
+    /**
+     * @see SyncService#getAllCommittedSyncRecordId(java.util.EnumSet, boolean)
+     */
+    public int getAllCommittedSyncRecordId(EnumSet<SyncRecordState> states,boolean root);
 	
 	/**
 	 * @see SyncService#getSyncServerRecord(Integer)

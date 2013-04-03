@@ -960,6 +960,13 @@ public class SyncServiceImpl implements SyncService {
 		
 		return count;
 	}
+
+    /**
+     * @see SyncService#getAllCommittedSyncRecordId(java.util.EnumSet, boolean)
+     */
+     public int getAllCommittedSyncRecordId(EnumSet<SyncRecordState> states, boolean root) {
+        return getSynchronizationDAO().getAllCommittedSyncRecordId(states,root);
+     }
 	
 	/**
 	 * @see org.openmrs.module.sync.api.SyncService#getSyncServerRecord(java.lang.Integer)

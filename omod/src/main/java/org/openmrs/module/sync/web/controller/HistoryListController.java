@@ -61,6 +61,8 @@ public class HistoryListController {
 		public static final String HISTORY = "/module/sync/history";
 		
 		public static final String HISTORY_ERROR = "/module/sync/historyNextError";
+
+        public static final String RECENT_ALL_COMMITTED = "/module/sync/historyRecentAllCommitted";
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -203,62 +205,83 @@ public class HistoryListController {
 		
 		return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + recordId + "&size=" + size;
 	}
-	
+
 	@RequestMapping(value = "/module/sync/historyResetRemoveRecords", method = RequestMethod.GET)
 	public String historyResetRemoveRecords(ModelMap modelMap,
-	                                        HttpServletRequest request,
-	                                        @RequestParam(value = "syncRecordUuids", required = false) String syncRecordUuids,
-	                                        @RequestParam(value = "serverRecordIds", required = false) String serverRecordIds,
-	                                        @RequestParam String action, @RequestParam Integer recordId,
-	                                        @RequestParam Integer size) throws Exception {
-		
+											HttpServletRequest request,
+											@RequestParam(value = "syncRecordUuids", required = false) String syncRecordUuids,
+											@RequestParam(value = "serverRecordIds", required = false) String serverRecordIds,
+											@RequestParam String action, @RequestParam Integer recordId,
+											@RequestParam Integer size) throws Exception {
+
 		if (Context.isAuthenticated()) {
 			SyncService syncService = Context.getService(SyncService.class);
-			
+
 			SyncRecordState state = SyncRecordState.NEW;
 			if (action.equals("remove")) {
 				state = SyncRecordState.NOT_SUPPOSED_TO_SYNC;
 			}
-			
+
 			if (serverRecordIds != null || syncRecordUuids != null) {
 				Set<SyncRecord> recordsToUpdate = new HashSet<SyncRecord>();
 				//Process records for parent server
 				if (syncRecordUuids != null) {
 					String[] uuidArray = syncRecordUuids.split(" ");
 					for (String uuid : uuidArray) {
-						
+
 						SyncRecord record = syncService.getSyncRecord(uuid);
 						if (record != null) {
 							record.setRetryCount(0);
 							record.setState(state);
-							
+
 							recordsToUpdate.add(record);
 						}
 					}
 				}
-				
+
 				//Process records for child servers
 				if (serverRecordIds != null) {
 					String[] idArray = serverRecordIds.split(" ");
 					for (String id : idArray) {
-						
+
 						SyncServerRecord serverRecord = syncService.getSyncServerRecord(Integer.valueOf(id));
 						if (serverRecord != null) {
 							serverRecord.setRetryCount(0);
 							serverRecord.setState(state);
-							
+
 							recordsToUpdate.add(serverRecord.getSyncRecord());
 						}
 					}
 				}
-				
+
 				//update the parent record so that the changes cascaded to the server records
 				for (SyncRecord record : recordsToUpdate) {
 					syncService.updateSyncRecord(record);
 				}
 			}
 		}
-		
+
+		return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + recordId + "&size=" + size;
+	}
+
+	@RequestMapping(value = Views.RECENT_ALL_COMMITTED, method = RequestMethod.GET)
+	public String historyRecentAllCommitted(@RequestParam("recordId") Integer recordId,@RequestParam("size") Integer size,
+											HttpSession session) throws Exception {
+		SyncService ss = Context.getService(SyncService.class);
+		int firstRecordId=recordId;
+		if(ss.getParentServer()!=null){
+			recordId=ss.getAllCommittedSyncRecordId(SyncConstants.SYNC_RECORD_RECENT_ALL_COMMITTED_STATES,false);
+		} else {
+			recordId=ss.getAllCommittedSyncRecordId(SyncConstants.SYNC_RECORD_RECENT_ALL_COMMITTED_STATES,true);
+		}
+		if(recordId==-1) {
+			session.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.general.noRecentAllCommitted");
+			recordId=firstRecordId;
+		} else {
+			if(recordId==firstRecordId) {
+				session.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.general.onRecentAllCommitted");
+			}
+		}
 		return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + recordId + "&size=" + size;
 	}
 }
