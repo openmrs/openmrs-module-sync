@@ -11,7 +11,7 @@
  *
  * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
  */
-package org.openmrs.module.sync.scheduler;
+package org.openmrs.module.sync.server;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
