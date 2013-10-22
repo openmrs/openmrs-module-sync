@@ -68,7 +68,7 @@ public class ViewRecordController {
         	record = syncService.getSyncRecord(uuid);
         	
         	if (record != null) {
-        		
+/*
 	        	// find the previous record
 	        	Integer id = record.getRecordId();
 	        	while (previousRecord == null && id >= 0) {
@@ -85,7 +85,7 @@ public class ViewRecordController {
 	        	while (nextRecord == null && id <= highestId) {
 	        		nextRecord = syncService.getSyncRecord(++id);
 	        	}
-	        	
+*/
 	        	
 				if("reset".equals(action)){
 					record.setRetryCount(0);

@@ -167,4 +167,75 @@ public class SyncRecordTest {
         item21.setContent("<Person><Name>Some Person Name</Name></Person>");
         assertTrue(!syncRecord1.equals(syncRecord2));
     }
+
+	/**
+	 * test serialization of syncRecord
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	@NotTransactional
+	@SkipBaseSetup
+	public void shouldFailOnClassNotFound() throws Exception {
+
+		String uuid1 = UUID.randomUUID().toString();
+		SyncRecord syncRecord1 = new SyncRecord();
+		syncRecord1.setTimestamp(new Date());
+		syncRecord1.setUuid(uuid1);
+		SyncItem item11 = new SyncItem();
+		item11.setContent("<Person><Name>Some Person</Name></Person>");
+		item11.setState(SyncItemState.NEW);
+		item11.setKey(new SyncItemKey<String>(UUID.randomUUID().toString(),
+				String.class));
+		SyncItem item12 = new SyncItem();
+		item12
+				.setContent("<PersonAddress><Street>Some Street</Street></PersonAddress>");
+		item12.setState(SyncItemState.UPDATED);
+		item12.setKey(new SyncItemKey<String>(UUID.randomUUID().toString(),
+				String.class));
+		List<SyncItem> items1 = new ArrayList<SyncItem>();
+		items1.add(item11);
+		items1.add(item12);
+		syncRecord1.setItems(items1);
+
+		// 'weird' end cases start here
+
+		// no timestamp or items
+		SyncRecord syncRecord2 = new SyncRecord();
+		syncRecord2.setUuid(UUID.randomUUID().toString());
+
+		// dump out the state
+		Package pkg = new FilePackage();
+		Record record = pkg.createRecordForWrite("SyncRecordTest");
+		Item top = record.getRootItem();
+
+		((IItem) syncRecord1).save(record, top);
+		((IItem) syncRecord2).save(record, top);
+		List<SyncRecord> originals = new ArrayList<SyncRecord>();
+		originals.add(syncRecord1);
+		originals.add(syncRecord2);
+
+		// now Test deserialize - THIS DOES NOT WORK YET
+		String textDes = record.toStringAsDocumentFragement();
+
+		Package pkgDes = new FilePackage();
+		Record recordDes = pkgDes.createRecordFromString(textDes);
+		Item topDes = recordDes.getRootItem();
+
+		// get items list that holds serialized sync records
+		List<Item> itemsDes = recordDes.getItems(topDes);
+
+		assertTrue(itemsDes.size() == originals.size());
+
+		SyncRecord syncRecordDesc = null;
+		Iterator<Item> iterator = itemsDes.iterator();
+		Iterator<SyncRecord> iteratorOrig = originals.iterator();
+		while (iterator.hasNext()) {
+			syncRecordDesc = new SyncRecord();
+			syncRecordDesc.load(recordDes, iterator.next());
+			assertEquals(syncRecordDesc, iteratorOrig.next());
+		}
+
+		return;
+	}
 }
