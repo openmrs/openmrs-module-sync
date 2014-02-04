@@ -16,14 +16,37 @@
 	function disableDIVs() {
 		hideDiv('serverList');
 	}
-
+        var timerId;
+        $j(document).ready(function() {
+		$j('#refreshField').change(function() {
+			refreshInterval();
+		});
+                refreshInterval();
+        });
+		
+	function refreshInterval(){
+		clearInterval(timerId);
+		refreshTime = $j('#refreshField').attr('value');
+		timerId = setInterval(refreshIds, (refreshTime*1000));
+	}
+		
+	function refreshIds(){
+		$j.get('overview.htm', function(data){
+			$j.each(['syncCurrentTime', 'syncStatus', 'statsList'], function(i, key) {
+				$j('#'+key).replaceWith($j(data).find('#'+key));
+			});
+		});
+	}
 </script>
 
-<table>
+<table width="100%">
 	<tr>
 		<td>
 			<h2><spring:message code="sync.overview.title"/></h2>
 		</td>
+		<td>
+			<div style="float: right"><spring:message code="sync.overview.refreshMsg"/> <input id="refreshField" type="text" size="3" value="30" /> secs</div>
+                </td>
 	</tr>
 </table>
 
