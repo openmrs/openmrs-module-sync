@@ -80,6 +80,7 @@ import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.ingest.SyncIngestException;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
+import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.util.StringUtils;
@@ -1027,9 +1028,13 @@ public class HibernateSyncDAO implements SyncDAO {
 		if (connectionUrl == null)
 			connectionUrl = (String) props.get("connection.url");
 		if (connectionUrl != null) {
-			int qmark = connectionUrl.lastIndexOf("?");
-			int slash = connectionUrl.lastIndexOf("/");
-			database = connectionUrl.substring(slash + 1, qmark);
+			//jdbc:mysql://localhost:3306/openmrs
+			//jdbc:mysql:mxj://127.0.0.1:3317/openmrs?
+			//Assuming the last full colon will be that before the port
+			int lastColonPos = connectionUrl.lastIndexOf(':');
+			int slash = connectionUrl.indexOf('/', lastColonPos);
+			int qmark = connectionUrl.indexOf('?', lastColonPos);
+			database = connectionUrl.substring(slash + 1, qmark != -1 ? qmark : connectionUrl.length());
 			connProps[2] = database;
 		}
 		
@@ -1576,6 +1581,14 @@ public class HibernateSyncDAO implements SyncDAO {
 		criteria.addOrder(Order.desc("recordId"));
 		criteria.setMaxResults(1);
 		return (SyncRecord) criteria.uniqueResult();
+	}
+	
+	/**
+	 * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncServerRecord(java.lang.Integer)
+	 */
+	@Override
+	public SyncServerRecord getSyncServerRecord(Integer syncServerRecordId) throws DAOException {
+		return (SyncServerRecord) sessionFactory.getCurrentSession().get(SyncServerRecord.class, syncServerRecordId);
 	}
 	
 }

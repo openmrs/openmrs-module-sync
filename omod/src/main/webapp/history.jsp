@@ -11,6 +11,18 @@
 
 <script type="text/javascript">
 
+	$j(document).ready( function() {
+		$j('.syncViewErrorsDialog').each(function(index, ele){
+			$j(ele).dialog({
+				autoOpen: false,
+				resizable: false,
+				width:'700px',
+				height:'500',
+				modal: true
+			});
+		});
+	});
+
 	function reloadPage(firstRecordId) {
     	var dropdown = document.getElementById("itemsPerPage");
    		var index = dropdown.selectedIndex;
@@ -56,7 +68,8 @@
 		var inputs = document.getElementsByTagName('input');
 		var i = 0;
 		var input;
-		var uuids = null;
+		var syncRecordUuids = null;
+		var serverRecordIds = null;
 		
 		while(input = inputs[i++]){
 			if(input.type == 'checkbox' && input.checked){
@@ -65,19 +78,35 @@
 					return;
 				}
 				
-				if(uuids == null)
-					uuids = '';
-				else
-					uuids += ' ';
-				
-				uuids += input.id;
+				if(input.className != 'syncServerRecordCheckBox'){
+					if(syncRecordUuids == null)
+						syncRecordUuids = '';
+					else
+						syncRecordUuids += ' ';
+					
+					syncRecordUuids += input.id;
+				}else{
+					if(serverRecordIds == null)
+						serverRecordIds = '';
+					else
+						serverRecordIds += ' ';
+					
+					serverRecordIds += input.id;
+				}
 			}
 		}
 		
-		if(uuids == null)
+		if(syncRecordUuids == null && serverRecordIds == null)
 			alert('<spring:message code="sync.history.selectRecords"/>');
-		else
-			document.location = "historyResetRemoveRecords.list?recordId=" + ${firstRecordId} + "&size=" + ${size} + "&uuids="+uuids + "&action=" + action;
+		else{
+			var recordUuidsAndIds = '';
+			if(syncRecordUuids != null)
+				recordUuidsAndIds+=("&syncRecordUuids="+syncRecordUuids);
+			if(serverRecordIds != null)
+				recordUuidsAndIds+=("&serverRecordIds="+serverRecordIds);
+			
+			document.location = "historyResetRemoveRecords.list?recordId=" + ${firstRecordId} + "&size=" + ${size} + recordUuidsAndIds + "&action=" + action;
+		}
 	}
 	
 </script>
@@ -91,10 +120,11 @@
 </td>
 <td>&nbsp;&nbsp;&nbsp;&nbsp;<spring:message code="sync.history.recordsPerPage"/>
 <select id="itemsPerPage" name="itemsPerPage" onchange="reloadPage(${firstRecordId})">
-	<option value="10" ${param.size == 10 ? 'selected' : ''}> 10</option>
-	<option value="50" ${param.size == 50 ? 'selected' : ''}> 50</option>
-	<option value="100" ${param.size == 100 ? 'selected' : ''}> 100</option>
-	</select>
+	<option value="10" ${size == 10 ? 'selected' : ''}> 10</option>
+	<option value="50" ${size == 50 ? 'selected' : ''}> 50</option>
+	<option value="100" ${size == 100 ? 'selected' : ''}> 100</option>
+	<option value="1000" ${size == 1000 ? 'selected' : ''}> 1000</option>
+</select>
 </td>
 </tr>
 </table>
@@ -114,6 +144,7 @@
 	<table id="syncChangesTable" cellpadding="7" cellspacing="0">
 		<thead>
 			<tr>
+				<th><spring:message code="sync.record.details.id" /></th>
 				<th><spring:message code="sync.status.itemTypeAndUuid" /></th>
 				<%--
 				<th colspan="2" style="text-align: center;"><spring:message code="sync.status.timestamp" /></th>
@@ -141,6 +172,7 @@
 				<c:forEach var="syncRecord" items="${syncRecords}" varStatus="status">
 					<%--<c:forEach var="syncItem" items="${syncRecord.items}" varStatus="itemStatus">--%>
 						<tr>
+                                                        <td>${syncRecord.recordId}</td>
 							<td valign="middle" nowrap style="background-color: #${bgStyle};">
 								<b><a href="viewrecord.form?uuid=${syncRecord.uuid}">${recordTypes[syncRecord.uuid]}</a></b>
 								<c:if test="${not empty recordText[syncRecord.uuid]}">
@@ -168,6 +200,9 @@
 														<spring:message code="sync.record.direction.incoming"/>
 													</c:otherwise>
 												</c:choose>
+												<c:if test="${!syncRecord.state['final']}">
+													<input type="checkbox" class="syncRecordCheckBox" id="${syncRecord.uuid}" value="${syncRecord.state}" />
+												</c:if>
 											</c:when>
 											<c:otherwise>
 												<c:if test="${not empty syncRecord.remoteRecords[server]}">
@@ -185,11 +220,22 @@
 												<c:if test="${empty syncRecord.remoteRecords[server]}">
 													<span style="color: #bbb"><i><spring:message code="sync.record.server.didNotExist" /></i></span>
 												</c:if>
+												<c:if test="${not empty syncRecord.remoteRecords[server] && !syncRecord.remoteRecords[server].state['final']}">
+													<input type="checkbox" class="syncServerRecordCheckBox" id="${syncRecord.remoteRecords[server].serverRecordId}" value="${syncRecord.remoteRecords[server].state}" />
+													<c:if test="${syncRecord.remoteRecords[server].outgoing 
+															&& (syncRecord.remoteRecords[server].state == 'FAILED' || syncRecord.remoteRecords[server].state == 'FAILED_AND_STOPPED') 
+															&& not empty syncRecord.remoteRecords[server].errorMessage
+															&& fn:trim(syncRecord.remoteRecords[server].errorMessage) != ''}">
+														<a style="float: right" href="javascript:void(0)" onclick="javascript:$j('#${syncRecord.remoteRecords[server].serverRecordId}-errorLog-dialog').dialog('open')">
+															<spring:message code="sync.record.viewErrors" />
+														</a>
+													 	<div class="syncViewErrorsDialog" id="${syncRecord.remoteRecords[server].serverRecordId}-errorLog-dialog" title="<openmrs:message code="sync.record.viewErrors.title"/>">
+													 		${syncRecord.remoteRecords[server].errorMessage}
+													 	</div>
+													</c:if>
+												</c:if>
 											</c:otherwise>
 										</c:choose>
-										<c:if test="${syncRecord.state!='COMMITTED' && syncRecord.state!='ALREADY_COMMITTED'}">
-											<input type="checkbox" id="${syncRecord.uuid}" value="${syncRecord.state}" />
-										</c:if>
 									</td>
 								</c:forEach>
 							</c:if>

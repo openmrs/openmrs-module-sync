@@ -961,4 +961,11 @@ public class SyncServiceImpl implements SyncService {
 		return count;
 	}
 	
+	/**
+	 * @see org.openmrs.module.sync.api.SyncService#getSyncServerRecord(java.lang.Integer)
+	 */
+	public SyncServerRecord getSyncServerRecord(Integer syncServerRecordId) throws APIException {
+		return getSynchronizationDAO().getSyncServerRecord(syncServerRecordId);
+	}
+	
 }

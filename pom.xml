@@ -174,5 +174,36 @@
 			<url>http://mavenrepo.openmrs.org/nexus/content/repositories/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
+	
+	<profiles>
+    	<profile>
+        	<id>openmrs-1.9.0</id>
+        	<properties>
+            	<openMRSVersion>1.9.0</openMRSVersion>
+				<openMRSMinorVersion>1.9</openMRSMinorVersion>
+        	</properties>
+    	</profile>
+    	<profile>
+        	<id>openmrs-1.9.1</id>
+        	<properties>
+            	<openMRSVersion>1.9.1</openMRSVersion>
+				<openMRSMinorVersion>1.9</openMRSMinorVersion>
+        	</properties>
+    	</profile>
+    	<profile>
+        	<id>openmrs-1.9.2</id>
+        	<properties>
+            	<openMRSVersion>1.9.2</openMRSVersion>
+				<openMRSMinorVersion>1.9</openMRSMinorVersion>
+        	</properties>
+    	</profile>
+    	<profile>
+        	<id>openmrs-1.10</id>
+        	<properties>
+            	<openMRSVersion>1.10.0-SNAPSHOT</openMRSVersion>
+				<openMRSMinorVersion>1.10</openMRSMinorVersion>
+        	</properties>
+    	</profile>
+	</profiles>
 
 </project>

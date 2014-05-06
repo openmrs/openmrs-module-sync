@@ -54,5 +54,15 @@ public enum SyncRecordState {
     NOT_SUPPOSED_TO_SYNC, 
     
     /** record was sent to server, but server does not accept this type of record for sync'ing */
-    REJECTED
+    REJECTED;
+    
+    /**
+     * Determines if a record state if final
+     * @param state
+     * @return
+     */
+    public boolean isFinal() {
+    	return this == COMMITTED || this == ALREADY_COMMITTED || this == COMMITTED_AND_CONFIRMATION_SENT;
+    }
+    
 };

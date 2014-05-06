@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Concept;
@@ -26,17 +27,16 @@ import org.openmrs.ConceptName;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.Person;
 import org.openmrs.api.APIException;
-import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.SerializedObject;
 import org.openmrs.module.ModuleUtil;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemState;
-import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncProcessedObject;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
+import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncIngestService;
 import org.openmrs.module.sync.api.SyncService;
@@ -49,6 +49,7 @@ import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.util.OpenmrsConstants;
+import org.openmrs.util.OpenmrsUtil;
 import org.w3c.dom.NodeList;
 
 public class SyncIngestServiceImpl implements SyncIngestService {
@@ -171,7 +172,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                 		log.warn("ImportRecord already exists and has retry count: " + importRecord.getRetryCount() + ", state: " + importRecord.getState());
                 	}
                     SyncRecordState state = importRecord.getState();
-                    if ( state.equals(SyncRecordState.COMMITTED)  || state.equals(SyncRecordState.ALREADY_COMMITTED) || state.equals(SyncRecordState.COMMITTED_AND_CONFIRMATION_SENT) ) {
+                    if ( state.isFinal() ) {
                         // apparently, the remote/child server exporting to this server doesn't realize it's
                         // committed, so let's remind by sending back this import record with already_committed
                         importRecord.setState(SyncRecordState.ALREADY_COMMITTED);
@@ -298,7 +299,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 	        log.error("Unable to ingest a sync request", e);
         	//fill in sync import record and rethrow to abort tx
 	        importRecord.setState(SyncRecordState.FAILED);
-	        importRecord.setErrorMessage(e.getMessage());
+	        importRecord.setErrorMessage(OpenmrsUtil.shortenedStackTrace(ExceptionUtils.getFullStackTrace(e)));
         	e.setSyncImportRecord(importRecord);
         	throw (e);
         }
@@ -306,7 +307,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         	log.error("Unexpected exception occurred when processing sync records", e);
             //fill in sync import record and rethrow to abort tx
             importRecord.setState(SyncRecordState.FAILED);
-            importRecord.setErrorMessage(e.getMessage());
+            importRecord.setErrorMessage(OpenmrsUtil.shortenedStackTrace(ExceptionUtils.getFullStackTrace(e)));
             throw new SyncIngestException(e,SyncConstants.ERROR_RECORD_UNEXPECTED,null,null,importRecord);
         } finally {
         	syncService.updateSyncImportRecord(importRecord);

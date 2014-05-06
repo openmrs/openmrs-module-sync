@@ -16,12 +16,16 @@ package org.openmrs.module.sync;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
+import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dbunit.dataset.ReplacementDataSet;
+import org.dbunit.dataset.xml.FlatXmlDataSet;
 import org.junit.After;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.PatientService;
@@ -38,6 +42,7 @@ import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.util.OpenmrsConstants;
 import org.springframework.test.annotation.NotTransactional;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +60,15 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	public DateFormat ymd = new SimpleDateFormat("yyyy-MM-dd");
 	
 	public abstract String getInitialDataset();
+
+	/**
+	 * This provides a mechanism for subclasses to indicate if they require a certain
+	 * minimum version of OpenMRS to run, for example if a core bug was fixed that the test requires
+	 * This is optional and by default the test will run for any supported OpenMRS version
+	 */
+	public String minimumRequiredOpenmrsVersion() {
+		return null;
+	}
 	
 	/**
 	 * The dataset to run after {@link SyncTestHelper#runOnChild()} is called but before
@@ -233,7 +247,12 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	 */
 	@NotTransactional
 	public void runSyncTest(SyncTestHelper testMethods) throws Exception {
-		
+
+		if (!TestUtil.isOpenmrsVersionAtLeast(minimumRequiredOpenmrsVersion())) {
+			System.out.println("Test: " + getClass() + " ignored as it is only applicable for OpenMRS versions >= " + minimumRequiredOpenmrsVersion());
+			return;
+		}
+
 		this.beforeRunOnChild();
 		
 		this.runOnChild(testMethods);
@@ -266,5 +285,36 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	@After
 	public void cleanupDatabase() throws Exception {
 		deleteAllData();
+	}
+
+	@Override
+	public void executeDataSet(String datasetFilename) throws Exception {
+
+		String xml = null;
+		InputStream fileInInputStreamFormat = null;
+		try {
+			File file = new File(datasetFilename);
+			if (file.exists())
+				fileInInputStreamFormat = new FileInputStream(datasetFilename);
+			else {
+				fileInInputStreamFormat = getClass().getClassLoader().getResourceAsStream(datasetFilename);
+				if (fileInInputStreamFormat == null)
+					throw new FileNotFoundException("Unable to find '" + datasetFilename + "' in the classpath");
+			}
+			xml = IOUtils.toString(fileInInputStreamFormat, "UTF-8");
+		}
+		finally {
+			IOUtils.closeQuietly(fileInInputStreamFormat);
+		}
+
+		if (OpenmrsConstants.OPENMRS_VERSION_SHORT.compareTo("1.9.2") < 0) {
+			xml = xml.replace("urgency=\"STAT\" ", "");
+		}
+
+		StringReader reader = new StringReader(xml);
+		ReplacementDataSet replacementDataSet = new ReplacementDataSet(new FlatXmlDataSet(reader, false, true, false));
+		replacementDataSet.addReplacementObject("[NULL]", null);
+
+		executeDataSet(replacementDataSet);
 	}
 }

@@ -702,4 +702,15 @@ public interface SyncService {
 	 * @return the number of records changed
 	 */
 	public Integer backportSyncRecords(RemoteServer server, Date date);
+	
+	/**
+	 * Gets the SyncServerRecord with a matching syncServerRecordId
+	 * 
+	 * @param syncServerRecordId of the SyncServerRecord to retrieve
+	 * @return The SyncServerRecord or null if not found
+	 * @throws APIException
+	 * @should get a syncServerRecord by its primary key
+	 */
+	@Transactional(readOnly = true)
+	public SyncServerRecord getSyncServerRecord(Integer syncServerRecordId) throws APIException;
 }

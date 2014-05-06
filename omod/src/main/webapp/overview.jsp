@@ -31,9 +31,15 @@
 
 	<b class="boxHeader"><spring:message code="sync.config.syncStatus"/></b>
 	<div class="box">
+        <table id="syncCurrentTime" cellpadding="10" cellspacing="0">
+             <tr>
+                 <td style="font-weight: bold;"><spring:message code="sync.config.current.time" /></td>
+                 <td><openmrs:formatDate date="${commandObject.currentTime}" format="${syncDateDisplayFormat}" /></td>
+            </tr>
+        </table>
 		<c:choose>
 			<c:when test="${empty parent}">
-				<spring:message code="sync.status.parent"/>
+                <i style="padding-left: 10px"><spring:message code="sync.status.parent"/></i>
 			</c:when>
 			<c:otherwise>
 			<table id="syncStatus" cellpadding="10" cellspacing="0">

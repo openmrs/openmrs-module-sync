@@ -30,16 +30,23 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.CallbackException;
 import org.hibernate.EmptyInterceptor;
+import org.hibernate.EntityMode;
 import org.hibernate.LazyInitializationException;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.action.BeforeTransactionCompletionProcess;
 import org.hibernate.collection.AbstractPersistentCollection;
+import org.hibernate.collection.PersistentList;
 import org.hibernate.collection.PersistentMap;
 import org.hibernate.collection.PersistentSet;
 import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Projections;
 import org.hibernate.engine.ForeignKeys;
+import org.hibernate.engine.SessionImplementor;
+import org.hibernate.event.EventSource;
 import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.metadata.CollectionMetadata;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.EmbeddedComponentType;
 import org.hibernate.type.Type;
@@ -56,9 +63,9 @@ import org.openmrs.module.sync.SyncException;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemKey;
 import org.openmrs.module.sync.SyncItemState;
-import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
+import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.Item;
@@ -69,6 +76,7 @@ import org.openmrs.util.OpenmrsConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -135,6 +143,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	
 	private ThreadLocal<HashSet<OpenmrsObject>> postInsertModifications = new ThreadLocal<HashSet<OpenmrsObject>>();
 	
+	private ThreadLocal<Boolean> isProcessRegistered = new ThreadLocal<Boolean>();
+	
 	public HibernateSyncInterceptor() {
 		log.info("Initializing the synchronization interceptor");
 	}
@@ -184,82 +194,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	}
 	
 	/**
-	 * Intercepts after the transaction is completed, also called on rollback. Clean up any
-	 * remaining ThreadLocal objects/reset.
-	 * 
-	 * @see org.hibernate.EmptyInterceptor#afterTransactionCompletion(org.hibernate.Transaction)
-	 */
-	@Override
-	public void afterTransactionCompletion(Transaction tx) {
-		if (log.isDebugEnabled())
-			log.debug("beforeTransactionCompletion: " + tx + " deactivated: " + deactivated.get());
-		
-		try {
-			// If synchronization is NOT deactivated
-			if (deactivated.get() == null && !tx.wasRolledBack()) {
-				SyncRecord record = syncRecordHolder.get();
-				//avoid calling this method again when tx.commit is called below
-				deactivated.set(true);
-				
-				// Does this transaction contain any serialized changes?
-				if (record.hasItems()) {
-					
-					if (log.isDebugEnabled())
-						log.debug(record.getItems().size() + " SyncItems in SyncRecord, saving!");
-					
-					//update the record with any post-insert updates
-					if (this.postInsertModifications.get() != null && this.postInsertModifications.get().isEmpty() == false) {
-						processPostInsertModifications(record);
-					}
-					
-					// Grab user if we have one, and use the UUID of the user as
-					// creator of this SyncRecord
-					User user = Context.getAuthenticatedUser();
-					if (user != null) {
-						record.setCreator(user.getUuid());
-					}
-					
-					// Grab database version
-					record.setDatabaseVersion(OpenmrsConstants.OPENMRS_VERSION_SHORT);
-					
-					// Complete the record
-					record.setUuid(SyncUtil.generateUuid());
-					if (record.getOriginalUuid() == null) {
-						if (log.isInfoEnabled())
-							log.info("OriginalUuid is null, so assigning a new UUID: " + record.getUuid());
-						record.setOriginalUuid(record.getUuid());
-					} else {
-						if (log.isInfoEnabled())
-							log.info("OriginalUuid is: " + record.getOriginalUuid());
-					}
-					record.setState(SyncRecordState.NEW);
-					record.setTimestamp(new Date());
-					record.setRetryCount(0);
-					// Save SyncRecord
-					getSyncService().createSyncRecord(record, record.getOriginalUuid());
-					
-					//at this point, the tx is already committed, so we need to manually recall commit()
-					tx.commit();
-				} else {
-					// note: this will happen all the time with read-only
-					// transactions
-					if (log.isTraceEnabled())
-						log.trace("No SyncItems in SyncRecord, save discarded (note: maybe a read-only transaction)!");
-				}
-			}
-		}
-		catch (Exception ex) {
-			log.error("Journal error\n", ex);
-			throw (new SyncException("Error in interceptor, see log messages and callstack.", ex));
-		}
-		finally {
-			this.postInsertModifications.remove();
-			syncRecordHolder.remove();
-			deactivated.remove();
-		}
-	}
-	
-	/**
 	 * Packages up deletes and sets the item state to DELETED.
 	 * 
 	 * @see #packageObject(OpenmrsObject, Object[], String[], Type[], Serializable, SyncItemState)
@@ -277,6 +211,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 				log.debug("Determined entity not to be journaled, exiting onDelete.");
 			return;
 		}
+		
+		registerBeforeTransactionCompletionProcess();
 		
 		// create new flush holder if needed
 		if (pendingFlushHolder.get() == null) {
@@ -316,6 +252,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			}
 		} else {
 			
+			registerBeforeTransactionCompletionProcess();
+			
 			// create new flush holder if needed
 			if (pendingFlushHolder.get() == null)
 				pendingFlushHolder.set(new HashSet<Object>());
@@ -333,6 +271,31 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		
 		// we didn't modify the object, so return false
 		return false;
+	}
+	
+	/**
+	 * Registers a {@link BeforeTransactionCompletionProcess} if none has been registered with the
+	 * current session, it uses ThreadLocal variable to check if it is already set since sessions
+	 * are thread bound
+	 */
+	private void registerBeforeTransactionCompletionProcess() {
+		if (log.isDebugEnabled())
+			log.debug("Registering SyncBeforeTransactionCompletionProcess with the current session");
+		
+		if (isProcessRegistered.get() != null) {
+			if (log.isDebugEnabled())
+				log.debug("SyncBeforeTransactionCompletionProcess is already registered with the current session");
+			return;
+		}
+		
+		SessionFactory sf = (SessionFactory) this.context.getBean("sessionFactory");
+		((EventSource) sf.getCurrentSession()).getActionQueue()
+		        .registerProcess(new SyncBeforeTransactionCompletionProcess());
+		
+		isProcessRegistered.set(true);
+		
+		if (log.isDebugEnabled())
+			log.debug("Successfully registered SyncBeforeTransactionCompletionProcess with the current session");
 	}
 	
 	/**
@@ -355,6 +318,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			if (log.isDebugEnabled())
 				log.debug("Determined entity not to be journaled, exiting onFlushDirty.");
 		} else {
+			
+			registerBeforeTransactionCompletionProcess();
+			
 			/*
 			 * NOTE: Accomodate Hibernate auto-flush semantics (as best as we
 			 * understand them): In case of sync ingest: When processing
@@ -378,7 +344,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			
 			//NPE can only happen if flush is called outside of transaction.  SYNC-194.
 			if (syncRecordHolder.get() == null)
-				log.warn("Unable to save record a flush of " + entity.getClass().getName() + " with id: " + id + " because it occurs outside of the normal transaction boundaries");
+				log.warn("Unable to save record a flush of " + entity.getClass().getName() + " with id: " + id
+				        + " because it occurs outside of the normal transaction boundaries");
 			else
 				packageObject((OpenmrsObject) entity, currentState, propertyNames, types, id, SyncItemState.UPDATED);
 			
@@ -461,6 +428,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 		;
 		
+		registerBeforeTransactionCompletionProcess();
+		
 		this.processHibernateCollection((AbstractPersistentCollection) collection, key, "recreate");
 		
 	}
@@ -486,6 +455,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			return;
 		}
 		;
+		
+		registerBeforeTransactionCompletionProcess();
 		
 		this.processHibernateCollection((AbstractPersistentCollection) collection, key, "update");
 	}
@@ -1183,7 +1154,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 */
 	protected void processHibernateCollection(AbstractPersistentCollection collection, Serializable key, String action) {
 		
-		if (!(collection instanceof PersistentSet || collection instanceof PersistentMap)) {
+		if (!(collection instanceof PersistentSet || collection instanceof PersistentMap || collection instanceof PersistentList)) {
 			log.info("Unsupported collection type, collection type was:" + collection.getClass().getName());
 			return;
 		}
@@ -1283,22 +1254,23 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 		
 		//now we know this needs to be processed. Proceed accordingly:
-		if (collection instanceof PersistentSet) {
-			processPersistentSet((PersistentSet) collection, key, action, originalRecordUuid, owner, ownerPropertyName);
+		if (collection instanceof PersistentSet || collection instanceof PersistentList
+		        || collection instanceof PersistentMap) {
+			processPersistentCollection(collection, key, action, originalRecordUuid, owner, ownerPropertyName);
 		}
 		
 		return;
 	}
 	
 	/**
-	 * Processes changes to persistent sets that contains instances of OpenmrsObject objects.
+	 * Processes changes to persistent collection that contains instances of OpenmrsObject objects.
 	 * <p>
 	 * Remarks:
 	 * <p>
-	 * Xml 'schema' for the sync item content for the persisted set follows. Note that for persisted
-	 * sets syncItemKey is a composite of owner object uuid and the property name that contains the
+	 * Xml 'schema' for the sync item content for the persisted collection follows. Note that for persisted
+	 * collections syncItemKey is a composite of owner object uuid and the property name that contains the
 	 * collection. <br/>
-	 * &lt;persistent-set&gt; element: wrapper element <br/>
+	 * &lt;persistent-collection&gt; element: wrapper element <br/>
 	 * &lt;owner uuid='' propertyName='' type='' action='recreate|update' &gt; element: this
 	 * captures the information about the object that holds reference to the collection being
 	 * processed <br/>
@@ -1313,11 +1285,11 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 * -uuid: entry's uuid <br/>
 	 * -type: class name
 	 * 
-	 * @param set Instance of Hibernate PersistentSet to process.
-	 * @param key key of owner for the set.
-	 * @param action action being performed on the set: update, recreate
+	 * @param collection Instance of Hibernate AbstractPersistentCollection to process.
+	 * @param key key of owner for the collection.
+	 * @param action action being performed on the collection: update, recreate
 	 */
-	private void processPersistentSet(PersistentSet set, Serializable key, String action, String originalRecordUuid,
+	private void processPersistentCollection(AbstractPersistentCollection collection, Serializable key, String action, String originalRecordUuid,
 	                                  OpenmrsObject owner, String ownerPropertyName) {
 		
 		SessionFactory factory = null;
@@ -1330,8 +1302,45 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		entriesHolder = new LinkedHashMap<String, OpenmrsObject>();
 		try {
 			
+			CollectionMetadata collMD = getCollectionMetadata(owner.getClass(), ownerPropertyName, factory);
+			if (collMD == null) {
+				throw new SyncException("Can't find a collection with " + ownerPropertyName + " in class "
+				        + owner.getClass());
+			}
+			
+			Class<?> elementClass = collMD.getElementType().getReturnedClass();
+			//If this is a simple type like Integer, serialization of the collection will be as below: 
+			//<org.openmrs.Cohort>
+			//	<memberIds type="java.util.Set(org.openmrs.Cohort)">[2, 3]</memberIds>
+			//  ............. and more
+			//This should work just fine as long as there is a Normalizer registered for it
+			if (!OpenmrsObject.class.isAssignableFrom(elementClass) && SyncUtil.getNormalizer(elementClass) != null) {
+				
+				//Check if there is already a NEW/UPDATE sync item for the owner
+				SyncItem syncItem = new SyncItem();
+				syncItem.setKey(new SyncItemKey<String>(owner.getUuid(), String.class));
+				syncItem.setContainedType(owner.getClass());
+				syncItem.setState(SyncItemState.UPDATED);
+				
+				boolean ownerHasSyncItem = syncRecordHolder.get().hasSyncItem(syncItem);
+				syncItem.setState(SyncItemState.NEW);
+				if (!ownerHasSyncItem)
+					ownerHasSyncItem = syncRecordHolder.get().hasSyncItem(syncItem);
+				
+				if (!ownerHasSyncItem) {
+					ClassMetadata cmd = factory.getClassMetadata(owner.getClass());
+					//create an UPDATE sync item for the owner so that the collection changes get recorded along
+					Serializable primaryKeyValue = cmd.getIdentifier(owner, (SessionImplementor)factory.getCurrentSession());
+					packageObject(owner, cmd.getPropertyValues(owner, EntityMode.POJO), cmd.getPropertyNames(),
+					    cmd.getPropertyTypes(), primaryKeyValue, SyncItemState.UPDATED);
+				} else {
+					//There is already an UPDATE OR NEW SyncItem for the owner containing the above updates
+				}
+				
+				return;
+			}
 			// find out what entries need to be serialized
-			for (Object entry : set) {
+			for (Object entry : (Iterable)collection) {
 				if (entry instanceof OpenmrsObject) {
 					OpenmrsObject obj = (OpenmrsObject) entry;
 					
@@ -1347,30 +1356,27 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 					// well, this is messed up: have an instance of
 					// OpenmrsObject but has no uuid
 					if (entryUuid == null) {
-						log.error("Cannot handle set entries where uuid is null.");
-						throw new CallbackException("Cannot handle set entries where uuid is null.");
+						log.error("Cannot handle collection entries where uuid is null.");
+						throw new CallbackException("Cannot handle collection entries where uuid is null.");
 					}
 					
 					// add it to the holder to avoid possible duplicates: key =
 					// uuid + action
 					entriesHolder.put(entryUuid + "|update", obj);
-				} else if (SyncUtil.getNormalizer(entry.getClass()) == null) {
-					log.warn("Cannot handle sets where entries are not OpenmrsObject here. Type was " + entry.getClass()
-					        + " in property " + ownerPropertyName + " in class " + owner.getClass());
+				} else {
+					log.warn("Cannot handle collections where entries are not OpenmrsObject and have no Normalizers. Type was "
+					        + entry.getClass() + " in property " + ownerPropertyName + " in class " + owner.getClass());
 					// skip out early because we don't want to write any xml for it
 					// it was handled by the normal property writer hopefully
-					return;
-				} else {
-					// don't do anything else (recreating/packaging) with these sets
 					return;
 				}
 			}
 			
 			// add on deletes
-			if (!"recreate".equals(action) && set.getRole() != null) {
+			if (!"recreate".equals(action) && collection.getRole() != null) {
 				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) factory)
-				        .getCollectionPersister(set.getRole());
-				Iterator it = set.getDeletes(persister, false);
+				        .getCollectionPersister(collection.getRole());
+				Iterator it = collection.getDeletes(persister, false);
 				if (it != null) {
 					while (it.hasNext()) {
 						Object entryDelete = it.next();
@@ -1389,8 +1395,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 							// well, this is messed up: have an instance of
 							// OpenmrsObject but has no uuid
 							if (entryDeleteUuid == null) {
-								log.error("Cannot handle set delete entries where uuid is null.");
-								throw new CallbackException("Cannot handle set delete entries where uuid is null.");
+								log.error("Cannot handle collection delete entries where uuid is null.");
+								throw new CallbackException("Cannot handle collection delete entries where uuid is null.");
 							}
 							
 							// add it to the holder to avoid possible
@@ -1402,7 +1408,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 							
 						} else {
 							// TODO: more debug info
-							log.warn("Cannot handle sets where entries are not OpenmrsObject!");
+							log.warn("Cannot handle collections where entries are not OpenmrsObject and have no Normalizers!");
 							// skip out early because we don't want to write any
 							// xml for it. it
 							// was handled by the normal property writer
@@ -1422,10 +1428,10 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			 */
 
 			// Setup the serialization data structures to hold the state
-			Record xml = pkg.createRecordForWrite(set.getClass().getName());
+			Record xml = pkg.createRecordForWrite(collection.getClass().getName());
 			Item entityItem = xml.getRootItem();
 			
-			// serialize owner info: we will need type, prop name where set
+			// serialize owner info: we will need type, prop name where collection
 			// goes, and owner uuid
 			Item item = xml.createItem(entityItem, "owner");
 			item.setAttribute("type", this.getType(owner));
@@ -1455,7 +1461,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			SyncItem syncItem = new SyncItem();
 			syncItem.setKey(new SyncItemKey<String>(owner.getUuid() + "|" + ownerPropertyName, String.class));
 			syncItem.setState(SyncItemState.UPDATED);
-			syncItem.setContainedType(set.getClass());
+			syncItem.setContainedType(collection.getClass());
 			syncItem.setContent(xml.toStringAsDocumentFragement());
 			
 			syncRecordHolder.get().addOrRemoveAndAddItem(syncItem);
@@ -1467,8 +1473,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			}
 		}
 		catch (Exception ex) {
-			log.error("Error processing Persistent set, see callstack and inner expection", ex);
-			throw new CallbackException("Error processing Persistent set, see callstack and inner expection.", ex);
+			log.error("Error processing Persistent collection, see callstack and inner expection", ex);
+			throw new CallbackException("Error processing Persistent collection, see callstack and inner expection.", ex);
 		}
 	}
 	
@@ -1726,5 +1732,105 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			//TODO: log info and continue: something went wrong, 
 			//one way or the other we weren't able to apply the mods; so just continue
 		}
+	}
+	
+	/**
+	 * Utility method that recursively fetches the CollectionMetadata for the specified collection
+	 * property and class from given SessionFactory object
+	 * 
+	 * @param clazz the class in which the collection is defined
+	 * @param collPropertyName the collection's property name
+	 * @param sf SessionFactory object
+	 * @return the CollectionMetadata if any
+	 */
+	private CollectionMetadata getCollectionMetadata(Class<?> clazz, String collPropertyName, SessionFactory sf) {
+		CollectionMetadata cmd = sf.getCollectionMetadata(clazz.getName() + "." + collPropertyName);
+		//Recursively check if there is collection metadata for the superclass
+		if (cmd == null && clazz.getSuperclass() != null && !Object.class.equals(clazz.getSuperclass())) {
+			return getCollectionMetadata(clazz.getSuperclass(), collPropertyName, sf);
+		}
+		return cmd;
+	}
+	
+	/**
+	 * Intercepts before the transaction is completed. Cleans up postInsertModifications,
+	 * deactivated and isProcessRegistered ThreadLocal objects/reset. Note that uncaught Exceptions
+	 * thrown from this process are rethrown by hibernate as AssertionFailure exceptions except for
+	 * HibernateException and its subclasses
+	 */
+	private class SyncBeforeTransactionCompletionProcess implements BeforeTransactionCompletionProcess {
+		
+		/**
+		 * @see org.hibernate.action.BeforeTransactionCompletionProcess#doBeforeTransactionCompletion(org.hibernate.engine.SessionImplementor)
+		 */
+		@Override
+		public void doBeforeTransactionCompletion(SessionImplementor sessionImpl) {
+			if (log.isDebugEnabled())
+				log.debug("In doBeforeTransactionCompletion process: " + SessionFactoryUtils.toString((Session) sessionImpl)
+				        + " deactivated: " + deactivated.get());
+			
+			try {
+				// If synchronization is NOT deactivated
+				if (deactivated.get() == null) {
+					SyncRecord record = syncRecordHolder.get();
+					syncRecordHolder.remove();
+					
+					// Does this transaction contain any serialized changes?
+					if (record != null && record.hasItems()) {
+						
+						if (log.isDebugEnabled())
+							log.debug(record.getItems().size() + " SyncItems in SyncRecord, saving!");
+						
+						//update the record with any post-insert updates
+						if (postInsertModifications.get() != null && postInsertModifications.get().isEmpty() == false) {
+							processPostInsertModifications(record);
+						}
+						
+						// Grab user if we have one, and use the UUID of the user as
+						// creator of this SyncRecord
+						User user = Context.getAuthenticatedUser();
+						if (user != null) {
+							record.setCreator(user.getUuid());
+						}
+						
+						// Grab database version
+						record.setDatabaseVersion(OpenmrsConstants.OPENMRS_VERSION_SHORT);
+						
+						// Complete the record
+						record.setUuid(SyncUtil.generateUuid());
+						if (record.getOriginalUuid() == null) {
+							if (log.isInfoEnabled())
+								log.info("OriginalUuid is null, so assigning a new UUID: " + record.getUuid());
+							record.setOriginalUuid(record.getUuid());
+						} else {
+							if (log.isInfoEnabled())
+								log.info("OriginalUuid is: " + record.getOriginalUuid());
+						}
+						record.setState(SyncRecordState.NEW);
+						record.setTimestamp(new Date());
+						record.setRetryCount(0);
+						// Save SyncRecord
+						getSyncService().createSyncRecord(record, record.getOriginalUuid());
+					} else {
+						// note: this will happen all the time with read-only
+						// transactions
+						if (log.isTraceEnabled())
+							log.trace("No SyncItems in SyncRecord, save discarded (note: maybe a read-only transaction)!");
+					}
+				}
+			}
+			catch (Exception ex) {
+				log.error("Journal error\n", ex);
+				
+				throw (new SyncException("Error in interceptor, see log messages and callstack.", ex));
+			}
+			finally {
+				postInsertModifications.remove();
+				deactivated.remove();
+				isProcessRegistered.remove();
+			}
+			
+		}
+		
 	}
 }

@@ -270,7 +270,11 @@
 					<td align="right" valign="top"><b><spring:message code="sync.settings.server.clone.down.backup" /></b></td>
 					<td align="left" valign="top"><input type="button"
 						onClick="document.location='${pageContext.request.contextPath}/moduleServlet/sync/createChildServlet';"
-						value="<spring:message code="sync.settings.server.clone.down" />" />
+						value="<spring:message code="sync.settings.server.clone.down" />" 
+						<c:if test="${(server.serverType == 'CHILD' || param.type == 'CHILD') && empty server.serverId}">
+							disabled="disabled"
+						</c:if>
+						/>
 						<br/>
 						<i><span class="syncHint"><spring:message code="sync.settings.server.clone.down.backup.help" /></span></i>
 						<br/>

@@ -37,7 +37,7 @@ import org.openmrs.module.sync.server.SyncServerRecord;
  */
 public class SyncUtilTransmission {
 	
-	private static Log log = LogFactory.getLog(SyncUtil.class);
+	private static Log log = LogFactory.getLog(SyncUtilTransmission.class);
 	
 	public static SyncTransmission createSyncTransmissionRequest(RemoteServer server) {
 		SyncTransmission tx = null;
@@ -569,11 +569,11 @@ public class SyncUtilTransmission {
 	/**
 	 * Main method to initiate data synchronization from a child to its parent.
 	 * 
-	 * @param receivingSize (nullable) updated mid-method to be the number of objects coming in from
+	 * @param size (nullable) updated mid-method to be the number of objects coming in from
 	 *            the parent
 	 * @param maxSyncRecords The maximum number of sync records to sync from child to parent server
 	 * @return the {@link SyncTransmissionResponse} from the parent
-	 * @see #doFullSynchronize(RemoteServer)
+	 * @see #doFullSynchronize(RemoteServer, ReceivingSize, Integer)
 	 * @should run one sync task at a time
 	 */
 	public static SyncTransmissionResponse doFullSynchronize(ReceivingSize size, Integer maxSyncRecords) {

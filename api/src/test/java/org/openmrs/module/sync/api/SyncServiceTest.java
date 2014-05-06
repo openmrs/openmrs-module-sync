@@ -26,7 +26,9 @@ import org.openmrs.PersonAttributeType;
 import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncRecord;
+import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.api.impl.SyncServiceImpl;
+import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.openmrs.test.Verifies;
 
@@ -140,6 +142,24 @@ public class SyncServiceTest extends BaseModuleContextSensitiveTest {
 		List<SyncRecord> syncRecords = syncService.getSyncRecords("ConceptDatatype");
 		
 		Assert.assertEquals(7, syncRecords.size());
+	}
+	
+	/**
+	 * @see {@link SyncService#getSyncServerRecord(Integer)}
+	 */
+	@Test
+	@Verifies(value = "should get a syncServerRecord by its primary key", method = "getSyncServerRecord(Integer)")
+	public void getSyncServerRecord_shouldGetASyncServerRecordByItsPrimaryKey() throws Exception {
+		executeDataSet("org/openmrs/module/sync/include/SyncRecords.xml");
+		SyncService syncService = Context.getService(SyncService.class);
+		
+		SyncServerRecord ssr = syncService.getSyncServerRecord(57);
+		
+		Assert.assertEquals(1, ssr.getSyncRecord().getRecordId().intValue());
+		Assert.assertEquals(1, ssr.getSyncServer().getServerId().intValue());
+		Assert.assertEquals(SyncRecordState.NOT_SUPPOSED_TO_SYNC, ssr.getState());
+		
+		Assert.assertNull(syncService.getSyncServerRecord(445544));
 	}
     
 }
