@@ -15,6 +15,7 @@ import org.openmrs.module.sync.TestUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.web.test.BaseModuleWebContextSensitiveTest;
 import org.springframework.stereotype.Controller;
 import org.springframework.test.annotation.NotTransactional;
 import org.springframework.ui.ModelMap;
@@ -23,7 +24,7 @@ import org.springframework.ui.ModelMap;
  * Tests for the {@link ConfigCurrentServerFormController}
  */
 @Controller
-public class ViewRecordControllerTest extends BaseModuleContextSensitiveTest {
+public class ViewRecordControllerTest extends BaseModuleWebContextSensitiveTest {
 	
 	/** Logger for this class and subclasses */
 	protected final Log log = LogFactory.getLog(getClass());
