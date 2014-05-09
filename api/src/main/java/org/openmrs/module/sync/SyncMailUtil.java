@@ -32,7 +32,7 @@ public class SyncMailUtil {
             props.setProperty("mail.from", adminService.getGlobalProperty("mail.from"));
             props.setProperty("mail.debug", adminService.getGlobalProperty("mail.debug"));
             props.setProperty("mail.smtp.auth", adminService.getGlobalProperty("mail.smtp_auth"));
-            props.setProperty("mail.smtp.starttls.enable", "true");
+            props.setProperty("mail.smtp.starttls.enable", adminService.getGlobalProperty("mail.smtp.starttls.enable"));
 
             Authenticator auth = new Authenticator() {
 
