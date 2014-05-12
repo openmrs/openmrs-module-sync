@@ -265,23 +265,19 @@ public class HistoryListController {
 	}
 
 	@RequestMapping(value = Views.RECENT_ALL_COMMITTED, method = RequestMethod.GET)
-	public String historyRecentAllCommitted(@RequestParam("recordId") Integer recordId,@RequestParam("size") Integer size,
+	public String historyRecentAllCommitted(@RequestParam("recordId") Integer recordId, @RequestParam("size") Integer size,
 											HttpSession session) throws Exception {
-		SyncService ss = Context.getService(SyncService.class);
-		int firstRecordId=recordId;
-		if(ss.getParentServer()!=null){
-			recordId=ss.getAllCommittedSyncRecordId(SyncConstants.SYNC_RECORD_RECENT_ALL_COMMITTED_STATES,false);
-		} else {
-			recordId=ss.getAllCommittedSyncRecordId(SyncConstants.SYNC_RECORD_RECENT_ALL_COMMITTED_STATES,true);
-		}
-		if(recordId==-1) {
+
+		int rId = Context.getService(SyncService.class).getMostRecentFullyCommittedRecordId();
+
+		if (rId == -1) {
 			session.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.general.noRecentAllCommitted");
-			recordId=firstRecordId;
+			rId = recordId;
 		} else {
-			if(recordId==firstRecordId) {
+			if(rId == recordId) {
 				session.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.general.onRecentAllCommitted");
 			}
 		}
-		return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + recordId + "&size=" + size;
+		return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + rId + "&size=" + size;
 	}
 }

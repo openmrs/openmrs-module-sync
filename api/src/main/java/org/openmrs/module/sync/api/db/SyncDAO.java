@@ -439,9 +439,9 @@ public interface SyncDAO {
 	 */
 	public SyncRecord getOlderSyncRecordInState(SyncRecord syncRecord, EnumSet<SyncRecordState> states);
     /**
-     * @see SyncService#getAllCommittedSyncRecordId(java.util.EnumSet, boolean)
+     * @see SyncService#getMostRecentFullyCommittedRecordId()
      */
-    public int getAllCommittedSyncRecordId(EnumSet<SyncRecordState> states,boolean root);
+    public int getMostRecentFullyCommittedRecordId();
 	
 	/**
 	 * @see SyncService#getSyncServerRecord(Integer)

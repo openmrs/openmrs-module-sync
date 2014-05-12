@@ -706,13 +706,10 @@ public interface SyncService {
 
     /**
      * Gets the Most recent successfully committed record
-     *
-     * @param states is the set of successful states
-     * @param root   check whether current server is a root server
      * @return record id of the most successful most recent committed record
      */
      @Transactional(readOnly = true)
-     public int getAllCommittedSyncRecordId(EnumSet<SyncRecordState> states,boolean root);
+     public int getMostRecentFullyCommittedRecordId();
 	
 	/**
 	 * Gets the SyncServerRecord with a matching syncServerRecordId

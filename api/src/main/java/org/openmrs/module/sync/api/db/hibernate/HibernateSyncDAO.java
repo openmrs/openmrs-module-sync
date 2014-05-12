@@ -1592,24 +1592,33 @@ public class HibernateSyncDAO implements SyncDAO {
 	}
 
     /**
-     * @see org.openmrs.module.sync.api.db.SyncDAO#getAllCommittedSyncRecordId(java.util.EnumSet, boolean)
+     * @see SyncDAO#getMostRecentFullyCommittedRecordId()
      */
-     public int getAllCommittedSyncRecordId(EnumSet<SyncRecordState> states,boolean root) {
-         String query;
-         Object result;
-         String[] syncServerStates = new String[] { SyncRecordState.COMMITTED_AND_CONFIRMATION_SENT.name(),SyncRecordState.COMMITTED.name(),SyncRecordState.ALREADY_COMMITTED.name() };
-         if(root) {
-             query="SELECT sr1.record_id FROM sync_record sr1 INNER JOIN sync_server_record  ssr1 ON sr1.record_id=ssr1.record_id WHERE ssr1.state IN (:states)  AND NOT EXISTS (SELECT sr2.record_id FROM sync_record sr2 INNER JOIN sync_server_record ssr2 ON sr2.record_id=ssr2.record_id WHERE sr1.record_id=sr2.record_id AND ssr2.state NOT IN (:states)) ORDER BY sr1.record_id DESC";
-         }else {
-             query="SELECT record_id FROM sync_record WHERE state IN (:states) ORDER BY record_id DESC";
-         }
-         Query allCommittedSSRQuery = sessionFactory
-                 .getCurrentSession()
-                 .createSQLQuery(query);
-         allCommittedSSRQuery.setParameterList("states",syncServerStates);
+     public int getMostRecentFullyCommittedRecordId() {
+		 Set<String> committedStates = new HashSet<String>();
+		 for (SyncRecordState s : SyncConstants.SYNC_RECORD_COMMITTED_STATES) {
+			 committedStates.add(s.name());
+		 }
+		 StringBuilder q = new StringBuilder();
+		 if (getParentServer() != null) {
+			 q.append("SELECT record_id FROM sync_record WHERE state IN (:states) ORDER BY record_id DESC");
+		 }
+		 else {
+			 q.append("SELECT sr1.record_id FROM sync_record sr1 ");
+			 q.append("INNER JOIN sync_server_record ssr1 ON sr1.record_id = ssr1.record_id ");
+			 q.append("WHERE ssr1.state IN (:states) AND NOT EXISTS (");
+			 q.append("	SELECT sr2.record_id FROM sync_record sr2 ");
+			 q.append("	INNER JOIN sync_server_record ssr2 ON sr2.record_id=ssr2.record_id ");
+			 q.append("	WHERE sr1.record_id=sr2.record_id AND ssr2.state NOT IN (:states)");
+			 q.append(") ORDER BY sr1.record_id DESC");
+		 }
+
+         Query allCommittedSSRQuery = sessionFactory.getCurrentSession().createSQLQuery(q.toString());
+         allCommittedSSRQuery.setParameterList("states", committedStates);
          allCommittedSSRQuery.setMaxResults(1);
-         result=allCommittedSSRQuery.uniqueResult();
-         if(result!=null) {
+
+		 Object result = allCommittedSSRQuery.uniqueResult();
+         if(result != null) {
              return Integer.parseInt(result.toString());
          }
          return -1;

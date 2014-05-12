@@ -962,10 +962,10 @@ public class SyncServiceImpl implements SyncService {
 	}
 
     /**
-     * @see SyncService#getAllCommittedSyncRecordId(java.util.EnumSet, boolean)
+     * @see SyncService#getMostRecentFullyCommittedRecordId()
      */
-     public int getAllCommittedSyncRecordId(EnumSet<SyncRecordState> states, boolean root) {
-        return getSynchronizationDAO().getAllCommittedSyncRecordId(states,root);
+     public int getMostRecentFullyCommittedRecordId() {
+        return getSynchronizationDAO().getMostRecentFullyCommittedRecordId();
      }
 	
 	/**
