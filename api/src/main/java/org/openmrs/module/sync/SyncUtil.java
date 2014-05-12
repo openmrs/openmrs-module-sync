@@ -831,7 +831,7 @@ public class SyncUtil {
 		// If this is OpenMRS metadata, and nothing has yet been assigned, try to use the name by default
 		if (!StringUtils.hasText(ret)) {
 			try {
-				Class<?> clazz = Context.loadClass(className);
+				Class<?> clazz = Context.loadClass("org.openmrs."+className);
 				if (OpenmrsMetadata.class.isAssignableFrom(clazz)) {
 					Class<? extends OpenmrsMetadata> mdClass = (Class<? extends OpenmrsMetadata>) clazz;
 					OpenmrsMetadata md = Context.getService(SyncService.class).getOpenmrsObjectByUuid(mdClass, uuid);
