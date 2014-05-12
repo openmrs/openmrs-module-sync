@@ -155,6 +155,9 @@ public class ConfigCurrentServerFormController {
 			List<SyncClass> defaultSyncClasses = syncService.getSyncClasses();
 			modelMap.put("syncClasses", defaultSyncClasses);
 		}
+
+        //test email
+
 		
 		return "/module/sync/configCurrentServerForm";
 	}

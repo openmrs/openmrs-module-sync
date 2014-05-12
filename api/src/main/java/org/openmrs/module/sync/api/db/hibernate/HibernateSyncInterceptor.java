@@ -174,9 +174,11 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		if (log.isTraceEnabled())
 			log.trace("afterTransactionBegin: " + tx + " deactivated: " + deactivated.get());
 		
-		if (syncRecordHolder.get() != null) {
+		/*
+        if (syncRecordHolder.get() != null) {
 			log.warn("Replacing existing SyncRecord in SyncRecord holder");
 		}
+		*/
 		
 		syncRecordHolder.set(new SyncRecord());
 	}

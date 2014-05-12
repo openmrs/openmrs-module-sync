@@ -56,10 +56,15 @@
 		<defaultValue/>
 		<description>Display name for this server, to distinguish it from other servers.</description>
 	</globalProperty>
+    <globalProperty>
+        <property>sync.admin_email</property>
+        <defaultValue/>
+        <description>Email address for administrator responsible for this server.</description>
+    </globalProperty>
 	<globalProperty>
-		<property>sync.admin_email</property>
-		<defaultValue/>
-		<description>Email address for administrator responsible for this server.</description>
+		<property>mail.smtp.starttls.enable</property>
+		<defaultValue>false</defaultValue>
+		<description>If true, enables the use of the STARTTLS command (if supported by the server) to switch the connection to a TLS-protected connection before issuing any login commands. Defaults to false.</description>
 	</globalProperty>
 	<globalProperty>
 		<property>sync.default_role</property>
@@ -111,6 +116,7 @@
 		<defaultValue>{SYNCSERVERNAME}_{NEXTUSERID}{CHECKDIGIT}</defaultValue>
 		<description>The template used to generate new users' system_id on this server. Available options: {SYNCSERVERNAME}, {SYNCSERVERUUID}, {NEXTUSERID}, {CHECKDIGIT}. Empty string will use core's built-in algorithm (warning: this WILL produce duplicate system ids if user generation is done on multiple servers. Use empty string with caution) </description>
 	</globalProperty>
+
 	
 	<dwr>
 		<allow>

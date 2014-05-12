@@ -18,15 +18,13 @@ import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.SyncConstants;
-import org.openmrs.module.sync.SyncItem;
-import org.openmrs.module.sync.SyncRecord;
-import org.openmrs.module.sync.SyncUtil;
+import org.openmrs.module.sync.*;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.module.sync.server.RemoteServer;
+import org.openmrs.notification.Message;
 import org.openmrs.scheduler.TaskDefinition;
 import org.openmrs.scheduler.web.controller.SchedulerFormController;
 import org.openmrs.util.OpenmrsConstants;
@@ -37,6 +35,7 @@ import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.ServletRequestUtils;
 import org.springframework.web.servlet.ModelAndView;
@@ -190,6 +189,7 @@ public class MaintenanceController extends SimpleFormController {
 		
 		List<GlobalProperty> globalPropList = new ArrayList<GlobalProperty>();
 		List<GlobalProperty> syncPropList = new ArrayList<GlobalProperty>();
+        List<GlobalProperty> mailPropList = new ArrayList<GlobalProperty>();
 		Map<String, String> recordTypes = new HashMap<String, String>();
 		Map<Object, String> itemTypes = new HashMap<Object, String>();
 		Map<Object, String> itemUuids = new HashMap<Object, String>();
@@ -252,7 +252,8 @@ public class MaintenanceController extends SimpleFormController {
 				if (displayName.length() > 0)
 					recordText.put(record.getUuid(), displayName);
 		}
-		
+		String PROPERTY_MAIL_NAME = "mail";
+
 		globalPropList = Context.getAdministrationService().getAllGlobalProperties();
 		for (GlobalProperty prop : globalPropList) {
 			if (prop.getProperty().equals(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS))
@@ -263,17 +264,21 @@ public class MaintenanceController extends SimpleFormController {
 				syncPropList.add(prop);
 			else if (prop.getProperty().equals(SyncConstants.PROPERTY_NAME_MAX_RETRY_COUNT))
 				syncPropList.add(prop);
+            else if (prop.getProperty().equals(SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL))
+                syncPropList.add(prop);
+            else if (prop.getProperty().startsWith("mail."))
+                mailPropList.add(prop);
 		}
 		
 		ret.put("keyword", keyword);
 		ret.put("syncProps", syncPropList);
+        ret.put("mailProps", mailPropList);
 		ret.put("totalRecords", totalRecords);
 		ret.put("currentPage", page);
 		ret.put("maxPages", maxPages);
 		ret.put("recordTypes", recordTypes);
 		ret.put("itemTypes", itemTypes);
 		ret.put("itemUuids", itemUuids);
-		// ret.put("itemInfo", itemInfo);
 		ret.put("recordText", recordText);
 		ret.put("recordChangeType", recordChangeType);
 		ret.put("parent", Context.getService(SyncService.class).getParentServer());
@@ -321,59 +326,77 @@ public class MaintenanceController extends SimpleFormController {
 		SyncService syncService = Context.getService(SyncService.class);
 		
 		String action = ServletRequestUtils.getStringParameter(request, "action");
-		
-		if ("backporting".equals(action)) {
-			Integer serverId = ServletRequestUtils.getRequiredIntParameter(request, "server");
-			String dateString = ServletRequestUtils.getRequiredStringParameter(request, "date");
-			
-			RemoteServer server = syncService.getRemoteServer(serverId);
-			Date date = new SimpleDateFormat(Context.getAdministrationService().getGlobalProperty(
-			    SyncConstants.PROPERTY_DATE_PATTERN, SyncConstants.DEFAULT_DATE_PATTERN)).parse(dateString);
-			
-			Integer numberBackproted = syncService.backportSyncRecords(server, date);
-			request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.maintenance.backport.success");
-			request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ARGS, numberBackproted);
-			
-		} else {
-			// doing an archive task
-			try {
-				TaskDefinition task = (TaskDefinition) command;
+		if (action != null){
+            if ("backporting".equals(action)) {
+                Integer serverId = ServletRequestUtils.getRequiredIntParameter(request, "server");
+                String dateString = ServletRequestUtils.getRequiredStringParameter(request, "date");
 
-				Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+                RemoteServer server = syncService.getRemoteServer(serverId);
+                Date date = new SimpleDateFormat(Context.getAdministrationService().getGlobalProperty(
+                    SyncConstants.PROPERTY_DATE_PATTERN, SyncConstants.DEFAULT_DATE_PATTERN)).parse(dateString);
 
-                // set the repeat interval
-                String units = request.getParameter("repeatIntervalUnits");
-                Long interval = Long.parseLong(request.getParameter("repeatInterval"));
+                Integer numberBackproted = syncService.backportSyncRecords(server, date);
+                request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.maintenance.backport.success");
+                request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ARGS, numberBackproted);
 
-                if ("minutes".equals(units)) {
-                    interval = interval * 60;
-                } else if ("hours".equals(units)) {
-                    interval = interval * 60 * 60;
-                } else if ("days".equals(units)) {
-                    interval = interval * 60 * 60 * 24;
+            } else  if ("testEmail".equals(action)) {
+
+                String adminEmail = Context.getService(SyncService.class).getAdminEmail();
+                String recipients = ServletRequestUtils.getStringParameter(request, "recipients");
+                String subject = ServletRequestUtils.getStringParameter(request, "subject");
+                String emailBody = ServletRequestUtils.getStringParameter(request, "emailBody");
+                String serverName = request.getServerName();
+
+                try {
+                    SyncMailUtil.sendMessage(recipients, serverName + ": " + subject, emailBody);
+                } catch (Exception e) {
+                    log.error("Failed to send email: ", e) ;
+                    errors.reject("failed to send email: " + e.getLocalizedMessage());
+                    return showForm(request, errors, getFormView());
                 }
 
-                task.setRepeatInterval(interval);
+
+            } else {
+                    // doing an archive task
+                    try {
+                        TaskDefinition task = (TaskDefinition) command;
+
+                        Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+
+                        // set the repeat interval
+                        String units = request.getParameter("repeatIntervalUnits");
+                        Long interval = Long.parseLong(request.getParameter("repeatInterval"));
+
+                        if ("minutes".equals(units)) {
+                            interval = interval * 60;
+                        } else if ("hours".equals(units)) {
+                            interval = interval * 60 * 60;
+                        } else if ("days".equals(units)) {
+                            interval = interval * 60 * 60 * 24;
+                        }
+
+                        task.setRepeatInterval(interval);
 
 
-                //only reschedule a task if it is started, is not running and the time is not in the past
-				if (task.getStarted() && OpenmrsUtil.compareWithNullAsEarliest(task.getStartTime(), new Date()) > 0
-				        && (task.getTaskInstance() == null || !task.getTaskInstance().isExecuting()))
-					Context.getSchedulerService().rescheduleTask(task);
-				else
-					Context.getSchedulerService().saveTask(task);
-				
-				request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.maintenance.manage.changesSaved");
-			}
-			catch (APIException e) {
-				errors.reject("sync.maintenance.manage.failedToSaveTaskProperties");
-				return showForm(request, errors, getFormView());
-			}
-			finally {
-				Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
-			}
-		}
-		
+                        //only reschedule a task if it is started, is not running and the time is not in the past
+                        if (task.getStarted() && OpenmrsUtil.compareWithNullAsEarliest(task.getStartTime(), new Date()) > 0
+                                && (task.getTaskInstance() == null || !task.getTaskInstance().isExecuting()))
+                            Context.getSchedulerService().rescheduleTask(task);
+                        else
+                            Context.getSchedulerService().saveTask(task);
+
+                        request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.maintenance.manage.changesSaved");
+                    }
+                    catch (APIException e) {
+                        errors.reject("sync.maintenance.manage.failedToSaveTaskProperties");
+                        return showForm(request, errors, getFormView());
+                    }
+                    finally {
+                        Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+                    }
+            }
+         }
+
 		return new ModelAndView(new RedirectView(getSuccessView()));
 	}
 	
