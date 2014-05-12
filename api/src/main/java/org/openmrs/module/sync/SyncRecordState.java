@@ -58,11 +58,17 @@ public enum SyncRecordState {
     
     /**
      * Determines if a record state if final
-     * @param state
      * @return
      */
     public boolean isFinal() {
     	return this == COMMITTED || this == ALREADY_COMMITTED || this == COMMITTED_AND_CONFIRMATION_SENT;
     }
+
+	/**
+	 * @return the value of isFinal, for use when getter is needed
+	 */
+	public boolean getFinal() {
+		return isFinal();
+	}
     
 };
