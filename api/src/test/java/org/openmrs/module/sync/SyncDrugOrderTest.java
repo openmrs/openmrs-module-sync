@@ -66,10 +66,7 @@ public class SyncDrugOrderTest extends SyncBaseTest {
 				Concept concept = drug.getConcept();
 				assertNotNull(concept);
 
-				OrderType orderType = orderService.getOrderType(1);
-
 				DrugOrder drugOrder = new DrugOrder();
-				drugOrder.setOrderType(orderType);
 				drugOrder.setDrug(drug);
 				drugOrder.setConcept(concept);
 				drugOrder.setPatient(patient);
@@ -79,7 +76,8 @@ public class SyncDrugOrderTest extends SyncBaseTest {
 				drugOrder.setDateCreated(new Date());
 				drugOrder.setVoided(new Boolean(false));
 
-				Order.class.getMethod("setOrderType", OrderType.class).invoke(drugOrder, orderType);
+				Object orderType = OrderService.class.getMethod("getOrderType", Integer.class).invoke(orderService, 1);
+				DrugOrder.class.getMethod("setOrderType", OrderType.class).invoke(drugOrder, orderType);
 				DrugOrder.class.getMethod("setUnits", String.class).invoke(drugOrder, "tabs");
 				DrugOrder.class.getMethod("setFrequency", String.class).invoke(drugOrder, "4 times per day");
 
