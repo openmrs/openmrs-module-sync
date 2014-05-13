@@ -103,8 +103,6 @@
 
     <concept_synonym/>
 
-    <drug retired="false" drug_id="1" concept_id="9" name="Advil" combination="false" dose_strength="200.0" maximum_daily_dose="1600.0" minimum_daily_dose="50.0" units="mg" creator="1" date_created="2008-01-14 18:09:57.0" uuid="29dde6a3-144e-102b-8d9c-e44ed545d86c"/>
-
 	<person_attribute_type retired="false" person_attribute_type_id="1" name="Race" description="Group of persons related by common descent or heredity" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322aa53b-144e-102b-8d9c-e44ed545d86c" sort_weight="1"/>
 	<person_attribute_type retired="false" person_attribute_type_id="2" name="Birthplace" description="Location of persons birth" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322aa923-144e-102b-8d9c-e44ed545d86c" sort_weight="7"/>
 	<person_attribute_type retired="false" person_attribute_type_id="3" name="Citizenship" description="Country of which this person is a member" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322aab60-144e-102b-8d9c-e44ed545d86c" sort_weight="6"/>
@@ -282,8 +280,6 @@
 	<program_workflow_state program_workflow_state_id="1" program_workflow_id="1" concept_id="7" initial="true" terminal="false" creator="1" date_created="2008-01-14 18:06:27.0" retired="false" uuid="33807f36-144e-102b-8d9c-e44ed545d86c"/>
 	<program_workflow_state program_workflow_state_id="2" program_workflow_id="1" concept_id="8" initial="false" terminal="true" creator="1" date_created="2008-01-14 18:06:27.0" retired="false" uuid="33808343-144e-102b-8d9c-e44ed545d86c"/>
 
-
-
 	<person person_id="2" gender="F" dead="0" birthdate="2001-01-01 00:00:00.0" birthdate_estimated="1" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="577d58db-15a5-102b-8d9c-e44ed545d86c"/>
 	<person person_id="3" gender="F" dead="0" birthdate="1995-01-01 00:00:00.0" birthdate_estimated="1" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="196bef28-168c-102b-8d9c-e44ed545d86c"/>
 	<person person_id="4" gender="F" dead="0" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="426bef28-168c-102b-8d9c-e44ed545d863"/>
@@ -296,6 +292,7 @@
 	<person_attribute person_attribute_id="101" person_id="5" value="3" person_attribute_type_id="8" creator="1" date_created="2008-08-18 12:25:57.0" voided="true" uuid="3d7c1fdc-accf-4ee6-83e4-1ee437452f29"/>
 	<person_attribute person_attribute_id="102" person_id="5" value="4" person_attribute_type_id="8" creator="1" date_created="2008-08-18 12:25:57.0" voided="false" uuid="3d5c1fdc-accf-4ee6-83e4-1ee437452f29"/>
 
+	<person_name person_name_id="1" preferred="true" person_id="1" given_name="Admin" middle_name="" family_name="Test" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="5450aa86-15a6-102b-8d9c-e44ed545d86c"/>
 	<person_name person_name_id="2" preferred="true" person_id="2" given_name="Clark" middle_name="" family_name="Kent" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="5446aa86-15a6-102b-8d9c-e44ed545d86c"/>
 	<person_name person_name_id="3" preferred="true" person_id="3" given_name="Lois" middle_name="" family_name="Lane" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="2e1ada24-168c-102b-8d9c-e44ed545d86c"/>
 	<person_name person_name_id="5" preferred="true" person_id="4" given_name="Jimmy" middle_name="" family_name="Olsen" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="2e1eda24-168c-102b-8d9c-e44ed545d86c"/>
@@ -322,14 +319,9 @@
 	<obs obs_id="2" person_id="2" concept_id="10" encounter_id="1" obs_datetime="1978-05-11 00:00:00.0" location_id="2" value_numeric="23.4" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="11ce07ae-19c2-102b-8d9c-e44ed545d86c"/>
 	<obs obs_id="3" person_id="2" concept_id="10" encounter_id="1" obs_datetime="1978-06-11 00:00:00.0" location_id="2" value_numeric="34.5" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="1a9c0d7b-19c2-102b-8d9c-e44ed545d86c"/>
 
-	<orders order_id="1" concept_id="9" order_number="001" urgency="urgency" order_action="action" start_date="2006-01-02 00:00:00" discontinued="0" patient_id="2" creator="1" date_created="2006-01-02 00:00:00" urgency="STAT" voided="0" uuid="fc905e87-11ef-102b-a33e-82966c5b8177"/>
-	<drug_order order_id="1" drug_inventory_id="1" dose="3" frequency="1/day x 3 days/week"	/>
-
-
     <patient_program patient_program_id="1" patient_id="3" program_id="1" date_enrolled="2006-04-11 00:00:00.0" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="0bb5846a-168d-102b-8d9c-e44ed545d86c"/>
 
     <patient_state patient_state_id="1" patient_program_id="1" state="1" start_date="2006-04-11 00:00:00.0" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="11d71368-168d-102b-8d9c-e44ed545d86c"/>
-
 
     <serialized_object serialized_object_id="1" name="TestReport" description="Test Report For Serialization" type="org.openmrs.report.ReportSchema" subtype="org.openmrs.report.ReportSchema" serialization_class="org.openmrs.module.serialization.xstream.XStreamSerializer" serialized_data="&lt;org.openmrs.report.ReportSchema&gt;&lt;name&gt;TestReport&lt;/name&gt;&lt;description&gt;Test Report For Serialization&lt;/description&gt;&lt;/org.openmrs.report.ReportSchema&gt;" date_created="2005-01-01 00:00:00.0" creator="1" retired="false"  uuid="68547121-1b70-465f-99ee-c9dfd95e7d30"/>
     <serialized_object serialized_object_id="2" name="TestReport2" description="Test Report 2 For Serialization" type="org.openmrs.report.ReportSchema" subtype="org.openmrs.report.ReportSchema" serialization_class="org.openmrs.module.serialization.xstream.XStreamSerializer" serialized_data="&lt;org.openmrs.report.ReportSchema&gt;&lt;name&gt;TestReport2&lt;/name&gt;&lt;description&gt;Test Report 2 For Serialization&lt;/description&gt;&lt;/org.openmrs.report.ReportSchema&gt;" date_created="2005-01-01 00:00:00.0" creator="1" retired="false"  uuid="83b452ca-a4c8-4bf2-9e0b-8bbddf2f9901"/>
