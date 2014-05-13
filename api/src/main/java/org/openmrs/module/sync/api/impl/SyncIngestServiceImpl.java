@@ -13,12 +13,6 @@
  */
 package org.openmrs.module.sync.api.impl;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -51,6 +45,12 @@ import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
 import org.w3c.dom.NodeList;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SyncIngestServiceImpl implements SyncIngestService {
 
@@ -147,11 +147,17 @@ public class SyncIngestServiceImpl implements SyncIngestService {
             // first, let's see if this server even accepts this kind of syncRecord
             if ( !server.shouldReceiveSyncRecordFrom(record)) {
                 importRecord.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
-                log.warn("\nNOT INGESTING RECORD with " + record.getContainedClasses() + " BECAUSE SERVER IS NOT READY TO ACCEPT ALL CONTAINED OBJECTS\n");
-            } else if (!isValidVersion(record)) {
+				String errorMessage = "NOT INGESTING RECORD with " + record.getContainedClasses() + " BECAUSE SERVER IS NOT READY TO ACCEPT ALL CONTAINED OBJECTS";
+                importRecord.setErrorMessage(errorMessage);
+				log.warn("\n" + errorMessage + "\n");
+            }
+			else if (!isValidVersion(record)) {
             	importRecord.setState(SyncRecordState.REJECTED);
-                log.warn("\nNOT INGESTING RECORD with version " + record.getDatabaseVersion() + " BECAUSE SERVER IS NOT COMPATIBLE\n");
-            } else {
+				String errorMessage = "NOT INGESTING RECORD with version " + record.getDatabaseVersion() + " BECAUSE SERVER IS NOT COMPATIBLE";
+                importRecord.setErrorMessage(errorMessage);
+				log.warn("\n" + errorMessage + "\n");
+            }
+			else {
                 //log.warn("\nINGESTING ALL CLASSES: " + recordClasses + " BECAUSE SERVER IS READY TO ACCEPT ALL");
                 // second, let's see if this SyncRecord has already been imported
                 // use the original record id to locate import_record copy
@@ -168,7 +174,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     importRecord.setSourceServer(server);
                     syncService.createSyncImportRecord(importRecord);
                 } else {
-                	if(log.isWarnEnabled()) {
+                	if (log.isWarnEnabled()) {
                 		log.warn("ImportRecord already exists and has retry count: " + importRecord.getRetryCount() + ", state: " + importRecord.getState());
                 	}
                     SyncRecordState state = importRecord.getState();
@@ -176,12 +182,14 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                         // apparently, the remote/child server exporting to this server doesn't realize it's
                         // committed, so let's remind by sending back this import record with already_committed
                         importRecord.setState(SyncRecordState.ALREADY_COMMITTED);
-                    } else if (state.equals(SyncRecordState.FAILED)) {
+                    }
+					else if (state.equals(SyncRecordState.FAILED)) {
                 		//mark as failed and retry next time
                     	importRecord.setState(SyncRecordState.FAILED);
                 		importRecord.setRetryCount(importRecord.getRetryCount() + 1);
                 		isUpdateNeeded = true;
-                    }else {
+                    }
+					else {
                         isUpdateNeeded = true;
                     }
                 }
@@ -201,21 +209,24 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     	//System.out.println("content: " + item.getContent());
                     	if (item.getState() == SyncItemState.DELETED) {
                     		deletedItems.add(item);
-                    	} else if (item.getState() == SyncItemState.UPDATED && item.getContainedType() != null && (
+                    	}
+						else if (item.getState() == SyncItemState.UPDATED && item.getContainedType() != null && (
                     			   "org.openmrs.PatientIdentifier".equals(item.getContainedType().getName())
                     			|| "org.openmrs.PersonAttribute".equals(item.getContainedType().getName())
                     			|| "org.openmrs.PersonAddress".equals(item.getContainedType().getName())
                     			|| "org.openmrs.PersonName".equals(item.getContainedType().getName())
                     			)) {
                     		treeSetItems.add(item);
-                    	} else if (Person.class.isAssignableFrom(item.getContainedType()) || Concept.class.isAssignableFrom(item.getContainedType()) || SyncSubclassStub.class.isAssignableFrom(item.getContainedType())
+                    	}
+						else if (Person.class.isAssignableFrom(item.getContainedType()) || Concept.class.isAssignableFrom(item.getContainedType()) || SyncSubclassStub.class.isAssignableFrom(item.getContainedType())
                     			|| SerializedObject.class.isAssignableFrom(item.getContainedType())){
                     		//Sync-180: Person items need to be processed first, Concept exhibited same behavior.
 		                    SyncImportItem importedItem = syncIngestService.processSyncItem(item, record.getOriginalUuid() + "|" + server.getUuid(), processedObjects);
 		                    importedItem.setKey(item.getKey());
 		                    importRecord.addItem(importedItem);
 		                    if ( !importedItem.getState().equals(SyncItemState.SYNCHRONIZED)) isError = true;
-                    	} else {
+                    	}
+						else {
                     		regularNewAndUpdateItems.add(item);
                     	}
                     }
@@ -283,10 +294,8 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     
                     if ( !isError ) {
                         importRecord.setState(SyncRecordState.COMMITTED);
-                        
-                        
-                        
-                    } else {
+                    }
+					else {
                     	//One of SyncItem commits failed, throw to rollback and set failure information.
                     	log.warn("Error while processing SyncRecord with original uuid " + record.getOriginalUuid() + " (" + record.getContainedClasses() + ")");
                         importRecord.setState(SyncRecordState.FAILED);
@@ -295,11 +304,12 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     
                 }
             }
-        } catch (SyncIngestException e) {
+        }
+		catch (SyncIngestException e) {
 	        log.error("Unable to ingest a sync request", e);
         	//fill in sync import record and rethrow to abort tx
 	        importRecord.setState(SyncRecordState.FAILED);
-	        importRecord.setErrorMessage(OpenmrsUtil.shortenedStackTrace(ExceptionUtils.getFullStackTrace(e)));
+	        importRecord.setErrorMessage(e.getMessage() + ":  " + OpenmrsUtil.shortenedStackTrace(ExceptionUtils.getFullStackTrace(e)));
         	e.setSyncImportRecord(importRecord);
         	throw (e);
         }
@@ -307,9 +317,10 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         	log.error("Unexpected exception occurred when processing sync records", e);
             //fill in sync import record and rethrow to abort tx
             importRecord.setState(SyncRecordState.FAILED);
-            importRecord.setErrorMessage(OpenmrsUtil.shortenedStackTrace(ExceptionUtils.getFullStackTrace(e)));
+            importRecord.setErrorMessage(e.getMessage() + ":  " + OpenmrsUtil.shortenedStackTrace(ExceptionUtils.getFullStackTrace(e)));
             throw new SyncIngestException(e,SyncConstants.ERROR_RECORD_UNEXPECTED,null,null,importRecord);
-        } finally {
+        }
+		finally {
         	syncService.updateSyncImportRecord(importRecord);
         	
         	//reset the flush mode back to automatic, no matter what
@@ -342,8 +353,6 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 	 * <br/>UPDATE CONCEPT WORDS 
 	 * <br/>- call to concept service to update concept words for given concept 
 	 * <br/>- HashMap object will contain instance of Concept object which concept words are to be rebuilt
-	 * 
-	 * @param preCommitRecordActions actions to be applied
 	 * 
 	 */
     // TODO: does this really happen precommit?  wouldn't he call to updateConceptWord force a commit?
@@ -570,7 +579,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 
     /**
      * (non-Javadoc)
-     * @see org.openmrs.module.sync.api.SyncIngestService#isConceptIdValidForUuid(int, java.lang.String)
+     * @see org.openmrs.module.sync.api.SyncIngestService#isConceptIdValidForUuid(Integer, java.lang.String)
      */
     public boolean isConceptIdValidForUuid(Integer conceptId, String uuid) throws APIException {
  

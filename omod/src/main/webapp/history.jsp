@@ -218,7 +218,22 @@
 											</c:when>
 											<c:otherwise>
 												<c:if test="${not empty syncRecord.remoteRecords[server]}">
-													<span class="sync${syncRecord.remoteRecords[server].state}"><spring:message code="sync.record.state_${syncRecord.remoteRecords[server].state}" /> </span>
+													<c:set var="syncError" value="${syncRecord.remoteRecords[server].outgoing && not empty syncRecord.remoteRecords[server].errorMessage && fn:trim(syncRecord.remoteRecords[server].errorMessage) != ''}"/>
+													<span class="sync${syncRecord.remoteRecords[server].state}">
+
+														<c:if test="${syncError}">
+															<a style="color:red;" href="javascript:void(0)" onclick="javascript:$j('#${syncRecord.remoteRecords[server].serverRecordId}-errorLog-dialog').dialog('open')">
+														</c:if>
+														<spring:message code="sync.record.state_${syncRecord.remoteRecords[server].state}" />
+														<c:if test="${syncError}">
+															</a>
+														</c:if>
+													</span>
+
+													 <div class="syncViewErrorsDialog" id="${syncRecord.remoteRecords[server].serverRecordId}-errorLog-dialog" title="<openmrs:message code="sync.record.viewErrors.title"/>">
+													 	${syncRecord.remoteRecords[server].errorMessage}
+													</div>
+
 													<br>
 													<c:choose>
 														<c:when test="${syncRecord.remoteRecords[server].outgoing}">
@@ -234,17 +249,6 @@
 												</c:if>
 												<c:if test="${not empty syncRecord.remoteRecords[server] && !syncRecord.remoteRecords[server].state['final']}">
 													<input type="checkbox" class="syncServerRecordCheckBox" id="${syncRecord.remoteRecords[server].serverRecordId}" value="${syncRecord.remoteRecords[server].state}" />
-													<c:if test="${syncRecord.remoteRecords[server].outgoing 
-															&& (syncRecord.remoteRecords[server].state == 'FAILED' || syncRecord.remoteRecords[server].state == 'FAILED_AND_STOPPED') 
-															&& not empty syncRecord.remoteRecords[server].errorMessage
-															&& fn:trim(syncRecord.remoteRecords[server].errorMessage) != ''}">
-														<a style="float: right" href="javascript:void(0)" onclick="javascript:$j('#${syncRecord.remoteRecords[server].serverRecordId}-errorLog-dialog').dialog('open')">
-															<spring:message code="sync.record.viewErrors" />
-														</a>
-													 	<div class="syncViewErrorsDialog" id="${syncRecord.remoteRecords[server].serverRecordId}-errorLog-dialog" title="<openmrs:message code="sync.record.viewErrors.title"/>">
-													 		${syncRecord.remoteRecords[server].errorMessage}
-													 	</div>
-													</c:if>
 												</c:if>
 											</c:otherwise>
 										</c:choose>
