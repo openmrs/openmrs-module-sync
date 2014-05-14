@@ -35,7 +35,6 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +97,7 @@ public class SyncMailUtil implements GlobalPropertyListener {
         return mailSession;
     }
 
-	public static Session createSession(final Map<String, String> settings) {
+	public static Session createSession(Map<String, String> settings) {
 		Properties props = new Properties();
 		props.setProperty("mail.transport.protocol", settings.get(MAIL_TRANSPORT_PROTOCOL));
 		props.setProperty("mail.smtp.host", settings.get(MAIL_SMTP_HOST));
@@ -108,10 +107,13 @@ public class SyncMailUtil implements GlobalPropertyListener {
 		props.setProperty("mail.from", settings.get(MAIL_FROM));
 		props.setProperty("mail.debug", settings.get(MAIL_DEBUG));
 
+		final String mailUser = settings.get(MAIL_USER);
+		final String mailPw = settings.get(MAIL_PASSWORD);
+
 		Authenticator auth = new Authenticator() {
 			@Override
 			public PasswordAuthentication getPasswordAuthentication() {
-				return new PasswordAuthentication(settings.get(MAIL_USER), settings.get(MAIL_PASSWORD));
+				return new PasswordAuthentication(mailUser, mailPw);
 			}
 		};
 		return Session.getInstance(props, auth);
@@ -171,11 +173,13 @@ public class SyncMailUtil implements GlobalPropertyListener {
 
 	@Override
 	public void globalPropertyChanged(GlobalProperty globalProperty) {
+		log.warn("Global property <" + globalProperty.getProperty() + "> changed, resetting mail session");
 		mailSession = null;
 	}
 
 	@Override
 	public void globalPropertyDeleted(String s) {
+		log.warn("Global property <" + s + "> deleted, resetting mail session");
 		mailSession = null;
 	}
 }

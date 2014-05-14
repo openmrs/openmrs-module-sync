@@ -59,7 +59,7 @@
 		</property>
 	</bean>
 
-	<bean id="openmrsEventListeners" class="org.openmrs.api.EventListeners">
+	<bean id="syncEventListeners" parent="openmrsEventListeners">
 		<property name="globalPropertyListeners">
 			<list value-type="org.openmrs.api.GlobalPropertyListener">
 				<bean class="org.openmrs.module.sync.SyncMailUtil" />
