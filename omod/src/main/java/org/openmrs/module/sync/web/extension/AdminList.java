@@ -18,6 +18,7 @@ import java.util.Map;
 
 import org.openmrs.api.context.Context;
 import org.openmrs.module.web.extension.AdministrationSectionExt;
+import org.openmrs.util.PrivilegeConstants;
 
 /**
  * Displays the admin section on the admin index page
@@ -35,6 +36,10 @@ public class AdminList extends AdministrationSectionExt {
 			links.put("module/sync/statistics.list", "sync.statistics.title");
 			links.put("module/sync/history.list", "sync.history.title");
 			links.put("module/sync/maintenance.form", "sync.maintenance.title");
+		}
+
+		if (Context.hasPrivilege(PrivilegeConstants.MANAGE_GLOBAL_PROPERTIES)) {
+			links.put("module/sync/emailConfig.form", "sync.emailConfig.title");
 		}
 		
 		if (Context.hasPrivilege("Manage Synchronization")) {
