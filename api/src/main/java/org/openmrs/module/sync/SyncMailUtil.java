@@ -173,13 +173,13 @@ public class SyncMailUtil implements GlobalPropertyListener {
 
 	@Override
 	public void globalPropertyChanged(GlobalProperty globalProperty) {
-		log.warn("Global property <" + globalProperty.getProperty() + "> changed, resetting mail session");
+		log.debug("Global property <" + globalProperty.getProperty() + "> changed, resetting mail session");
 		mailSession = null;
 	}
 
 	@Override
 	public void globalPropertyDeleted(String s) {
-		log.warn("Global property <" + s + "> deleted, resetting mail session");
+		log.debug("Global property <" + s + "> deleted, resetting mail session");
 		mailSession = null;
 	}
 }

@@ -13,6 +13,55 @@
  */
 package org.openmrs.module.sync;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openmrs.Concept;
+import org.openmrs.Drug;
+import org.openmrs.DrugOrder;
+import org.openmrs.Encounter;
+import org.openmrs.Form;
+import org.openmrs.Obs;
+import org.openmrs.OpenmrsMetadata;
+import org.openmrs.OpenmrsObject;
+import org.openmrs.PatientProgram;
+import org.openmrs.PatientState;
+import org.openmrs.Person;
+import org.openmrs.PersonAddress;
+import org.openmrs.PersonName;
+import org.openmrs.Program;
+import org.openmrs.ProgramWorkflow;
+import org.openmrs.ProgramWorkflowState;
+import org.openmrs.Relationship;
+import org.openmrs.RelationshipType;
+import org.openmrs.Role;
+import org.openmrs.User;
+import org.openmrs.api.context.Context;
+import org.openmrs.api.db.LoginCredential;
+import org.openmrs.messagesource.MessageSourceService;
+import org.openmrs.module.sync.api.SyncIngestService;
+import org.openmrs.module.sync.api.SyncService;
+import org.openmrs.module.sync.serialization.BinaryNormalizer;
+import org.openmrs.module.sync.serialization.ClassNormalizer;
+import org.openmrs.module.sync.serialization.DefaultNormalizer;
+import org.openmrs.module.sync.serialization.EnumNormalizer;
+import org.openmrs.module.sync.serialization.FilePackage;
+import org.openmrs.module.sync.serialization.Item;
+import org.openmrs.module.sync.serialization.LocaleNormalizer;
+import org.openmrs.module.sync.serialization.MapNormalizer;
+import org.openmrs.module.sync.serialization.Normalizer;
+import org.openmrs.module.sync.serialization.PropertiesNormalizer;
+import org.openmrs.module.sync.serialization.Record;
+import org.openmrs.module.sync.serialization.TimestampNormalizer;
+import org.openmrs.module.sync.server.RemoteServer;
+import org.openmrs.notification.Alert;
+import org.openmrs.notification.MessageException;
+import org.openmrs.util.OpenmrsUtil;
+import org.openmrs.util.PrivilegeConstants;
+import org.springframework.util.StringUtils;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -30,7 +79,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -45,60 +93,6 @@ import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openmrs.Concept;
-import org.openmrs.Drug;
-import org.openmrs.DrugOrder;
-import org.openmrs.Encounter;
-import org.openmrs.EncounterType;
-import org.openmrs.Form;
-import org.openmrs.Location;
-import org.openmrs.Obs;
-import org.openmrs.OpenmrsMetadata;
-import org.openmrs.OpenmrsObject;
-import org.openmrs.OrderType;
-import org.openmrs.PatientProgram;
-import org.openmrs.PatientState;
-import org.openmrs.Person;
-import org.openmrs.PersonAddress;
-import org.openmrs.PersonAttributeType;
-import org.openmrs.PersonName;
-import org.openmrs.Program;
-import org.openmrs.ProgramWorkflow;
-import org.openmrs.ProgramWorkflowState;
-import org.openmrs.Relationship;
-import org.openmrs.RelationshipType;
-import org.openmrs.Role;
-import org.openmrs.User;
-import org.openmrs.api.context.Context;
-import org.openmrs.api.db.LoginCredential;
-import org.openmrs.module.sync.api.SyncIngestService;
-import org.openmrs.module.sync.api.SyncService;
-import org.openmrs.module.sync.serialization.BinaryNormalizer;
-import org.openmrs.module.sync.serialization.ClassNormalizer;
-import org.openmrs.module.sync.serialization.DefaultNormalizer;
-import org.openmrs.module.sync.serialization.EnumNormalizer;
-import org.openmrs.module.sync.serialization.FilePackage;
-import org.openmrs.module.sync.serialization.IItem;
-import org.openmrs.module.sync.serialization.Item;
-import org.openmrs.module.sync.serialization.LocaleNormalizer;
-import org.openmrs.module.sync.serialization.MapNormalizer;
-import org.openmrs.module.sync.serialization.Normalizer;
-import org.openmrs.module.sync.serialization.PropertiesNormalizer;
-import org.openmrs.module.sync.serialization.Record;
-import org.openmrs.module.sync.serialization.TimestampNormalizer;
-import org.openmrs.module.sync.server.RemoteServer;
-import org.openmrs.notification.Alert;
-import org.openmrs.notification.Message;
-import org.openmrs.notification.MessageException;
-import org.openmrs.util.OpenmrsConstants;
-import org.openmrs.util.OpenmrsUtil;
-import org.springframework.util.StringUtils;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Collection of helpful methods in sync
@@ -215,8 +209,7 @@ public class SyncUtil {
 	                                                                            IllegalAccessException,
 	                                                                            InvocationTargetException {
 		String propName = n.getNodeName();
-		Object propVal = null;
-		propVal = SyncUtil.valForField(propName, n.getTextContent(), allFields, n);
+		Object propVal = SyncUtil.valForField(propName, n.getTextContent(), allFields, n);
 		
 		log.debug("Trying to set value to " + propVal + " when propName is " + propName + " and context is "
 		        + n.getTextContent());
@@ -239,7 +232,7 @@ public class SyncUtil {
 		m.setAccessible(true);
 		log.debug("about to call " + m.getName());
 		try {
-			Object voidObj = m.invoke(o, setterParams);
+			m.invoke(o, setterParams);
 		}
 		finally {
 			m.setAccessible(acc);
@@ -878,96 +871,93 @@ public class SyncUtil {
 	}
 	
 	public static void sendSyncErrorMessage(SyncRecord syncRecord, RemoteServer server, Exception exception) {
-		
+
+		SyncService syncService = Context.getService(SyncService.class);
+
 		try {
-			String adminEmail = Context.getService(SyncService.class).getAdminEmail();
+			String adminEmail = syncService.getAdminEmail();
 			
 			if (adminEmail == null || adminEmail.length() == 0) {
-				log.warn("Sync error message could not be sent because " + SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL
-				        + " is not configured.");
-			} else if (adminEmail != null) {
+				log.warn("Sync error message could not be sent because " + SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL + " is not configured.");
+			}
+			else if (adminEmail != null) {
 				log.info("Preparing to send sync error message via email to " + adminEmail);
-				
-				Message message = new Message();
-				message.setSender("info@openmrs.org");
-				message.setSentDate(new Date());
-				message.setSubject(exception.getMessage());
-				message.addRecipient(adminEmail);
-				
+
+				String subject = exception.getMessage();
+				String recipients = adminEmail;
+
 				StringBuffer content = new StringBuffer();
-				
-				content.append("ALERT: Synchronization has stopped between\n").append("local server (")
-				        .append(Context.getService(SyncService.class).getServerName()).append(") and remote server ")
-				        .append(server.getNickname()).append("\n\n").append("Summary of failing record\n")
-				        .append("Original Uuid:          " + syncRecord.getOriginalUuid())
-				        .append("Contained classes:      " + syncRecord.getContainedClassSet()).append("Contents:\n");
+				content.append("ALERT: Synchronization has stopped between\n");
+				content.append("local server (").append(syncService.getServerName());
+				content.append(") and remote server ").append(server.getNickname()).append("\n\n");
+				content.append("Summary of failing record\n");
+				content.append("Original Uuid:          " + syncRecord.getOriginalUuid());
+				content.append("Contained classes:      " + syncRecord.getContainedClassSet()).append("\n");
+				content.append("Contents:\n");
 				
 				try {
-					log.info("Sending email with sync record: " + syncRecord);
-					
 					for (SyncItem item : syncRecord.getItems()) {
 						log.info("Sync item content: " + item.getContent());
 					}
-					
 					FilePackage pkg = new FilePackage();
 					Record record = pkg.createRecordForWrite("SyncRecord");
 					Item top = record.getRootItem();
-					((IItem) syncRecord).save(record, top);
+					syncRecord.save(record, top);
 					content.append(record.toString());
-					
 				}
 				catch (Exception e) {
-					log.warn("An error occurred while retrieving sync record payload", e);
-					log.warn("Sync record: " + syncRecord.toString());
+					StringBuilder errorMessage = new StringBuilder();
+					errorMessage.append("An error occurred while retrieving sync record payload.  Sync record:\n");
+					errorMessage.append(syncRecord.toString());
+					errorMessage.append("Error details:\n");
+					errorMessage.append(e.getMessage());
+					log.warn(errorMessage.toString(), e);
+					content.append(errorMessage);
 				}
-				message.setContent(content.toString());
-				
-				// Send message
-				Context.getMessageService().sendMessage(message);
-				
+
+				SyncMailUtil.sendMessage(recipients, subject, content.toString());
+
 				log.info("Sent sync error message to " + adminEmail);
-				
-				String role = Context.getAdministrationService()
-				        .getGlobalProperty(SyncConstants.ROLE_TO_SEND_TO_MAIL_ALERTS);
-				if (!StringUtils.hasText(role))
-					role = OpenmrsConstants.SUPERUSER_ROLE;
-				else {
-					Role roleObj = Context.getUserService().getRole(role);
-					if (roleObj == null)
-						role = OpenmrsConstants.SUPERUSER_ROLE;
-				}
-				sendAlert(
-				    Context.getMessageSourceService().getMessage("sync.mail.sentErrorMessageTo",
-				        new Object[] { adminEmail }, null), Context.getUserService().getUsersByRole(new Role(role)));
+				sendAlert("sync.mail.sentErrorMessageTo", adminEmail);
 			}
-			
 		}
 		catch (MessageException e) {
 			log.error("An error occurred while sending the sync error message", e);
-			
-			String message = Context.getMessageSourceService().getMessage("sync.status.email.notSentError",
-			    new String[] { exception.getMessage(), e.getMessage() }, null);
-			sendAlert(message, Context.getUserService().getUsersByRole(new Role(OpenmrsConstants.SUPERUSER_ROLE)));
-			
+			sendAlert("sync.status.email.notSentError", exception.getMessage(), e.getMessage());
 		}
-		
 	}
 	
-	private static void sendAlert(String message, List<User> users) {
+	private static void sendAlert(String messageCode, Object...replacements) {
 		try {
-			Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_ALERTS);
-			Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_USERS);
-			Alert alert = new Alert(message, users);
-			alert.setSatisfiedByAny(true);
-			
-			Context.getAlertService().saveAlert(alert);
+			Context.addProxyPrivilege(PrivilegeConstants.MANAGE_ALERTS);
+			Context.addProxyPrivilege(PrivilegeConstants.VIEW_USERS);
+
+			Role role = null;
+			String roleName = Context.getAdministrationService().getGlobalProperty(SyncConstants.ROLE_TO_SEND_TO_MAIL_ALERTS);
+			if (StringUtils.hasText(roleName)) {
+				role = Context.getUserService().getRole(roleName);
+			}
+			if (role != null) {
+				List<User> users = Context.getUserService().getUsersByRole(role);
+				MessageSourceService mss = Context.getMessageSourceService();
+				String message = mss.getMessage(messageCode, replacements, null);
+				Alert alert = new Alert(message, users);
+				alert.setSatisfiedByAny(true);
+				Context.getAlertService().saveAlert(alert);
+			}
+			else {
+				log.info("Not creating alert because no appropriate role configured to receive alerts");
+			}
+		}
+		catch (Exception e) {
+			log.warn("An error occurred trying to alert users that a sync error message was sent", e);
 		}
 		finally {
-			Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_ALERTS);
-			Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_USERS);
+			Context.removeProxyPrivilege(PrivilegeConstants.MANAGE_ALERTS);
+			Context.removeProxyPrivilege(PrivilegeConstants.VIEW_USERS);
 		}
 	}
-	
+
 	/**
 	 * @param inputStream
 	 * @return
@@ -976,15 +966,15 @@ public class SyncUtil {
 	public static String readContents(InputStream inputStream, boolean isCompressed) throws Exception {
 		StringBuffer contents = new StringBuffer();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, SyncConstants.UTF8));
-		
+
 		String line = "";
 		while ((line = reader.readLine()) != null) {
 			contents.append(line);
 		}
-		
+
 		return contents.toString();
 	}
-	
+
 	public static byte[] compress(String content) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		CheckedOutputStream cos = new CheckedOutputStream(baos, new CRC32());
@@ -992,7 +982,7 @@ public class SyncUtil {
 		IOUtils.copy(new ByteArrayInputStream(content.getBytes()), zos);
 		return baos.toByteArray();
 	}
-	
+
 	public static String decompress(byte[] data) throws IOException {
 		ByteArrayInputStream bais2 = new ByteArrayInputStream(data);
 		CheckedInputStream cis = new CheckedInputStream(bais2, new CRC32());
@@ -1006,7 +996,7 @@ public class SyncUtil {
 		}
 		return buffer.toString();
 	}
-	
+
 	/**
 	 * Rebuilds XSN form. This is needed for ingest when form is received from remote server;
 	 * template files that are contained in xsn in fromentry_xsn table need to be updated. Supported
