@@ -13,13 +13,6 @@
  */
 package org.openmrs.module.sync.web.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
@@ -39,6 +32,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -68,24 +67,8 @@ public class ViewRecordController {
         	record = syncService.getSyncRecord(uuid);
         	
         	if (record != null) {
-        		
-	        	// find the previous record
-	        	Integer id = record.getRecordId();
-	        	while (previousRecord == null && id >= 0) {
-	        		previousRecord = syncService.getSyncRecord(--id);
-	        	}
-	        	
-	        	// find the next record
-	        	id = record.getRecordId();
-	        	SyncRecord latestSyncRecord = syncService.getLatestRecord();
-	        	Integer highestId = 0;
-	        	if (latestSyncRecord != null)
-	        		highestId = latestSyncRecord.getRecordId();
-	        	
-	        	while (nextRecord == null && id <= highestId) {
-	        		nextRecord = syncService.getSyncRecord(++id);
-	        	}
-	        	
+				previousRecord = syncService.getPreviousRecord(record);
+				nextRecord = syncService.getNextRecord(record);
 	        	
 				if("reset".equals(action)){
 					record.setRetryCount(0);

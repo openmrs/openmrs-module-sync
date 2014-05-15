@@ -209,6 +209,20 @@ public class SyncServiceImpl implements SyncService {
 	public SyncRecord getEarliestRecord(Date afterDate) throws APIException {
 		return getSynchronizationDAO().getEarliestRecord(afterDate);
 	}
+
+	/**
+	 * @see SyncService#getNextRecord(SyncRecord)
+	 */
+	public SyncRecord getNextRecord(SyncRecord record) {
+		return getSynchronizationDAO().getNextRecord(record);
+	}
+
+	/**
+	 * @see SyncService#getPreviousRecord(SyncRecord)
+	 */
+	public SyncRecord getPreviousRecord(SyncRecord record) {
+		return getSynchronizationDAO().getPreviousRecord(record);
+	}
 	
 	/**
 	 * @see org.openmrs.api.SyncService#getSyncRecord(java.lang.String)

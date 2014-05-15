@@ -22,6 +22,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.ehcache.concurrent.Sync;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.Patient;
 import org.openmrs.annotation.Authorized;
@@ -127,6 +128,16 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	public SyncRecord getEarliestRecord(Date afterDate) throws APIException;
+
+	/**
+	 * @return the next sync record after the passed in record
+	 */
+	public SyncRecord getNextRecord(SyncRecord record);
+
+	/**
+	 * @return the previous sync record before the passed in record
+	 */
+	public SyncRecord getPreviousRecord(SyncRecord record);
 	
 	/**
 	 * Returns a sync record which is older than the given sync record and is in one of the given

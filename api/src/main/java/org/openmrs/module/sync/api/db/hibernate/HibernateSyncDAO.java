@@ -236,6 +236,34 @@ public class HibernateSyncDAO implements SyncDAO {
 			return getSyncRecord(minRecordId);
 		}
 	}
+
+	/**
+	 * @see org.openmrs.module.sync.api.SyncService#getNextRecord(SyncRecord)
+	 */
+	public SyncRecord getNextRecord(SyncRecord record) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(SyncRecord.class);
+		criteria.setProjection(Projections.min("recordId"));
+		criteria.add(Restrictions.gt("recordId", record.getRecordId()));
+		Object nextRecordId = criteria.uniqueResult();
+		if (nextRecordId == null) {
+			return null;
+		}
+		return getSyncRecord((Integer)nextRecordId);
+	}
+
+	/**
+	 * @see org.openmrs.module.sync.api.SyncService#getPreviousRecord(SyncRecord)
+	 */
+	public SyncRecord getPreviousRecord(SyncRecord record) {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(SyncRecord.class);
+		criteria.setProjection(Projections.max("recordId"));
+		criteria.add(Restrictions.lt("recordId", record.getRecordId()));
+		Object prevRecordId = criteria.uniqueResult();
+		if (prevRecordId == null) {
+			return null;
+		}
+		return getSyncRecord((Integer)prevRecordId);
+	}
 	
 	@SuppressWarnings("unchecked")
 	public List<SyncRecord> getSyncRecords(String query) throws DAOException {

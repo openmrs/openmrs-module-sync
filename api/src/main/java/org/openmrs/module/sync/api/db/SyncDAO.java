@@ -89,6 +89,16 @@ public interface SyncDAO {
 	 * @throws DAOException
 	 */
 	public SyncRecord getEarliestRecord(Date afterDate) throws DAOException;
+
+	/**
+	 * @return the next sync record after the passed in record
+	 */
+	public SyncRecord getNextRecord(SyncRecord record) throws DAOException;
+
+	/**
+	 * @return the previous sync record before the passed in record
+	 */
+	public SyncRecord getPreviousRecord(SyncRecord record) throws DAOException;
 	
 	/**
 	 * Create a new SyncImportRecord
