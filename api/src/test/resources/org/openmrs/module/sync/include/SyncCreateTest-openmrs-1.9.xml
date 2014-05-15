@@ -155,8 +155,8 @@
     <person_name person_name_id="1" preferred="true" person_id="1" given_name="Super" middle_name="" family_name="User" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="3272ce85-144e-102b-8d9c-e44ed545d86c"/>
     <person_name person_name_id="2" preferred="true" person_id="2" given_name="Clark" middle_name="" family_name="Kent" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="5446aa86-15a6-102b-8d9c-e44ed545d86c"/>
     <person_name person_name_id="3" preferred="true" person_id="3" given_name="Lois" middle_name="" family_name="Lane" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="2e1ada24-168c-102b-8d9c-e44ed545d86c"/>
-    <person_name person_name_id="5" preferred="true" person_id="4" given_name="Jimmy" middle_name="" family_name="Olsen" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="2e1eda24-168c-102b-8d9c-e44ed545d86c"/>
-    <person_name person_name_id="4" preferred="true" person_id="5" given_name="Stub" middle_name="" family_name="Patient" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="442a77e3-57ea-4a2b-8989-7440a4efd8c2"/>
+	<person_name person_name_id="5" preferred="true" person_id="4" given_name="Jimmy" middle_name="" family_name="Olsen" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="2e1eda24-168c-102b-8d9c-e44ed545d86c"/>
+	<person_name person_name_id="4" preferred="true" person_id="5" given_name="Stub" middle_name="" family_name="Patient" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="442a77e3-57ea-4a2b-8989-7440a4efd8c2"/>
 
     <privilege privilege="Add Concept Proposal" description="Able to add concept proposals to the system" uuid="32afbf65-144e-102b-8d9c-e44ed545d86c"/>
     <privilege privilege="Add Concepts" description="Able to add concepts to the dictionary" uuid="32afc3a3-144e-102b-8d9c-e44ed545d86c"/>
@@ -268,8 +268,10 @@
 
     <user_role user_id="1" role="Administrator"/> <!-- uuid="35a05ac6-144e-102b-8d9c-e44ed545d86c" -->
     <user_role user_id="1" role="System Developer"/> <!-- uuid="35a05ac6-144e-102b-8d9c-e44ed545d86c" -->
+	<user_role user_id="2" role="Provider"/>
 
     <users user_id="1" person_id="1" system_id="admin" username="" password="4a1750c8607dfa237de36c6305715c223415189" salt="c788c6ad82a157b712392ca695dfcf2eed193d7f" creator="1" date_created="2005-01-01 00:00:00.0" retired="false" uuid="22a05ac6-144e-102b-8d9c-e44ed545d86c"/>
+	<users user_id="2" person_id="5" system_id="bwayne" username="" password="4a1750c8607dfa237de36c6305715c223415189" salt="c788c6ad82a157b712392ca695dfcf2eed193d7f" creator="1" date_created="2005-01-01 00:00:00.0" retired="false" uuid="22a06ac6-144e-102b-8d9c-e44ed545d86c"/>
 
     <field_type field_type_id="1" name="Concept" description="" is_set="false" creator="2" date_created="2005-02-22 12:43:00.0" uuid="a4fb1158-fb9e-102a-b4cd-d5399a5cfee6"/>
     <field_type field_type_id="2" name="Database element" description="" is_set="false" creator="2" date_created="2005-02-22 12:43:00.0" uuid="a4fb1503-fb9e-102a-b4cd-d5399a5cfee6"/>

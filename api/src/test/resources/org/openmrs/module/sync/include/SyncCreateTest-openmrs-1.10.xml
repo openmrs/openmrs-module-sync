@@ -9,9 +9,11 @@
 	<role role="System Developer" description="Developers of the OpenMRS .. have additional access to change fundamental structure of the database model." uuid="11119350-144e-102b-8d9c-e44ed545d222"/>
 
 	<users user_id="1" person_id="1" system_id="admin" username="" password="4a1750c8607dfa237de36c6305715c223415189" salt="c788c6ad82a157b712392ca695dfcf2eed193d7f" creator="1" date_created="2005-01-01 00:00:00.0" retired="false" uuid="22a05ac6-144e-102b-8d9c-e44ed545d86c"/>
+	<users user_id="2" person_id="5" system_id="bwayne" username="" password="4a1750c8607dfa237de36c6305715c223415189" salt="c788c6ad82a157b712392ca695dfcf2eed193d7f" creator="1" date_created="2005-01-01 00:00:00.0" retired="false" uuid="22a06ac6-144e-102b-8d9c-e44ed545d86c"/>
 
 	<user_role user_id="1" role="Administrator"/> <!-- uuid="35a05ac6-144e-102b-8d9c-e44ed545d86c" -->
 	<user_role user_id="1" role="System Developer"/> <!-- uuid="35a05ac6-144e-102b-8d9c-e44ed545d86c" -->
+	<user_role user_id="2" role="Provider"/>
 
     <concept_name_tag uuid="77397336-e90e-102b-968f-001e378eb67e" concept_name_tag_id="1" tag="default" description="name to use when nothing else is available" creator="1" date_created="2007-05-01 00:00:00.0" voided="false"/>
 

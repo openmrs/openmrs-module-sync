@@ -173,7 +173,7 @@ public class SyncUserTest extends SyncBaseTest {
 	@NotTransactional
 	public void shouldPrependServerIdToNewUsersGeneratedSystemId() throws Exception {
 		runSyncTest(new SyncTestHelper() {
-			String EXPECTED_SYSTEM_ID = "parent_2-1";
+			String EXPECTED_SYSTEM_ID = "parent_3-9";
 			
 			UserService us = Context.getUserService();
 			public void runOnChild() {
@@ -202,7 +202,7 @@ public class SyncUserTest extends SyncBaseTest {
 	@NotTransactional
 	public void shouldNotGenerateSystemIdIfGPNotDefined() throws Exception {
 		runSyncTest(new SyncTestHelper() {
-			String EXPECTED_SYSTEM_ID = "2-6";
+			String EXPECTED_SYSTEM_ID = "3-4";
 			
 			UserService us = Context.getUserService();
 			public void runOnChild() {
@@ -233,7 +233,7 @@ public class SyncUserTest extends SyncBaseTest {
 	@NotTransactional
 	public void shouldAddServerUuidToGeneratedSystemId() throws Exception {
 		runSyncTest(new SyncTestHelper() {
-			String EXPECTED_SYSTEM_ID = "46b16ac6144e102b8d9ce44ed545d86c_2-5";
+			String EXPECTED_SYSTEM_ID = "46b16ac6144e102b8d9ce44ed545d86c_3-3";
 			
 			UserService us = Context.getUserService();
 			public void runOnChild() {
@@ -295,7 +295,7 @@ public class SyncUserTest extends SyncBaseTest {
 	@NotTransactional
 	public void shouldGenerateCheckDigitWithNextUserIdInGeneratedSystemId() throws Exception {
 		runSyncTest(new SyncTestHelper() {
-			String EXPECTED_SYSTEM_ID = "2-6";
+			String EXPECTED_SYSTEM_ID = "3-4";
 			
 			UserService us = Context.getUserService();
 			public void runOnChild() {
