@@ -21,7 +21,7 @@ import static org.junit.Assert.assertFalse;
 
 import java.util.Date;
 
-import org.junit.Ignore;
+import junit.framework.Assert;
 import org.junit.Test;
 import org.openmrs.GlobalProperty;
 import org.openmrs.Person;
@@ -358,6 +358,26 @@ public class SyncUserTest extends SyncBaseTest {
 			public void runOnParent() {
 				User u = us.getUser(1);
 				assertFalse(u.getUserProperties().containsKey(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD));
+			}
+		});
+	}
+
+	@Test
+	@NotTransactional
+	public void shouldDeleteUserAccount() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+
+			UserService us = Context.getUserService();
+
+			public void runOnChild() {
+				User u = us.getUserByUsername("bwayne");
+				Assert.assertNotNull(u);
+				us.purgeUser(u);
+			}
+
+			public void runOnParent() {
+				User u = us.getUserByUsername("bwayne");
+				Assert.assertNull(u);
 			}
 		});
 	}

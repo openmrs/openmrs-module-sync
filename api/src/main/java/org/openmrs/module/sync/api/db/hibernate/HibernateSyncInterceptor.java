@@ -251,7 +251,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		// first see if entity should be written to the journal at all
 		if (!this.shouldSynchronize(entity)) {
 			if (log.isDebugEnabled()) {
-				log.debug("Determined entity not to be journaled, exiting onSave.");
+				log.debug("Determined entity (" + entity.getClass() + ") with id (" + id + ") not to be journaled, exiting onSave.");
 			}
 		} else {
 			
@@ -384,9 +384,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 */
 	@Override
 	public String onPrepareStatement(String sql) {
-		if (log.isInfoEnabled())
-			log.debug("onPrepareStatement. sql: " + sql);
-		
+		if (log.isTraceEnabled()) {
+			log.trace("onPrepareStatement. sql: " + sql);
+		}
 		return sql;
 	}
 	
@@ -399,8 +399,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		if (log.isDebugEnabled()) {
 			log.debug("no-op: COLLECTION remove with key: " + key);
 		}
-		
-		//no-op
 		return;
 	}
 	

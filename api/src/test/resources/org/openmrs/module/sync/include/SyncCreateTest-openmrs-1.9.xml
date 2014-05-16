@@ -273,10 +273,10 @@
     <users user_id="1" person_id="1" system_id="admin" username="" password="4a1750c8607dfa237de36c6305715c223415189" salt="c788c6ad82a157b712392ca695dfcf2eed193d7f" creator="1" date_created="2005-01-01 00:00:00.0" retired="false" uuid="22a05ac6-144e-102b-8d9c-e44ed545d86c"/>
 	<users user_id="2" person_id="5" system_id="bwayne" username="" password="4a1750c8607dfa237de36c6305715c223415189" salt="c788c6ad82a157b712392ca695dfcf2eed193d7f" creator="1" date_created="2005-01-01 00:00:00.0" retired="false" uuid="22a06ac6-144e-102b-8d9c-e44ed545d86c"/>
 
-    <field_type field_type_id="1" name="Concept" description="" is_set="false" creator="2" date_created="2005-02-22 12:43:00.0" uuid="a4fb1158-fb9e-102a-b4cd-d5399a5cfee6"/>
-    <field_type field_type_id="2" name="Database element" description="" is_set="false" creator="2" date_created="2005-02-22 12:43:00.0" uuid="a4fb1503-fb9e-102a-b4cd-d5399a5cfee6"/>
-    <field_type field_type_id="3" name="Set of Concepts" description="" is_set="true" creator="2" date_created="2005-02-22 12:43:00.0" uuid="a4fb171e-fb9e-102a-b4cd-d5399a5cfee6"/>
-    <field_type field_type_id="4" name="Miscellaneous Set" description="" is_set="true" creator="2" date_created="2005-02-22 12:43:00.0" uuid="a4fb1920-fb9e-102a-b4cd-d5399a5cfee6"/>
+    <field_type field_type_id="1" name="Concept" description="" is_set="false" creator="1" date_created="2005-02-22 12:43:00.0" uuid="a4fb1158-fb9e-102a-b4cd-d5399a5cfee6"/>
+    <field_type field_type_id="2" name="Database element" description="" is_set="false" creator="1" date_created="2005-02-22 12:43:00.0" uuid="a4fb1503-fb9e-102a-b4cd-d5399a5cfee6"/>
+    <field_type field_type_id="3" name="Set of Concepts" description="" is_set="true" creator="1" date_created="2005-02-22 12:43:00.0" uuid="a4fb171e-fb9e-102a-b4cd-d5399a5cfee6"/>
+    <field_type field_type_id="4" name="Miscellaneous Set" description="" is_set="true" creator="1" date_created="2005-02-22 12:43:00.0" uuid="a4fb1920-fb9e-102a-b4cd-d5399a5cfee6"/>
     <field_type field_type_id="5" name="Section" description="" is_set="true" creator="4" date_created="2005-02-22 12:43:00.0" uuid="a4fb1b25-fb9e-102a-b4cd-d5399a5cfee6"/>
 
     <form form_id="1" name="BASIC FORM" version="0.1" build="1" published="0" description="This form contains only the common/core elements needed for most forms" encounter_type="1" creator="1" date_created="2006-07-18 11:02:38.0" changed_by="1" date_changed="2006-09-07 11:33:17.0" retired="false" retired_reason="" uuid="a5ac33ec-fb9e-102a-b4cd-d5399a5cfee6"/>
