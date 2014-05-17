@@ -80,37 +80,10 @@ import java.util.Set;
 /**
  * Implements 'change interception' for data synchronization feature using Hibernate interceptor
  * mechanism. Intercepted changes are recorded into the synchronization journal table in DB.
- * <p>
- * For detailed technical discussion see feature technical documentation on openmrs.org.
- * 
  * @see org.hibernate.EmptyInterceptor
  */
 public class HibernateSyncInterceptor extends EmptyInterceptor implements ApplicationContextAware {
-	
-	/**
-	 * Helper container class to store type/value tuple for a given object property. Utilized during
-	 * serialization of intercepted entity changes.
-	 * 
-	 * @see HibernateSyncInterceptor#packageObject(org.openmrs.OpenmrsObject, Object[], String[], org.hibernate.type.Type[], java.io.Serializable, org.openmrs.module.sync.SyncItemState)
-	 */
-	protected class PropertyClassValue {
-		
-		String clazz, value;
-		
-		public String getClazz() {
-			return clazz;
-		}
-		
-		public String getValue() {
-			return value;
-		}
-		
-		public PropertyClassValue(String clazz, String value) {
-			this.clazz = clazz;
-			this.value = value;
-		}
-	}
-	
+
 	/**
 	 * From Spring docs: There might be a single instance of Interceptor for a SessionFactory, or a
 	 * new instance might be specified for each Session. Whichever approach is used, the interceptor
@@ -118,30 +91,16 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 * SessionFactory-scoped interceptors should implement readResolve().
 	 */
 	private static final long serialVersionUID = -4905755656754047400L;
-	
-	protected final Log log = LogFactory.getLog(HibernateSyncInterceptor.class);
-	
-	protected SyncService syncService = null;
-	
-	/*
-	 * App context. This is needed to retrieve an instance of current Spring
-	 * SessionFactory. There should be a better way to do this but we
-	 * collectively couldn't find one.
-	 */
+
+	protected final Log log = LogFactory.getLog(getClass());
+
 	private ApplicationContext context;
-	
-	static final String sp = "_";
-	
 	private static ThreadLocal<SyncRecord> syncRecordHolder = new ThreadLocal<SyncRecord>();
-	
 	private ThreadLocal<Boolean> deactivated = new ThreadLocal<Boolean>();
-	
 	private ThreadLocal<HashSet<Object>> pendingFlushHolder = new ThreadLocal<HashSet<Object>>();
-	
 	private ThreadLocal<HashSet<OpenmrsObject>> postInsertModifications = new ThreadLocal<HashSet<OpenmrsObject>>();
-	
 	private ThreadLocal<Boolean> isProcessRegistered = new ThreadLocal<Boolean>();
-	
+
 	public HibernateSyncInterceptor() {
 		log.info("Initializing the synchronization interceptor");
 	}
@@ -163,58 +122,34 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	/**
 	 * Intercepts the start of a transaction. A new SyncRecord is created for this transaction/
 	 * thread to keep track of changes done during the transaction. Kept ThreadLocal.
-	 * 
 	 * @see org.hibernate.EmptyInterceptor#afterTransactionBegin(org.hibernate.Transaction)
 	 */
 	@Override
 	public void afterTransactionBegin(Transaction tx) {
-		if (log.isTraceEnabled())
-			log.trace("afterTransactionBegin: " + tx + " deactivated: " + deactivated.get());
-
+		log.debug("afterTransactionBegin: " + tx);
 		SyncRecord existing = syncRecordHolder.get();
 		if (existing != null) {
 			if (existing.getItems() != null && existing.getItems().size() > 0) {
 				log.warn("Overwriting existing SyncRecord containing " + existing.getItems().size() + " items!");
 				for (SyncItem item : existing.getItems()) {
-					log.warn("Item: " + item.getContainedType() + "(" + item.getKey() + ")");
+					log.warn("Item: " + item.getContent());
 				}
 			}
 		}
-		
 		syncRecordHolder.set(new SyncRecord());
 	}
 	
 	/**
-	 * Convenience method to get the {@link SyncService} from the {@link Context}.
-	 * 
-	 * @return the syncService (may be cached)
-	 */
-	private SyncService getSyncService() {
-		if (syncService == null)
-			syncService = Context.getService(SyncService.class);
-		
-		return syncService;
-	}
-	
-	/**
 	 * Packages up deletes and sets the item state to DELETED.
-	 * 
-	 * @see #packageObject(OpenmrsObject, Object[], String[], Type[], Serializable, SyncItemState)
 	 */
 	@Override
 	public void onDelete(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) {
-		
-		if (log.isInfoEnabled()) {
-			log.info("onDelete: " + entity.getClass().getName());
-		}
-		
-		// first see if entity should be written to the journal at all
-		if (!this.shouldSynchronize(entity)) {
-			if (log.isDebugEnabled())
-				log.debug("Determined entity not to be journaled, exiting onDelete.");
+		log.info("onDelete: " + entity.getClass().getName() + " (" + id + ")");
+		if (!shouldSynchronize(entity)) {
+			log.debug("Entity configured not to sync, exiting onDelete.");
 			return;
 		}
-		
+
 		registerBeforeTransactionCompletionProcess();
 		
 		// create new flush holder if needed
@@ -290,9 +225,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 				log.debug("SyncBeforeTransactionCompletionProcess is already registered with the current session");
 			return;
 		}
-		
-		SessionFactory sf = (SessionFactory) this.context.getBean("sessionFactory");
-		((EventSource) sf.getCurrentSession()).getActionQueue()
+
+		((EventSource) getSessionFactory().getCurrentSession()).getActionQueue()
 		        .registerProcess(new SyncBeforeTransactionCompletionProcess());
 		
 		isProcessRegistered.set(true);
@@ -458,6 +392,21 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		
 		this.processHibernateCollection((AbstractPersistentCollection) collection, key, "update");
 	}
+
+	@Override
+	public void preFlush(Iterator entities) {
+		super.preFlush(entities);
+	}
+
+	@Override
+	public void afterTransactionCompletion(Transaction tx) {
+		super.afterTransactionCompletion(tx);
+	}
+
+	@Override
+	public void beforeTransactionCompletion(Transaction tx) {
+		super.beforeTransactionCompletion(tx);
+	}
 	
 	/**
 	 * Serializes and packages an intercepted change in object state.
@@ -488,7 +437,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		String originalRecordUuid = null;
 		Set<String> transientProps = null;
 		String infoMsg = null;
-		SessionFactory factory = null;
 		
 		ClassMetadata data = null;
 		String idPropertyName = null;
@@ -547,8 +495,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			 * Also, the prop will *not* be part of currentState,thus we need to
 			 * pull it out with reflection/metadata.
 			 */
-			factory = (SessionFactory) this.context.getBean("sessionFactory");
-			data = factory.getClassMetadata(entity.getClass());
+			data = getSessionFactory().getClassMetadata(entity.getClass());
 			if (data.hasIdentifierProperty()) {
 				idPropertyName = data.getIdentifierPropertyName();
 				idPropertyObj = ((org.hibernate.persister.entity.AbstractEntityPersister) data).getEntityMetamodel()
@@ -948,20 +895,19 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		
 		// check if this object is to be sync-ed: compare against the configured classes
 		// for time being, suspend any flushing -- we are in the middle of hibernate stack
-		SessionFactory factory = (SessionFactory) this.context.getBean("sessionFactory");
-		org.hibernate.FlushMode flushMode = factory.getCurrentSession().getFlushMode();
-		factory.getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
+		org.hibernate.FlushMode flushMode = getSessionFactory().getCurrentSession().getFlushMode();
+		getSessionFactory().getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
 		
 		try {
-			ret = this.getSyncService().shouldSynchronize(entity);
+			ret = getSyncService().shouldSynchronize(entity);
 		}
 		catch (Exception ex) {
 			log.warn("Journal error\n", ex);
 			//log error info as warning but continue on
 		}
 		finally {
-			if (factory != null) {
-				factory.getCurrentSession().setFlushMode(flushMode);
+			if (getSessionFactory() != null) {
+				getSessionFactory().getCurrentSession().setFlushMode(flushMode);
 			}
 		}
 		
@@ -971,14 +917,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		
 		return ret;
 	}
-	
-	/**
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-	 */
-	public void setApplicationContext(ApplicationContext context) throws BeansException {
-		this.context = context;
-	}
-	
+
 	/**
 	 * Retrieves uuid of OpenmrsObject instance from the storage based on identity value (i.e. PK).
 	 * <p>
@@ -1040,8 +979,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 
 		try {
 			log.debug("Attempting to load from the database given class only, using hibernate mapping to determine identifier");
-			SessionFactory factory = (SessionFactory) context.getBean("sessionFactory");
-			ClassMetadata data = factory.getClassMetadata(obj.getClass());
+			ClassMetadata data = getSessionFactory().getClassMetadata(obj.getClass());
 			if (data != null) {
 				String idPropertyName = data.getIdentifierPropertyName();
 				if (idPropertyName != null) {
@@ -1075,15 +1013,14 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		String uuid = null;
 		
 		// for time being, suspend any flushing
-		SessionFactory factory = (SessionFactory) this.context.getBean("sessionFactory");
-		org.hibernate.FlushMode flushMode = factory.getCurrentSession().getFlushMode();
-		factory.getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
+		org.hibernate.FlushMode flushMode = getSessionFactory().getCurrentSession().getFlushMode();
+		getSessionFactory().getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
 		
 		try {
 			// try to fetch the instance and get its uuid
 			if (idPropertyValue != null) {
 				// build sql to fetch uuid - avoid loading obj into session
-				org.hibernate.Criteria criteria = factory.getCurrentSession().createCriteria(objTrueType);
+				org.hibernate.Criteria criteria = getSessionFactory().getCurrentSession().createCriteria(objTrueType);
 				criteria.add(Expression.idEq(idPropertyValue));
 				criteria.setProjection(Projections.property("uuid"));
 				uuid = (String) criteria.uniqueResult();
@@ -1095,8 +1032,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			}
 		}
 		finally {
-			if (factory != null) {
-				factory.getCurrentSession().setFlushMode(flushMode);
+			if (getSessionFactory() != null) {
+				getSessionFactory().getCurrentSession().setFlushMode(flushMode);
 			}
 		}
 		
@@ -1127,7 +1064,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		
 		OpenmrsObject owner = null;
 		String originalRecordUuid = null;
-		SessionFactory factory = null;
 		LinkedHashMap<String, OpenmrsObject> entriesHolder = null;
 		
 		// we only process recreate and update
@@ -1155,8 +1091,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			return;
 		}
 		
-		factory = (SessionFactory) this.context.getBean("sessionFactory");
-		
 		/*
 		 * determine if this set needs to be processed. Process if: 1. it is
 		 * recreate or 2. is dirty && current state does not equal stored
@@ -1167,7 +1101,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			process = true;
 		} else {
 			if (collection.isDirty()) {
-				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) factory)
+				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) getSessionFactory())
 				        .getCollectionPersister(collection.getRole());
 				Object ss = null;
 				try { // code around hibernate bug:
@@ -1195,7 +1129,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			return;
 		
 		// pull out the property name on owner that corresponds to the collection
-		ClassMetadata data = factory.getClassMetadata(owner.getClass());
+		ClassMetadata data = getSessionFactory().getClassMetadata(owner.getClass());
 		String[] propNames = data.getPropertyNames();
 		// this is the name of the property on owner object that contains the set
 		String ownerPropertyName = null;
@@ -1256,18 +1190,15 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 */
 	private void processPersistentCollection(AbstractPersistentCollection collection, Serializable key, String action, String originalRecordUuid,
 	                                  OpenmrsObject owner, String ownerPropertyName) {
-		
-		SessionFactory factory = null;
+
 		LinkedHashMap<String, OpenmrsObject> entriesHolder = null;
-		
-		factory = (SessionFactory) this.context.getBean("sessionFactory");
 		
 		// Setup the serialization data structures to hold the state
 		Package pkg = new Package();
 		entriesHolder = new LinkedHashMap<String, OpenmrsObject>();
 		try {
 			
-			CollectionMetadata collMD = getCollectionMetadata(owner.getClass(), ownerPropertyName, factory);
+			CollectionMetadata collMD = getCollectionMetadata(owner.getClass(), ownerPropertyName, getSessionFactory());
 			if (collMD == null) {
 				throw new SyncException("Can't find a collection with " + ownerPropertyName + " in class "
 				        + owner.getClass());
@@ -1293,9 +1224,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 					ownerHasSyncItem = syncRecordHolder.get().hasSyncItem(syncItem);
 				
 				if (!ownerHasSyncItem) {
-					ClassMetadata cmd = factory.getClassMetadata(owner.getClass());
+					ClassMetadata cmd = getSessionFactory().getClassMetadata(owner.getClass());
 					//create an UPDATE sync item for the owner so that the collection changes get recorded along
-					Serializable primaryKeyValue = cmd.getIdentifier(owner, (SessionImplementor)factory.getCurrentSession());
+					Serializable primaryKeyValue = cmd.getIdentifier(owner, (SessionImplementor)getSessionFactory().getCurrentSession());
 					packageObject(owner, cmd.getPropertyValues(owner, EntityMode.POJO), cmd.getPropertyNames(),
 					    cmd.getPropertyTypes(), primaryKeyValue, SyncItemState.UPDATED);
 				} else {
@@ -1339,7 +1270,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			
 			// add on deletes
 			if (!"recreate".equals(action) && collection.getRole() != null) {
-				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) factory)
+				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) getSessionFactory())
 				        .getCollectionPersister(collection.getRole());
 				Iterator it = collection.getDeletes(persister, false);
 				if (it != null) {
@@ -1419,7 +1350,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 				temp.setAttribute("action", entryKey.substring(entryKey.indexOf('|') + 1));
 				temp.setAttribute("uuid", entryObject.getUuid());
 				if (hasNoAutomaticPrimaryKey) {
-					temp.setAttribute("primaryKey", syncService.getPrimaryKey(entryObject));
+					temp.setAttribute("primaryKey", getSyncService().getPrimaryKey(entryObject));
 				}
 			}
 			
@@ -1640,8 +1571,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		if (items == null || items.isEmpty() == true) {
 			return;
 		}
-		
-		SessionFactory factory = (SessionFactory) this.context.getBean("sessionFactory");
+
 		ClassMetadata data = null;
 		Object idPropertyValue = null;
 		String idPropertyName = null;
@@ -1649,7 +1579,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		
 		try {
 			for (OpenmrsObject obj : tmp) {
-				data = factory.getClassMetadata(obj.getClass());
+				data = getSessionFactory().getClassMetadata(obj.getClass());
 				if (!data.hasIdentifierProperty()) {
 					break;
 				}
@@ -1795,4 +1725,48 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 		
 	}
+
+	/**
+	 * @return the syncService
+	 */
+	private SyncService getSyncService() {
+		return Context.getService(SyncService.class);
+	}
+
+	private SessionFactory getSessionFactory() {
+		return (SessionFactory) context.getBean("sessionFactory");
+	}
+
+	/**
+	 * @see ApplicationContextAware#setApplicationContext(ApplicationContext)
+	 */
+	public void setApplicationContext(ApplicationContext context) throws BeansException {
+		this.context = context;
+	}
+
+	/**
+	 * Helper container class to store type/value tuple for a given object property. Utilized during
+	 * serialization of intercepted entity changes.
+	 *
+	 * @see HibernateSyncInterceptor#packageObject(org.openmrs.OpenmrsObject, Object[], String[], org.hibernate.type.Type[], java.io.Serializable, org.openmrs.module.sync.SyncItemState)
+	 */
+	protected class PropertyClassValue {
+
+		String clazz;
+		String value;
+
+		public PropertyClassValue(String clazz, String value) {
+			this.clazz = clazz;
+			this.value = value;
+		}
+
+		public String getClazz() {
+			return clazz;
+		}
+
+		public String getValue() {
+			return value;
+		}
+	}
+
 }
