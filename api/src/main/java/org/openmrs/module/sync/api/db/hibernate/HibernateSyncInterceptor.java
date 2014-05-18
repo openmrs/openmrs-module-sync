@@ -18,7 +18,6 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.CallbackException;
 import org.hibernate.EmptyInterceptor;
 import org.hibernate.EntityMode;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.action.BeforeTransactionCompletionProcess;
@@ -61,7 +60,6 @@ import org.openmrs.util.OpenmrsConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
@@ -96,18 +94,14 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 
 	private ApplicationContext context;
 	private static ThreadLocal<SyncRecord> syncRecordHolder = new ThreadLocal<SyncRecord>();
-	private ThreadLocal<Boolean> isProcessRegistered = new ThreadLocal<Boolean>();
-
-	// TODO: The isProcessRegistered should be static?  But making it static causes one unit test to fail when run in a suite.
 
 	public HibernateSyncInterceptor() {
 		log.info("Initializing the synchronization interceptor");
 	}
 
 	/**
-	 * Intercepts the start of a transaction. A new SyncRecord is created for this transaction/
-	 * thread to keep track of changes done during the transaction. Kept ThreadLocal.
-	 * @see org.hibernate.EmptyInterceptor#afterTransactionBegin(org.hibernate.Transaction)
+	 * No operation, logging only
+	 * @see EmptyInterceptor#afterTransactionBegin(Transaction)
 	 */
 	@Override
 	public void afterTransactionBegin(Transaction tx) {
@@ -122,13 +116,13 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 */
 	@Override
 	public void onDelete(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) {
-		log.info("Delete intercepted: " + SyncUtil.formatObject(entity) + "#" + id);
+		log.info("Delete intercepted");
 		if (shouldSynchronize(entity)) {
-			registerBeforeTransactionCompletionProcess();
+			log.debug("Packaging: " + SyncUtil.formatObject(entity));
 			packageObject((OpenmrsObject) entity, state, propertyNames, types, id, SyncItemState.DELETED);
 		}
 		else {
-			log.debug("Entity configured not to sync, not packaging delete item.");
+			log.debug("Entity configured not to sync: " + SyncUtil.formatObject(entity));
 		}
 	}
 
@@ -138,15 +132,13 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 */
 	@Override
 	public boolean onSave(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) {
-		if (log.isInfoEnabled()) {
-			log.info("Insert intercepted: " + SyncUtil.formatObject(entity));
-		}
+		log.debug("Insert intercepted");
 		if (shouldSynchronize(entity)) {
-			registerBeforeTransactionCompletionProcess();
+			log.debug("Packaging: " + SyncUtil.formatObject(entity));
 			packageObject((OpenmrsObject) entity, state, propertyNames, types, id, SyncItemState.NEW);
 		}
 		else {
-			log.debug("Entity configured not to sync, not packaging insert item.");
+			log.debug("Entity configured not to sync: " + SyncUtil.formatObject(entity));
 		}
 		return false; // This means that we did not modify the passed in entity
 	}
@@ -157,15 +149,13 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 */
 	@Override
 	public boolean onFlushDirty(Object entity, Serializable id, Object[] currentState, Object[] previousState, String[] propertyNames, Type[] types) {
-		if (log.isInfoEnabled()) {
-			log.info("Update intercepted: " + SyncUtil.formatObject(entity));
-		}
+		log.debug("Update intercepted");
 		if (shouldSynchronize(entity)) {
-			registerBeforeTransactionCompletionProcess();
+			log.debug("Packaging: " + SyncUtil.formatObject(entity));
 			packageObject((OpenmrsObject) entity, currentState, propertyNames, types, id, SyncItemState.UPDATED);
 		}
 		else {
-			log.debug("Entity configured not to sync, not packaging update item.");
+			log.debug("Entity configured not to sync: " + SyncUtil.formatObject(entity));
 		}
 		return false; // This means that we did not modify the passed in entity
 	}
@@ -200,7 +190,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			log.debug("onCollectionRecreate key: " + key);
 		}
 		if (collection instanceof AbstractPersistentCollection) {
-			registerBeforeTransactionCompletionProcess();
 			processHibernateCollection((AbstractPersistentCollection) collection, key, "recreate");
 		}
 		else {
@@ -224,7 +213,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			log.debug("onCollectionUpdate key: " + key);
 		}
 		if (collection instanceof AbstractPersistentCollection) {
-			registerBeforeTransactionCompletionProcess();
 			processHibernateCollection((AbstractPersistentCollection) collection, key, "update");
 		}
 		else {
@@ -256,7 +244,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	}
 
 	/**
-	 * No operation, logging only
+	 * We register our beforeTransactionCompletion process here to ensure it gets run for this transaction
 	 * @see EmptyInterceptor#preFlush(Iterator)
 	 */
 	@Override
@@ -264,13 +252,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		if (log.isDebugEnabled()) {
 			log.debug("preFlush intercepted: " + SyncUtil.formatEntities(entities));
 		}
+		registerBeforeTransactionCompletionProcess();
 	}
-
-	// TODO: NPE can only happen if flush is called outside of transaction.  SYNC-194.
-	// TODO: This used to be in the onFlushDirty (but not the other methods strangely)
-	// TODO: if (syncRecordHolder.get() == null)
-	// TODO:	log.warn("Unable to save record a flush of " + entity.getClass().getName() + " with id: " + id + " because it occurs outside of the normal transaction boundaries");
-
 
 	/**
 	 * No operation, logging only
@@ -284,14 +267,82 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	}
 
 	/**
-	 * No operation, logging only
-	 * @see EmptyInterceptor#beforeTransactionCompletion(Transaction)
+	 * No operation, logging only. The processing of sync records happens in a BeforeTransactionCompletionProcess
+	 * (see below), due to the fact that any exceptions thrown by beforeTransactionCompletion are swallowed, so the
+	 * user would have no idea that their saving operation failed to save sync records.  In contrast,
+	 * beforeTransactionCompletionProcesses are run outside of that try/catch block and result in exceptions
+	 * bubbling back up
+	 * @see org.hibernate.impl.SessionImpl#beforeTransactionCompletion(org.hibernate.Transaction)
+	 * @see EmptyInterceptor#beforeTransactionCompletion(org.hibernate.Transaction)
 	 */
 	@Override
 	public void beforeTransactionCompletion(Transaction tx) {
 		if (log.isDebugEnabled()) {
 			log.debug("About to Complete Transaction: " + SyncUtil.formatTransactionStatus(tx));
 		}
+	}
+
+	/**
+	 * Registers a {@link BeforeTransactionCompletionProcess} if none has been registered with the
+	 * current session, it uses ThreadLocal variable to check if it is already set since sessions
+	 * are thread bound
+	 */
+	private void registerBeforeTransactionCompletionProcess() {
+		log.debug("Registering SyncBeforeTransactionCompletionProcess with the current session");
+
+		EventSource eventSource = (EventSource) getSessionFactory().getCurrentSession();
+		eventSource.getActionQueue().registerProcess(new BeforeTransactionCompletionProcess() {
+			 public void doBeforeTransactionCompletion(SessionImplementor sessionImpl) {
+				 log.trace("doBeforeTransactionCompletion process: checking for SyncRecord to save");
+				 try {
+					 SyncRecord record = getSyncRecord();
+					 syncRecordHolder.remove();
+
+					 // Does this transaction contain any serialized changes?
+					 if (record != null && record.hasItems()) {
+						 log.info("Saving SyncRecord with " + record.getItems().size() + " items");
+
+						 // Grab user if we have one, and use the UUID of the user as creator of this SyncRecord
+						 User user = Context.getAuthenticatedUser();
+						 if (user != null) {
+							 record.setCreator(user.getUuid());
+						 }
+
+						 // Grab database version
+						 record.setDatabaseVersion(OpenmrsConstants.OPENMRS_VERSION_SHORT);
+
+						 // Complete the record
+						 record.setUuid(SyncUtil.generateUuid());
+
+						 if (record.getOriginalUuid() == null) {
+							 log.info("OriginalUuid is null, so assigning a new UUID: " + record.getUuid());
+							 record.setOriginalUuid(record.getUuid());
+						 }
+						 else {
+							 log.info("OriginalUuid is: " + record.getOriginalUuid());
+						 }
+
+						 record.setState(SyncRecordState.NEW);
+						 record.setTimestamp(new Date());
+						 record.setRetryCount(0);
+
+						 // Save SyncRecord
+						 getSyncService().createSyncRecord(record, record.getOriginalUuid());
+					 }
+					 else {
+						 // note: this will happen all the time with read-only transactions
+						 if (log.isTraceEnabled()) {
+							 log.trace("No SyncItems in SyncRecord, save discarded (note: maybe a read-only transaction)!");
+						 }
+					 }
+				 }
+				 catch (Exception e) {
+					 log.error("A error occurred while trying to save a sync record in the interceptor", e);
+					 throw new SyncException("Error in interceptor, see log messages and callstack.", e);
+				 }
+			 }
+		});
+		log.debug("Successfully registered SyncBeforeTransactionCompletionProcess with the current session");
 	}
 
 	/**
@@ -303,30 +354,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		if (log.isDebugEnabled()) {
 			log.debug("Transaction Completed: " + SyncUtil.formatTransactionStatus(tx));
 		}
-	}
-
-	/**
-	 * Registers a {@link BeforeTransactionCompletionProcess} if none has been registered with the
-	 * current session, it uses ThreadLocal variable to check if it is already set since sessions
-	 * are thread bound
-	 */
-	private void registerBeforeTransactionCompletionProcess() {
-		if (log.isDebugEnabled())
-			log.debug("Registering SyncBeforeTransactionCompletionProcess with the current session");
-
-		if (isProcessRegistered.get() != null) {
-			if (log.isDebugEnabled())
-				log.debug("SyncBeforeTransactionCompletionProcess is already registered with the current session");
-			return;
-		}
-
-		((EventSource) getSessionFactory().getCurrentSession()).getActionQueue()
-				.registerProcess(new SyncBeforeTransactionCompletionProcess());
-
-		isProcessRegistered.set(true);
-
-		if (log.isDebugEnabled())
-			log.debug("Successfully registered SyncBeforeTransactionCompletionProcess with the current session");
 	}
 
 	/**
@@ -1449,76 +1476,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			return getCollectionMetadata(clazz.getSuperclass(), collPropertyName, sf);
 		}
 		return cmd;
-	}
-
-	/**
-	 * Intercepts before the transaction is completed. Cleans up
-	 * deactivated and isProcessRegistered ThreadLocal objects/reset. Note that uncaught Exceptions
-	 * thrown from this process are rethrown by hibernate as AssertionFailure exceptions except for
-	 * HibernateException and its subclasses
-	 */
-	private class SyncBeforeTransactionCompletionProcess implements BeforeTransactionCompletionProcess {
-
-		/**
-		 * @see org.hibernate.action.BeforeTransactionCompletionProcess#doBeforeTransactionCompletion(org.hibernate.engine.SessionImplementor)
-		 */
-		@Override
-		public void doBeforeTransactionCompletion(SessionImplementor sessionImpl) {
-			log.info("doBeforeTransactionCompletion process: " + SessionFactoryUtils.toString((Session) sessionImpl));
-
-			try {
-				SyncRecord record = getSyncRecord();
-				syncRecordHolder.remove();
-
-				// Does this transaction contain any serialized changes?
-				if (record != null && record.hasItems()) {
-
-					if (log.isDebugEnabled())
-						log.debug(record.getItems().size() + " SyncItems in SyncRecord, saving!");
-
-					// Grab user if we have one, and use the UUID of the user as
-					// creator of this SyncRecord
-					User user = Context.getAuthenticatedUser();
-					if (user != null) {
-						record.setCreator(user.getUuid());
-					}
-
-					// Grab database version
-					record.setDatabaseVersion(OpenmrsConstants.OPENMRS_VERSION_SHORT);
-
-					// Complete the record
-					record.setUuid(SyncUtil.generateUuid());
-					if (record.getOriginalUuid() == null) {
-						if (log.isInfoEnabled())
-							log.info("OriginalUuid is null, so assigning a new UUID: " + record.getUuid());
-						record.setOriginalUuid(record.getUuid());
-					} else {
-						if (log.isInfoEnabled())
-							log.info("OriginalUuid is: " + record.getOriginalUuid());
-					}
-					record.setState(SyncRecordState.NEW);
-					record.setTimestamp(new Date());
-					record.setRetryCount(0);
-					// Save SyncRecord
-					getSyncService().createSyncRecord(record, record.getOriginalUuid());
-				} else {
-					// note: this will happen all the time with read-only
-					// transactions
-					if (log.isTraceEnabled())
-						log.trace("No SyncItems in SyncRecord, save discarded (note: maybe a read-only transaction)!");
-				}
-			}
-			catch (Exception ex) {
-				log.error("Journal error\n", ex);
-
-				throw (new SyncException("Error in interceptor, see log messages and callstack.", ex));
-			}
-			finally {
-				isProcessRegistered.remove();
-			}
-
-		}
-
 	}
 
 	/**

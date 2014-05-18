@@ -730,8 +730,15 @@ public class SyncUtil {
 		}
 		if (className.equals("User")) {
 			User user = Context.getUserService().getUserByUuid(uuid);
-			if (user != null)
-				ret = user.getPersonName().toString();
+			if (user != null) {
+				ret = user.getDisplayString();
+			}
+		}
+		if (className.equals("Role") || className.equals("org.openmrs.Role")) {
+			Role role = Context.getUserService().getRoleByUuid(uuid);
+			if (role != null) {
+				ret = role.getRole();
+			}
 		}
 		if (className.equals("Encounter")) {
 			Encounter encounter = Context.getEncounterService().getEncounterByUuid(uuid);
