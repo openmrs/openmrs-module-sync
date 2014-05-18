@@ -304,7 +304,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 
 					 // Does this transaction contain any serialized changes?
 					 if (record != null && record.hasItems()) {
-						 log.info("Saving SyncRecord " + record.getUuid() + " (original uuid: " + record.getOriginalUuid() + ") with " + record.getItems().size() + " items");
 
 						 // Grab user if we have one, and use the UUID of the user as creator of this SyncRecord
 						 User user = Context.getAuthenticatedUser();
@@ -329,6 +328,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 						 record.setState(SyncRecordState.NEW);
 						 record.setTimestamp(new Date());
 						 record.setRetryCount(0);
+
+						 log.info("Saving SyncRecord " + record.getOriginalUuid() + ": " + record.getItems().size() + " items");
 
 						 // Save SyncRecord
 						 getSyncService().createSyncRecord(record, record.getOriginalUuid());
