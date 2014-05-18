@@ -82,7 +82,7 @@ public class HibernateSyncInterceptorTest extends SyncBaseTest {
 			public void runOnChild() throws Exception {
 				Patient p = testService.getObject(Patient.class, 2);
 				p.getPersonName().setFamilyName("Smith");
-				testService.saveObject(p);
+				testService.saveObjectInTransaction(p);
 			}
 			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
 				Assert.assertEquals(1, syncRecords.size());
@@ -105,12 +105,12 @@ public class HibernateSyncInterceptorTest extends SyncBaseTest {
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild() throws Exception {
 				Patient p = testService.getObject(Patient.class, 2);
-				p.setGender("F");
-				testService.saveObject(p);
+				p.setBirthdate(getDate("1978-08-29"));
+				testService.saveObjectInTransaction(p);
 
 				Encounter e = testService.getObject(Encounter.class, 1);
 				e.setEncounterDatetime(new Date());
-				testService.saveObject(e);
+				testService.saveObjectInTransaction(e);
 			}
 			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
 				Assert.assertEquals(2, syncRecords.size());

@@ -62,6 +62,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.StringUtils;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -79,24 +80,27 @@ import java.util.Set;
  * mechanism. Intercepted changes are recorded into the synchronization journal table in DB.
  * @see org.hibernate.EmptyInterceptor
  */
-public class HibernateSyncInterceptor extends EmptyInterceptor implements ApplicationContextAware {
+public class HibernateSyncInterceptor extends EmptyInterceptor implements ApplicationContextAware, Serializable {
 
-	/**
-	 * From Spring docs: There might be a single instance of Interceptor for a SessionFactory, or a
-	 * new instance might be specified for each Session. Whichever approach is used, the interceptor
-	 * must be serializable if the Session is to be serializable. This means that
-	 * SessionFactory-scoped interceptors should implement readResolve().
-	 * TODO: MS - so doesn't this mean we should implement readResolve() below?
-	 */
 	private static final long serialVersionUID = -4905755656754047400L;
-
 	protected final Log log = LogFactory.getLog(getClass());
 
+	private static HibernateSyncInterceptor instance;
 	private ApplicationContext context;
 	private static ThreadLocal<SyncRecord> syncRecordHolder = new ThreadLocal<SyncRecord>();
 
-	public HibernateSyncInterceptor() {
+	private HibernateSyncInterceptor() {
 		log.info("Initializing the synchronization interceptor");
+	}
+
+	/**
+	 * @return a new HibernateSyncInterceptor instance, or the existing one to ensure it is a singleton
+	 */
+	public static HibernateSyncInterceptor getInstance() {
+		if (instance == null) {
+			instance = new HibernateSyncInterceptor();
+		}
+		return instance;
 	}
 
 	/**
@@ -116,7 +120,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 */
 	@Override
 	public void onDelete(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) {
-		log.info("Delete intercepted");
+		log.debug("Delete intercepted");
 		if (shouldSynchronize(entity)) {
 			log.debug("Packaging: " + SyncUtil.formatObject(entity));
 			packageObject((OpenmrsObject) entity, state, propertyNames, types, id, SyncItemState.DELETED);
@@ -300,7 +304,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 
 					 // Does this transaction contain any serialized changes?
 					 if (record != null && record.hasItems()) {
-						 log.info("Saving SyncRecord with " + record.getItems().size() + " items");
+						 log.info("Saving SyncRecord " + record.getUuid() + " (original uuid: " + record.getOriginalUuid() + ") with " + record.getItems().size() + " items");
 
 						 // Grab user if we have one, and use the UUID of the user as creator of this SyncRecord
 						 User user = Context.getAuthenticatedUser();
@@ -315,11 +319,11 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 						 record.setUuid(SyncUtil.generateUuid());
 
 						 if (record.getOriginalUuid() == null) {
-							 log.info("OriginalUuid is null, so assigning a new UUID: " + record.getUuid());
+							 log.debug("OriginalUuid is null, so assigning a new UUID: " + record.getUuid());
 							 record.setOriginalUuid(record.getUuid());
 						 }
 						 else {
-							 log.info("OriginalUuid is: " + record.getOriginalUuid());
+							 log.debug("OriginalUuid is: " + record.getOriginalUuid());
 						 }
 
 						 record.setState(SyncRecordState.NEW);
@@ -471,7 +475,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 					log.debug("Processing, type: " + typeName + " Field: " + propertyNames[i]);
 
 				if (propertyNames[i].equals(idPropertyName) && log.isInfoEnabled())
-					log.info(infoMsg + ", Id for this class: " + idPropertyName + " , value:" + currentState[i]);
+					log.debug(infoMsg + ", Id for this class: " + idPropertyName + " , value:" + currentState[i]);
 
 				if (currentState[i] != null) {
 					// is this the primary key or transient? if so, we don't
@@ -481,7 +485,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 					        //|| ("personId".equals(idPropertyName) && "userId".equals(propertyNames[i]))
 					        || transientProps.contains(propertyNames[i])) {
 						// if (log.isInfoEnabled())
-						log.info("Skipping property (" + propertyNames[i]
+						log.debug("Skipping property (" + propertyNames[i]
 						        + ") because it's either the primary key or it's transient.");
 
 					} else {
@@ -610,8 +614,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			// state != null but it is not safetype or
 			// implements OpenmrsObject: do not package and log
 			// as info
-			if (log.isInfoEnabled())
-				log.info(infoMsg + ", Field Type: " + propertyType + " Field Name: " + propertyName
+			if (log.isDebugEnabled())
+				log.debug(infoMsg + ", Field Type: " + propertyType + " Field Name: " + propertyName
 				        + " is not safe or OpenmrsObject, skipped!");
 		}
 
@@ -978,7 +982,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	protected void processHibernateCollection(AbstractPersistentCollection collection, Serializable key, String action) {
 
 		if (!(collection instanceof PersistentSet || collection instanceof PersistentMap || collection instanceof PersistentList)) {
-			log.info("Unsupported collection type, collection type was:" + collection.getClass().getName());
+			log.debug("Unsupported collection type, collection type was:" + collection.getClass().getName());
 			return;
 		}
 
@@ -1006,7 +1010,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			originalRecordUuid = getSyncRecord().getOriginalUuid();
 
 		} else {
-			log.info("Cannot process collection where owner is not OpenmrsObject.");
+			log.debug("Cannot process collection where owner is not OpenmrsObject.");
 			return;
 		}
 
@@ -1041,7 +1045,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			}
 
 			if (!process) {
-				log.info("set processing, no update needed: not dirty or current state and snapshots are same");
+				log.debug("set processing, no update needed: not dirty or current state and snapshots are same");
 			}
 		}
 		if (!process)
@@ -1497,8 +1501,21 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		return Context.getService(SyncService.class);
 	}
 
+	/**
+	 * @return the sessionFactory
+	 */
 	private SessionFactory getSessionFactory() {
 		return (SessionFactory) context.getBean("sessionFactory");
+	}
+
+	/**
+	 * From Spring docs: There might be a single instance of Interceptor for a SessionFactory, or a
+	 * new instance might be specified for each Session. Whichever approach is used, the interceptor
+	 * must be serializable if the Session is to be serializable. This means that
+	 * SessionFactory-scoped interceptors should implement readResolve().
+	 */
+	private Object readResolve() throws ObjectStreamException {
+		return getInstance();
 	}
 
 	/**
@@ -1532,5 +1549,4 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			return value;
 		}
 	}
-
 }

@@ -11,7 +11,7 @@
            http://www.springframework.org/schema/util
            http://www.springframework.org/schema/util/spring-util-2.0.xsd">
 
-	<bean id="synchronizationInterceptor" class="org.openmrs.module.sync.api.db.hibernate.HibernateSyncInterceptor" primary="true"/>
+	<bean id="synchronizationInterceptor" class="org.openmrs.module.sync.api.db.hibernate.HibernateSyncInterceptor" primary="true" factory-method="getInstance"/>
 
 	<bean id="syncDAO" class="org.openmrs.module.sync.api.db.hibernate.HibernateSyncDAO">
 		<property name="sessionFactory"><ref bean="sessionFactory"/></property>	

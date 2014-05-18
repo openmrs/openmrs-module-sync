@@ -841,7 +841,8 @@ public class SyncUtil {
 				}
 			}
 			catch (Exception e) {
-				log.warn("An error occurred trying to get a name of a metadata item " + className);
+				ret = className + " (" + uuid + ")";
+				log.debug("An error occurred trying to get a name of a metadata item " + ret, e);
 			}
 		}
 		

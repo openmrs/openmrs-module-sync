@@ -46,10 +46,17 @@ public class ExampleTransactionalServiceImpl extends BaseOpenmrsService implemen
 	}
 
 	/**
+	 * Example save without transaction annotation
+	 */
+	public void saveObjectNoTransaction(OpenmrsObject openmrsObject) {
+		session().save(openmrsObject);
+	}
+
+	/**
 	 * Example single transaction
 	 */
 	@Transactional
-	public void saveObject(OpenmrsObject openmrsObject) {
+	public void saveObjectInTransaction(OpenmrsObject openmrsObject) {
 		session().save(openmrsObject);
 	}
 
@@ -67,7 +74,7 @@ public class ExampleTransactionalServiceImpl extends BaseOpenmrsService implemen
 	@Transactional
 	public void saveAllObjectsInSingleTransaction(OpenmrsObject... objects) {
 		for (OpenmrsObject o : objects) {
-			Context.getService(ExampleTransactionalService.class).saveObject(o);
+			Context.getService(ExampleTransactionalService.class).saveObjectInTransaction(o);
 		}
 	}
 
