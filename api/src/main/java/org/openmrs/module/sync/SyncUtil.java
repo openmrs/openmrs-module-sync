@@ -16,6 +16,8 @@ package org.openmrs.module.sync;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Transaction;
+import org.hibernate.proxy.HibernateProxy;
 import org.openmrs.Concept;
 import org.openmrs.Drug;
 import org.openmrs.DrugOrder;
@@ -1244,5 +1246,60 @@ public class SyncUtil {
 		}
 		return intValue;
 	}
-	
+
+	public static String formatEntities(Iterator entities) {
+		StringBuilder sb = new StringBuilder();
+		if (entities != null) {
+			while (entities.hasNext()) {
+				Object entity = entities.next();
+				sb.append(sb.length() == 0 ? "" : ",").append(formatObject(entity));
+			}
+		}
+		return sb.toString();
+	}
+
+	public static String formatObject(Object object) {
+		if (object != null) {
+			try {
+				if (object instanceof HibernateProxy) {
+					HibernateProxy proxy = (HibernateProxy) object;
+					Class persistentClass = proxy.getHibernateLazyInitializer().getPersistentClass();
+					Object identifier = proxy.getHibernateLazyInitializer().getIdentifier();
+					return persistentClass.getSimpleName() + "#" + identifier;
+				}
+				if (object instanceof OpenmrsObject) {
+					OpenmrsObject o = (OpenmrsObject) object;
+					return object.getClass().getSimpleName() + (o.getId() == null ? "" : "#" + o.getId());
+				}
+				if (object instanceof Collection) {
+					Collection c = (Collection) object;
+					StringBuilder sb = new StringBuilder();
+					for (Object o : c) {
+						sb.append(sb.length() == 0 ? "" : ",").append(formatObject(o));
+					}
+					return c.getClass().getSimpleName() + "[" + sb + "]";
+				}
+			}
+			catch (Exception e) {
+			}
+			return object.getClass().getSimpleName();
+		}
+		return "";
+	}
+
+	public static String formatTransactionStatus(Transaction tx) {
+		if (tx == null) {
+			return "TX IS NULL";
+		}
+		if (tx.isActive()) {
+			return "TX ACTIVE";
+		}
+		if (tx.wasCommitted()) {
+			return "TX COMMITTED";
+		}
+		if (tx.wasRolledBack()) {
+			return "TX ROLLED BACK";
+		}
+		return "TX STATUS UNKNOWN";
+	}
 }
