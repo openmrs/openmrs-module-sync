@@ -16,6 +16,7 @@
     <concept concept_id="12" retired="false" datatype_id="2" class_id="7" is_set="false" creator="1" date_created="2008-01-14 18:02:28.0" version="" uuid="333e833e-12c5-102b-119c-e43ed545d333"/>
     <concept concept_id="13" retired="false" datatype_id="4" class_id="11" is_set="false" creator="1" date_created="2008-01-14 18:02:28.0" version="" uuid="111e833e-12c5-102b-119c-e43ed545d111"/>
     <concept concept_id="14" retired="false" datatype_id="4" class_id="11" is_set="false" creator="1" date_created="2008-01-14 18:02:28.0" version="" uuid="222e833e-12c5-102b-119c-e43ed545d222"/>
+	<concept concept_id="15" retired="false" datatype_id="4" class_id="10" is_set="true" creator="1" date_created="2008-01-14 18:02:28.0" version="" uuid="222e833e-15c5-102b-119c-e43ed545d222"/>
 
     <concept_answer concept_answer_id="1" concept_id="1" answer_concept="2" creator="1" date_created="2007-05-04 09:59:02.0" uuid="27c58de9-144e-102b-8d9c-e44ed545d86c"/>
     <concept_answer concept_answer_id="2" concept_id="1" answer_concept="3" creator="1" date_created="2007-05-04 09:59:02.0" uuid="27c5912d-144e-102b-8d9c-e44ed545d86c"/>
@@ -69,6 +70,7 @@
     <concept_name concept_name_id="12" concept_id="12" name="CIVIL STATUS" concept_name_type="FULLY_SPECIFIED" locale="en" voided="0" creator="1" date_created="2008-01-14 18:02:28.0" uuid="1111ee63-15c5-102b-8d9c-e44ed5451111" locale_preferred="true"/>
     <concept_name concept_name_id="13" concept_id="13" name="MARRIED" concept_name_type="FULLY_SPECIFIED" locale="en" voided="0" creator="1" date_created="2008-01-14 18:02:28.0" uuid="2222ee63-15c5-102b-8d9c-e44ed5452222" locale_preferred="true"/>
     <concept_name concept_name_id="14" concept_id="14" name="SINGLE" concept_name_type="FULLY_SPECIFIED" locale="en" voided="0" creator="1" date_created="2008-01-14 18:02:28.0" uuid="3333ee63-15c5-102b-8d9c-e44ed5453333" locale_preferred="true"/>
+	<concept_name concept_name_id="15" concept_id="15" name="MARITAL STATUS SET" concept_name_type="FULLY_SPECIFIED" locale="en" voided="0" creator="1" date_created="2008-01-14 18:02:28.0" uuid="3336ae63-15c5-102b-8d9c-e44ed5453333" locale_preferred="true"/>
 
     <concept_word concept_word_id="1" concept_name_id="14" concept_id="14" word="SINGLE" locale="en" weight="1.0"/>
 
@@ -86,9 +88,9 @@
 
     <concept_numeric concept_id="10" hi_absolute="250" low_absolute="0" units="kg" precise="1"/>
 
-    <concept_set/>
+	<concept_set concept_set_id="1" concept_id="13" concept_set="15" sort_weight="0.0" creator="1" date_created="2008-08-18 12:38:58.0" uuid="1a222827-639f-4cb4-961f-1e025bf88d90"/>
 
-    <concept_synonym/>
+	<concept_synonym/>
 
     <drug retired="false" drug_id="1" concept_id="9" name="Advil" combination="false" dose_strength="200.0" maximum_daily_dose="1600.0" minimum_daily_dose="50.0" units="mg" creator="1" date_created="2008-01-14 18:09:57.0" uuid="29dde6a3-144e-102b-8d9c-e44ed545d86c"/>
 

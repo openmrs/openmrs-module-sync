@@ -292,6 +292,33 @@ public class SyncConceptTest extends SyncBaseTest {
 			}
 		});
 	}
+
+	@Test
+	@NotTransactional
+	public void shouldAddExistingConceptToExistingSet() throws Exception {
+
+		runSyncTest(new SyncTestHelper() {
+
+			ConceptService cs;
+
+			public void runOnChild() {
+				cs = Context.getConceptService();
+				Concept maritalStatus = cs.getConcept(15);
+				Concept singleConcept = cs.getConcept(14);
+				maritalStatus.addSetMember(singleConcept);
+				cs.saveConcept(maritalStatus);
+			}
+
+			public void runOnParent() {
+				Context.clearSession();
+				cs = Context.getConceptService();
+				Concept maritalStatus = cs.getConcept(15);
+				List<Concept> statuses = maritalStatus.getSetMembers();
+				Assert.assertEquals(2, statuses.size());
+				Assert.assertEquals(14, statuses.get(1).getConceptId().intValue());
+			}
+		});
+	}
 	
 	@Test
 	@NotTransactional
