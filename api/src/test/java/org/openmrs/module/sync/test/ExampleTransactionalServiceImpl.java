@@ -26,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  *  Example service to test out various transactional use cases of hibernate and spring
  */
-@Transactional
 public class ExampleTransactionalServiceImpl extends BaseOpenmrsService implements ExampleTransactionalService {
 
 	protected Log log = LogFactory.getLog(getClass());
@@ -58,6 +57,14 @@ public class ExampleTransactionalServiceImpl extends BaseOpenmrsService implemen
 	@Transactional
 	public void saveObjectInTransaction(OpenmrsObject openmrsObject) {
 		session().save(openmrsObject);
+	}
+
+	/**
+	 * Example single transaction that throws an Exception
+	 */
+	@Transactional
+	public void saveObjectInTransactionWithException(OpenmrsObject openmrsObject) {
+		throw new IllegalArgumentException("Test Exception");
 	}
 
 	/**

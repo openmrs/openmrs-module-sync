@@ -39,6 +39,11 @@ public interface ExampleTransactionalService extends OpenmrsService {
 	void saveObjectInTransaction(OpenmrsObject openmrsObject);
 
 	/**
+	 * Example single transaction that throws an Exception
+	 */
+	void saveObjectInTransactionWithException(OpenmrsObject openmrsObject);
+
+	/**
 	 * Example single transaction with REQUIRES_NEW
 	 */
 	void saveObjectInNewTransaction(OpenmrsObject openmrsObject);
