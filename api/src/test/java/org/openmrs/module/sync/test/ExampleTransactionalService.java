@@ -29,9 +29,19 @@ public interface ExampleTransactionalService extends OpenmrsService {
 	<T extends OpenmrsObject> T getObject(Class<T> type, Integer id);
 
 	/**
+	 * Example save without transaction annotation
+	 */
+	void saveObjectNoTransaction(OpenmrsObject openmrsObject);
+
+	/**
 	 * Example single transaction
 	 */
-	void saveObject(OpenmrsObject openmrsObject);
+	void saveObjectInTransaction(OpenmrsObject openmrsObject);
+
+	/**
+	 * Example single transaction that throws an Exception
+	 */
+	void saveObjectInTransactionWithException(OpenmrsObject openmrsObject);
 
 	/**
 	 * Example single transaction with REQUIRES_NEW

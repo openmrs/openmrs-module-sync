@@ -75,6 +75,11 @@ public class SyncItem implements Serializable, IItem {
     public void setContainedType(Class clazz) {
         this.containedType = clazz;
     }
+
+	@Override
+	public String toString() {
+		return "SyncItem [" + containedType + ", " + key + "]";
+	}
     
     // Methods
     @Override
