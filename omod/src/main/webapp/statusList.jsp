@@ -146,9 +146,11 @@
 
 		function syncToParent() {
 			document.getElementById("webExportButton").disabled = true;
-			DWRUtil.setValue("syncInfo", "<spring:message code="sync.status.export.viaWeb.sending" arguments="${fn:length(statusCommandObject)}" />", { escapeHtml:false });
-			DWRSyncService.syncToParent(displaySyncResults);
-			getNumberOfObjectsBeingReceived();
+			DWRSyncService.getOutgoingStatusToParent(function(result) {
+				DWRUtil.setValue("syncInfo", "<spring:message code="sync.status.export.viaWeb.sending"/>".replace("{0}", result.numRecordsToSend).replace("{1}", result.numRecords), { escapeHtml:false });
+				DWRSyncService.syncToParent(displaySyncResults);
+				getNumberOfObjectsBeingReceived();
+			});
 		}
 		
 	-->
@@ -236,7 +238,7 @@
 
 <br/>
 
-<b class="boxHeader"><spring:message code="sync.changes.recent"/></b>
+<b class="boxHeader">${totalNumRecords} <spring:message code="sync.changes.recent"/></b>
 <div class="box">
 	<form method="post">
 		<input type="hidden" name="action" value="resetAttempts" />
@@ -283,6 +285,11 @@
 							--%>
 						</tr>
 				</c:forEach>
+				<c:if test="${totalNumRecords > fn:length(statusCommandObject)}">
+					<tr><td colspan="4">
+					 	(<i><spring:message code="sync.onlyTheFirstRecordsShown" arguments="${fn:length(statusCommandObject)}"/></i>)
+					</td></tr>
+				</c:if>
 			</c:if>
 			<c:if test="${empty statusCommandObject}">
 				<tr id="noItemsRow">

@@ -129,6 +129,7 @@
 			<create creator="new" javascript="DWRSyncService">
 				<param name="class" value="org.openmrs.module.sync.web.dwr.DWRSyncService"/>
 				<include method="testConnection"/>
+				<include method="getOutgoingStatusToParent"/>
 				<include method="getNumberOfObjectsBeingReceived"/>
 				<include method="syncToParent"/>
 				<include method="getSyncItemContent" />

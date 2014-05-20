@@ -429,7 +429,10 @@ public class StatusListController extends SimpleFormController {
 		state.put(SyncRecordState.SEND_FAILED.toString(), msa.getMessage("sync.record.state_FAILED"));
 		state.put(SyncRecordState.SENT.toString(), msa.getMessage("sync.record.state_SENT"));
 		state.put(SyncRecordState.SENT_AGAIN.toString(), msa.getMessage("sync.record.state_SENT"));
-		
+
+		SyncService syncService = Context.getService(SyncService.class);
+		RemoteServer parent = syncService.getParentServer();
+
 		ret.put("mode", ServletRequestUtils.getStringParameter(request, "mode", "SEND_FILE"));
 		ret.put("transmissionState", state.entrySet());
 		
@@ -439,9 +442,10 @@ public class StatusListController extends SimpleFormController {
 		//ret.put("itemInfo", itemInfo);
 		ret.put("recordText", recordText);
 		ret.put("recordChangeType", recordChangeType);
-		ret.put("parent", Context.getService(SyncService.class).getParentServer());
+		ret.put("parent", parent);
 		ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
-		
+		ret.put("totalNumRecords", syncService.getSyncRecords(SyncConstants.SYNC_TO_PARENT_STATES, parent, null, null).size());
+
 		return ret;
 	}
 }

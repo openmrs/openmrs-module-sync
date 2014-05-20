@@ -19,6 +19,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -35,6 +38,7 @@ import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.ingest.SyncTransmissionResponse;
 import org.openmrs.module.sync.serialization.ZipPackage;
 import org.openmrs.module.sync.server.ConnectionResponse;
+import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.ServerConnection;
 import org.openmrs.module.sync.server.ServerConnectionState;
 
@@ -119,6 +123,20 @@ public class DWRSyncService {
 	public Integer getNumberOfObjectsBeingReceived() {
 		return receivingSize.getSize();
 	}
+
+	public Map<String, Object> getOutgoingStatusToParent() {
+		SyncService syncService = Context.getService(SyncService.class);
+		RemoteServer parent = syncService.getParentServer();
+		List<SyncRecord> allRecords = syncService.getSyncRecords(SyncConstants.SYNC_TO_PARENT_STATES, parent, null, null);
+
+		Map<String, Object> status = new HashMap<String, Object>();
+
+		int numRecordsToSendWeb = SyncUtil.getGlobalPropetyValueAsInteger(SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB);
+		int numNextSend = numRecordsToSendWeb > allRecords.size() ? allRecords.size() : numRecordsToSendWeb;
+		status.put("numRecordsToSend", numNextSend);
+		status.put("numRecords", allRecords.size());
+		return status;
+	}
 	
 	/**
 	 * Used by the status.list page to send data to the parent and show the results. <br/>
@@ -132,8 +150,8 @@ public class DWRSyncService {
 		// jsp page can know what we're dealing with
 		// before the whole SyncTransmissionsResponse is returned
 		SyncTransmissionResponse response = SyncUtilTransmission.doFullSynchronize(receivingSize,
-		    SyncUtil.getGlobalPropetyValueAsInteger(SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB));
-		
+				SyncUtil.getGlobalPropetyValueAsInteger(SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB));
+
 		receivingSize.setSize(null); // reset variable
 		
 		if (response != null) {
