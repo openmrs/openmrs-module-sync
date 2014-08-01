@@ -47,6 +47,18 @@ public class HibernateSyncDAOTest {
 		parseConnectionProperties("jdbc:mysql://localhost:3306/openmrs");
 	}
 	
+	@Test
+	public void getConnectionProperties_shouldHandleNonDefaultUrl() {
+		parseConnectionPropertiesWithHostAndPort("jdbc:mysql://12.34.56.78:3306/openmrs",
+				new String[]{"", "", "openmrs", "12.34.56.78", "3306"});
+	}
+	
+	@Test
+	public void getConnectionProperties_shouldHandleNonDefaultPort(){
+		parseConnectionPropertiesWithHostAndPort("jdbc:mysql://127.0.0.1:6033/openmrs",
+				new String[]{"", "", "openmrs", "127.0.0.1", "6033"});
+	}
+	
 	private void parseConnectionProperties(String url) {
 		Properties properties = new Properties();
 		properties.put("connection.url", url);
@@ -61,6 +73,28 @@ public class HibernateSyncDAOTest {
 			String[] connProps = (String[])method.invoke(dao, null);
 			
 			Assert.assertEquals("openmrs", connProps[2]);
+		}
+		catch (Exception ex) {
+			Assert.assertFalse("Should correctly handle database connection url", true);
+		}
+	}
+	
+	private void parseConnectionPropertiesWithHostAndPort(String url, String[] expected){
+		Properties properties = new Properties();
+		properties.put("connection.url", url);
+		
+		PowerMockito.mockStatic(Context.class);
+		Mockito.when(Context.getRuntimeProperties()).thenReturn(properties);
+		
+		try {
+			HibernateSyncDAO dao = new HibernateSyncDAO();
+			Method method = dao.getClass().getDeclaredMethod("getConnectionProperties", null);
+			method.setAccessible(true);
+			String[] connProps = (String[])method.invoke(dao, null);
+			
+			for (int i = 2; i < expected.length; i++){
+				Assert.assertEquals(expected[i], connProps[i]);				
+			}
 		}
 		catch (Exception ex) {
 			Assert.assertFalse("Should correctly handle database connection url", true);
