@@ -987,6 +987,8 @@ public class HibernateSyncDAO implements SyncDAO {
 		String username = props[0];
 		String password = props[1];
 		String database = props[2];
+		String host = props[3];
+		String port = props[4];
 		try {
 			if (!outFile.exists())
 				outFile.createNewFile();
@@ -999,6 +1001,8 @@ public class HibernateSyncDAO implements SyncDAO {
 		commands.add("mysqldump");
 		commands.add("-u" + username);
 		commands.add("-p" + password);
+		commands.add("-h" + host);
+		commands.add("-P" + port);
 		commands.add("-q");
 		commands.add("-e");
 		commands.add("--single-transaction");
@@ -1036,8 +1040,8 @@ public class HibernateSyncDAO implements SyncDAO {
 	private String[] getConnectionProperties() {
 		Properties props = Context.getRuntimeProperties();
 		
-		// username, password, database
-		String[] connProps = { "test", "test", "openmrs" };
+		// username, password, database, host, port
+		String[] connProps = { "test", "test", "openmrs", "localhost", "3306" };
 		
 		String username = (String) props.get("database.username");
 		if (username == null)
@@ -1052,6 +1056,8 @@ public class HibernateSyncDAO implements SyncDAO {
 			connProps[1] = password;
 		// get database name
 		String database = "openmrs";
+		String host = "localhost";
+		String port = "3306";
 		String connectionUrl = (String) props.get("connection.url");
 		if (connectionUrl == null)
 			connectionUrl = (String) props.get("connection.url");
@@ -1064,6 +1070,14 @@ public class HibernateSyncDAO implements SyncDAO {
 			int qmark = connectionUrl.indexOf('?', lastColonPos);
 			database = connectionUrl.substring(slash + 1, qmark != -1 ? qmark : connectionUrl.length());
 			connProps[2] = database;
+			
+			//Assuming that port is explicitly set
+			int doubleSlashPos = connectionUrl.indexOf("://");
+			host = connectionUrl.substring(doubleSlashPos + 3, lastColonPos);
+			connProps[3] = host;
+			
+			port = connectionUrl.substring(lastColonPos + 1, slash);
+			connProps[4] = port;
 		}
 		
 		return connProps;
@@ -1124,13 +1138,16 @@ public class HibernateSyncDAO implements SyncDAO {
 		String username = props[0];
 		String password = props[1];
 		String database = props[2];
+		String host = props[3];
+		String port = props[4];
 		
 		String path = generatedDataFile.getAbsolutePath();
 		path = path.replace("\\", "/");
 		// replace windows file separator with
 		// forward slash
 		
-		String[] commands = { "mysql", "-e", "source " + path, "-f", "-u" + username, "-p" + password, "-D" + database };
+		String[] commands = { "mysql", "-e", "source " + path, "-f", "-u" + username, "-p" + password,
+				"-h" + host, "-P" + port, "-D" + database };
 		String output;
 		if (OpenmrsConstants.UNIX_BASED_OPERATING_SYSTEM)
 			output = execCmd(generatedDataFile.getParentFile(), commands);
