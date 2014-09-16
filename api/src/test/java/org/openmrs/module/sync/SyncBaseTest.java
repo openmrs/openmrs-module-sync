@@ -260,8 +260,13 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		List<SyncRecord> firstChanges = this.getSyncRecords();
 		
 		this.repopulateDB(getParentDataset());
-		
-		this.applySyncChanges(firstChanges, testMethods);
+
+		try {
+			this.applySyncChanges(firstChanges, testMethods);
+		}
+		catch (Exception e) {
+			log.error("An error occurred applying sync changes", e);
+		}
 		
 		this.runOnParent(testMethods);
 
