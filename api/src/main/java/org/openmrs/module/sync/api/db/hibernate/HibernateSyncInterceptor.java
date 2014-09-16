@@ -359,6 +359,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		if (log.isDebugEnabled()) {
 			log.debug("Transaction Completed: " + SyncUtil.formatTransactionStatus(tx));
 		}
+		// Because the beforeTransactionCompletion method is not called on rollback, we need to ensure any syncRecords still on the thread are removed after the tx is completed
+		syncRecordHolder.remove();
 	}
 
 	/**
@@ -1348,19 +1350,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 				throw new SyncException("originalRecordUuid is already set to a different value than expected");
 			}
 		}
-	}
-
-	/**
-	 * Clears out the original record uuid from the pending record by setting it to null. This can
-	 * happen if the current Tx is being aborted for some reason. Technically, if the Tx is being
-	 * aborted then the pending record will never be saved, that is call to
-	 * beforeTransactionCompletion() where we attempt to save the record never happens. This method
-	 * is however provided for completeness and defensive coding in
-	 * SyncIngestServiceImpl.processSyncItem() that does cleanup as the exception resulting in
-	 * abort(s) are being raised.
-	 */
-	public static void clearOriginalRecordUuid() {
-		getSyncRecord().setOriginalUuid(null);
 	}
 
 	/**
