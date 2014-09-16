@@ -63,9 +63,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
     }
     
     /**
-     * 
-     * @see org.openmrs.api.SyncIngestService#processSyncImportRecord(SyncImportRecord importRecord)
-     * 
+     * @see org.openmrs.module.sync.api.SyncIngestService#processSyncImportRecord(SyncImportRecord, RemoteServer)
      * @param importRecord
      * @throws APIException
      */
@@ -401,10 +399,9 @@ public class SyncIngestServiceImpl implements SyncIngestService {
      * sync items were processed and before committing the sync record.
      * 
      * HashMap contained in the collection is to capture the action, and the necessary object to resolve that action. The action
-     * is understood and applied by {@link org.openmrs.synchronization.SyncUtil#applyPreCommitRecordActions(ArrayList)}
+     * is understood and applied by applyPreCommitRecordActions
      * 
      * @see org.openmrs.module.sync.api.SyncIngestService#processSyncItem(org.openmrs.module.sync.SyncItem, java.lang.String, java.util.Map)
-     * @see org.openmrs.module.sync.SyncUtil#applyPreCommitRecordActions(ArrayList)
      * 
      */
     public SyncImportItem processSyncItem(SyncItem item, String originalRecordUuid, Map<String, List<SyncProcessedObject>> processedObjects)  throws APIException {
@@ -428,7 +425,8 @@ public class SyncIngestServiceImpl implements SyncIngestService {
             if (o instanceof org.hibernate.collection.PersistentCollection) {
             	log.debug("Processing a persistent collection");
             	dao.processCollection(o.getClass(),itemContent,originalRecordUuid);
-            } else {
+            }
+			else {
             	// do the saving of the object to the database, etc
             	 OpenmrsObject openmrsObject = processOpenmrsObject((OpenmrsObject)o, item, originalRecordUuid);
 				
@@ -444,18 +442,13 @@ public class SyncIngestServiceImpl implements SyncIngestService {
             	}
             }
             ret.setState(SyncItemState.SYNCHRONIZED);                
-        } catch (SyncIngestException e) {
-        	//clear out the orig uuid from the interceptor, we are aborting the update
-        	HibernateSyncInterceptor.clearOriginalRecordUuid();
-        	//MUST RETHROW to abort transaction
-        	e.setSyncItemContent(itemContent);
+        }
+		catch (SyncIngestException e) {
+        	e.setSyncItemContent(itemContent);  //MUST RETHROW to abort transaction
         	throw (e);
         }
         catch (Exception e) {
-        	//clear out the orig uuid from the interceptor, we are aborting the update
-        	HibernateSyncInterceptor.clearOriginalRecordUuid();
-        	//MUST RETHROW to abort transaction
-            throw new SyncIngestException(e,SyncConstants.ERROR_ITEM_UNEXPECTED, null, itemContent,null);
+            throw new SyncIngestException(e,SyncConstants.ERROR_ITEM_UNEXPECTED, null, itemContent, null);  //MUST RETHROW to abort transaction
         }       
         
         return ret;        
@@ -493,11 +486,10 @@ public class SyncIngestServiceImpl implements SyncIngestService {
      * sync items were processed and before committing the sync record.
      *  
      * @param o empty instance of class that this SyncItem represents 
-     * @param incoming Serialized state of SyncItem.
+     * @param item SyncItem.
      * @param originalRecordUuid Unique id of the sync record that this SyncItem recorded in when this object was first created. NOTE:
      * this value is retained and forwarded unchanged throughout the network of synchronizing servers in order to avoid re-applying
      * same changes over and over.
-     * @param preCommitRecordActions collection of actions that will be applied a the end of the processing sync record
      * @return the saved OpenmrsObject (could be different than what is passed in if updating a record)
      * 
      * @see SyncUtil#setProperty(Object, String, Object)
