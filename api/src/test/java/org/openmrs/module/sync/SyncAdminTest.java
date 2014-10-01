@@ -202,6 +202,9 @@ public class SyncAdminTest extends SyncBaseTest {
 	@Test
 	@NotTransactional
 	public void shouldGetSyncStatistics() throws Exception {
+		if (!Context.isSessionOpen()) {
+			Context.openSession();
+		}
 		executeDataSet("org/openmrs/module/sync/include/SyncRemoteChildServer.xml");
 		Map<RemoteServer,LinkedHashSet<SyncStatistic>> stats = Context.getService(SyncService.class).getSyncStatistics(null, null);
 		RemoteServer server = Context.getService(SyncService.class).getRemoteServer(1);
