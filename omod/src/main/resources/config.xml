@@ -149,6 +149,10 @@
 		<lang>en</lang>
 		<file>messages.properties</file>
 	</messages>
+	<messages>
+		<lang>es</lang>
+		<file>messages_es.properties</file>
+	</messages>
 	
 	<mappingFiles>
 		SyncClass.hbm.xml

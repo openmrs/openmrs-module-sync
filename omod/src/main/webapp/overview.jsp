@@ -118,8 +118,8 @@
 						<tr>
 							<th><spring:message code="sync.config.server.name" /></th>
 							<th style="text-align: center;"><spring:message code="sync.config.server.type" /></th>
-							<th style="text-align: center;">Date/time</th>
-							<th style="text-align: center;">Status</th>
+							<th style="text-align: center;"><spring:message code="sync.config.server.lastSync.datetime"/></th>
+							<th style="text-align: center;"><spring:message code="sync.config.server.lastSync.status"/></th>
 							<th style="background-color: #eef; text-align: center;"><spring:message code="sync.status.itemState"/></th>
 							<th style="background-color: #eef; text-align: center;"><spring:message code="sync.general.count"/></th>
 							<%-- <th style="background-color: #fee; text-align: center;">state</th>
