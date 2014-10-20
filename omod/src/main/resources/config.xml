@@ -116,7 +116,11 @@
 		<defaultValue>{SYNCSERVERNAME}_{NEXTUSERID}{CHECKDIGIT}</defaultValue>
 		<description>The template used to generate new users' system_id on this server. Available options: {SYNCSERVERNAME}, {SYNCSERVERUUID}, {NEXTUSERID}, {CHECKDIGIT}. Empty string will use core's built-in algorithm (warning: this WILL produce duplicate system ids if user generation is done on multiple servers. Use empty string with caution) </description>
 	</globalProperty>
-
+    <globalProperty>
+        <property>sync.transmission.log</property>
+        <defaultValue>false</defaultValue>
+        <description>Boolean value indicating whether or not create a transmission log in .OpenMRS/sync/recrd folder. Available options: true,false </description>
+    </globalProperty>
 	
 	<dwr>
 		<allow>

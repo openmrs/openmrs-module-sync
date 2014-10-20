@@ -71,13 +71,14 @@ public class SyncUtilTransmission {
 		long maxRetryCount = 0;
 		boolean maxRetryCountReached = false;
 		Exception exceptionThrown = null; // the exception thrown
-		
+        boolean createTransmissionLog = Boolean.parseBoolean(Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_SYNC_TRANSMISSION_LOG, "false"));
+
 		try {
 			SyncSource source = new SyncSourceJournal();
 			SyncStrategyFile strategy = new SyncStrategyFile();
 			
 			try {
-				tx = strategy.createStateBasedSyncTransmission(source, true, server, requestResponseWithTransmission,
+				tx = strategy.createStateBasedSyncTransmission(source, createTransmissionLog, server, requestResponseWithTransmission,
 				    maxSyncRecords);
 			}
 			catch (Exception e) {
