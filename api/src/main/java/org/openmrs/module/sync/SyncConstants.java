@@ -138,7 +138,7 @@ public class SyncConstants {
 	
 	public static final String PROPERTY_NAME_MAX_RECORDS_FILE = "sync.max_records.file";
 
-    public static final String PROPERTY_SYNC_TRANSMISSION_LOG = "sync.transmission.log";
+    public static final String PROPERTY_SYNC_TRANSMISSION_LOG = "sync.transmission.log.enabled";
 	
 	public static final String PROPERTY_NAME_MAX_RECORDS_DEFAULT = "50";
 	
