@@ -118,7 +118,7 @@
 	</globalProperty>
     <globalProperty>
         <property>sync.transmission.log.enabled</property>
-        <defaultValue>false</defaultValue>
+        <defaultValue>true</defaultValue>
         <description>Boolean value indicating whether or not create a transmission log in .OpenMRS/sync/recrd folder. Available options: true,false </description>
     </globalProperty>
 	

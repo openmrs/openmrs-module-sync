@@ -71,7 +71,7 @@ public class SyncUtilTransmission {
 		long maxRetryCount = 0;
 		boolean maxRetryCountReached = false;
 		Exception exceptionThrown = null; // the exception thrown
-        boolean createTransmissionLog = Boolean.parseBoolean(Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_SYNC_TRANSMISSION_LOG, "false"));
+        boolean createTransmissionLog = Boolean.parseBoolean(Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_SYNC_TRANSMISSION_LOG_ENABLED, "true"));
 
 		try {
 			SyncSource source = new SyncSourceJournal();
