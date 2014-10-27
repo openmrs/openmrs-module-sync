@@ -13,15 +13,7 @@
  */
 package org.openmrs.module.sync;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import org.apache.commons.lang.StringUtils;
 import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
@@ -29,6 +21,9 @@ import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.SyncServerRecord;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * SyncRecord is a collection of sync items that represents a smallest transactional unit.
@@ -61,6 +56,7 @@ public class SyncRecord implements Serializable, IItem {
     private Set<SyncServerRecord> serverRecords = null;
     private RemoteServer forServer = null;
     private String originalUuid = null;
+    private String payload = null;
 
     public String getOriginalUuid() {
         return originalUuid;
@@ -155,6 +151,17 @@ public class SyncRecord implements Serializable, IItem {
 
     public void setState(SyncRecordState state) {
         this.state = state;
+    }
+
+    public String getPayload() {
+        return SyncUtil.getPayloadFromSyncItems(getItems());
+    }
+
+    public void setPayload(String payload) {
+        if (StringUtils.isNotBlank(payload)) {
+            this.payload = payload;
+            this.setItems(SyncUtil.getSyncItemsFromPayload(payload));
+        }
     }
 
     //list of sync items

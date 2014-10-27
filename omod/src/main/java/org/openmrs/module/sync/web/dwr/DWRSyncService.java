@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
@@ -161,8 +162,21 @@ public class DWRSyncService {
 		}
 		return content;
 	}
-	
-	public String setSyncItemContent(String guid, String key, String content) {
+
+    public String setSyncRecordPayload(String guid, String key, String payload) {
+        String ret = "Error: Not saved";
+
+        if (guid != null && guid != "" && key != null && key != "") {
+            SyncRecord record = Context.getService(SyncService.class).getSyncRecord(guid);
+            if (StringUtils.isNotBlank(payload)) {
+                record.setPayload(payload);
+            }
+            Context.getService(SyncService.class).updateSyncRecord(record);
+            ret = "Item payload saved";
+        }
+        return ret;
+    }
+    public String setSyncItemContent(String guid, String key, String content) {
 		String ret = "Error: Not saved";
 		Collection<SyncItem> itemList;
 		if (guid != null && guid != "" && key != null && key != "") {

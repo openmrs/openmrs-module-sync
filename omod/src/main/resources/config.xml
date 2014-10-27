@@ -137,6 +137,7 @@
 				<include method="syncToParent"/>
 				<include method="getSyncItemContent" />
 				<include method="setSyncItemContent" />
+                <include method="setSyncRecordPayload" />
 				<include method="archiveSyncJournal" />
 				<include method="archiveSyncImport" />
 				<include method="cloneParentDB" />

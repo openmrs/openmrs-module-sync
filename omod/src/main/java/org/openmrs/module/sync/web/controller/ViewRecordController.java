@@ -155,6 +155,8 @@ public class ViewRecordController {
 				modelMap.put("itemTypes", itemTypes);
 				modelMap.put("itemuuids", itemUuids);
 				modelMap.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
+                String payload =  record.getPayload();
+                modelMap.put("payload", payload);
         	}
         }
         

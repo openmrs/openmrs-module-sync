@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
 import org.openmrs.module.sync.SyncItem;
+import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Package;
 import org.openmrs.module.sync.serialization.Record;
@@ -115,28 +116,8 @@ public class SyncItemListSerializingUserType implements UserType {
                 	throw new SQLException( e.toString() );
                 }
                 // End workaround
-                
-                Collection<SyncItem> items = new LinkedList<SyncItem>();
-                
-                Package pkg = new Package();
-                try {
-                    Record record = pkg.createRecordFromString(content.toString());
-                    Item root = record.getRootItem();
-                    List<Item> itemsToDeSerialize = record.getItems(root);
-                    
-                    for(Item i : itemsToDeSerialize) {
-                        SyncItem syncItem = new SyncItem();
-                        syncItem.load(record, i);
-                        items.add(syncItem);
-                    }
-                } catch (SAXParseException e) {
-                	log.error("Error processing XML at column " + e.getColumnNumber() + ", and line number " + e.getLineNumber()
-                	          + "; public ID of entity causing error: " + e.getPublicId() + "; system id of entity causing error: " + e.getSystemId()
-                	          + "; contents: " + content.toString());
-                    throw new HibernateException("Error processing XML while deserializing object from storage", e);
-                } catch (Exception e) {
-                    throw new HibernateException("Could not deserialize object from storage", e);
-                }
+
+                Collection<SyncItem> items = SyncUtil.getSyncItemsFromPayload(content.toString());
                 
                 return items;
             }
@@ -168,9 +149,10 @@ public class SyncItemListSerializingUserType implements UserType {
                     item.save(record, root);
                 }
             } catch (Exception e) {
+                log.error("Could not serialize SyncItems:", e);
                 throw new HibernateException("Could not serialize SyncItems", e);
             }
-            
+
             String newRecord = record.toStringAsDocumentFragement();
             
             //02/09/2008: replaced setClob() with setString() to deal with encoding issues: mysql Clob inexplicably truncates if

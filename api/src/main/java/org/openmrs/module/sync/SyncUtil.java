@@ -16,6 +16,7 @@ package org.openmrs.module.sync;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
 import org.hibernate.proxy.HibernateProxy;
 import org.openmrs.Concept;
@@ -60,9 +61,11 @@ import org.openmrs.notification.Alert;
 import org.openmrs.notification.MessageException;
 import org.openmrs.util.OpenmrsUtil;
 import org.openmrs.util.PrivilegeConstants;
+import org.openmrs.module.sync.serialization.Package;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXParseException;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -79,17 +82,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
-import java.util.Vector;
+import java.sql.SQLException;
+import java.util.*;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
@@ -936,7 +930,58 @@ public class SyncUtil {
 			sendAlert("sync.status.email.notSentError", exception.getMessage(), e.getMessage());
 		}
 	}
-	
+
+    public static Collection<SyncItem> getSyncItemsFromPayload(String payload) throws HibernateException{
+        Collection<SyncItem> items = null;
+        Package pkg = new Package();
+        try {
+            Record record = pkg.createRecordFromString(payload);
+            Item root = record.getRootItem();
+            List<Item> itemsToDeSerialize = record.getItems(root);
+            if (itemsToDeSerialize != null && itemsToDeSerialize.size() > 0) {
+                items = new LinkedList<SyncItem>();
+                for(Item i : itemsToDeSerialize) {
+                    SyncItem syncItem = new SyncItem();
+                    syncItem.load(record, i);
+                    items.add(syncItem);
+                }
+            }
+        } catch (SAXParseException e) {
+            log.error("Error processing XML at column " + e.getColumnNumber() + ", and line number " + e.getLineNumber()
+                    + "; public ID of entity causing error: " + e.getPublicId() + "; system id of entity causing error: " + e.getSystemId()
+                    + "; contents: " + payload.toString());
+            throw new HibernateException("Error processing XML while deserializing object from storage", e);
+        } catch (Exception e) {
+            log.error("Could not deserialize object from storage", e);
+            throw new HibernateException("Could not deserialize object from storage", e);
+        }
+        return items;
+    }
+
+    public static String getPayloadFromSyncItems(Collection<SyncItem> items)
+            throws HibernateException {
+        String payload = null;
+        if (items != null && items.size() > 0) {
+            Package pkg = new Package();
+            Record record = null;
+            try {
+                record = pkg.createRecordForWrite("items");
+                Item root = record.getRootItem();
+
+                for(SyncItem item : items) {
+                    item.save(record, root);
+                }
+            } catch (Exception e) {
+                log.error("Could not serialize SyncItems:", e);
+                throw new HibernateException("Could not serialize SyncItems", e);
+            }
+            if (record != null ) {
+                payload = record.toStringAsDocumentFragement();
+            }
+        }
+        return payload;
+    }
+
 	private static void sendAlert(String messageCode, Object...replacements) {
 		try {
 			Context.addProxyPrivilege(PrivilegeConstants.MANAGE_ALERTS);
