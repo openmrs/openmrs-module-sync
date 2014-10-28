@@ -15,7 +15,6 @@
 
 <script language="JavaScript">
 
-    var payload = "${fn:escapeXml(payload)}";
     var currentKey="";
     var currentUuid="";
     var rootElt="";
@@ -54,9 +53,9 @@
         DWRUtil.setValue("loadContent", "");
         domParser = new DOMParser();
         xmlDocument = domParser.parseFromString(result,'application/xml');
-        root=xmlDocument.documentElement;
-        rootElt=root.nodeName;
-        cn=root.childNodes;
+        var syncItemsRoot =xmlDocument.childNodes[0].childNodes[0];
+        rootElt=syncItemsRoot.nodeName;
+        cn=syncItemsRoot.childNodes;
         newHTML="<div style=\"padding: 0px; position: relative; border: 1px solid gray; margin: 10px;\">" +
                 "<form id='contentForm' action='' method=''>" +
                 "<table id='syncItemsTable' width='100%' border='0' cellspacing='0' cellpadding='0'>";
@@ -65,13 +64,16 @@
             if(i%2==0)newHTML+="bgcolor='#C4D9D9'";
             else newHTML+="bgcolor='#E7EFEF'";
             var fieldId = "field" + i;
-            newHTML+="><td style=\"padding: 8px;\"><strong>"+cn[i].nodeName+"</strong></td><td style=\"padding: 8px;\">"+cn[i].attributes[0].value+"</td><td height='30'><input id='"+fieldId+"' type='text' value='";
+            newHTML+="><td style=\"padding: 8px;\"><strong>"+cn[i].nodeName+"</strong></td>" +
+                    "<td style=\"padding: 8px;\">"+cn[i].attributes[0].value+"</td>" +
+                    "<td height='30'><input id='"+fieldId+"' type='text' value='";
             if(cn[i].childNodes.length==1)
                 newHTML+=cn[i].childNodes[0].nodeValue;
             newHTML+="' size='50' /></td></tr>";
         }
-        newHTML+="<tr><td>&nbsp;</td><td>&nbsp;</td><td height='35' align='left' valign='bottom'><input type='button' name='saveButton' value='  Save  ' onclick='setSyncItemContent();'/></td></tr>";
-        newHTML+="<br><br>";
+        newHTML+="<tr><td>&nbsp;</td><td>&nbsp;</td><td height='35' align='left' valign='bottom'>" +
+                "<input type='button' name='saveButton' value='  Save  ' onclick='setSyncItemContent();'/></td></tr>";
+
         newHTML+="</table></form></div>";
 
         newHTML+="<div style=\"padding: 0px; position: relative; border: 1px solid gray; margin: 10px;\">" +
@@ -83,6 +85,7 @@
         var fieldId = "field-sync-record-payload";
         var nodeName = "payload";
         var className = "string";
+        var payload = (new XMLSerializer()).serializeToString(xmlDocument.childNodes[0].childNodes[1].childNodes[0]);
         newHTML+="><td style=\"padding: 8px;\"><strong>"+nodeName+"</strong></td>";
         newHTML+="<td style=\"padding: 8px;\">"+className+"</td>";
         newHTML+="<td height='30'><textarea id='"+fieldId+"' rows='20' cols='100'>";
