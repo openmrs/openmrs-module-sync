@@ -23,7 +23,13 @@ import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.SyncServerRecord;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * SyncRecord is a collection of sync items that represents a smallest transactional unit.
