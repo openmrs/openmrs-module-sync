@@ -158,6 +158,15 @@ public class DWRSyncService {
                         content = item.getContent();
                 }
             }
+            /** building an ad-hoc xml document that contains the items and the payload, eg:
+             <syncRecord>
+                  <org.openmrs.PatientIdentifier>...</org.openmrs.PatientIdentifier>
+                      <payload>
+                            <items><SyncItem containedType...
+                            </items></>
+                      </payload>
+             </syncRecord>
+            **/
             if (StringUtils.isNotBlank(content)) {
                 contentBuilder.append("<syncRecord>").append(content);
                 contentBuilder.append("<payload>").append(syncRecord.getPayload()).append("</payload>");
