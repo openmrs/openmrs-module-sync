@@ -52,21 +52,50 @@
 			DWRUtil.setValue("loadContent", "");
 			domParser = new DOMParser();
 			xmlDocument = domParser.parseFromString(result,'application/xml');
-			root=xmlDocument.documentElement;
-			rootElt=root.nodeName;
-			cn=root.childNodes;
-			newHTML="<div style=\"padding: 0px; position: relative; border: 1px solid gray; margin: 10px;\"><form id='contentForm' action='' method=''><table width='100%' border='0' cellspacing='0' cellpadding='0'>";
+        var syncItemsRoot =xmlDocument.childNodes[0].childNodes[0];
+        rootElt=syncItemsRoot.nodeName;
+        cn=syncItemsRoot.childNodes;
+        newHTML="<div style=\"padding: 0px; position: relative; border: 1px solid gray; margin: 10px;\">" +
+                "<form id='contentForm' action='' method=''>" +
+                "<table id='syncItemsTable' width='100%' border='0' cellspacing='0' cellpadding='0'>";
 			for(i=0;i<cn.length;i++){
 				newHTML+="<tr class='syncTr' ";
 				if(i%2==0)newHTML+="bgcolor='#C4D9D9'";
 				else newHTML+="bgcolor='#E7EFEF'";
-				newHTML+="><td style=\"padding: 8px;\"><strong>"+cn[i].nodeName+"</strong></td><td style=\"padding: 8px;\">"+cn[i].attributes[0].value+"</td><td height='30'><input id='field'"+i+" type='text' value='";
+            var fieldId = "field" + i;
+            newHTML+="><td style=\"padding: 8px;\"><strong>"+cn[i].nodeName+"</strong></td>" +
+                    "<td style=\"padding: 8px;\">"+cn[i].attributes[0].value+"</td>" +
+                    "<td height='30'><input id='"+fieldId+"' type='text' value='";
 				if(cn[i].childNodes.length==1)
 					newHTML+=cn[i].childNodes[0].nodeValue;
 				newHTML+="' size='50' /></td></tr>";
 			}
-			newHTML+="<tr><td>&nbsp;</td><td>&nbsp;</td><td height='35' align='left' valign='bottom'><input type='button' name='saveButton' value='  Save  ' onclick='setSyncItemContent();'/></td></tr>";
+        newHTML+="<tr><td>&nbsp;</td><td>&nbsp;</td><td height='35' align='left' valign='bottom'>" +
+                "<input type='button' name='saveButton' value='  Save  ' onclick='setSyncItemContent();'/></td></tr>";
+
 			newHTML+="</table></form></div>";
+
+        newHTML+="<div style=\"padding: 0px; position: relative; border: 1px solid gray; margin: 10px;\">" +
+                "<form id='payloadForm' action='' method=''>" +
+                "<table id='payloadTable' width='100%' border='0' cellspacing='0' cellpadding='0'>";
+        // add raw payload field
+        newHTML+="<tr class='syncTr' ";
+        newHTML+="bgcolor='#C4D9D9'";
+        var fieldId = "field-sync-record-payload";
+        var nodeName = "payload";
+        var className = "string";
+        var payload = (new XMLSerializer()).serializeToString(xmlDocument.childNodes[0].childNodes[1].childNodes[0]);
+        newHTML+="><td style=\"padding: 8px;\"><strong>"+nodeName+"</strong></td>";
+        newHTML+="<td style=\"padding: 8px;\">"+className+"</td>";
+        newHTML+="<td height='30'><textarea id='"+fieldId+"' rows='20' cols='100'>";
+        newHTML+=payload;
+        newHTML+="</textarea>"
+
+        newHTML+="<tr><td>&nbsp;</td><td>&nbsp;</td>";
+        newHTML+="<td height='35' align='left' valign='bottom'>";
+        newHTML+="<input type='button' name='savePayloadButton' value='  Save  ' onclick='setSyncItemPayload();'/></td></tr>";
+
+        newHTML+="</table></form></div>";
 			document.getElementById("contents").innerHTML = newHTML;
 			
 		}
@@ -85,12 +114,23 @@
 			currentKey="";
 			
 		}
+
+    function setSyncItemPayload() {
+        if(currentKey=="")return;
+        if(currentUuid=="")return;
+        cnt = document.getElementById('field-sync-record-payload').value;
+
+        DWRUtil.setValue("loadContent","Saving Item payload ...");
+        DWRSyncService.setSyncRecordPayload(currentUuid, currentKey,cnt,showResult);
+
+    }
+
 		function setSyncItemContent() {
 			if(currentKey=="")return;
 			if(currentUuid=="")return;
 			
 			cnt="";
-			tr=document.getElementById('contentForm').childNodes[0].childNodes[0].childNodes;
+        tr=document.getElementById('syncItemsTable').childNodes[0].childNodes;
 			cnt+="<"+rootElt+">";
 			for(i=0;i<(tr.length-1);i++){
 				td=tr[i].childNodes;
