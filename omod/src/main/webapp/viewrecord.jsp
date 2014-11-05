@@ -12,6 +12,7 @@
 <openmrs:htmlInclude file="/dwr/engine.js" />
 <openmrs:htmlInclude file="/dwr/interface/DWRSyncService.js" />
 <openmrs:htmlInclude file="/moduleResources/sync/sync.css" />
+<openmrs:htmlInclude file="/moduleResources/sync/vkbeautify.0.99.00.beta.js"/>
 
 <script language="JavaScript">
 	var currentKey="";
@@ -85,6 +86,7 @@
         var nodeName = "payload";
         var className = "string";
         var payload = (new XMLSerializer()).serializeToString(xmlDocument.childNodes[0].childNodes[1].childNodes[0]);
+        payload = vkbeautify.xml(payload);
         newHTML+="><td style=\"padding: 8px;\"><strong>"+nodeName+"</strong></td>";
         newHTML+="<td style=\"padding: 8px;\">"+className+"</td>";
         newHTML+="<td height='30'><textarea id='"+fieldId+"' rows='20' cols='100'>";
