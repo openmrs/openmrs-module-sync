@@ -13,12 +13,24 @@
  */
 package org.openmrs.module.sync.web.dwr;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Date;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.*;
+import org.openmrs.module.sync.SyncConstants;
+import org.openmrs.module.sync.SyncItem;
+import org.openmrs.module.sync.SyncRecord;
+import org.openmrs.module.sync.SyncTransmissionState;
+import org.openmrs.module.sync.SyncUtil;
+import org.openmrs.module.sync.SyncUtilTransmission;
 import org.openmrs.module.sync.SyncUtilTransmission.ReceivingSize;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.ingest.SyncTransmissionResponse;
@@ -26,13 +38,6 @@ import org.openmrs.module.sync.serialization.ZipPackage;
 import org.openmrs.module.sync.server.ConnectionResponse;
 import org.openmrs.module.sync.server.ServerConnection;
 import org.openmrs.module.sync.server.ServerConnectionState;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Date;
 
 /**
  * DWR methods used by the sync module

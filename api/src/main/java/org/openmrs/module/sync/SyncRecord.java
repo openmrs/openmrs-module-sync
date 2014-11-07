@@ -13,15 +13,6 @@
  */
 package org.openmrs.module.sync;
 
-import org.apache.commons.lang.StringUtils;
-import org.openmrs.module.sync.serialization.IItem;
-import org.openmrs.module.sync.serialization.Item;
-import org.openmrs.module.sync.serialization.Record;
-import org.openmrs.module.sync.serialization.TimestampNormalizer;
-import org.openmrs.module.sync.server.RemoteServer;
-import org.openmrs.module.sync.server.RemoteServerType;
-import org.openmrs.module.sync.server.SyncServerRecord;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
@@ -30,6 +21,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.openmrs.module.sync.serialization.IItem;
+import org.openmrs.module.sync.serialization.Item;
+import org.openmrs.module.sync.serialization.Record;
+import org.openmrs.module.sync.serialization.TimestampNormalizer;
+import org.openmrs.module.sync.server.RemoteServer;
+import org.openmrs.module.sync.server.RemoteServerType;
+import org.openmrs.module.sync.server.SyncServerRecord;
 
 /**
  * SyncRecord is a collection of sync items that represents a smallest transactional unit.
