@@ -169,7 +169,7 @@ public class DWRSyncService {
             **/
             if (StringUtils.isNotBlank(content)) {
                 contentBuilder.append("<syncRecord>").append(content);
-                contentBuilder.append("<payload>").append(syncRecord.getPayload()).append("</payload>");
+                contentBuilder.append("<payload>").append(SyncUtil.getSyncRecordPayload(syncRecord)).append("</payload>");
                 contentBuilder.append("</syncRecord>");
                 content = contentBuilder.toString();
             }
@@ -184,7 +184,7 @@ public class DWRSyncService {
         if (guid != null && guid != "" && key != null && key != "") {
             SyncRecord record = Context.getService(SyncService.class).getSyncRecord(guid);
             if (StringUtils.isNotBlank(payload)) {
-                record.setPayload(payload);
+                record.setItems(SyncUtil.getSyncItemsFromPayload(payload));
             }
             Context.getService(SyncService.class).updateSyncRecord(record);
             ret = "Item payload saved";

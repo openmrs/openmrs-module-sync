@@ -62,7 +62,6 @@ public class SyncRecord implements Serializable, IItem {
     private Set<SyncServerRecord> serverRecords = null;
     private RemoteServer forServer = null;
     private String originalUuid = null;
-    private String payload = null;
 
     public String getOriginalUuid() {
         return originalUuid;
@@ -157,17 +156,6 @@ public class SyncRecord implements Serializable, IItem {
 
     public void setState(SyncRecordState state) {
         this.state = state;
-    }
-
-    public String getPayload() {
-        return SyncUtil.getPayloadFromSyncItems(getItems());
-    }
-
-    public void setPayload(String payload) {
-        if (StringUtils.isNotBlank(payload)) {
-            this.payload = payload;
-            this.setItems(SyncUtil.getSyncItemsFromPayload(payload));
-        }
     }
 
     //list of sync items

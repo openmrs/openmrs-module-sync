@@ -958,6 +958,10 @@ public class SyncUtil {
         return items;
     }
 
+    public static String getSyncRecordPayload(SyncRecord syncRecord){
+        return getPayloadFromSyncItems(syncRecord.getItems());
+    }
+
     public static String getPayloadFromSyncItems(Collection<SyncItem> items)
             throws HibernateException {
         String payload = null;
