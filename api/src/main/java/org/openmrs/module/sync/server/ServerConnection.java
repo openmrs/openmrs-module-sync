@@ -13,17 +13,24 @@
  */
 package org.openmrs.module.sync.server;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.security.GeneralSecurityException;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.multipart.ByteArrayPartSource;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.commons.httpclient.protocol.Protocol;
+import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
+import org.apache.commons.httpclient.protocol.SSLProtocolSocketFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
@@ -81,8 +88,28 @@ public class ServerConnection {
 		// Default response - default constructor instantiates contains error codes 
 		ConnectionResponse syncResponse = new ConnectionResponse();
 		
+		HttpClient client = new HttpClient();
+		
 		url = url + SyncConstants.DATA_IMPORT_SERVLET;
 		log.info("POST multipart request to " + url);
+		
+		if (url.startsWith("https")){
+			try {
+				if (Boolean.parseBoolean(Context.getAdministrationService()
+						.getGlobalProperty(SyncConstants.PROPERTY_ALLOW_SELFSIGNED_CERTS))){
+					Protocol easyhttps = new Protocol("https", (ProtocolSocketFactory) new EasySSLProtocolSocketFactory(), 443);
+					String host = new URI(url, true).getHost();
+					client.getHostConfiguration().setHost(host, 443, easyhttps);
+					// It is necessary to provide a relative url (from the host name to the right)
+					String relativeUrl = url.split(host,2)[1];
+					url = relativeUrl;
+				}
+			} catch(IOException ioe){
+				log.error("Unable to configure SSL to accept self-signed certificates");
+			} catch (GeneralSecurityException e) {
+				log.error("Unable to configure SSL to accept self-signed certificates");
+			}
+		}
 		
 		PostMethod method = new PostMethod(url);
 		
@@ -105,11 +132,9 @@ public class ServerConnection {
 					new StringPart("checksum", String.valueOf(request.getChecksum()))
 			};	
 			
-			method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
-
+			method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));		
 
 			// Open a connection to the server and post the data
-			HttpClient client = new HttpClient();
 			client.getHttpConnectionManager().getParams().setSoTimeout(ServerConnection.getTimeout().intValue());
 			client.getHttpConnectionManager().getParams().setConnectionTimeout(ServerConnection.getTimeout().intValue());
 			int status = client.executeMethod(method);	

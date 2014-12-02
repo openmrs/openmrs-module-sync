@@ -158,6 +158,8 @@ public class SyncConstants {
 	
 	public static final String PROPERTY_SYSTEM_ID_TEMPLATE_DEFAULT = "{SYNCSERVERNAME}_{NEXTUSERID}{CHECKDIGIT}";
 	
+	public static final String PROPERTY_ALLOW_SELFSIGNED_CERTS = "sync.allow_selfsigned_certs";
+	
 	public static final String RESPONSE_SUFFIX = "_response";
 	
 	public static final String DIR_IMPORT = "import";
