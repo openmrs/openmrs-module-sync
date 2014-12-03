@@ -190,4 +190,6 @@ public class SyncConstants {
 	
 	public static final String DEFAULT_DATE_PATTERN = "MM/dd/yyyy HH:mm:ss";
 	
+	public static final int DEFAULT_HTTPS_PORT = 443;
+	
 }

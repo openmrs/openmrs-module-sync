@@ -97,11 +97,25 @@ public class ServerConnection {
 			try {
 				if (Boolean.parseBoolean(Context.getAdministrationService()
 						.getGlobalProperty(SyncConstants.PROPERTY_ALLOW_SELFSIGNED_CERTS))){
-					Protocol easyhttps = new Protocol("https", (ProtocolSocketFactory) new EasySSLProtocolSocketFactory(), 443);
-					String host = new URI(url, true).getHost();
-					client.getHostConfiguration().setHost(host, 443, easyhttps);
-					// It is necessary to provide a relative url (from the host name to the right)
-					String relativeUrl = url.split(host,2)[1];
+
+					// It is necessary to provide a relative url (from the host name and port to the right)
+					String relativeUrl;
+					
+					URI uri = new URI(url, true); 
+					String host = uri.getHost();
+					int port = uri.getPort();
+					
+					// URI.getPort() returns -1 if port is not explicitly set
+					if (port <= 0){
+						port = SyncConstants.DEFAULT_HTTPS_PORT;
+						relativeUrl = url.split(host, 2)[1];	
+					} else {
+						relativeUrl = url.split(host + ":" + port, 2)[1];
+					}
+
+					Protocol easyhttps = new Protocol("https", (ProtocolSocketFactory) new EasySSLProtocolSocketFactory(), port);
+					client.getHostConfiguration().setHost(host, port, easyhttps);
+					
 					url = relativeUrl;
 				}
 			} catch(IOException ioe){
