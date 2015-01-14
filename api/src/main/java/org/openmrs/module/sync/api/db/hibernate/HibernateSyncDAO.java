@@ -1003,6 +1003,7 @@ public class HibernateSyncDAO implements SyncDAO {
 		commands.add("-p" + password);
 		commands.add("-h" + host);
 		commands.add("-P" + port);
+		commands.add("--hex-blob");
 		commands.add("-q");
 		commands.add("-e");
 		commands.add("--single-transaction");
