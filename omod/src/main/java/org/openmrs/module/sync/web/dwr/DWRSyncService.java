@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Date;
 
@@ -64,7 +65,7 @@ public class DWRSyncService {
 			
 			// execute the parent's sql file on our database
 			if (ServerConnectionState.OK.equals(connResponse.getState())) {
-				byte sql[] = connResponse.getResponsePayload().getBytes();
+				byte sql[] = connResponse.getResponsePayload().getBytes(Charset.forName("UTF-8"));
 				try {
 					IOUtils.write(sql, new FileOutputStream(file));
 					
