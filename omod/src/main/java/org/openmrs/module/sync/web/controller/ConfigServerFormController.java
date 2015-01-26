@@ -263,6 +263,8 @@ public class ConfigServerFormController {
 		
 		Context.getService(SyncService.class).saveRemoteServer(server);
 		
+		server = Context.getService(SyncService.class).getParentServer();
+		
 		saveOrUpdateTask(server, started, repeatInterval);
 		
 		httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.config.parent.saved");
