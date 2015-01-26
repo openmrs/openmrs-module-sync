@@ -261,7 +261,7 @@ public class ConfigServerFormController {
 		
 		saveOrUpdateServerClasses(server, notSendTo, notReceiveFrom);
 		
-		Context.getService(SyncService.class).saveRemoteServer(server);
+		server = Context.getService(SyncService.class).saveRemoteServer(server);
 		
 		saveOrUpdateTask(server, started, repeatInterval);
 		
