@@ -238,9 +238,10 @@ public interface SyncDAO {
 	 * Save a new or current RemoteServer in the database
 	 * 
 	 * @param RemoteServer The RemoteServer to create/update
+	 * @return RemoteServer The RemoteServer created or updated
 	 * @throws DAOException
 	 */
-	public void saveRemoteServer(RemoteServer server) throws DAOException;
+	public RemoteServer saveRemoteServer(RemoteServer server) throws DAOException;
 	
 	/**
 	 * Delete a RemoteServer

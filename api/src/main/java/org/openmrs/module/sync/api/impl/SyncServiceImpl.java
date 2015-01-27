@@ -423,7 +423,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#saveRemoteServer(org.openmrs.module.sync.engine.RemoteServer)
 	 */
-	public void saveRemoteServer(RemoteServer server) throws APIException {
+	public RemoteServer saveRemoteServer(RemoteServer server) throws APIException {
 		if (server != null) {
 			Set<SyncServerClass> serverClasses = server.getServerClasses();
 			if (serverClasses == null) {
@@ -439,9 +439,12 @@ public class SyncServiceImpl implements SyncService {
 				server.setServerClasses(serverClasses);
 			}
 			
-			getSynchronizationDAO().saveRemoteServer(server);
+			server = getSynchronizationDAO().saveRemoteServer(server);
 			refreshServerClassesCollection();
+			
+			return server;
 		}
+		return null;
 	}
 	
 	/**

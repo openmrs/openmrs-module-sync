@@ -386,10 +386,11 @@ public interface SyncService {
 	 * Update or create a server (child or parent)
 	 * 
 	 * @param server The RemoteServer to persist in the database
+	 * @return RemoteServer The RemoteServer created or updated
 	 * @throws APIException
 	 */
 	//@Authorized({"Manage Synchronization Servers"})
-	public void saveRemoteServer(RemoteServer server) throws APIException;
+	public RemoteServer saveRemoteServer(RemoteServer server) throws APIException;
 	
 	/**
 	 * Delete a RemoteServer

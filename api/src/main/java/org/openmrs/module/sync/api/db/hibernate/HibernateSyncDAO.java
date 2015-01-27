@@ -485,9 +485,9 @@ public class HibernateSyncDAO implements SyncDAO {
 	/**
 	 * @see org.openmrs.module.sync.api.db.SyncDAO#saveRemoteServer(org.openmrs.module.sync.engine.RemoteServer)
 	 */
-	public void saveRemoteServer(RemoteServer server) throws DAOException {
+	public RemoteServer saveRemoteServer(RemoteServer server) throws DAOException {
 		Session session = sessionFactory.getCurrentSession();
-		session.merge(server);
+		return (RemoteServer) session.merge(server);
 	}
 	
 	/**
