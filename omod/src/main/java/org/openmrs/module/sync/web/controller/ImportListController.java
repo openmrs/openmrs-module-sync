@@ -217,6 +217,13 @@ public class ImportListController extends SimpleFormController {
 				StringWriter writer = new StringWriter();
 				IOUtils.copy(new FileInputStream(file), writer);
 				this.sendCloneResponse(writer.toString(), response, false);
+				
+				boolean clonedDBLog = Boolean.parseBoolean(Context.getAdministrationService()
+						.getGlobalProperty(SyncConstants.PROPERTY_SYNC_CLONED_DATABASE_LOG_ENABLED, "true"));
+				
+				if (!clonedDBLog){
+					file.delete();
+				}
 			}
 			catch (Exception ex) {
 				log.warn(ex.toString());

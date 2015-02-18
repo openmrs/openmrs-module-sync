@@ -160,6 +160,8 @@ public class SyncConstants {
 	
 	public static final String PROPERTY_ALLOW_SELFSIGNED_CERTS = "sync.allow_selfsigned_certs";
 	
+	public static final String PROPERTY_SYNC_CLONED_DATABASE_LOG_ENABLED = "sync.cloned_database.log.enabled";
+	
 	public static final String RESPONSE_SUFFIX = "_response";
 	
 	public static final String DIR_IMPORT = "import";

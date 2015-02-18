@@ -72,6 +72,13 @@ public class DWRSyncService {
 					Context.getService(SyncService.class).execGeneratedFile(file);
 					item.setResponsefileName(file.getName());
 					item.setErrorMessage("Parent data cloned successfully");
+					
+					boolean clonedDBLog = Boolean.parseBoolean(Context.getAdministrationService()
+							.getGlobalProperty(SyncConstants.PROPERTY_SYNC_CLONED_DATABASE_LOG_ENABLED, "true"));
+					
+					if (!clonedDBLog){
+						file.delete();
+					}
 				}
 				catch (FileNotFoundException e) {
 					item.setErrorMessage("Unable to save file(" + file.getAbsolutePath() + ")");
