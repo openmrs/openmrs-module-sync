@@ -169,7 +169,7 @@ public class ConfigServerFormController {
 		
 		saveOrUpdateServerClasses(server, notSendTo, notReceiveFrom);
 		
-		syncService.saveRemoteServer(server);
+		server = syncService.saveRemoteServer(server);
 		
 		httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.config.server.saved");
 		
@@ -199,7 +199,7 @@ public class ConfigServerFormController {
 		
 		saveOrUpdateServerClasses(server, notSendTo, notReceiveFrom);
 		
-		Context.getService(SyncService.class).saveRemoteServer(server);
+		server = Context.getService(SyncService.class).saveRemoteServer(server);
 		
 		httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.config.server.saved");
 		

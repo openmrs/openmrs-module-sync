@@ -265,23 +265,29 @@
 							<i><span class="syncHint"><spring:message code="sync.config.server.adminEmail.instructions" /></span></i>
 						</td>
 					</tr>
+				</c:if>
+				<c:if test="${server.serverType == 'CHILD' || param.type == 'CHILD'}">
 					<tr><td colspan="2">&nbsp;</td></tr>
 					<tr>
-					<td align="right" valign="top"><b><spring:message code="sync.settings.server.clone.down.backup" /></b></td>
-					<td align="left" valign="top"><input type="button"
-						onClick="document.location='${pageContext.request.contextPath}/moduleServlet/sync/createChildServlet';"
-						value="<spring:message code="sync.settings.server.clone.down" />" 
-						<c:if test="${(server.serverType == 'CHILD' || param.type == 'CHILD') && empty server.serverId}">
-							disabled="disabled"
-						</c:if>
+						<td align="right" valign="top"><b><spring:message code="sync.settings.server.clone.down.backup" /></b></td>
+						<td align="left" valign="top"><input type="button"
+							onClick="document.location='${pageContext.request.contextPath}/moduleServlet/sync/createChildServlet';"
+							value="<spring:message code="sync.settings.server.clone.down" />" 
+							<c:if test="${(server.serverType == 'CHILD' || param.type == 'CHILD') && empty server.serverId}">
+								disabled="disabled"
+							</c:if>
 						/>
+						<c:if test="${(server.serverType == 'CHILD' || param.type == 'CHILD') && empty server.serverId}">
+						<br/>
+						<i><b><span class="syncHint"><spring:message code="sync.settings.server.clone.down.backup.help3" /></span></b></i>
+						</c:if>
 						<br/>
 						<i><span class="syncHint"><spring:message code="sync.settings.server.clone.down.backup.help" /></span></i>
 						<br/>
 						<i><span class="syncHint"><spring:message code="sync.settings.server.clone.down.backup.help2" /></span></i>
-					</td>
-				</tr>
-				<tr><td colspan="2">&nbsp;</td></tr>
+						</td>
+					</tr>
+					<tr><td colspan="2">&nbsp;</td></tr>
 				</c:if>
 				<c:if test="${not (server.serverType == 'CHILD' || param.type == 'CHILD')}">
 					<!--  adding/editing a parent server -->
