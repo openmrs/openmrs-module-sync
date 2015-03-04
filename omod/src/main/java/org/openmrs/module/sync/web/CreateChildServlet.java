@@ -84,6 +84,13 @@ public class CreateChildServlet extends HttpServlet {
 		IOUtils.copy(new FileInputStream(generatedFile), response.getOutputStream());
 		response.getOutputStream().flush();
 		response.getOutputStream().close();
+		
+		boolean clonedDBLog = Boolean.parseBoolean(Context.getAdministrationService()
+				.getGlobalProperty(SyncConstants.PROPERTY_SYNC_CLONED_DATABASE_LOG_ENABLED, "true"));
+		
+		if (!clonedDBLog){
+			generatedFile.delete();
+		}
 	}
 
 	protected void doPost(HttpServletRequest request,
@@ -118,6 +125,13 @@ public class CreateChildServlet extends HttpServlet {
 				Context.getService(SyncService.class).execGeneratedFile(file);
 
 				reply(response,"Child database successfully updated","green");
+				
+				boolean clonedDBLog = Boolean.parseBoolean(Context.getAdministrationService()
+						.getGlobalProperty(SyncConstants.PROPERTY_SYNC_CLONED_DATABASE_LOG_ENABLED, "true"));
+				
+				if (!clonedDBLog){
+					file.delete();
+				}
 			} catch (Exception ex) {
 				log.warn("Unable to read the clone data file", ex);
 				reply(response,"Unable to read the data clonefile"+ ex.toString(),"red");
