@@ -459,7 +459,7 @@
 				code="sync.sending.parent.clone" /></iframe>
 			<form method="post" target="uploadFrame"
 				enctype="multipart/form-data" onSubmit="return submitCloneFile();"
-				action="${pageContext.request.contextPath}/synchronizationCreateChildServlet">
+				action="${pageContext.request.contextPath}/moduleServlet/sync/createChildServlet">
 			<div class="syncSmallBox">
 			<div class="syncSmallTitle"><spring:message
 				code="sync.settings.server.clone.restore" /></div>
