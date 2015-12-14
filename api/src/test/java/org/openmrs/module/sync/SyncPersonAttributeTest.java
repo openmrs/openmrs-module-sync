@@ -22,6 +22,7 @@ import org.openmrs.PersonAttributeType;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.NotTransactional;
 
 import java.util.Iterator;
@@ -31,6 +32,12 @@ import java.util.Set;
  * Testing syncing of PersonAttributes via the Person object
  */
 public class SyncPersonAttributeTest extends SyncBaseTest {
+
+    @Autowired
+    PersonService personService;
+
+    @Autowired
+    PatientService patientService;
 	
 	@Override
 	public String getInitialDataset() {
@@ -46,25 +53,18 @@ public class SyncPersonAttributeTest extends SyncBaseTest {
 	@NotTransactional
 	public void shouldSavePersonAttributeTypeAndPersistForeignKeyPK() throws Exception {
 		runSyncTest(new SyncTestHelper() {
-			
+
 			public void runOnChild() throws Exception {
-				PersonService personService = Context.getPersonService();
-				PatientService patientService = Context.getPatientService();
-				
 				PersonAttributeType type = personService.getPersonAttributeType(6); // health district
-				
 				Patient patient = patientService.getPatient(4);
 				PersonAttribute attr = new PersonAttribute(type, "Some Location");
 				patient.addAttribute(attr);
-				//TestUtil.printOutTableContents(getConnection(), "person_attribute");
 				patientService.savePatient(patient);
 				
 			}
 			
 			public void runOnParent() throws Exception {
-				PersonService ps = Context.getPersonService();
-				
-				Person person = ps.getPerson(4);
+				Person person = personService.getPerson(4);
 				PersonAttribute attr = person.getAttribute(6);
 				Assert.assertEquals("Some Location", attr.getValue());
 			}
@@ -78,8 +78,6 @@ public class SyncPersonAttributeTest extends SyncBaseTest {
         runSyncTest(new SyncTestHelper() {
 
             public void runOnChild() throws Exception {
-                PersonService personService = Context.getPersonService();
-
                 PersonAttributeType type = personService.getPersonAttributeType(8); // favorite number
 
                 Person person = personService.getPerson(5);  // get a patient that already has favorite number defined
@@ -116,9 +114,8 @@ public class SyncPersonAttributeTest extends SyncBaseTest {
             }
 
             public void runOnParent() throws Exception {
-                PersonService personService = Context.getPersonService();
 
-                Person person = personService.getPerson(5);
+                 Person person = personService.getPerson(5);
                 Set<PersonAttribute> attrs = person.getAttributes();
 
                 // confirm that parent service has proper person attributes
@@ -147,6 +144,30 @@ public class SyncPersonAttributeTest extends SyncBaseTest {
             }
         });
 
+    }
+
+    @Test
+    @NotTransactional
+    public void shouldSyncBooleanPersonAttribute() throws Exception {
+        runSyncTest(new SyncTestHelper() {
+
+            public void runOnChild() throws Exception {
+                PersonAttributeType type = personService.getPersonAttributeTypeByName("Test Patient");
+                Assert.assertEquals("java.lang.Boolean", type.getFormat());
+
+                Patient patient = patientService.getPatient(4);
+                PersonAttribute attr = new PersonAttribute(type, "true");
+                patient.addAttribute(attr);
+                patientService.savePatient(patient);
+            }
+
+            public void runOnParent() throws Exception {
+                Person person = personService.getPerson(4);
+                PersonAttribute attr = person.getAttribute("Test Patient");
+                Assert.assertEquals("true", attr.getValue());
+                Assert.assertEquals(Boolean.TRUE, attr.getHydratedObject());
+            }
+        });
     }
 	
 }

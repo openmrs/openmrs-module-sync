@@ -31,6 +31,7 @@ import org.openmrs.PatientProgram;
 import org.openmrs.PatientState;
 import org.openmrs.Person;
 import org.openmrs.PersonAddress;
+import org.openmrs.PersonAttribute;
 import org.openmrs.PersonName;
 import org.openmrs.Program;
 import org.openmrs.ProgramWorkflow;
@@ -382,7 +383,8 @@ public class SyncUtil {
 				// we have to explicitly create a new value object here because all we have is a string - won't know how to convert
 				if (OpenmrsObject.class.isAssignableFrom(classType)) {
 					o = getOpenmrsObj(className, fieldVal);
-				} else if ("java.lang.Integer".equals(className)
+				}
+                else if ("java.lang.Integer".equals(className)
 				        && !("integer".equals(nodeDefinedClassName) || "java.lang.Integer".equals(nodeDefinedClassName))) {
 					// if we're dealing with a field like PersonAttributeType.foreignKey, the actual value was changed from
 					// an integer to a uuid by the HibernateSyncInterceptor.  The nodeDefinedClassName is the node.type which is the 
@@ -390,7 +392,8 @@ public class SyncUtil {
 					// still an integer because thats what the db stores.  we need to convert the uuid to the pk integer and return it
 					OpenmrsObject obj = getOpenmrsObj(nodeDefinedClassName, fieldVal);
 					o = obj.getId();
-				} else if ("java.lang.String".equals(className)
+				}
+                else if ("java.lang.String".equals(className)
 				        && !("text".equals(nodeDefinedClassName) || "string".equals(nodeDefinedClassName)
 				                || "java.lang.String".equals(nodeDefinedClassName) || "integer".equals(nodeDefinedClassName)
 				                || "java.lang.Integer".equals(nodeDefinedClassName) || fieldVal.isEmpty())) {
@@ -401,18 +404,26 @@ public class SyncUtil {
 					OpenmrsObject obj = getOpenmrsObj(nodeDefinedClassName, fieldVal);
 					if (obj == null) {
 						if (StringUtils.hasText(fieldVal)) {
-							// throw a warning if we're having trouble converting what should be a valid value
-							log.error("Unable to convert value '" + fieldVal + "' into a " + nodeDefinedClassName);
-							throw new SyncException("Unable to convert value '" + fieldVal + "' into a "
-							        + nodeDefinedClassName);
-						} else {
+                            // If we make it here, and we are dealing with person attribute values, then just return the string value as-is
+                            if (PersonAttribute.class.isAssignableFrom(f.getDeclaringClass()) && "value".equals(f.getName())) {
+                                o = fieldVal;
+                            }
+                            else {
+                                // throw a warning if we're having trouble converting what should be a valid value
+                                log.error("Unable to convert value '" + fieldVal + "' into a " + nodeDefinedClassName);
+                                throw new SyncException("Unable to convert value '" + fieldVal + "' into a " + nodeDefinedClassName);
+                            }
+						}
+                        else {
 							// if fieldVal is empty, just save an empty string here too
 							o = "";
 						}
-					} else {
+					}
+                    else {
 						o = obj.getId().toString(); // call toString so the class types match when looking up the setter
 					}
-				} else if (Collection.class.isAssignableFrom(classType)) {
+				}
+                else if (Collection.class.isAssignableFrom(classType)) {
 					// this is a collection of items. this is intentionally not in the convertStringToObject method
 					
 					Collection tmpCollection = null;
