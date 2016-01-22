@@ -14,6 +14,7 @@
 package org.openmrs.module.sync;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
@@ -234,6 +235,12 @@ public class SyncUtil {
 		
 		log.debug("getting setter method");
 		Method m = SyncUtil.getSetterMethod(o.getClass(), propName, propVal.getClass());
+		if (m == null) {
+			// We couldn't find a setter method. Let's try setting the field directly instead.
+			log.debug("couldn't find setter method, setting field '" + propName + "' directly.");
+			FieldUtils.writeField(o, propName, propVal, true);
+			return;
+		}
 		
 		boolean acc = m.isAccessible();
 		m.setAccessible(true);

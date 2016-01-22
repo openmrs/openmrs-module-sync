@@ -15,9 +15,13 @@ package org.openmrs.module.sync;
 
 import java.lang.reflect.Method;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.openmrs.module.sync.SyncUtil;
-import org.springframework.util.Assert;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 /**
  * Tests various methods of the SyncUtil class.
@@ -27,43 +31,53 @@ public class SyncUtilTest {
 	@Test
 	public void getSetterMethod_shouldReturnMethodForPrimitiveInt(){
 		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "intField", new Integer(1).getClass());
-		Assert.notNull(m);
+		assertNotNull(m);
 	}
 	
 	@Test
 	public void getSetterMethod_shouldReturnMethodForPrimitiveLong(){
 		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "longField", new Long(1).getClass());
-		Assert.notNull(m);
+		assertNotNull(m);
 	}
 	
 	@Test
 	public void getSetterMethod_shouldReturnMethodForPrimitiveDouble(){
 		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "doubleField", new Double(1).getClass());
-		Assert.notNull(m);
+		assertNotNull(m);
 	}
 	
 	@Test
 	public void getSetterMethod_shouldReturnMethodForPrimitiveFloat(){
 		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "floatField", new Float(1).getClass());
-		Assert.notNull(m);
+		assertNotNull(m);
 	}
 	
 	@Test
 	public void getSetterMethod_shouldReturnMethodForPrimitiveBoolean(){
 		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "booleanField", new Boolean(true).getClass());
-		Assert.notNull(m);
+		assertNotNull(m);
 	}
 	
 	@Test
 	public void getSetterMethod_shouldReturnMethodForPrimitiveShort(){
 		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "shortField", new Short((short)1).getClass());
-		Assert.notNull(m);
+		assertNotNull(m);
 	}
 	
 	@Test
 	public void getSetterMethod_shouldReturnMethodForPrimitiveByte(){
 		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "byteField", new Byte((byte)1).getClass());
-		Assert.notNull(m);
+		assertNotNull(m);
+	}
+
+	@Test
+	public void setProperty_shouldSetFieldDirectlyWithNoSetter() throws Exception {
+		Object someObject = new Object();
+		Xform obj = new Xform();
+		assertNull(obj.getFieldWithNoSetter());
+		SyncUtil.setProperty(obj, "fieldWithNoSetter", someObject);
+		assertSame(someObject, obj.getFieldWithNoSetter());
+
 	}
 	
 	public class Xform {
@@ -75,6 +89,7 @@ public class SyncUtilTest {
 		boolean booleanField;
 		byte byteField;
 		short shortField;
+		private Object fieldWithNoSetter = null;
 
         public int getIntField() {
         	return intField;
@@ -131,5 +146,9 @@ public class SyncUtilTest {
         public void setShortField(short shortField) {
         	this.shortField = shortField;
         }
+
+		public Object getFieldWithNoSetter() {
+			return fieldWithNoSetter;
+		}
 	}
 }
