@@ -1008,7 +1008,7 @@ public class SyncUtil {
                 throw new HibernateException("Could not serialize SyncItems", e);
             }
             if (record != null ) {
-                payload = record.toStringAsDocumentFragement();
+                payload = record.toStringAsDocumentFragment();
             }
         }
         return payload;

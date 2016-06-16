@@ -13,21 +13,7 @@
  */
 package org.openmrs.module.sync;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
-
 import org.junit.Test;
-import org.openmrs.module.sync.SyncItem;
-import org.openmrs.module.sync.SyncItemKey;
-import org.openmrs.module.sync.SyncItemState;
-import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.serialization.FilePackage;
 import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.serialization.Item;
@@ -35,6 +21,16 @@ import org.openmrs.module.sync.serialization.Package;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.test.SkipBaseSetup;
 import org.springframework.test.annotation.NotTransactional;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests sync record serialization.
@@ -90,7 +86,7 @@ public class SyncRecordTest {
         originals.add(syncRecord2);    
 
         // now Test deserialize - THIS DOES NOT WORK YET
-        String textDes = record.toStringAsDocumentFragement();
+        String textDes = record.toStringAsDocumentFragment();
 
         Package pkgDes = new FilePackage();
         Record recordDes = pkgDes.createRecordFromString(textDes);

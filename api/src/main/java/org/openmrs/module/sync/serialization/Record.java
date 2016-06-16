@@ -25,6 +25,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -48,14 +49,13 @@ import org.w3c.dom.CDATASection;
 * A Record in this context is a collection of objects, represented by
 * more than one database table as example a 'patient record'
 *
-* @todo create better exception classes
 * @todo obfuscate the notion that this object serializes to XML
-* @todo change error handling to proper logging classes
 *
 * @author juliem
 */
 public class Record
 {
+
     // xml structures
 	public static final String UTF8 = "UTF-8";
 	public static final String NOSTR = "no";
@@ -80,7 +80,7 @@ public class Record
     {
         if (m_name!=null)
         {
-            throw new Exception("Name already set for this record\n");
+            throw new SyncSerializationException("Name already set for this record");
         }
 
         // populate the m_first node
@@ -129,7 +129,7 @@ public class Record
      * with regard to this XML tree being manipulated nor with
      * individual nodes being modified
      */
-	public synchronized void dump(OutputStream os) throws Exception
+	public synchronized void dump(OutputStream os) throws TransformerException
 	{
 		StreamResult res = new StreamResult(os);	
         TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -200,12 +200,11 @@ public class Record
 			return new String(toByteArray(), UTF8);
 		}
 		catch (Exception e) {
-			e.printStackTrace();
-			return null;
+			throw new SyncSerializationException("Unable to convert Record to String", e);
 		}
 	}
     
-    public String toStringAsDocumentFragement() {
+    public String toStringAsDocumentFragment() {
         try {
             //setup
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -221,15 +220,14 @@ public class Record
             return lsSerializer.writeToString(m_doc.getDocumentElement());
         }
         catch (Exception e) {
-            e.printStackTrace();
-            return null;
+			throw new SyncSerializationException("Unable to convert Record to StringAsDocumentFragment", e);
         }
         
     }
 
 	/** Convert the response for transmit
 	*/
-	public byte[] toByteArray() throws Exception
+	public byte[] toByteArray() throws TransformerException
 	{
 		ByteArrayOutputStream os = new ByteArrayOutputStream(1024);
 		dump(os);
@@ -491,8 +489,7 @@ public class Record
             m_first = (Element)firstChild;
 		}
 		catch (Exception e) {
-			e.printStackTrace();
-			throw e;
+			throw new SyncSerializationException("Unable to initialize Record object", e);
 		}
 	}
 }

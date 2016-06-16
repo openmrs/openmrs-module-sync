@@ -543,7 +543,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			SyncItem syncItem = new SyncItem();
 			syncItem.setKey(new SyncItemKey<String>(objectUuid, String.class));
 			syncItem.setState(state);
-			syncItem.setContent(xml.toStringAsDocumentFragement());
+			syncItem.setContent(xml.toStringAsDocumentFragment());
 			syncItem.setContainedType(entity.getClass());
 
 			if (log.isDebugEnabled())
@@ -1284,7 +1284,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			syncItem.setKey(new SyncItemKey<String>(owner.getUuid() + "|" + ownerPropertyName, String.class));
 			syncItem.setState(SyncItemState.UPDATED);
 			syncItem.setContainedType(collection.getClass());
-			syncItem.setContent(xml.toStringAsDocumentFragement());
+			syncItem.setContent(xml.toStringAsDocumentFragment());
 
 			getSyncRecord().addOrRemoveAndAddItem(syncItem);
 			getSyncRecord().addContainedClass(owner.getClass().getName());
@@ -1436,7 +1436,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			SyncItem syncItem = new SyncItem();
 			syncItem.setKey(new SyncItemKey<String>(stub.getUuid(), String.class));
 			syncItem.setState(SyncItemState.NEW);
-			syncItem.setContent(xml.toStringAsDocumentFragement());
+			syncItem.setContent(xml.toStringAsDocumentFragment());
 			syncItem.setContainedType(stub.getClass());
 
 			getSyncRecord().addItem(syncItem);

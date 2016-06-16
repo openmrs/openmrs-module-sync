@@ -13,18 +13,6 @@
  */
 package org.openmrs.module.sync.api.db.hibernate.usertype;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Serializable;
-import java.sql.Clob;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
@@ -34,7 +22,16 @@ import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Package;
 import org.openmrs.module.sync.serialization.Record;
-import org.xml.sax.SAXParseException;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Serializable;
+import java.sql.Clob;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.Collection;
 
 public class SyncItemListSerializingUserType implements UserType {
 
@@ -153,11 +150,11 @@ public class SyncItemListSerializingUserType implements UserType {
                 throw new HibernateException("Could not serialize SyncItems", e);
             }
 
-            String newRecord = record.toStringAsDocumentFragement();
+            String newRecord = record.toStringAsDocumentFragment();
             
             //02/09/2008: replaced setClob() with setString() to deal with encoding issues: mysql Clob inexplicably truncates if
             // it encounters non-ASCII character
-            //ps.setClob(index, Hibernate.createClob(record.toStringAsDocumentFragement()));            
+            //ps.setClob(index, Hibernate.createClob(record.toStringAsDocumentFragment()));
             ps.setString(index, newRecord);
         }
     }
