@@ -13,10 +13,9 @@
  */
 package org.openmrs.module.sync;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-
+import ca.uhn.hl7v2.app.MessageTypeRouter;
+import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.parser.GenericParser;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openmrs.Concept;
@@ -26,14 +25,15 @@ import org.openmrs.api.context.Context;
 import org.openmrs.hl7.handler.ORUR01Handler;
 import org.springframework.test.annotation.NotTransactional;
 
-import ca.uhn.hl7v2.app.MessageTypeRouter;
-import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.parser.GenericParser;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 
 /**
  * Tests the ORUR01 parser 
  */
+@Ignore
 public class SyncORUR01HandlerTest extends SyncBaseTest {
 
 	/**
