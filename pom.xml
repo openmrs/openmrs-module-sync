@@ -87,7 +87,7 @@
 	</dependencies>
 
 	<properties>
-		<openMRSVersion>1.9.3</openMRSVersion>
+		<openMRSVersion>1.9.4</openMRSVersion>
         <openMRSMinorVersion>1.9</openMRSMinorVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -142,6 +142,7 @@
 						<includes>
 							<include>**/*Test.java</include>
 						</includes>
+						<runOrder>alphabetical</runOrder> <!-- TODO: hack because we want the ViewRecordController Test to run last since it dirties context (?); figure out the right way and remove this  -->
 						<argLine>-Duser.language=en -Duser.region=US -Xmx512m -XX:MaxPermSize=512m</argLine>
 					</configuration>
 				</plugin>
