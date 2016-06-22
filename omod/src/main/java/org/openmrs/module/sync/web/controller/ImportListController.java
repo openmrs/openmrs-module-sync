@@ -13,17 +13,6 @@
  */
 package org.openmrs.module.sync.web.controller;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.Date;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,6 +38,16 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.Date;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 public class ImportListController extends SimpleFormController {
 	
 	/** Logger for this class and subclasses */
@@ -68,6 +67,11 @@ public class ImportListController extends SimpleFormController {
 		
 		log.info("***********************************************************\n");
 		log.info("Inside SynchronizationImportListController");
+
+		// just fail fast if in the midst of refreshing the context, as this was causing issues, see SYNC-318
+		if (Context.isRefreshingContext()) {
+			return null;
+		}
 		
 		// There are 3 ways to come to this point, so we'll handle all of them:
 		// 1) uploading a file (results in a file attachment as response)
