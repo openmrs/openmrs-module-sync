@@ -86,6 +86,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -1386,5 +1387,13 @@ public class SyncUtil {
 			return "TX ROLLED BACK";
 		}
 		return "TX STATUS UNKNOWN";
+	}
+
+	public static int daysBetween(Date old, Date later) {
+		final int milliseconds_in_second = 1000;
+		final int seconds_in_minute = 60;
+		final int minutes_in_hour = 60;
+		final int hours_in_a_day = 24;
+		return (int)( (later.getTime() - old.getTime()) / (milliseconds_in_second * seconds_in_minute * minutes_in_hour * hours_in_a_day));
 	}
 }

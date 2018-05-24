@@ -21,7 +21,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Reader;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Blob;
 import java.sql.Connection;
@@ -57,13 +56,7 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.exception.ConstraintViolationException;
-import org.hibernate.impl.CriteriaImpl;
-import org.hibernate.impl.SessionImpl;
-import org.hibernate.loader.OuterJoinLoader;
-import org.hibernate.loader.criteria.CriteriaLoader;
-import org.hibernate.persister.entity.OuterJoinLoadable;
 import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.context.Context;
@@ -74,7 +67,9 @@ import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
+import org.openmrs.module.sync.SyncTransmissionStatus;
 import org.openmrs.module.sync.SyncUtil;
+import org.openmrs.module.sync.TransmissionLog;
 import org.openmrs.module.sync.api.db.SyncDAO;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.ingest.SyncIngestException;
@@ -1669,4 +1664,48 @@ public class HibernateSyncDAO implements SyncDAO {
          }
          return -1;
      }
+
+	@Override
+	public int getCountOfTransmissionLogs(RemoteServer server, SyncTransmissionStatus status) throws DAOException {
+		return ((Long)createTransmissionLogCriteria(null, null, server, status).setProjection(Projections.rowCount()).uniqueResult()).intValue();
+	}
+
+	@Override
+	public List<TransmissionLog> getTransmissionLogs(Integer startIndex, Integer limit, RemoteServer server, SyncTransmissionStatus status) {
+     	Criteria criteria = createTransmissionLogCriteria(startIndex, limit, server, status);
+
+     	// Order by descending run date by default
+		criteria.addOrder(Order.desc("runAt"));
+		return criteria.list();
+	}
+
+	private Criteria createTransmissionLogCriteria(Integer startIndex, Integer limit, RemoteServer server, SyncTransmissionStatus status) {
+     	Criteria criteria = sessionFactory.getCurrentSession().createCriteria(TransmissionLog.class);
+
+     	if(server != null) {
+     		criteria.add(Restrictions.eq("remoteServer", server));
+		}
+
+     	if(status != null) {
+     		criteria.add(Restrictions.eq("status", status));
+		}
+
+     	if(startIndex != null) {
+     		criteria.setFirstResult(startIndex);
+		}
+
+		if(limit != null) {
+     		criteria.setMaxResults(limit);
+		}
+
+		return criteria;
+	}
+
+	@Override
+	public int deleteOldTransmissionLogRecords(Date upTo) throws DAOException {
+     	Query deleteQuery = sessionFactory.getCurrentSession().createQuery("delete from TransmissionLog where runAt <= :upTo");
+     	deleteQuery.setTimestamp("upTo", upTo);
+     	log.debug("Running Delete Query: " + deleteQuery.getQueryString());
+		return deleteQuery.executeUpdate();
+	}
 }

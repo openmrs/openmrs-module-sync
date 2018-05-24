@@ -23,10 +23,12 @@ import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
+import org.openmrs.module.sync.scheduler.SyncTransmissionLogTableCleanUpTask;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.module.sync.server.RemoteServer;
+import org.openmrs.module.sync.web.TasksDTO;
 import org.openmrs.scheduler.TaskDefinition;
 import org.openmrs.scheduler.web.controller.SchedulerFormController;
 import org.openmrs.util.OpenmrsConstants;
@@ -57,6 +59,9 @@ import java.util.*;
 public class MaintenanceController extends SimpleFormController {
 	
 	/** Logger for this class and subclasses */
+	private static final String TABLES_CLEAN_UP_NAME = "cleanupTables";
+	private static final String TRANSMISSION_LOGS_CLEAN_UP_NAME = "cleanupTransmissionLogs";
+
 	protected final Log log = LogFactory.getLog(getClass());
 	
 	public Integer maxPageRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_PAGE_RECORDS_DEFAULT);
@@ -81,7 +86,12 @@ public class MaintenanceController extends SimpleFormController {
 	@Override
 	protected ModelAndView processFormSubmission(HttpServletRequest request, HttpServletResponse response, Object command,
 	                                             BindException errors) throws Exception {
-		TaskDefinition task = (TaskDefinition) command;
+		TaskDefinition task;
+		if (request.getParameter("cleanUpSyncTablesForm") != null) { // identifies 1st form
+			task = ((TasksDTO) command).getCleanupSyncTablesTask();
+		} else {
+			task = ((TasksDTO) command).getCleanupTransmissionLogsTask();
+		}
 		Map<String, String> properties = new HashMap<String, String>();
 		String[] names = ServletRequestUtils.getStringParameters(request, "propertyName");
 		String[] values = ServletRequestUtils.getStringParameters(request, "propertyValue");
@@ -92,22 +102,15 @@ public class MaintenanceController extends SimpleFormController {
 			}
 		}
 		task.setProperties(properties);
-		
+
 		task.setStartTimePattern(SchedulerFormController.DEFAULT_DATE_PATTERN);
 		// if the user selected a different repeat interval unit, fix repeatInterval
 		String units = request.getParameter("repeatIntervalUnits");
 		Long interval = task.getRepeatInterval();
-		
-		if ("minutes".equals(units)) {
-			interval = interval * 60;
-		} else if ("hours".equals(units)) {
-			interval = interval * 60 * 60;
-		} else if ("days".equals(units)) {
-			interval = interval * 60 * 60 * 24;
-		}
-		
+		interval = convertIntervalAccordingToUnits(interval, units);
+
 		task.setRepeatInterval(interval);
-		
+
 		return super.processFormSubmission(request, response, command, errors);
 	}
 	
@@ -118,19 +121,21 @@ public class MaintenanceController extends SimpleFormController {
 	 * @see org.springframework.web.servlet.mvc.AbstractFormController#formBackingObject(javax.servlet.http.HttpServletRequest)
 	 */
 	protected Object formBackingObject(HttpServletRequest request) throws ServletException {
-		TaskDefinition taskModel = null;
+		TasksDTO cleanUpTasks = new TasksDTO();
+
 		Collection<TaskDefinition> tasks = Context.getSchedulerService().getRegisteredTasks();
 		if (tasks != null) {
 			for (TaskDefinition task : tasks) {
 				if (task.getTaskClass().equals(SyncConstants.CLEAN_UP_OLD_RECORDS_TASK_CLASS_NAME)) {
-					taskModel = task;
+					cleanUpTasks.setCleanupSyncTablesTask(task);
+				}
+				else if(task.getTaskClass().equals(SyncConstants.CLEAN_UP_OLD_TRANSMISSION_LOG_RECORDS_TASK_CLASS_NAME)) {
+					cleanUpTasks.setCleanupTransmissionLogsTask(task);
 				}
 			}
 		}
-		if (taskModel == null)
-			taskModel = new TaskDefinition();
 		
-		return taskModel;
+		return cleanUpTasks;
 	}
 	
 	@Override
@@ -284,8 +289,9 @@ public class MaintenanceController extends SimpleFormController {
 		        SyncConstants.DEFAULT_DATE_PATTERN));
 		ret.put("syncDateDisplayFormat", TimestampNormalizer.DATETIME_DISPLAY_FORMAT);
 		ret.put("synchronizationMaintenanceList", returnList);
-		
-		TaskDefinition task = (TaskDefinition) obj;
+
+		TasksDTO tasks = (TasksDTO) obj;
+		TaskDefinition task = tasks.getCleanupSyncTablesTask();
 		
 		Long interval = task.getRepeatInterval();
 		
@@ -304,6 +310,27 @@ public class MaintenanceController extends SimpleFormController {
 		} else {
 			ret.put("units", "days");
             ret.put("repeatInterval", interval / 86400);
+		}
+
+		task = tasks.getCleanupTransmissionLogsTask();
+
+		interval = task.getRepeatInterval();
+
+		//Copied this from the scehduler controller but it displays the wrong value if the time
+		//is not divisible by say 60, 3600 etc. E.g 1hr 30min may be displayed as just 1hr
+		if (interval == null || interval < 60) {
+			ret.put("transmissionLogsUnits", "seconds");
+            ret.put("transmissionLogsRepeatInterval", interval);
+        }
+		else if (interval < 3600) {
+			ret.put("transmissionLogsUnits", "minutes");
+            ret.put("transmissionLogsRepeatInterval", interval / 60);
+		} else if (interval < 86400) {
+			ret.put("transmissionLogsUnits", "hours");
+            ret.put("transmissionLogsRepeatInterval", interval / 3600);
+		} else {
+			ret.put("transmissionLogsUnits", "days");
+            ret.put("transmissionLogsRepeatInterval", interval / 86400);
 		}
 		
 		return ret;
@@ -337,32 +364,32 @@ public class MaintenanceController extends SimpleFormController {
 		} else {
 			// doing an archive task
 			try {
-				TaskDefinition task = (TaskDefinition) command;
+				TaskDefinition task;
+				if (request.getParameter("cleanUpSyncTablesForm") != null) {
+					task = ((TasksDTO) command).getCleanupSyncTablesTask();
+				}
+				else {
+					// It is a transmissionLogTask form
+					task =  ((TasksDTO) command).getCleanupTransmissionLogsTask();
+				}
 
 				Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
 
-                // set the repeat interval
-                String units = request.getParameter("repeatIntervalUnits");
-                Long interval = Long.parseLong(request.getParameter("repeatInterval"));
+				// set the repeat interval
+				String units = request.getParameter("repeatIntervalUnits");
+				Long interval = Long.parseLong(request.getParameter("repeatInterval"));
+				interval = convertIntervalAccordingToUnits(interval, units);
 
-                if ("minutes".equals(units)) {
-                    interval = interval * 60;
-                } else if ("hours".equals(units)) {
-                    interval = interval * 60 * 60;
-                } else if ("days".equals(units)) {
-                    interval = interval * 60 * 60 * 24;
-                }
-
-                task.setRepeatInterval(interval);
+				task.setRepeatInterval(interval);
 
 
-                //only reschedule a task if it is started, is not running and the time is not in the past
+				//only reschedule a task if it is started, is not running and the time is not in the past
 				if (task.getStarted() && OpenmrsUtil.compareWithNullAsEarliest(task.getStartTime(), new Date()) > 0
-				        && (task.getTaskInstance() == null || !task.getTaskInstance().isExecuting()))
+						&& (task.getTaskInstance() == null || !task.getTaskInstance().isExecuting()))
 					Context.getSchedulerService().rescheduleTask(task);
 				else
 					Context.getSchedulerService().saveTask(task);
-				
+
 				request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.maintenance.manage.changesSaved");
 			}
 			catch (APIException e) {
@@ -376,5 +403,15 @@ public class MaintenanceController extends SimpleFormController {
 		
 		return new ModelAndView(new RedirectView(getSuccessView()));
 	}
-	
+
+	private Long convertIntervalAccordingToUnits(Long interval, String units) {
+		if ("minutes".equals(units)) {
+			interval = interval * 60;
+		} else if ("hours".equals(units)) {
+			interval = interval * 60 * 60;
+		} else if ("days".equals(units)) {
+			interval = interval * 60 * 60 * 24;
+		}
+		return interval;
+	}
 }

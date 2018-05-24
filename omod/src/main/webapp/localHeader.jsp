@@ -18,6 +18,11 @@
 				<spring:message code="sync.history.title"/>
 			</a>
 		</li>
+		<li <c:if test='<%= request.getRequestURI().contains("transmissionHistory") %>'>class="active"</c:if>>
+			<a href="${pageContext.request.contextPath}/module/sync/transmissionHistory.list">
+				<spring:message code="sync.transmissionHistory.title"/>
+			</a>
+		</li>
 		<li <c:if test='<%= request.getRequestURI().contains("statistics") %>'>class="active"</c:if>>
 			<a href="${pageContext.request.contextPath}/module/sync/statistics.list">
 				<spring:message code="sync.statistics.title"/>

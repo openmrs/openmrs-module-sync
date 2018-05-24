@@ -13,14 +13,10 @@
  */
 package org.openmrs.module.sync;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Ignore;
-
 import org.junit.Test;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.SyncTransmission;
-import org.openmrs.module.sync.SyncTransmissionState;
-import org.openmrs.module.sync.SyncUtilTransmission;
 import org.openmrs.module.sync.SyncUtilTransmission.ReceivingSize;
 import org.openmrs.module.sync.ingest.SyncTransmissionResponse;
 import org.openmrs.test.BaseModuleContextSensitiveTest;

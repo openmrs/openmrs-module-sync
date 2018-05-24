@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
@@ -34,9 +35,11 @@ import org.openmrs.OpenmrsObject;
 import org.openmrs.Patient;
 import org.openmrs.Privilege;
 import org.openmrs.Role;
+import org.openmrs.User;
 import org.openmrs.api.APIException;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
+import org.openmrs.api.context.Daemon;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.api.db.SerializedObjectDAO;
 import org.openmrs.module.sync.SyncClass;
@@ -46,7 +49,9 @@ import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncServerClass;
 import org.openmrs.module.sync.SyncStatistic;
+import org.openmrs.module.sync.SyncTransmissionStatus;
 import org.openmrs.module.sync.SyncUtil;
+import org.openmrs.module.sync.TransmissionLog;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.api.db.SyncDAO;
 import org.openmrs.module.sync.api.db.hibernate.HibernateSyncInterceptor;
@@ -991,5 +996,81 @@ public class SyncServiceImpl implements SyncService {
 	public SyncServerRecord getSyncServerRecord(Integer syncServerRecordId) throws APIException {
 		return getSynchronizationDAO().getSyncServerRecord(syncServerRecordId);
 	}
-	
+
+	@Override
+	public TransmissionLog saveTransmissionLog(TransmissionLog transmissionLog) throws APIException {
+		if(transmissionLog.getRunBy() == null) {
+			User runningUser = Context.getUserContext().getAuthenticatedUser();
+			if(runningUser == null) {
+				//It is probably the deamon doing this.
+				if(Daemon.isDaemonThread()) {
+					runningUser = Daemon.getDaemonThreadUser();
+				}
+			}
+			transmissionLog.setRunBy(runningUser);
+		}
+
+		if(transmissionLog.getRunAt() == null) {
+			transmissionLog.setRunAt(new Date());
+		}
+
+		dao.saveOrUpdate(transmissionLog);
+		return transmissionLog;
+	}
+
+	@Override
+	public List<TransmissionLog> getTransmissionLogs(Integer startIndex, Integer limit, RemoteServer server, SyncTransmissionStatus status) throws APIException {
+		return dao.getTransmissionLogs(startIndex, limit, server, status);
+	}
+
+	@Override
+	public List<TransmissionLog> getTransmissionLogsForServerWithStatus(RemoteServer server, SyncTransmissionStatus status) throws APIException {
+		return this.getTransmissionLogs(null, null, server, status);
+	}
+
+	@Override
+	public List<TransmissionLog> getAllTransmissionLogsWithStatus(SyncTransmissionStatus status) throws APIException {
+		return this.getTransmissionLogs(null, null, null, status);
+	}
+
+	@Override
+	public List<TransmissionLog> getAllTransmissionLogsForSever(RemoteServer server) throws APIException {
+		return this.getTransmissionLogs(null, null, server, null);
+	}
+
+	@Override
+	public List<TransmissionLog> getAllTransmissionLogs() throws APIException {
+		return this.getTransmissionLogs(null, null, null, null);
+	}
+
+	@Override
+	public int getCountOfTransmissionLogsForServerWithStatus(RemoteServer server, SyncTransmissionStatus status) throws APIException {
+		return dao.getCountOfTransmissionLogs(server, status);
+	}
+
+	@Override
+	public int getCountOfAllTransmissionLogsForServer(RemoteServer server) throws APIException {
+		return this.getCountOfTransmissionLogsForServerWithStatus(server, null);
+	}
+
+	@Override
+	public int getCountOfAllTransmissionLogsWithStatus(SyncTransmissionStatus status) throws APIException {
+		return this.getCountOfTransmissionLogsForServerWithStatus(null, status);
+	}
+
+	@Override
+	public int getCountOfAllTransmissionLogs() throws APIException {
+		return getCountOfTransmissionLogsForServerWithStatus(null, null);
+	}
+
+	@Override
+	public int deleteOldTransmissionLogRecords(Date upTo) throws APIException {
+		return dao.deleteOldTransmissionLogRecords(upTo);
+	}
+
+	@Override
+	public int deleteOldTransmissionLogRecords(int numberOfDaysOld) throws APIException {
+		Date upTo = DateUtils.addDays(new Date(), -numberOfDaysOld);
+		return this.deleteOldTransmissionLogRecords(upTo);
+	}
 }

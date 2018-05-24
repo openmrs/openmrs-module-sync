@@ -26,6 +26,7 @@ import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.ingest.SyncIngestException;
 import org.openmrs.module.sync.ingest.SyncTransmissionResponse;
+import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.server.ConnectionResponse;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
@@ -202,74 +203,35 @@ public class SyncUtilTransmission {
 				if (responseInstead != null) {
 					toTransmit = responseInstead.getFileOutput();
 					log.info("Sending a response (with tx inside): " + toTransmit);
+
+					if(toTransmit != null && toTransmit.length() > 0) {
+						response = transmitAndProcessResponse(server, responseInstead);
+					} else {
+						response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
+						response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
+						response.setUuid(SyncConstants.UUID_UNKNOWN);
+						response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
+					}
 				} else if (transmission != null) {
 					toTransmit = transmission.getFileOutput();
 					log.info("Sending an actual tx: " + toTransmit);
-				}
-				
-				if (toTransmit != null && toTransmit.length() > 0) {
-					if (responseInstead == null && transmission != null && transmission.getSyncRecords() != null
-					        && transmission.getSyncRecords().size() == 0) {
-						response.setState(SyncTransmissionState.OK_NOTHING_TO_DO);
-						response.setErrorMessage("");
-						response.setFileName(transmission.getFileName() + SyncConstants.RESPONSE_SUFFIX);
-						response.setUuid(transmission.getUuid());
-						response.setTimestamp(transmission.getTimestamp());
+
+					if(toTransmit != null && toTransmit.length() > 0) {
+						if(transmission.getSyncRecords() != null && transmission.getSyncRecords().size() == 0) {
+							response.setState(SyncTransmissionState.OK_NOTHING_TO_DO);
+							response.setErrorMessage("");
+							response.setFileName(transmission.getFileName() + SyncConstants.RESPONSE_SUFFIX);
+							response.setUuid(transmission.getUuid());
+							response.setTimestamp(transmission.getTimestamp());
+						} else {
+							response = transmitAndProcessResponse(server, transmission);
+						}
 					} else {
-						ConnectionResponse connResponse = null;
-						boolean isResponse = responseInstead != null;
-						
-						try {
-							connResponse = ServerConnection.sendExportedData(server, toTransmit, isResponse);
-						}
-						catch (Exception e) {
-							log.error("Unable to get send exported data over connection to: " + server, e);
-							// no need to change state or error message - it's already set properly; just update last sync state
-							server.setLastSyncState(SyncTransmissionState.FAILED);
-							syncService.saveRemoteServer(server);
-						}
-						
-						if (connResponse != null) {
-							// constructor for SyncTransmissionResponse is null-safe
-							response = new SyncTransmissionResponse(connResponse);
-							
-							//if we got something back, mark status appropriately
-							if (response.getState() == SyncTransmissionState.FAILED) {
-								server.setLastSyncState(SyncTransmissionState.FAILED);
-							} else {
-								server.setLastSyncState(SyncTransmissionState.OK);
-							}
-							;
-							
-							if (response.getSyncImportRecords() == null) {
-								log.debug("No records to process in response");
-							} else {
-								// process each incoming syncImportRecord; if any records failed, mark last send as failed
-								boolean allOK = true;
-								for (SyncImportRecord importRecord : response.getSyncImportRecords()) {
-									Context.getService(SyncIngestService.class)
-									        .processSyncImportRecord(importRecord, server);
-									if (importRecord.getState() != SyncRecordState.COMMITTED
-									        && importRecord.getState() != SyncRecordState.ALREADY_COMMITTED
-									        && importRecord.getState() != SyncRecordState.NOT_SUPPOSED_TO_SYNC) {
-										allOK = false;
-									}
-								}
-								
-								//now if some records failed, record it in lastSyncState
-								if (allOK == false) {
-									server.setLastSyncState(SyncTransmissionState.FAILED_RECORDS);
-								}
-							}
-							//update lastSyncState
-							syncService.saveRemoteServer(server);
-						}
+						response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
+						response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
+						response.setUuid(SyncConstants.UUID_UNKNOWN);
+						response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
 					}
-				} else {
-					response.setErrorMessage(SyncConstants.ERROR_TRANSMISSION_CREATION.toString());
-					response.setFileName(SyncConstants.FILENAME_NOT_CREATED);
-					response.setUuid(SyncConstants.UUID_UNKNOWN);
-					response.setState(SyncTransmissionState.TRANSMISSION_CREATION_FAILED);
 				}
 			} else {
 				// server is null
@@ -602,5 +564,61 @@ public class SyncUtilTransmission {
 			
 			return response;
 		}
+	}
+
+	private static SyncTransmissionResponse transmitAndProcessResponse(RemoteServer server, IItem toTransmit) {
+		SyncTransmissionResponse response = new SyncTransmissionResponse();
+		ConnectionResponse connResponse = null;
+		SyncService syncService = Context.getService(SyncService.class);
+		try {
+			if(toTransmit instanceof SyncTransmissionResponse) {
+				connResponse = ServerConnection.sendExportedData(server, (SyncTransmissionResponse) toTransmit);
+			}
+			if(toTransmit instanceof SyncTransmission) {
+				connResponse = ServerConnection.sendExportedData(server, (SyncTransmission) toTransmit);
+			}
+		} catch (Exception e) {
+			log.error("Unable to get send exported data over connection to: " + server, e);
+			// no need to change state or error message - it's already set properly; just update last sync state
+			server.setLastSyncState(SyncTransmissionState.FAILED);
+			syncService.saveRemoteServer(server);
+		}
+
+		if (connResponse != null) {
+			// constructor for SyncTransmissionResponse is null-safe
+			response = new SyncTransmissionResponse(connResponse);
+
+			//if we got something back, mark status appropriately
+			if (response.getState() == SyncTransmissionState.FAILED) {
+				server.setLastSyncState(SyncTransmissionState.FAILED);
+			} else {
+				server.setLastSyncState(SyncTransmissionState.OK);
+			}
+
+			if (response.getSyncImportRecords() == null) {
+				log.debug("No records to process in response");
+			} else {
+				// process each incoming syncImportRecord; if any records failed, mark last send as failed
+				boolean allOK = true;
+				for (SyncImportRecord importRecord : response.getSyncImportRecords()) {
+					Context.getService(SyncIngestService.class)
+							.processSyncImportRecord(importRecord, server);
+					if (importRecord.getState() != SyncRecordState.COMMITTED
+							&& importRecord.getState() != SyncRecordState.ALREADY_COMMITTED
+							&& importRecord.getState() != SyncRecordState.NOT_SUPPOSED_TO_SYNC) {
+						allOK = false;
+					}
+				}
+
+				//now if some records failed, record it in lastSyncState
+				if (allOK == false) {
+					server.setLastSyncState(SyncTransmissionState.FAILED_RECORDS);
+				}
+			}
+			//update lastSyncState
+			syncService.saveRemoteServer(server);
+		}
+
+		return response;
 	}
 }

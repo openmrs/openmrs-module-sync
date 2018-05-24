@@ -11,5 +11,7 @@
         <mapping resource="SyncServer.hbm.xml" />
         <mapping resource="SyncServerClass.hbm.xml" />
         <mapping resource="SyncServerRecord.hbm.xml" />
+        <mapping class="org.openmrs.module.sync.TransmissionLog" />
+        <mapping class="org.openmrs.module.sync.TransmissionLogRecord" />
 	</session-factory>
 </hibernate-configuration>
