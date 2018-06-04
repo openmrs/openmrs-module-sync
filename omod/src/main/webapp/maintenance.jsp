@@ -95,9 +95,9 @@
 		btn.parentNode.parentNode.parentNode.removeChild(btn.parentNode.parentNode);
 	}
 	
-	function addNewProperty() {
-		var propsTable = document.getElementById("propertiesTable");
-		var blankPropRow = document.getElementById("newProperty");
+	function addNewProperty(propertytableId, newPropretyId) {
+		var propsTable = document.getElementById(propertytableId);
+		var blankPropRow = document.getElementById(newPropretyId);
 		if(blankPropRow && propsTable){
 			var newPropRow = blankPropRow.cloneNode(true);
 			$j(newPropRow).show();
@@ -274,16 +274,17 @@
 <br />
 
 <%-- If the task exists(not deleted) --%>
-<c:if test="${task.id != null}">
+<c:if test="${task.cleanupSyncTablesTask.id != null}">
 <div class="boxHeader"><spring:message code="sync.maintenance.manage.cleanUpOldRecordsTaskProperties" /></div>
 <div class="box">
 <form method="post">
-	<input type="hidden" name="taskId" value="${task.id}" />
+	<input type="hidden" name="taskId" value="${task.cleanupSyncTablesTask.id}" />
+	<input type="hidden" name="cleanUpSyncTablesForm" value="true"/>
 	<table>
 		<tr>
 			<th valign="top"><spring:message code="Scheduler.scheduleForm.startTime"/></th>
 			<td>
-				<spring:bind path="task.startTime">
+				<spring:bind path="task.cleanupSyncTablesTask.startTime">
 					<input type="text" id="startTime" name="startTime" size="25" value="${status.value}"/> 
 					<b><i><spring:message code="Scheduler.scheduleForm.startTimePattern"/>: </i></b><spring:message code="Scheduler.scheduleForm.startTime.pattern"/>
 					<c:if test="${status.errorMessage != ''}"><span class="error">${status.errorMessage}</span></c:if>
@@ -293,7 +294,7 @@
 		<tr>
 			<th valign="top"><spring:message code="Scheduler.scheduleForm.repeatInterval"/></th>
 			<td>
-				<spring:bind path="task.repeatInterval">
+				<spring:bind path="task.cleanupSyncTablesTask.repeatInterval">
 					<input type="text" id="repeatInterval" name="repeatInterval" size="10" value="${repeatInterval}" />
 					<select name="repeatIntervalUnits">
 						<option value="seconds" <c:if test="${units=='seconds'}">selected="selected"</c:if>><spring:message code="Scheduler.scheduleForm.repeatInterval.units.seconds" /></option>
@@ -308,13 +309,13 @@
 		<tr>
 			<th valign="top"><spring:message code="general.properties"/>:</th>
 			<td>
-				<table id="propertiesTable">
+				<table id="syncTablesPropertiesTable">
 					<tr>
 						<th><spring:message code="general.name" /></th>
 						<th><spring:message code="general.value" /></th>
 						<th></th>
 					</tr>
-					<c:forEach var="property" items="${task.properties}">			
+					<c:forEach var="property" items="${task.cleanupSyncTablesTask.properties}">
 					<tr>
 						<td><input type="text" name="propertyName" size="20" value="${property.key}" /></td>
 						<td><input type="text" name="propertyValue" size="30" value="${property.value}" /></td>
@@ -323,7 +324,7 @@
 						</td>
 					</tr>
 					</c:forEach>
-					<tr id="newProperty" style="display: none">
+					<tr id="syncTablesNewProperty" style="display: none">
 						<td>
 							<input type="text" name="propertyName" size="20"/> 
 						</td>
@@ -335,7 +336,82 @@
 						</td>
 					</tr>
 				</table>
-				<input type="button" class="smallButton" onclick="addNewProperty(this)" value="<spring:message code="general.add"/>" />
+				<input type="button" class="smallButton" onclick="addNewProperty('syncTablesPropertiesTable', 'syncTablesNewProperty')" value="<spring:message code="general.add"/>" />
+			</td>
+		</tr>
+	</table>
+	<br /><br />
+	<input type="submit" value="<spring:message code="general.save"/>">
+</form>
+</div>
+</c:if>
+
+<br/>
+
+<%-- If the task exists(not deleted) - SyncTransmissionLogTableCleanUpTask --%>
+<c:if test="${task.cleanupTransmissionLogsTask.id != null}">
+<div class="boxHeader"><spring:message code="sync.maintenance.manage.cleanUpOldTransmissionLogRecordsTaskProperties" /></div>
+<div class="box">
+<form method="post">
+	<input type="hidden" name="taskId" value="${task.cleanupTransmissionLogsTask.id}" />
+	<input type="hidden" name="cleanupTransmissionLogsForm" value="true"/>
+	<table>
+		<tr>
+			<th valign="top"><spring:message code="Scheduler.scheduleForm.startTime"/></th>
+			<td>
+				<spring:bind path="task.cleanupTransmissionLogsTask.startTime">
+					<input type="text" id="startTime" name="startTime" size="25" value="${status.value}"/>
+					<b><i><spring:message code="Scheduler.scheduleForm.startTimePattern"/>: </i></b><spring:message code="Scheduler.scheduleForm.startTime.pattern"/>
+					<c:if test="${status.errorMessage != ''}"><span class="error">${status.errorMessage}</span></c:if>
+				</spring:bind>
+			</td>
+		</tr>
+		<tr>
+			<th valign="top"><spring:message code="Scheduler.scheduleForm.repeatInterval"/></th>
+			<td>
+				<spring:bind path="task.cleanupTransmissionLogsTask.repeatInterval">
+					<input type="text" id="repeatInterval" name="repeatInterval" size="10" value="${transmissionLogsRepeatInterval}" />
+					<select name="repeatIntervalUnits">
+						<option value="seconds" <c:if test="${transmissionLogsUnits=='seconds'}">selected="selected"</c:if>><spring:message code="Scheduler.scheduleForm.repeatInterval.units.seconds" /></option>
+						<option value="minutes" <c:if test="${transmissionLogsUnits=='minutes'}">selected="selected"</c:if>><spring:message code="Scheduler.scheduleForm.repeatInterval.units.minutes" /></option>
+						<option value="hours" <c:if test="${transmissionLogsUnits=='hours'}">selected="selected"</c:if>><spring:message code="Scheduler.scheduleForm.repeatInterval.units.hours" /></option>
+						<option value="days" <c:if test="${transmissionLogsUnits=='days'}">selected="selected"</c:if>><spring:message code="Scheduler.scheduleForm.repeatInterval.units.days" /></option>
+					</select>
+					<c:if test="${status.errorMessage != ''}"><span class="error">${status.errorMessage}</span></c:if>
+				</spring:bind>
+			</td>
+		</tr>
+		<tr>
+			<th valign="top"><spring:message code="general.properties"/>:</th>
+			<td>
+				<table id="transmissionLogsPropertiesTable">
+					<tr>
+						<th><spring:message code="general.name" /></th>
+						<th><spring:message code="general.value" /></th>
+						<th></th>
+					</tr>
+					<c:forEach var="property" items="${task.cleanupTransmissionLogsTask.properties}">
+					<tr>
+						<td><input type="text" name="propertyName" size="20" value="${property.key}" /></td>
+						<td><input type="text" name="propertyValue" size="30" value="${property.value}" /></td>
+						<td>
+							<input type="button" class="smallButton" onclick="removeProperty(this)" value="<spring:message code="general.remove"/>" />
+						</td>
+					</tr>
+					</c:forEach>
+					<tr id="transmissionLogsNewProperty" style="display: none">
+						<td>
+							<input type="text" name="propertyName" size="20"/>
+						</td>
+						<td>
+							<input type="text" name="propertyValue" size="30"/>
+						</td>
+						<td>
+							<input type="button" class="smallButton" onclick="removeProperty(this)" value="<spring:message code="general.remove"/>">
+						</td>
+					</tr>
+				</table>
+				<input type="button" class="smallButton" onclick="addNewProperty('transmissionLogsPropertiesTable', 'transmissionLogsNewProperty')" value="<spring:message code="general.add"/>" />
 			</td>
 		</tr>
 	</table>

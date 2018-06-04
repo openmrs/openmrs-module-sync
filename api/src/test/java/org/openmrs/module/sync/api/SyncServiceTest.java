@@ -13,10 +13,8 @@
  */
 package org.openmrs.module.sync.api;
 
-import java.util.Date;
-import java.util.List;
-
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openmrs.ConceptDatatype;
 import org.openmrs.GlobalProperty;
@@ -27,19 +25,37 @@ import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
+import org.openmrs.module.sync.SyncTransmissionStatus;
+import org.openmrs.module.sync.SyncUtil;
+import org.openmrs.module.sync.TransmissionLog;
 import org.openmrs.module.sync.api.impl.SyncServiceImpl;
+import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.openmrs.test.Verifies;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Tests methods in the SyncService
  */
 public class SyncServiceTest extends BaseModuleContextSensitiveTest {
-	
+
+	private SyncService syncService;
+	private static final String SERVER_DATA_SET_FILE = "org/openmrs/module/sync/include/SyncServerClasses.xml";
+	private static final String TRANSMISSION_DATA_SET_FILE = "org/openmrs/module/sync/include/transmissionLogs.xml";
 	/**
 	 * @see {@link SyncService#getOpenmrsObjectByUuid(Class,String)}
 	 */
+	@Before
+	public void setup() throws Exception {
+		syncService = Context.getService(SyncService.class);
+		executeDataSet(SERVER_DATA_SET_FILE);
+		executeDataSet(TRANSMISSION_DATA_SET_FILE);
+	}
+
 	@Test
 	@Verifies(value = "should get any openmrs object by its uuid", method = "getOpenmrsObjectByUuid(Class,String)")
 	public void getOpenmrsObjectByUuid_shouldGetAnyOpenmrsObjectByItsUuid() throws Exception {
@@ -92,16 +108,13 @@ public class SyncServiceTest extends BaseModuleContextSensitiveTest {
     @Test
     @Verifies(value = "should exclude only types setup for all sync servers", method = "shouldSynchronize(Object)")
     public void shouldSynchronize_shouldOnlySyncValidTypes() throws Exception {
-    	executeDataSet("org/openmrs/module/sync/include/SyncServerClasses.xml");
     	SyncService syncService = Context.getService(SyncService.class);
     	SyncServiceImpl.refreshServerClassesCollection();
     	
 		Assert.assertFalse(syncService.shouldSynchronize(new GlobalProperty("test","test")));
     	
 		Assert.assertTrue(syncService.shouldSynchronize(new PatientIdentifierType())); //marked 'yes' in all
-		
-		//TestUtil.printOutTableContents(getConnection(), "sync_class", "sync_server_class");
-		
+
 		Assert.assertTrue(syncService.shouldSynchronize(new PersonAttributeType())); //marked as 'yes' in one server
 		
 		Assert.assertTrue(syncService.shouldSynchronize(new Person())); //not in sync_server_classes
@@ -151,8 +164,7 @@ public class SyncServiceTest extends BaseModuleContextSensitiveTest {
 	@Verifies(value = "should get a syncServerRecord by its primary key", method = "getSyncServerRecord(Integer)")
 	public void getSyncServerRecord_shouldGetASyncServerRecordByItsPrimaryKey() throws Exception {
 		executeDataSet("org/openmrs/module/sync/include/SyncRecords.xml");
-		SyncService syncService = Context.getService(SyncService.class);
-		
+
 		SyncServerRecord ssr = syncService.getSyncServerRecord(57);
 		
 		Assert.assertEquals(1, ssr.getSyncRecord().getRecordId().intValue());
@@ -161,5 +173,56 @@ public class SyncServiceTest extends BaseModuleContextSensitiveTest {
 		
 		Assert.assertNull(syncService.getSyncServerRecord(445544));
 	}
-    
+
+	@Test
+	public void saveTransmissionLog_shouldSaveTransmissionLogInstance() {
+		TransmissionLog log = new TransmissionLog();
+		log.setSyncRecords(syncService.getSyncRecords());
+		log.setStatus(SyncTransmissionStatus.FAILURE);
+
+		Assert.assertNull(log.getTransmissionLogId());
+		syncService.saveTransmissionLog(log);
+		Assert.assertNotNull(log.getTransmissionLogId());
+	}
+
+	@Test
+	public void getCountOfAllTransmissionLogs_shouldReturnTheCorrectNumber() {
+		Assert.assertEquals(11, syncService.getCountOfAllTransmissionLogs());
+	}
+
+	@Test
+	public void getCountOfAllTransmissionLogs_shouldReturnTheCorrectCountOfTransmissionsLogsForServer() {
+		RemoteServer server = syncService.getRemoteServer(2);
+		int count = syncService.getCountOfAllTransmissionLogsForServer(server);
+		Assert.assertEquals(3, count);
+	}
+
+	@Test
+	public void deleteOldTransmissionLogs_shouldDeleteUpToaGivenDate() {
+		Calendar cal = Calendar.getInstance();
+		int may = 4;
+		cal.set(2018, may, 3, 10, 30, 50 );
+		int all = syncService.getCountOfAllTransmissionLogs();
+		int removed = syncService.deleteOldTransmissionLogRecords(cal.getTime());
+
+		int allAfter = syncService.getCountOfAllTransmissionLogs();
+		Assert.assertEquals(6, removed);
+		Assert.assertEquals(all, removed + allAfter);
+	}
+
+	@Test
+	public void deleteOldTransmissionLogs_shouldDeleteGivenNumberofDaysOld() {
+		Calendar cal = Calendar.getInstance();
+		int[] may42018 = {2018, 4, 4};
+		cal.set(may42018[0], may42018[1], may42018[2]);
+
+		Date now = new Date();
+		int daysPassed = SyncUtil.daysBetween(cal.getTime(), now);
+		int all = syncService.getCountOfAllTransmissionLogs();
+		int removed = syncService.deleteOldTransmissionLogRecords(daysPassed);
+
+		int allAfter = syncService.getCountOfAllTransmissionLogs();
+		Assert.assertEquals(6, removed);
+		Assert.assertEquals(all, removed + allAfter);
+	}
 }

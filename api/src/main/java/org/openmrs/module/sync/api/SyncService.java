@@ -35,7 +35,9 @@ import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
+import org.openmrs.module.sync.SyncTransmissionStatus;
 import org.openmrs.module.sync.SyncUtil;
+import org.openmrs.module.sync.TransmissionLog;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.SyncServerRecord;
@@ -733,4 +735,114 @@ public interface SyncService {
 	 */
 	@Transactional(readOnly = true)
 	public SyncServerRecord getSyncServerRecord(Integer syncServerRecordId) throws APIException;
+
+	/**
+	 * Save the newly created transmission log to the system.
+	 * @param transmissionLog
+	 * @return
+	 * @throws APIException
+	 */
+	@Transactional
+    TransmissionLog saveTransmissionLog(TransmissionLog transmissionLog) throws APIException;
+
+	/**
+	 * Returns a list of transmission logs based on the passed criteria.
+	 * @param startIndex
+	 * @param limit
+	 * @param server
+	 * @param status
+	 * @return
+	 * @throws APIException
+	 */
+	@Transactional(readOnly = true)
+	List<TransmissionLog> getTransmissionLogs(Integer startIndex, Integer limit,  RemoteServer server, SyncTransmissionStatus status) throws APIException;
+
+	/**
+	 * Returns a list of transmission logs filtered by status
+	 * @param server
+	 * @param status
+	 * @return
+	 * @throws APIException
+	 */
+	@Transactional(readOnly = true)
+	List<TransmissionLog> getTransmissionLogsForServerWithStatus(RemoteServer server, SyncTransmissionStatus status) throws APIException;
+
+	/**
+	 * Returns a list of transmission logs filtered by status
+	 * @param status
+	 * @return
+	 * @throws APIException
+	 */
+	@Transactional(readOnly = true)
+	List<TransmissionLog> getAllTransmissionLogsWithStatus(SyncTransmissionStatus status) throws APIException;
+
+	/**
+	 * Returns all transmission logs (May be very heavy), consider using the one with paging ability.
+	 * @param server
+	 * @return
+	 * @throws APIException
+	 */
+	@Transactional(readOnly = true)
+	List<TransmissionLog> getAllTransmissionLogsForSever(RemoteServer server) throws APIException;
+
+	/**
+	 *
+	 * @return
+	 * @throws APIException
+	 */
+	@Transactional(readOnly = true)
+	List<TransmissionLog> getAllTransmissionLogs() throws APIException;
+
+	/**
+	 * Returns a count of transmission logs filtered by status
+	 * @param server
+	 * @param status
+	 * @return count of all transmission logs by status
+	 * @throws APIException
+	 */
+	@Transactional(readOnly = true)
+	int getCountOfTransmissionLogsForServerWithStatus(RemoteServer server, SyncTransmissionStatus status) throws APIException;
+
+	/**
+	 * Returns count of all transmission logs (May be very heavy), consider using the one with paging ability.
+	 * @param server
+	 * @return count of all transmission logs
+	 * @throws APIException
+	 */
+	@Transactional(readOnly = true)
+	int getCountOfAllTransmissionLogsForServer(RemoteServer server) throws APIException;
+
+	/**
+	 * Returns a count of transmission logs filtered by status
+	 * @param status
+	 * @return count of all transmission logs by status
+	 * @throws APIException
+	 */
+	@Transactional(readOnly = true)
+	int getCountOfAllTransmissionLogsWithStatus(SyncTransmissionStatus status) throws APIException;
+
+	/**
+	 * Returns count of all transmission logs (May be very heavy), consider using the one with paging ability.
+	 * @return count of all transmission logs
+	 * @throws APIException
+	 */
+	@Transactional(readOnly = true)
+	int getCountOfAllTransmissionLogs() throws APIException;
+
+	/**
+	 * Deletes all records up to a certain run date passed as parameter
+	 * @param upTo
+	 * @return
+	 * @throws APIException
+	 */
+	int deleteOldTransmissionLogRecords(Date upTo) throws APIException;
+
+	/**
+	 * This deletes records up to numberOfDaysOld inclusive (i.e if numberOfDaysOld is 3 then records that are 3 days old or older will be deleted)
+	 * @param numberOfDaysOld
+	 * @return
+	 * @throws APIException
+	 */
+	int deleteOldTransmissionLogRecords(int numberOfDaysOld) throws APIException;
+
 }

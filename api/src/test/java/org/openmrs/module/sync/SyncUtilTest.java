@@ -14,6 +14,8 @@
 package org.openmrs.module.sync;
 
 import java.lang.reflect.Method;
+import java.util.Calendar;
+import java.util.Date;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -150,5 +152,16 @@ public class SyncUtilTest {
 		public Object getFieldWithNoSetter() {
 			return fieldWithNoSetter;
 		}
+	}
+
+	@Test
+	public void daysBetween_shouldGiveTheRightNumberOfDaysBetweenDates() {
+		Date now = new Date();
+		Calendar later = Calendar.getInstance();
+		later.setTime(now);
+		later.add(Calendar.DAY_OF_YEAR, 5);
+
+		Assert.assertEquals(5, SyncUtil.daysBetween(now, later.getTime()));
+		Assert.assertEquals(0, SyncUtil.daysBetween(now, now));
 	}
 }

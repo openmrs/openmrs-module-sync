@@ -16,6 +16,7 @@ package org.openmrs.module.sync.api.db;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.rmi.Remote;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
@@ -31,6 +32,8 @@ import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
+import org.openmrs.module.sync.SyncTransmissionStatus;
+import org.openmrs.module.sync.TransmissionLog;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
@@ -459,5 +462,31 @@ public interface SyncDAO {
 	 * @throws DAOException
 	 */
 	public SyncServerRecord getSyncServerRecord(Integer syncServerRecordId) throws DAOException;
-	
+
+	/**
+	 * Return the count of transmission logs given conditions.
+	 * @param server
+	 * @param status
+	 * @return
+	 * @throws DAOException
+	 */
+	public int getCountOfTransmissionLogs(RemoteServer server, SyncTransmissionStatus status) throws DAOException;
+
+	/**
+	 * Retrieves the transmission logs from the database with paging and status.
+	 * @param startIndex
+	 * @param limit
+	 * @param server
+	 * @param status
+	 * @return
+	 */
+	public List<TransmissionLog> getTransmissionLogs(Integer startIndex, Integer limit, RemoteServer server, SyncTransmissionStatus status) throws DAOException;
+
+	/**
+	 * Delete transmission logs up to a certain date
+	 * @param upTo
+	 * @return
+	 * @throws DAOException
+	 */
+	public int deleteOldTransmissionLogRecords(Date upTo) throws DAOException;
 }

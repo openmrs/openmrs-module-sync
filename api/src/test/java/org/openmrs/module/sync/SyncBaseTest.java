@@ -317,7 +317,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 			IOUtils.closeQuietly(fileInInputStreamFormat);
 		}
 
-		if (OpenmrsConstants.OPENMRS_VERSION_SHORT.compareTo("1.9.2") < 0) {
+		if (compareVersions(OpenmrsConstants.OPENMRS_VERSION_SHORT,"1.9.2") < 0) {
 			xml = xml.replace("urgency=\"STAT\" ", "");
 		}
 
@@ -326,5 +326,39 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		replacementDataSet.addReplacementObject("[NULL]", null);
 
 		executeDataSet(replacementDataSet);
+	}
+
+	/**
+	 * Assumption versions are of the form x.y.z with 0.0.0 being less than 0.1.1
+	 * @param v1
+	 * @param v2
+	 * @return
+	 */
+	private int compareVersions(String v1, String v2) throws NumberFormatException {
+		System.out.println("v1: " + v1 + ", v2: " + v2);
+		String[] v1Parts = v1.split("\\.", 3);
+		String[] v2Parts = v2.split("\\.", 3);
+		System.out.println("v1 parts:" + v1Parts + ", v2Parts: " + v2Parts);
+
+		int[] v1Ints = new int[v1Parts.length];
+		for(int x=0; x < v1Parts.length; ++x ) {
+			System.out.println("part " + x + ": " + v1Parts[x]);
+			v1Ints[x] = Integer.parseInt(v1Parts[x]);
+		}
+
+		int[] v2Ints = new int[v2Parts.length];
+		for(int x=0; x < v2Parts.length; ++x ) {
+			v2Ints[x] = Integer.parseInt(v2Parts[x]);
+		}
+
+		for(int x=0; x < v1Parts.length; ++x ) {
+			if(v1Ints[x] < v2Ints[x]) {
+				return -1;
+			}
+			else if(v1Ints[x] > v2Ints[x]){
+				return 1;
+			}
+		}
+		return 0;
 	}
 }
