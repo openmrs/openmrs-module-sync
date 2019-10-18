@@ -13,8 +13,12 @@
  */
 package org.openmrs.module.sync.api;
 
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.UUID;
+
+import javax.validation.constraints.AssertTrue;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
@@ -161,5 +165,19 @@ public class SyncIngestServiceTest extends SyncBaseTest {
 		record.addItem(item);
 
 		return record;
+	}
+	@Test
+	public void processSyncRecord_shouldPersistTheRightDate() throws Exception {		
+		RemoteServer parent = Context.getService(SyncService.class).getParentServer();
+		Assert.assertNotNull(parent);
+		SyncRecord record = createValidSyncRecord();	
+		Date childTime=record.getTimestamp();
+		TimeZone tzone = TimeZone.getTimeZone("Asia/Singapore");
+		TimeZone.setDefault(tzone);
+		
+		Context.getService(SyncIngestService.class).processSyncRecord(record, parent);
+		
+		Date parentTime=record.getTimestamp();
+		Assert.assertNotEquals(childTime, parentTime);
 	}
 }

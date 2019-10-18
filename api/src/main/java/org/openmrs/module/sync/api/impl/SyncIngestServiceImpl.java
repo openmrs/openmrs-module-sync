@@ -47,7 +47,12 @@ import org.openmrs.util.OpenmrsUtil;
 import org.w3c.dom.NodeList;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,6 +137,12 @@ public class SyncIngestServiceImpl implements SyncIngestService {
     	SyncImportRecord importRecord = new SyncImportRecord();
         importRecord.setState(SyncRecordState.FAILED);  // by default, until we know otherwise
         importRecord.setRetryCount(record.getRetryCount());
+        String recordDate= record.getTimestamp().toString();
+        String dateformat="EEE MMM dd HH:mm:ss zzz uuuu";
+        LocalDateTime recordLdt = LocalDateTime.parse(recordDate, DateTimeFormatter.ofPattern(dateformat));
+        ZoneId zId= ZoneId.systemDefault();
+        ZonedDateTime parentserverZdt=recordLdt.atZone(zId);
+        record.setTimestamp(Date.from(parentserverZdt.toInstant()));
         importRecord.setTimestamp(record.getTimestamp());
         importRecord.setUuid(record.getOriginalUuid());
         importRecord.setSourceServer(server);
