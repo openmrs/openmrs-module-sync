@@ -13,7 +13,12 @@
  */
 package org.openmrs.module.sync;
 
-import junit.framework.Assert;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
 import org.junit.Test;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
@@ -22,13 +27,10 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.util.OpenmrsConstants;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import junit.framework.Assert;
 
 /**
  * This test is written in response to a production issue we have discovered, in which somehow an invalid sync record
@@ -97,7 +99,7 @@ public class SyncInvalidRecordTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldAddInvalidIdentifierTest() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 

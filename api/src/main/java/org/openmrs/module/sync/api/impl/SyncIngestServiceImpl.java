@@ -17,7 +17,6 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Concept;
-import org.openmrs.ConceptName;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.Person;
 import org.openmrs.api.APIException;
@@ -44,6 +43,7 @@ import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
+import org.springframework.transaction.annotation.Transactional;
 import org.w3c.dom.NodeList;
 
 import java.lang.reflect.Field;
@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Transactional
 public class SyncIngestServiceImpl implements SyncIngestService {
 
     private Log log = LogFactory.getLog(this.getClass());
@@ -238,7 +239,6 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     
                     syncService.flushSession();
                     syncService.setFlushModeAutomatic();
-                    Context.clearSession(); // so that objects aren't resaved at next flush below
                     
                     /* now run through deletes: deletes must be processed after inserts/updates
                      * because of hibernate flushing semantics inside transactions:
@@ -259,7 +259,6 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     }
                     syncService.flushSession();
                     syncService.setFlushModeAutomatic();
-                    Context.clearSession(); // so that objects aren't resaved at next flush below
                     
                     /* Run through the updates for patient props that are treesets, see the method comments to understand
                      * why this is done here. 
@@ -279,7 +278,6 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     }
                     syncService.flushSession();
                     syncService.setFlushModeAutomatic();
-                    Context.clearSession(); // so that objects aren't resaved at next flush below
                    
                     /* 
                      * finally execute the pending actions that resulted from processing all sync items 
@@ -288,7 +286,6 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     syncIngestService.applyPreCommitRecordActions(processedObjects);
                     syncService.flushSession();
                     syncService.setFlushModeAutomatic();
-                    Context.clearSession(); // so that objects aren't resaved at next flush below
                     
                     if ( !isError ) {
                         importRecord.setState(SyncRecordState.COMMITTED);
@@ -377,19 +374,6 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 			}
 			
 		}
-		
-		// fix concept words for all names found
-		List<SyncProcessedObject> names = processedObjects.get("org.openmrs.ConceptName");
-		if (names != null) {
-			for (SyncProcessedObject o : names) {
-				// we only want to update the concept words if this is NOT a delete action
-				if (o.getState() != SyncItemState.DELETED) {
-                    // we need to reload the concept here because the session has been cleared earlier
-					Concept c = Context.getConceptService().getConcept(((ConceptName) o.getObject()).getConcept().getId());
-					Context.getConceptService().updateConceptWord(c);
-				}
-			}
-		}
 	}
     
     /**
@@ -422,7 +406,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
             }
             
             o = SyncUtil.getRootObject(itemContent);
-            if (o instanceof org.hibernate.collection.PersistentCollection) {
+            if (o instanceof org.hibernate.collection.spi.PersistentCollection) {
             	log.debug("Processing a persistent collection");
             	dao.processCollection(o.getClass(),itemContent,originalRecordUuid);
             }
@@ -573,6 +557,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
      * (non-Javadoc)
      * @see org.openmrs.module.sync.api.SyncIngestService#isConceptIdValidForUuid(Integer, java.lang.String)
      */
+    @Transactional(readOnly = true)
     public boolean isConceptIdValidForUuid(Integer conceptId, String uuid) throws APIException {
  
     	return dao.isConceptIdValidForUuid(conceptId, uuid);

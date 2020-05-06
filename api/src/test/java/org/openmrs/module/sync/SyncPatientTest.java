@@ -16,21 +16,23 @@ package org.openmrs.module.sync;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import junit.framework.Assert;
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 import org.openmrs.Concept;
 import org.openmrs.Encounter;
+import org.openmrs.EncounterRole;
 import org.openmrs.Location;
 import org.openmrs.Obs;
 import org.openmrs.Patient;
@@ -42,11 +44,15 @@ import org.openmrs.PersonName;
 import org.openmrs.Program;
 import org.openmrs.ProgramWorkflow;
 import org.openmrs.ProgramWorkflowState;
+import org.openmrs.Provider;
 import org.openmrs.User;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
 import org.openmrs.util.OpenmrsUtil;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import junit.framework.Assert;
 
 /**
  * Tests creating various pieces of data via synchronization
@@ -64,7 +70,7 @@ public class SyncPatientTest extends SyncBaseTest {
     }
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldEnrollInProgram() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			int numberEnrolledBefore = 0;
@@ -74,22 +80,25 @@ public class SyncPatientTest extends SyncBaseTest {
 			public void runOnChild() {
 				User creator = Context.getAuthenticatedUser();
 				Patient p = Context.getPatientService().getPatient(2);
-				numberEnrolledBefore = Context.getProgramWorkflowService().getPatientPrograms(p).size();
-				hivProgram = Context.getProgramWorkflowService().getProgram("HIV PROGRAM"); 
-				Context.getProgramWorkflowService().enrollPatientInProgram(p, hivProgram, dateEnrolled, dateCompleted, creator);
+				numberEnrolledBefore = Context.getProgramWorkflowService().getPatientPrograms(p, null, null, null, null, null, false).size();
+				hivProgram = Context.getProgramWorkflowService().getProgramByName("test program"); 
+				PatientProgram patientProgram = new PatientProgram();
+				patientProgram.setPatient(p);
+				patientProgram.setProgram(hivProgram);
+				patientProgram.setDateEnrolled(dateEnrolled);
+				patientProgram.setDateCompleted(dateCompleted);
+				patientProgram.setCreator(creator);
+				Context.getProgramWorkflowService().savePatientProgram(patientProgram);
 			}
 			public void runOnParent() {
-				int compare = 0;
 				Patient p = Context.getPatientService().getPatient(2);
 				assertEquals("Enrollment failed",
 				             numberEnrolledBefore + 1,
-				             Context.getProgramWorkflowService().getPatientPrograms(p).size());
-				for (PatientProgram pp : Context.getProgramWorkflowService().getPatientPrograms(p)) {
-					if (pp.getProgram().equals(hivProgram)) {
-						compare = OpenmrsUtil.compare( pp.getDateEnrolled(), dateEnrolled);						
-						assertEquals("Failed to change date", compare, 0);
-						compare = OpenmrsUtil.compare( pp.getDateCompleted(), dateCompleted);
-						assertEquals("Failed to change date", compare, 0);
+				             Context.getProgramWorkflowService().getPatientPrograms(p, null, null, null, null, null, false).size());
+				for (PatientProgram pp : Context.getProgramWorkflowService().getPatientPrograms(p, null, null, null, null, null, false)) {
+					if (pp.getProgram().equals(hivProgram)) {						
+						assertTrue("Failed to change date", DateUtils.isSameDay(pp.getDateEnrolled(), dateEnrolled));
+						assertTrue("Failed to change date", DateUtils.isSameDay(pp.getDateCompleted(), dateCompleted));
 					}
 				}
 			}
@@ -97,7 +106,7 @@ public class SyncPatientTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldEnrollInProgramAndState() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			int numberEnrolledBefore = 0;
@@ -108,37 +117,43 @@ public class SyncPatientTest extends SyncBaseTest {
 			ProgramWorkflowState curedState = null;
 			public void runOnChild() {
 				
-				hivProgram = Context.getProgramWorkflowService().getProgramByName("HIV PROGRAM");
+				hivProgram = Context.getProgramWorkflowService().getProgramByName("test program");
 
 				txStat = hivProgram.getWorkflowByName("TREATMENT STATUS");
 				curedState = txStat.getStateByName("PATIENT CURED");
 				
 				Patient p = Context.getPatientService().getPatient(2);
-				numberEnrolledBefore = Context.getProgramWorkflowService().getPatientPrograms(p).size(); 
-				Context.getProgramWorkflowService().enrollPatientInProgram(p, hivProgram, dateEnrolled,dateCompleted, Context.getAuthenticatedUser());
+				numberEnrolledBefore = Context.getProgramWorkflowService().getPatientPrograms(p, null, null, null, null, null, false).size(); 
+				PatientProgram patientProgram = new PatientProgram();
+				patientProgram.setPatient(p);
+				patientProgram.setProgram(hivProgram);
+				patientProgram.setDateEnrolled(dateEnrolled);
+				patientProgram.setDateCompleted(dateCompleted);
+				patientProgram.setCreator(Context.getAuthenticatedUser());
+				Context.getProgramWorkflowService().savePatientProgram(patientProgram);
 				PatientProgram pp = null;
-				for (PatientProgram ppLoop : Context.getProgramWorkflowService().getPatientPrograms(p)) {
+				for (PatientProgram ppLoop : Context.getProgramWorkflowService().getPatientPrograms(p, null, null, null, null, null, false)) {
 					if (ppLoop.getProgram().equals(hivProgram)) {
 						pp = ppLoop;
 						break;
 					}
-				}				
-				Context.getProgramWorkflowService().changeToState(pp, txStat, curedState, dateEnrolled);
+				}		
+				
+				pp.transitionToState(curedState, dateEnrolled);
+				Context.getProgramWorkflowService().savePatientProgram(pp);	
 			}
 			public void runOnParent() {
-				int compare = 0;
 				Patient p = Context.getPatientService().getPatient(2);
 				assertEquals("Enrollment failed",
 				             numberEnrolledBefore + 1,
-				             Context.getProgramWorkflowService().getPatientPrograms(p).size());
-				for (PatientProgram pp : Context.getProgramWorkflowService().getPatientPrograms(p)) {
-					if (pp.getProgram().equals(hivProgram)) {
-						compare = OpenmrsUtil.compare(  pp.getDateEnrolled(), dateEnrolled);						
-						assertEquals("Failed to change date", compare, 0);
+				             Context.getProgramWorkflowService().getPatientPrograms(p, null, null, null, null, null, false).size());
+				for (PatientProgram pp : Context.getProgramWorkflowService().getPatientPrograms(p, null, null, null, null, null, false)) {
+					if (pp.getProgram().equals(hivProgram)) {					
+						assertTrue("Failed to change date", DateUtils.isSameDay(pp.getDateEnrolled(), dateEnrolled));
 							
 						assertNotNull("Failed to change date", pp.getDateCompleted());
 
-						assertEquals("Wrong state", pp.getCurrentState(txStat).getState(), curedState);						
+						assertNull("Should not have an active state because curedState is terminal", pp.getCurrentState(txStat));						
 					}
 				}
 			}
@@ -146,34 +161,35 @@ public class SyncPatientTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldChangeState() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			Program hivProgram;
 			ProgramWorkflow txStat;
 			ProgramWorkflowState curedState;
 			public void runOnChild() {
-				hivProgram = Context.getProgramWorkflowService().getProgram("HIV PROGRAM");
+				hivProgram = Context.getProgramWorkflowService().getProgramByName("test program");
 				txStat = hivProgram.getWorkflowByName("TREATMENT STATUS");
 				curedState = txStat.getStateByName("PATIENT CURED");
 
 				Patient p = Context.getPatientService().getPatient(3);
-				Collection<PatientProgram> temp = Context.getProgramWorkflowService().getPatientPrograms(p);
+				Collection<PatientProgram> temp = Context.getProgramWorkflowService().getPatientPrograms(p, null, null, null, null, null, false);
 				assertEquals("Before test, patient record does not have the expected number of program enrollments", temp.size(), 1);
 				PatientProgram pp = temp.iterator().next();
 				assertNotSame("Before test, patient record not in expected state", pp.getCurrentState(txStat), curedState);
-				Context.getProgramWorkflowService().changeToState(pp, txStat, curedState, new Date());
+				pp.transitionToState(curedState, new Date());
+				Context.getProgramWorkflowService().savePatientProgram(pp);
 			}
 			public void runOnParent() {
 				Patient p = Context.getPatientService().getPatient(3);
-				PatientProgram pp = Context.getProgramWorkflowService().getPatientPrograms(p).iterator().next();
-				assertEquals("State not set", pp.getCurrentState(txStat).getState(), curedState);
+				PatientProgram pp = Context.getProgramWorkflowService().getPatientPrograms(p, null, null, null, null, null, false).iterator().next();
+				assertNull("Should not have an active state because curedState is terminal", pp.getCurrentState(txStat));
 			}
 		});
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldCreateEncounterAndObs() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -194,9 +210,21 @@ public class SyncPatientTest extends SyncBaseTest {
 				numEncountersSoFar = Context.getEncounterService().getEncountersByPatient(p).size();
 				
 				Encounter enc = new Encounter();
+				enc.setEncounterType(Context.getEncounterService().getEncounterType(1));
 				enc.setPatient(p);
 				enc.setLocation(loc);
-				enc.setProvider(u);
+				
+				EncounterRole role = new EncounterRole();
+				role.setName("role");
+				role = Context.getEncounterService().saveEncounterRole(role);
+				
+				Provider provider = new Provider();
+				provider.setIdentifier("id1");
+				provider.setPerson(u.getPerson());
+				provider = Context.getProviderService().saveProvider(provider);
+				
+				enc.setProvider(role, provider);
+				
 				enc.setEncounterDatetime(dateOfNewEncounter);
 				Obs o1 = new Obs();
 				o1.setConcept(weight);
@@ -234,7 +262,7 @@ public class SyncPatientTest extends SyncBaseTest {
 				             encs.size());
 				Encounter lookAt = null;
 				for (Encounter e : encs) {
-					if (OpenmrsUtil.compare(e.getEncounterDatetime(), dateOfNewEncounter) == 0) {
+					if (DateUtils.isSameDay(e.getEncounterDatetime(), dateOfNewEncounter)) {
 						lookAt = e;
 						break;
 					}
@@ -257,7 +285,7 @@ public class SyncPatientTest extends SyncBaseTest {
 				
 				boolean found = false;
 				for (Obs o : Context.getObsService().getObservationsByPerson(p)) {
-					if ( (OpenmrsUtil.compare(o.getObsDatetime(), anotherDate) == 0) && o.getConcept().equals(weight) && o.getValueNumeric().equals(12.3))
+					if ( (DateUtils.isSameDay(o.getObsDatetime(), anotherDate)) && o.getConcept().equals(weight) && o.getValueNumeric().equals(12.3))
 						found = true;
 				}
 				assertTrue("Cannot find newly created encounter-less obs", found);
@@ -271,7 +299,7 @@ public class SyncPatientTest extends SyncBaseTest {
 	 * @throws Exception
 	 */
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldEditEncounter() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			Date d1 = ymd.parse("1978-01-01");
@@ -286,7 +314,7 @@ public class SyncPatientTest extends SyncBaseTest {
 			}
 			public void runOnParent() {
 				Patient p = Context.getPatientService().getPatient(2);
-				Collection<Encounter> encs = Context.getEncounterService().getEncounters(p, d1, d2);
+				Collection<Encounter> encs = Context.getEncounterService().getEncounters(p, null, d1, d2, null, null, null, null, null, false);
 				assertEquals(encs.size(), 1);
 				Encounter e = encs.iterator().next();
 				
@@ -298,7 +326,7 @@ public class SyncPatientTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldEditObs() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			Date d = ymd.parse("1978-04-11");
@@ -356,7 +384,7 @@ public class SyncPatientTest extends SyncBaseTest {
 	}
 		
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldCreatePatient() throws Exception {
 		
 		runSyncTest(new SyncTestHelper() {
@@ -373,20 +401,20 @@ public class SyncPatientTest extends SyncBaseTest {
 				p.setGender("m");
 				p.setBirthdate(new Date());
 				Context.getPatientService().savePatient(p);
-				List<PatientIdentifier> ids = Context.getPatientService().getPatientIdentifiers("999", pit);
+				List<PatientIdentifier> ids = Context.getPatientService().getPatientIdentifiers("999", Arrays.asList(pit), null, null, null);
 				assertNotNull(ids);
 				if (ids.size() != 1)
 					assertFalse("Can't find patient we just created. ids.size()==" + ids.size(), true);
-				log.info("Patients at end " + Context.getPatientService().findPatients("Darius", false).size());
+				log.info("Patients at end " + Context.getPatientService().getPatients("Darius").size());
 			}
 			public void runOnParent() {
-				log.info("Patients at beginning " + Context.getPatientService().findPatients("Darius", false).size());
+				log.info("Patients at beginning " + Context.getPatientService().getPatients("Darius").size());
 				Location loc = Context.getLocationService().getLocation("Someplace");
 				PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierType(2);
 				PersonName name = new PersonName("Darius", "Graham", "Jazayeri");
 				PatientIdentifier id = new PatientIdentifier("999", pit, loc);
-
-				List<PatientIdentifier> ids = Context.getPatientService().getPatientIdentifiers("999", pit);
+				
+				List<PatientIdentifier> ids = Context.getPatientService().getPatientIdentifiers("999", Arrays.asList(pit), null, null, null);
 				assertNotNull(ids);
 				if (ids.size() != 1)
 					assertFalse("Should only find one patient, not " + ids.size(), true);
@@ -404,7 +432,7 @@ public class SyncPatientTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldCreatePatientFromExistingUser() throws Exception {
 		
 		
@@ -448,7 +476,6 @@ public class SyncPatientTest extends SyncBaseTest {
 				Location loc = Context.getLocationService().getLocation("Someplace");
 				PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierType(2);
 				ArrayList<PatientIdentifierType> pits = new ArrayList<PatientIdentifierType>(); pits.add(pit);
-				PatientIdentifier id = new PatientIdentifier("999", pit, loc);
 				List<PatientIdentifier> ids = Context.getPatientService().getPatientIdentifiers("999",pits, null, null, null);
 				assertNotNull(ids);
 				if (ids.size() != 1)
@@ -459,6 +486,7 @@ public class SyncPatientTest extends SyncBaseTest {
 				assertNotNull(p);
 				
 				//fetch by name
+				Context.updateSearchIndex();
 				assertEquals(1,Context.getPatientService().getPatients("Stub").size());
 
 			}
@@ -466,7 +494,7 @@ public class SyncPatientTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldEditPatient() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			PatientIdentifierType pit;
@@ -494,7 +522,7 @@ public class SyncPatientTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldEditPatientIdentifiers() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			PatientIdentifierType pit;
@@ -555,7 +583,7 @@ public class SyncPatientTest extends SyncBaseTest {
 	
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldEditPatientName() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			int numberBefore;
@@ -574,7 +602,7 @@ public class SyncPatientTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldMergePatients() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			Set<PatientIdentifier> pis = null;
@@ -583,7 +611,6 @@ public class SyncPatientTest extends SyncBaseTest {
 			int p1ObsCount = 0;
 			int p2AddressCount = 0;
 			int p2EncounterCount = 0;
-			int p2IdentifiersCount = 0;
 			int p2ObsCount = 0;
 			public void runOnChild() {
 								

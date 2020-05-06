@@ -24,7 +24,8 @@ import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncServerClass;
 import org.openmrs.test.SkipBaseSetup;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Tests remote server operations.
@@ -37,8 +38,8 @@ public class SyncRemoteServerTest {
      * @throws Exception
      */
 	@Test
-    @NotTransactional
     @SkipBaseSetup
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void shouldSendReceiveTest() throws Exception {
 
         // 'normal' state

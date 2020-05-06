@@ -19,7 +19,8 @@ import org.openmrs.Privilege;
 import org.openmrs.Role;
 import org.openmrs.api.UserService;
 import org.openmrs.api.context.Context;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Testing syncing of the {@link Privilege} object
@@ -41,7 +42,7 @@ public class SyncPrivilegeTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldTransferPrivilege() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -61,7 +62,7 @@ public class SyncPrivilegeTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldIgnoreModifiedPrivilegeWithDifferentUuidOnParent() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -83,7 +84,7 @@ public class SyncPrivilegeTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldAddPrivilegeWithDifferentUuidToRole() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			

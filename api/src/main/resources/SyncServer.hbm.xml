@@ -18,8 +18,9 @@
 			column="address" length="255" not-null="true" />
 
 		<property name="serverType" column="server_type">
-	      <type name="org.openmrs.module.sync.api.db.hibernate.usertype.GenericEnumUserType">
-	        <param name="enumClassName">org.openmrs.module.sync.server.RemoteServerType</param>
+	      <type name="org.hibernate.type.EnumType">
+	        <param name="enumClass">org.openmrs.module.sync.server.RemoteServerType</param>
+	        <param name="useNamed">true</param>
 	      </type>
 	    </property>
 
@@ -36,8 +37,9 @@
 			column="last_sync" length="19" />
 
 		<property name="lastSyncState" column="last_sync_state">
-			<type name="org.openmrs.module.sync.api.db.hibernate.usertype.GenericEnumUserType">
-				<param name="enumClassName">org.openmrs.module.sync.SyncTransmissionState</param>
+			<type name="org.hibernate.type.EnumType">
+				<param name="enumClass">org.openmrs.module.sync.SyncTransmissionState</param>
+				<param name="useNamed">true</param>
 			</type>
 		</property>
 

@@ -25,12 +25,13 @@ import org.openmrs.ConceptClass;
 import org.openmrs.EncounterType;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.EncounterService;
+import org.openmrs.api.ValidationException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.springframework.aop.MethodBeforeAdvice;
-import org.springframework.jdbc.UncategorizedSQLException;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 public class SyncBehaviorTest extends BaseModuleContextSensitiveTest {
 	
@@ -39,7 +40,7 @@ public class SyncBehaviorTest extends BaseModuleContextSensitiveTest {
 	 * HibernateException as {@link AssertionFailure} exceptions
 	 */
 	@Test(expected = AssertionFailure.class)
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldFailAnApiCallIfTheCreationOfASyncRecordFails() throws Exception {
 		Advice advice = new FailSyncRecordAdvice();
 		try {
@@ -58,7 +59,7 @@ public class SyncBehaviorTest extends BaseModuleContextSensitiveTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldNotCreateASyncRecordWhenTheTransactionIsRolledBack() throws Exception {
 		ConceptService cs = Context.getConceptService();
 		SyncService ss = Context.getService(SyncService.class);
@@ -70,7 +71,7 @@ public class SyncBehaviorTest extends BaseModuleContextSensitiveTest {
 			cc.setUuid("An invalid long uuid that for sure should result into an exception");
 			cs.saveConceptClass(cc);
 		}
-		catch (UncategorizedSQLException e) {
+		catch (ValidationException e) {
 			exceptionThrown = true;
 		}
 		

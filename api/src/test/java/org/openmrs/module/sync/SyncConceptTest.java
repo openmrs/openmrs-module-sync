@@ -33,11 +33,11 @@ import org.openmrs.ConceptName;
 import org.openmrs.ConceptNameTag;
 import org.openmrs.ConceptNumeric;
 import org.openmrs.ConceptSet;
-import org.openmrs.ConceptWord;
 import org.openmrs.api.ConceptNameType;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Tests sending Concepts over the wire
@@ -55,7 +55,7 @@ public class SyncConceptTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveConceptDescriptionsWithConcept() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -87,7 +87,7 @@ public class SyncConceptTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveConceptCoded() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -155,7 +155,7 @@ public class SyncConceptTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveConceptNumeric() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -168,7 +168,7 @@ public class SyncConceptTest extends SyncBaseTest {
 				cn.setDatatype(cs.getConceptDatatypeByName("Numeric"));
 				cn.setConceptClass(cs.getConceptClassByName("Question"));
 				cn.setSet(false);
-				cn.setPrecise(true);
+				cn.setAllowDecimal(true);
 				cn.setLowAbsolute(0d);
 				cn.setHiCritical(100d);
 				cs.saveConcept(cn);
@@ -194,13 +194,13 @@ public class SyncConceptTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveConceptSet() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
 			ConceptService cs;
 			
-			private int conceptNumericId = 99997;
+			private int conceptNumericId = 1;
 			
 			private int conceptCodedId = 99998;
 			
@@ -215,7 +215,7 @@ public class SyncConceptTest extends SyncBaseTest {
 				cn.setDatatype(cs.getConceptDatatypeByName("Numeric"));
 				cn.setConceptClass(cs.getConceptClassByName("Question"));
 				cn.setSet(false);
-				cn.setPrecise(true);
+				cn.setAllowDecimal(true);
 				cn.setLowAbsolute(0d);
 				cn.setHiCritical(100d);
 				cs.saveConcept(cn);
@@ -294,7 +294,7 @@ public class SyncConceptTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldAddExistingConceptToExistingSet() throws Exception {
 
 		runSyncTest(new SyncTestHelper() {
@@ -321,7 +321,7 @@ public class SyncConceptTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldEditConcepts() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -363,7 +363,7 @@ public class SyncConceptTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldAddNameToConcept() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -388,7 +388,7 @@ public class SyncConceptTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldAddDescriptionToConcept() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -415,7 +415,7 @@ public class SyncConceptTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldAddTagToConceptName() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -443,65 +443,7 @@ public class SyncConceptTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
-	public void shouldUpdateConceptWordsForNumericConcepts() throws Exception {
-		runSyncTest(new SyncTestHelper() {
-			
-			ConceptService cs = Context.getConceptService();
-			
-			public void runOnChild() {
-				Concept wt = cs.getConceptByName("WEIGHT");
-				wt.addName(new ConceptName("ASDF", Locale.UK));
-				cs.saveConcept(wt);
-			}
-			
-			public void runOnParent() {
-				Concept wt = cs.getConceptByName("WEIGHT");
-				List<ConceptWord> words = cs.getConceptWords("ASDF", Locale.UK);
-				boolean foundConcept = false;
-				for (ConceptWord word : words) {
-					if (word.getConcept().equals(wt)) {
-						foundConcept = true;
-					}
-				}
-				
-				assertTrue(foundConcept);
-			}
-		});
-	}
-	
-	@Test
-	@NotTransactional
-	public void shouldUpdateConceptWordsForNewConcepts() throws Exception {
-		runSyncTest(new SyncTestHelper() {
-			
-			ConceptService cs = Context.getConceptService();
-			
-			String conceptname = "THENEWCONCEPT";
-			
-			public void runOnChild() {
-				Concept newConcept = new Concept();
-				newConcept.addName(new ConceptName(conceptname, Context.getLocale()));
-				cs.saveConcept(newConcept);
-			}
-			
-			public void runOnParent() {
-				Concept wt = cs.getConceptByName(conceptname);
-				List<ConceptWord> words = cs.getConceptWords(conceptname, Context.getLocale());
-				boolean foundConcept = false;
-				for (ConceptWord word : words) {
-					if (word.getConcept().equals(wt)) {
-						foundConcept = true;
-					}
-				}
-				
-				assertTrue("The new concept's name was not found in the concept words", foundConcept);
-			}
-		});
-	}
-	
-	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldAddAndRemoveConceptAnswer() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -541,7 +483,7 @@ public class SyncConceptTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldTurnConceptIntoConceptNumericWithoutFrakkingUuids() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -573,7 +515,7 @@ public class SyncConceptTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSyncConceptNameIndexTerm() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			

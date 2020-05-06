@@ -15,11 +15,11 @@ package org.openmrs.module.sync.web.controller;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -40,8 +40,8 @@ import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.ServerConnectionState;
 import org.openmrs.scheduler.TaskDefinition;
+import org.openmrs.util.PrivilegeConstants;
 import org.openmrs.web.WebConstants;
-import org.openmrs.util.OpenmrsConstants;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
@@ -172,7 +172,7 @@ public class OverviewController extends SimpleFormController {
 	        
 	        try {
 		        //Add privilege to enable us access the registered tasks
-		        Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+		        Context.addProxyPrivilege(PrivilegeConstants.MANAGE_SCHEDULER);
 		        
 		        //taskConfig for automated syncing
 		        TaskDefinition parentSchedule = new TaskDefinition();
@@ -207,7 +207,7 @@ public class OverviewController extends SimpleFormController {
 	        }
 	        finally {
 	        	//We no longer need this privilege.
-	        	Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+	        	Context.removeProxyPrivilege(PrivilegeConstants.MANAGE_SCHEDULER);
 	        }
 		}
         

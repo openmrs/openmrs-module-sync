@@ -29,7 +29,8 @@ import org.openmrs.PersonAttributeType;
 import org.openmrs.PersonName;
 import org.openmrs.RelationshipType;
 import org.openmrs.api.context.Context;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Testing of delete methods and whether that action is synchronized
@@ -47,7 +48,7 @@ public class SyncOnDeleteTest extends SyncBaseTest {
     }
 
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldDeletePatientIdentfierType() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild(){				
@@ -70,7 +71,7 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 	}	
 	
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldDeleteRelationshipType() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild(){
@@ -93,7 +94,7 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 	}
 
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldDeletePersonAttributeType() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild(){
@@ -116,7 +117,7 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 	}
 	
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldDeletePatientName() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			PatientIdentifierType pit;
@@ -142,7 +143,7 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 	}
 	
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldDeletePatient() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			Integer patientId = 4;
@@ -159,7 +160,7 @@ public class SyncOnDeleteTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldDeleteConcept() throws Exception {
 			runSyncTest(new SyncTestHelper() {
 				// note that we need to test a concept that can be deleted (i.e., doesn't have any associated answer concepts, obs, etc)  but that has an associated concept word so we can test the special case of

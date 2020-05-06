@@ -19,7 +19,8 @@ import org.openmrs.Role;
 import org.openmrs.User;
 import org.openmrs.api.UserService;
 import org.openmrs.api.context.Context;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Testing syncing of the {@link Role} object
@@ -41,7 +42,7 @@ public class SyncRoleTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldAddRoleToUserWithDifferentUuid() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -53,7 +54,7 @@ public class SyncRoleTest extends SyncBaseTest {
 				// sanity check
 				Assert.assertEquals(false, u.hasRole("Provider", true));
 				u.addRole(r);
-				us.saveUser(u, null);
+				us.saveUser(u);
 			}
 			
 			public void runOnParent() throws Exception {

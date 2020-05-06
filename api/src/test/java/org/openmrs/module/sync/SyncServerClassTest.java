@@ -20,7 +20,8 @@ import org.openmrs.PersonAttributeType;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * This tests the exclusion of certain classes 
@@ -43,7 +44,7 @@ public class SyncServerClassTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldNotSendPersonAttributeType() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			PersonService ps = Context.getPersonService();

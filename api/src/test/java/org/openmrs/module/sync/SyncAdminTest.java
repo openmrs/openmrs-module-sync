@@ -37,7 +37,8 @@ import org.openmrs.api.ProgramWorkflowService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.server.RemoteServer;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -55,7 +56,7 @@ public class SyncAdminTest extends SyncBaseTest {
     }
 
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldCreateProgram() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			int numBefore = 0;
@@ -91,8 +92,8 @@ public class SyncAdminTest extends SyncBaseTest {
 				Context.getProgramWorkflowService().saveProgram(prog);
 			}
 			public void runOnParent() {
-				assertEquals("Failed to create program", numBefore + 1, Context.getProgramWorkflowService().getPrograms().size());
-				Program p = Context.getProgramWorkflowService().getProgram("TB PROGRAM");
+				assertEquals("Failed to create program", numBefore + 1, Context.getProgramWorkflowService().getAllPrograms().size());
+				Program p = Context.getProgramWorkflowService().getProgramByName("TB PROGRAM");
 				log.info("TB Program = " + p);
 				assertNotNull("Workflows is null", p.getWorkflows());
 				assertEquals("Wrong number of workflows", 1, p.getWorkflows().size());
@@ -111,13 +112,13 @@ public class SyncAdminTest extends SyncBaseTest {
 	}
 
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldEditProgram() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			ProgramWorkflowService ps = Context.getProgramWorkflowService();
 			int numStatesBefore;
 			public void runOnChild() {
-				Program hiv = Context.getProgramWorkflowService().getProgram("HIV PROGRAM");
+				Program hiv = Context.getProgramWorkflowService().getProgramByName("test program");
 				assertEquals(hiv.getWorkflows().size(), 1);
 				ProgramWorkflow wf = hiv.getWorkflows().iterator().next();
 				numStatesBefore = wf.getStates().size();
@@ -130,7 +131,7 @@ public class SyncAdminTest extends SyncBaseTest {
 				ps.saveProgram(hiv);
 			}
 			public void runOnParent() {
-				Program hiv = Context.getProgramWorkflowService().getProgram("HIV PROGRAM");
+				Program hiv = Context.getProgramWorkflowService().getProgramByName("test program");
 				assertEquals(hiv.getWorkflows().size(), 1);
 				ProgramWorkflow wf = hiv.getWorkflows().iterator().next();
 				assertEquals(wf.getStates().size(), numStatesBefore + 1);
@@ -139,7 +140,7 @@ public class SyncAdminTest extends SyncBaseTest {
 	}
 
 	@Test
-    @NotTransactional	
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldCreateLocation() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild() {
@@ -155,7 +156,7 @@ public class SyncAdminTest extends SyncBaseTest {
 	}
 
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldEditLocation() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild() {
@@ -180,7 +181,7 @@ public class SyncAdminTest extends SyncBaseTest {
 	 */
 	@Ignore
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldEditSaveGlobalProperty() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild() {
@@ -200,7 +201,7 @@ public class SyncAdminTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldGetSyncStatistics() throws Exception {
 		if (!Context.isSessionOpen()) {
 			Context.openSession();

@@ -14,10 +14,10 @@ import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.TestUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.server.SyncServerRecord;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.openmrs.web.test.BaseModuleWebContextSensitiveTest;
 import org.springframework.stereotype.Controller;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.ModelMap;
 
 /**
@@ -31,11 +31,10 @@ public class ViewRecordControllerTest extends BaseModuleWebContextSensitiveTest 
 	
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSetAllSyncServerRecordsToNotToSync() throws Exception {
 
 		// set up the basic test data, need to configure as a parent server so sync_server_records are created
-		deleteAllData();
         try {
             executeDataSet("org/openmrs/module/sync/include/" + new TestUtil().getTestDatasetFilename("syncCreateTest"));
         }
@@ -69,11 +68,10 @@ public class ViewRecordControllerTest extends BaseModuleWebContextSensitiveTest 
 	
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSetAllSyncServerRecordsToNew() throws Exception {
 
 		// set up the basic test data, need to configure as a parent server so sync_server_records are created
-		deleteAllData();
         try {
             executeDataSet("org/openmrs/module/sync/include/" + new TestUtil().getTestDatasetFilename("syncCreateTest"));
         }

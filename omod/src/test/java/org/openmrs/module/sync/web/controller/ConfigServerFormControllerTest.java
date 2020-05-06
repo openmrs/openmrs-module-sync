@@ -32,6 +32,7 @@ import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.scheduler.TaskDefinition;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.web.test.BaseModuleWebContextSensitiveTest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -40,7 +41,7 @@ import org.springframework.validation.BeanPropertyBindingResult;
  * Tests for the {@link ConfigServerFormController}
  */
 @Controller
-public class ConfigServerFormControllerTest  extends BaseModuleContextSensitiveTest {
+public class ConfigServerFormControllerTest  extends BaseModuleWebContextSensitiveTest {
         
         /** Logger for this class and subclasses */
 	protected final Log log = LogFactory.getLog(getClass());

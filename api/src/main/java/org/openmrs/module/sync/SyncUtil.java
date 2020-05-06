@@ -886,15 +886,6 @@ public class SyncUtil {
 			//see this method below
 			removeFromPatientParentCollectionAndSave(o);
 		} else if (o instanceof org.openmrs.Concept || o instanceof org.openmrs.ConceptName) {
-			//  if this is a concept or a concept name, make sure we delete concept words explicitly (since concept words don't extend OpenmrsObject)
-			if (o instanceof org.openmrs.Concept) {
-				Context.getAdministrationService().executeSQL("delete from concept_word where concept_id = " + o.getId(),
-				    false);
-			} else if (o instanceof org.openmrs.ConceptName) {
-				Context.getAdministrationService().executeSQL(
-				    "delete from concept_word where concept_name_id = " + o.getId(), false);
-			}
-			
 			// now call the call plain delete via service API
 			Context.getService(SyncService.class).deleteOpenmrsObject(o);
 		} else {
@@ -1018,7 +1009,7 @@ public class SyncUtil {
 	private static void sendAlert(String messageCode, Object...replacements) {
 		try {
 			Context.addProxyPrivilege(PrivilegeConstants.MANAGE_ALERTS);
-			Context.addProxyPrivilege(PrivilegeConstants.VIEW_USERS);
+			Context.addProxyPrivilege(PrivilegeConstants.GET_USERS);
 
 			Role role = null;
 			String roleName = Context.getAdministrationService().getGlobalProperty(SyncConstants.ROLE_TO_SEND_TO_MAIL_ALERTS);
@@ -1042,7 +1033,7 @@ public class SyncUtil {
 		}
 		finally {
 			Context.removeProxyPrivilege(PrivilegeConstants.MANAGE_ALERTS);
-			Context.removeProxyPrivilege(PrivilegeConstants.VIEW_USERS);
+			Context.removeProxyPrivilege(PrivilegeConstants.GET_USERS);
 		}
 	}
 

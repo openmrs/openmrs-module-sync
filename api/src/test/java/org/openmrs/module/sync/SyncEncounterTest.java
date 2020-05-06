@@ -28,11 +28,13 @@ import org.openmrs.EncounterType;
 import org.openmrs.Location;
 import org.openmrs.Obs;
 import org.openmrs.Person;
-import org.openmrs.api.AdministrationService;
 import org.openmrs.api.EncounterService;
+import org.openmrs.api.ObsService;
 import org.openmrs.api.context.Context;
-import org.springframework.test.annotation.NotTransactional;
+import org.openmrs.util.OpenmrsUtil;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -50,8 +52,8 @@ public class SyncEncounterTest extends SyncBaseTest {
     }
 
 	@Test
-    @NotTransactional
     @Rollback(false)
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldCreateEncounterType() throws Exception {
 		runSyncTest(new SyncTestHelper() {			
 			EncounterService encounterService = Context.getEncounterService();
@@ -72,21 +74,20 @@ public class SyncEncounterTest extends SyncBaseTest {
 	}	
 
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldUpdateEncounterType() throws Exception {
 		runSyncTest(new SyncTestHelper() {			
-			AdministrationService adminService = Context.getAdministrationService();
 			EncounterService encounterService = Context.getEncounterService();
 			public void runOnChild() {
 				
 				EncounterType encounterType = new EncounterType();
 				encounterType.setName("name");
 				encounterType.setDescription("description");
-				adminService.createEncounterType(encounterType);	
+				encounterService.saveEncounterType(encounterType);	
 				
 				EncounterType updateEncounterType = encounterService.getEncounterType("name");
 				encounterType.setName("new name");
-				adminService.updateEncounterType(updateEncounterType);
+				encounterService.saveEncounterType(updateEncounterType);
 			}
 			public void runOnParent() {
 				EncounterType encounterType = encounterService.getEncounterType("name");
@@ -99,14 +100,14 @@ public class SyncEncounterTest extends SyncBaseTest {
 	}
 	
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldDeleteEncounterType() throws Exception { 
 		
 		runSyncTest(new SyncTestHelper() {			
 			public void runOnChild() {
 				EncounterType existing = Context.getEncounterService().getEncounterType("DELETETEST");
 				assertNotNull(existing);
-				Context.getAdministrationService().deleteEncounterType(existing);
+				Context.getEncounterService().purgeEncounterType(existing);
 			}
 			public void runOnParent() {
 				EncounterType encounterType = Context.getEncounterService().getEncounterType("DELETETEST");
@@ -117,7 +118,7 @@ public class SyncEncounterTest extends SyncBaseTest {
 	}
 
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldCreateEncounter() throws Exception {
 		runSyncTest(new SyncTestHelper() {			
 			String eid = null;
@@ -132,29 +133,34 @@ public class SyncEncounterTest extends SyncBaseTest {
 				e.setEncounterDatetime(c.getTime());
 				e.setPatient(Context.getPatientService().getPatient(2));
 				e.setEncounterType(Context.getEncounterService().getEncounterType("ADULTINITIAL"));
-				Context.getEncounterService().createEncounter(e);
+				Context.getEncounterService().saveEncounter(e);
 				eid = e.getUuid();
 			}
 			public void runOnParent() {
 				Encounter e = Context.getEncounterService().getEncounterByUuid(eid);
 				assertNotNull(e);
-				assertEquals(c.getTime(),e.getEncounterDatetime());
+				OpenmrsUtil.nullSafeEquals(c.getTime(), e.getEncounterDatetime());
 				assertEquals(e.getEncounterType(),Context.getEncounterService().getEncounterType("ADULTINITIAL"));
 			}
 		});
 	}	
 
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldDeleteEncounter() throws Exception {
 		runSyncTest(new SyncTestHelper() {			
 
 			public void runOnChild() {
 				
+				ObsService obsService = Context.getObsService();
+				
 				//delete existing
 				Encounter existing = Context.getEncounterService().getEncounter(1);
 				assertNotNull(existing);
-				Context.getEncounterService().deleteEncounter(existing);
+				for (Obs obs : existing.getObs()) {
+					obsService.purgeObs(obs);
+				}
+				Context.getEncounterService().purgeEncounter(existing);
 
 			}
 			public void runOnParent() {
@@ -166,7 +172,7 @@ public class SyncEncounterTest extends SyncBaseTest {
 	}
 	
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldAddObsWithEncounter() throws Exception {
 		runSyncTest(new SyncTestHelper() {			
 			
@@ -185,6 +191,7 @@ public class SyncEncounterTest extends SyncBaseTest {
                 Location loc = Context.getLocationService().getLocation(1);
 
 				Obs o = new Obs(person, concept, new Date(), loc);
+				o.setValueCoded(new Concept(2));
 				e.addObs(o);
 				
 				Context.getEncounterService().saveEncounter(e);

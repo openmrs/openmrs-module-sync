@@ -41,12 +41,10 @@ import org.openmrs.module.sync.TransmissionLog;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.SyncServerRecord;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Database related methods for the Synchronization module.
  */
-@Transactional
 public interface SyncService {
 	
 	/**
@@ -91,7 +89,6 @@ public interface SyncService {
 	 * @should find a record given a string in its payload
 	 */
 	//@Authorized({"View Synchronization Records"})
-	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecords(String keyword) throws APIException;
 	
 	/**
@@ -101,7 +98,6 @@ public interface SyncService {
 	 * @should get a record by its primary key
 	 */
 	//@Authorized({"View Synchronization Records"})
-	@Transactional(readOnly = true)
 	public SyncRecord getSyncRecord(Integer syncRecordId) throws APIException;
 	
 	/**
@@ -110,10 +106,9 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})
-	@Transactional(readOnly = true)
 	public SyncRecord getSyncRecord(String uuid) throws APIException;
 	
-	@Transactional(readOnly = true)
+	
 	public SyncRecord getSyncRecordByOriginalUuid(String originalUuid) throws APIException;
 	
 	/**
@@ -121,7 +116,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})
-	@Transactional(readOnly = true)
 	public SyncRecord getLatestRecord() throws APIException;
 	
 	/**
@@ -151,7 +145,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	@Authorized({ SyncConstants.PRIV_VIEW_SYNC_RECORDS })
-	@Transactional(readOnly = true)
 	public SyncRecord getOlderSyncRecordInState(SyncRecord syncRecord, EnumSet<SyncRecordState> states) throws APIException;
 	
 	/**
@@ -195,7 +188,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})
-	@Transactional(readOnly = true)
 	public SyncImportRecord getSyncImportRecord(String uuid) throws APIException;
 	
 	/**
@@ -206,7 +198,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})
-	@Transactional(readOnly = true)
 	public List<SyncImportRecord> getSyncImportRecords(SyncRecordState... state) throws APIException;
 	
 	/**
@@ -216,7 +207,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})
-	@Transactional(readOnly = true)
 	public SyncRecord getFirstSyncRecordInQueue() throws APIException;
 	
 	/**
@@ -226,7 +216,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})
-	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecords() throws APIException;
 	
 	/**
@@ -237,7 +226,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})
-	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecords(SyncRecordState state) throws APIException;
 	
 	/**
@@ -250,7 +238,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	@Authorized({ "View Synchronization Records" })
-	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, Integer maxSyncRecords, Integer firstRecordId) throws APIException;
 	
 	/**
@@ -281,7 +268,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})
-	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords, Integer firstRecordId)
 	                                                                                                         throws APIException;
 	
@@ -294,7 +280,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//Authorized({"View Synchronization Records"})
-	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecordsSince(Date from) throws APIException;
 	
 	/**
@@ -307,7 +292,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})
-	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecordsBetween(Date from, Date to) throws APIException;
 	
 	/**
@@ -318,7 +302,6 @@ public interface SyncService {
 	 * @return the number of records
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true)
 	public Long getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states)
 	                                                                                                        throws APIException;
 	
@@ -331,7 +314,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})
-	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecords(Integer firstRecordId, Integer numberToReturn) throws APIException;
 	
 	/**
@@ -370,7 +352,6 @@ public interface SyncService {
 	 * @return
 	 */
 	//@Authorized({"View Synchronization Records"})
-	@Transactional(readOnly = true)
 	public String getGlobalProperty(String propertyName) throws APIException;
 	
 	/**
@@ -409,7 +390,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Servers"})
-	@Transactional(readOnly = true)
 	public RemoteServer getRemoteServer(Integer serverId) throws APIException;
 	
 	/**
@@ -418,7 +398,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Servers"})
-	@Transactional(readOnly = true)
 	public RemoteServer getRemoteServer(String uuid) throws APIException;
 	
 	/**
@@ -427,7 +406,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Servers"})
-	@Transactional(readOnly = true)
 	public RemoteServer getRemoteServerByUsername(String username) throws APIException;
 	
 	/**
@@ -435,7 +413,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Servers"})
-	@Transactional(readOnly = true)
 	public List<RemoteServer> getRemoteServers() throws APIException;
 	
 	/**
@@ -444,7 +421,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Servers"})
-	@Transactional(readOnly = true)
 	public RemoteServer getParentServer() throws APIException;
 	
 	/**
@@ -453,7 +429,6 @@ public interface SyncService {
 	 * @return uuid of the server. String representation of java.util.UUID.
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true)
 	public String getServerUuid() throws APIException;
 	
 	/**
@@ -474,7 +449,6 @@ public interface SyncService {
 	 * @return name of the server.
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true)
 	public String getServerName() throws APIException;
 	
 	/**
@@ -528,7 +502,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"Manage Synchronization"})
-	@Transactional(readOnly = true)
 	public SyncClass getSyncClass(Integer syncClassId) throws APIException;
 	
 	/**
@@ -536,7 +509,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"Manage Synchronization"})
-	@Transactional(readOnly = true)
 	public List<SyncClass> getSyncClasses() throws APIException;
 	
 	/**
@@ -545,7 +517,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"Manage Synchronization"})
-	@Transactional(readOnly = true)
 	public SyncClass getSyncClassByName(String className) throws APIException;
 	
 	/**
@@ -555,7 +526,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"Manage Synchronization"})
-	@Transactional
 	public void deleteOpenmrsObject(OpenmrsObject o) throws APIException;
 	
 	/**
@@ -603,7 +573,6 @@ public interface SyncService {
 	 * @return
 	 * @should get any openmrs object by its uuid
 	 */
-	@Transactional(readOnly = true)
 	public <T extends OpenmrsObject> T getOpenmrsObjectByUuid(Class<T> clazz, String uuid);
 	
 	/**
@@ -611,7 +580,6 @@ public interface SyncService {
 	 * 
 	 * @return a list of {@link OpenmrsObject}
 	 */
-	@Transactional(readOnly = true)
 	public List<Class<OpenmrsObject>> getAllOpenmrsObjects();
 	
 	/**
@@ -625,7 +593,6 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	// @Authorized({"Backup Entire Database"})
-	@Transactional(readOnly = true)
 	public void exportChildDB(String uuidForChild, OutputStream os) throws APIException;
 	
 	/**
@@ -640,7 +607,6 @@ public interface SyncService {
 	 * 
 	 * @return the file pointer to the database dump
 	 */
-	@Transactional(readOnly = true)
 	public File generateDataFile() throws APIException;
 	
 	/**
@@ -659,7 +625,6 @@ public interface SyncService {
 	 * @throws APIException
 	 * @return true if the object should be recored for sync
 	 */
-	@Transactional(readOnly = true)
 	@Logging(ignore = true)
 	public Boolean shouldSynchronize(Object entity) throws APIException;
 	
@@ -671,7 +636,6 @@ public interface SyncService {
 	 * @throws APIException
 	 * @see {@link SyncUtil#hasNoAutomaticPrimaryKey(String)}
 	 */
-	@Transactional(readOnly = true)
 	@Logging(ignoredArgumentIndexes = 0)
 	public String getPrimaryKey(OpenmrsObject obj) throws APIException;
 	
@@ -684,7 +648,6 @@ public interface SyncService {
 	 * @param p Patient for which stub ought to be created
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true)
 	// because things are not actually written to the db, just memory
 	@Logging(ignoreAllArgumentValues = true)
 	public void handleInsertPatientStubIfNeeded(Patient p) throws APIException;
@@ -702,7 +665,6 @@ public interface SyncService {
 	 *            which stub ought to be created
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true)
 	// because things are not actually written to the db, just memory
 	@Logging(ignoreAllArgumentValues = true)
 	public void handleInsertSubclassIfNeeded(SyncSubclassStub stub) throws APIException;
@@ -722,7 +684,6 @@ public interface SyncService {
      * Gets the Most recent successfully committed record
      * @return record id of the most successful most recent committed record
      */
-     @Transactional(readOnly = true)
      public int getMostRecentFullyCommittedRecordId();
 	
 	/**
@@ -733,7 +694,6 @@ public interface SyncService {
 	 * @throws APIException
 	 * @should get a syncServerRecord by its primary key
 	 */
-	@Transactional(readOnly = true)
 	public SyncServerRecord getSyncServerRecord(Integer syncServerRecordId) throws APIException;
 
 	/**
@@ -742,7 +702,6 @@ public interface SyncService {
 	 * @return
 	 * @throws APIException
 	 */
-	@Transactional
     TransmissionLog saveTransmissionLog(TransmissionLog transmissionLog) throws APIException;
 
 	/**
@@ -754,7 +713,6 @@ public interface SyncService {
 	 * @return
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true)
 	List<TransmissionLog> getTransmissionLogs(Integer startIndex, Integer limit,  RemoteServer server, SyncTransmissionStatus status) throws APIException;
 
 	/**
@@ -764,7 +722,6 @@ public interface SyncService {
 	 * @return
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true)
 	List<TransmissionLog> getTransmissionLogsForServerWithStatus(RemoteServer server, SyncTransmissionStatus status) throws APIException;
 
 	/**
@@ -773,7 +730,6 @@ public interface SyncService {
 	 * @return
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true)
 	List<TransmissionLog> getAllTransmissionLogsWithStatus(SyncTransmissionStatus status) throws APIException;
 
 	/**
@@ -782,7 +738,6 @@ public interface SyncService {
 	 * @return
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true)
 	List<TransmissionLog> getAllTransmissionLogsForSever(RemoteServer server) throws APIException;
 
 	/**
@@ -790,7 +745,6 @@ public interface SyncService {
 	 * @return
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true)
 	List<TransmissionLog> getAllTransmissionLogs() throws APIException;
 
 	/**
@@ -800,7 +754,6 @@ public interface SyncService {
 	 * @return count of all transmission logs by status
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true)
 	int getCountOfTransmissionLogsForServerWithStatus(RemoteServer server, SyncTransmissionStatus status) throws APIException;
 
 	/**
@@ -809,7 +762,6 @@ public interface SyncService {
 	 * @return count of all transmission logs
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true)
 	int getCountOfAllTransmissionLogsForServer(RemoteServer server) throws APIException;
 
 	/**
@@ -818,7 +770,6 @@ public interface SyncService {
 	 * @return count of all transmission logs by status
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true)
 	int getCountOfAllTransmissionLogsWithStatus(SyncTransmissionStatus status) throws APIException;
 
 	/**
@@ -826,7 +777,6 @@ public interface SyncService {
 	 * @return count of all transmission logs
 	 * @throws APIException
 	 */
-	@Transactional(readOnly = true)
 	int getCountOfAllTransmissionLogs() throws APIException;
 
 	/**

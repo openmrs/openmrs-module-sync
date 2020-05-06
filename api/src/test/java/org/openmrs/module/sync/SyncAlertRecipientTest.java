@@ -21,7 +21,8 @@ import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.notification.Alert;
 import org.openmrs.notification.AlertService;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Tests sending AlertRecipient objects over the wire
@@ -39,7 +40,7 @@ public class SyncAlertRecipientTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveAlertRecipients() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 

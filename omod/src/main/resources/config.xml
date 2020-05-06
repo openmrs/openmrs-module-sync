@@ -13,6 +13,10 @@
 	<updateURL>http://modules.openmrs.org/modules/download/@MODULE_ID@/update.rdf</updateURL>
 	<require_version>1.9.0</require_version>
 	
+	<aware_of_modules>
+	    <aware_of_module>org.openmrs.module.legacyui</aware_of_module>
+	</aware_of_modules>
+	
 	<mandatory>true</mandatory>
 	<!-- /Synchronization Module Properties -->
 	

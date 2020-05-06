@@ -22,6 +22,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.web.test.BaseModuleWebContextSensitiveTest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.stereotype.Controller;
 
@@ -29,7 +30,7 @@ import org.springframework.stereotype.Controller;
  * Tests for the {@link ConfigCurrentServerFormController}
  */
 @Controller
-public class ConfigCurrentServerFormControllerTest extends BaseModuleContextSensitiveTest {
+public class ConfigCurrentServerFormControllerTest extends BaseModuleWebContextSensitiveTest {
 	
 	/** Logger for this class and subclasses */
 	protected final Log log = LogFactory.getLog(getClass());

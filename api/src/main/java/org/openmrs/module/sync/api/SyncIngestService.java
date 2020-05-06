@@ -26,9 +26,8 @@ import org.openmrs.module.sync.ingest.SyncImportItem;
 import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.ingest.SyncIngestException;
 import org.openmrs.module.sync.server.RemoteServer;
-import org.springframework.transaction.annotation.Transactional;
 
-@Transactional
+
 public interface SyncIngestService {
 
     /**
@@ -110,7 +109,6 @@ public interface SyncIngestService {
      * @return true if database does not contain concept with conflicting id/uuid combination 
      * @throws APIException
      */
-    @Transactional(readOnly = true)
     @Logging(ignoreAllArgumentValues=true)
     public boolean isConceptIdValidForUuid(Integer conceptId, String uuid) throws APIException;
 }

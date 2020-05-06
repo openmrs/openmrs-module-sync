@@ -61,8 +61,6 @@ public class SyncTask extends AbstractTask {
 		}
 		try {
 			log.debug("Synchronizing data to a server.");
-			if (Context.isAuthenticated() == false && serverId > 0)
-				authenticate();
 			
 			RemoteServer server = Context.getService(SyncService.class).getRemoteServer(serverId);
 			if (server != null) {

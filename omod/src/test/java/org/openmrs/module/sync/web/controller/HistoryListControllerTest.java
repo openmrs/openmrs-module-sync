@@ -21,7 +21,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.server.SyncServerRecord;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.web.test.BaseModuleWebContextSensitiveTest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -30,7 +30,7 @@ import org.springframework.ui.ModelMap;
  * Tests for the {@link HistoryListController}
  */
 @Controller
-public class HistoryListControllerTest extends BaseModuleContextSensitiveTest {
+public class HistoryListControllerTest extends BaseModuleWebContextSensitiveTest {
 	
 	/** Logger for this class and subclasses */
 	protected final Log log = LogFactory.getLog(getClass());
@@ -38,6 +38,7 @@ public class HistoryListControllerTest extends BaseModuleContextSensitiveTest {
 	@Test
 	public void shouldResetSelectedRecordsAsIgnore() throws Exception {
 		
+		executeDataSet("org/openmrs/module/sync/include/SyncServerClasses.xml");
 		executeDataSet("org/openmrs/module/sync/include/SyncHistoryListRecords.xml");
 		executeDataSet("org/openmrs/module/sync/include/SyncServerRecords-others.xml");
 		
@@ -78,6 +79,7 @@ public class HistoryListControllerTest extends BaseModuleContextSensitiveTest {
 	@Test
 	public void shouldResetSelectedRecordsAsNew() throws Exception {
 
+		executeDataSet("org/openmrs/module/sync/include/SyncServerClasses.xml");
 		executeDataSet("org/openmrs/module/sync/include/SyncHistoryListRecords.xml");
 		executeDataSet("org/openmrs/module/sync/include/SyncServerRecords-others.xml");
 		

@@ -13,14 +13,9 @@
  */
 package org.openmrs.module.sync;
 
-import org.junit.Test;
-import org.openmrs.module.sync.serialization.FilePackage;
-import org.openmrs.module.sync.serialization.IItem;
-import org.openmrs.module.sync.serialization.Item;
-import org.openmrs.module.sync.serialization.Package;
-import org.openmrs.module.sync.serialization.Record;
-import org.openmrs.test.SkipBaseSetup;
-import org.springframework.test.annotation.NotTransactional;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,9 +23,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+import org.openmrs.module.sync.serialization.FilePackage;
+import org.openmrs.module.sync.serialization.IItem;
+import org.openmrs.module.sync.serialization.Item;
+import org.openmrs.module.sync.serialization.Package;
+import org.openmrs.module.sync.serialization.Record;
+import org.openmrs.test.SkipBaseSetup;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Tests sync record serialization.
@@ -43,8 +44,8 @@ public class SyncRecordTest {
      * @throws Exception
      */
 	@Test
-    @NotTransactional
     @SkipBaseSetup
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void shouldSerializeASyncRecord() throws Exception {
 
         // 'normal' state
@@ -115,8 +116,8 @@ public class SyncRecordTest {
      * @throws Exception
      */
     @Test
-    @NotTransactional
     @SkipBaseSetup
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void shouldEquality() throws Exception {
         
         //setup instance 1

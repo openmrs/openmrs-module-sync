@@ -14,7 +14,7 @@
   <person person_id="3" gender="F" dead="0" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="196bef28-168c-102b-8d9c-e44ed545d86c"/>
   
   
-  <patient_identifier_type retired="false" patient_identifier_type_id="2" name="Old Identification Number" description="Number given out prior to the OpenMRS system (No check digit)" format="" check_digit="false" creator="1" date_created="2005-09-22 00:00:00.0" required="false" uuid="3010e86a-144e-102b-8d9c-e44ed545d86c"/>
+  <patient_identifier_type retired="false" patient_identifier_type_id="2" name="Old Identification Number" description="Number given out prior to the OpenMRS system (No check digit)" format="" creator="1" date_created="2005-09-22 00:00:00.0" required="false" uuid="3010e86a-144e-102b-8d9c-e44ed545d86c"/>
   <sync_server server_id="1" nickname="Parent Server" address="" server_type="PARENT" username="admin" password="test" last_sync="2008-01-01 15:38:35.0" disabled="false" child_username="admin" uuid="12316ac6-144e-102b-8d9c-e44ed545d777"/>
   
 </dataset>

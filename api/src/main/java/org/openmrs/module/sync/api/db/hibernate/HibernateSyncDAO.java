@@ -57,16 +57,18 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
+import org.hibernate.jdbc.ReturningWork;
+import org.hibernate.jdbc.Work;
 import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncConstants;
-import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncStatistic;
+import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncTransmissionStatus;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.TransmissionLog;
@@ -698,7 +700,15 @@ public class HibernateSyncDAO implements SyncDAO {
 	 * called at Openmrs sync parent server: exports the openmrs database to a
 	 * DDL output stream for sending it back to a new child node being created
 	 */
-	public void exportChildDB(String uuidForChild, OutputStream os) throws DAOException {
+	public void exportChildDB(final String uuidForChild, final OutputStream os) throws DAOException {
+		sessionFactory.getCurrentSession().doWork(new Work() {
+			public void execute(Connection connection) {
+				exportChildDB(uuidForChild, os, connection);
+			}
+		});
+	}
+		
+	private void exportChildDB(String uuidForChild, OutputStream os, Connection conn) throws DAOException {
 		PrintStream out = new PrintStream(os);
 		Set<String> tablesToSkip = new HashSet<String>();
 		{
@@ -765,7 +775,6 @@ public class HibernateSyncDAO implements SyncDAO {
 			// Connection conn =
 			// DriverManager.getConnection("jdbc:mysql://localhost/" + schema,
 			// "test", "test");
-			Connection conn = sessionFactory.getCurrentSession().connection();
 			try {
 				Statement st = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				
@@ -935,9 +944,16 @@ public class HibernateSyncDAO implements SyncDAO {
 	 * from an input stream generated from the parent DB @Impl: Reads the DDL
 	 * statement line by line and updates the child DB
 	 */
-	public void importParentDB(InputStream in) {
+	public void importParentDB(final InputStream in) {
+		sessionFactory.getCurrentSession().doWork(new Work() {
+			public void execute(Connection connection) {
+				importParentDB(in, connection);
+			}
+		});
+	}
+		
+	private void importParentDB(InputStream in, Connection conn) {
 		try {
-			Connection conn = sessionFactory.getCurrentSession().connection();
 			Statement statement = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 			String line;
@@ -1203,7 +1219,7 @@ public class HibernateSyncDAO implements SyncDAO {
 		//first find out what kid of set we are dealing with:
 		//Hibernate PersistentSortedSet == TreeSet, note this is derived from PersistentSet so we have to test for it first
 		//Hibernate PersistentSet == HashSet
-		if (!org.hibernate.collection.PersistentSet.class.isAssignableFrom(collectionType)) {
+		if (!org.hibernate.collection.internal.PersistentSet.class.isAssignableFrom(collectionType)) {
 			//don't know how to process this collection type
 			log.error("Do not know how to process this collection type: " + collectionType.getName());
 			throw new SyncIngestException(SyncConstants.ERROR_ITEM_BADXML_MISSING, null, incoming, null);
@@ -1274,10 +1290,10 @@ public class HibernateSyncDAO implements SyncDAO {
 		 */
 
 		if (entries == null) {
-			if (org.hibernate.collection.PersistentSortedSet.class.isAssignableFrom(collectionType)) {
+			if (org.hibernate.collection.internal.PersistentSortedSet.class.isAssignableFrom(collectionType)) {
 				needsRecreate = true;
 				entries = new TreeSet();
-			} else if (org.hibernate.collection.PersistentSet.class.isAssignableFrom(collectionType)) {
+			} else if (org.hibernate.collection.internal.PersistentSet.class.isAssignableFrom(collectionType)) {
 				needsRecreate = true;
 				entries = new HashSet();
 			}
@@ -1392,9 +1408,16 @@ public class HibernateSyncDAO implements SyncDAO {
 	 * (non-Javadoc)
 	 * @see org.openmrs.module.sync.api.db.SyncDAO#processSyncSubclassStub(org.openmrs.module.sync.SyncSubclassStub)
 	 */
-	public void processSyncSubclassStub(SyncSubclassStub stub) {
-		Connection connection = sessionFactory.getCurrentSession().connection();
+	public void processSyncSubclassStub(final SyncSubclassStub stub) {
+		sessionFactory.getCurrentSession().doWork(new Work() {
+			public void execute(Connection connection) {
+				processSyncSubclassStub(stub, connection);
+			}
+		});
+	}
 		
+	private void processSyncSubclassStub(SyncSubclassStub stub, Connection connection) {
+
 		boolean stubInsertNeeded = false;
 		PreparedStatement ps = null;
 		int internalDatabaseId = 0;
@@ -1505,7 +1528,15 @@ public class HibernateSyncDAO implements SyncDAO {
 	 * 
 	 * @see org.openmrs.module.sync.api.db.SyncDAO#isConceptIdValidForUuid(int, java.lang.String)
 	 */
-	public boolean isConceptIdValidForUuid(Integer conceptId, String uuid) {
+	public boolean isConceptIdValidForUuid(final Integer conceptId, final String uuid) {
+		return sessionFactory.getCurrentSession().doReturningWork(new ReturningWork<Boolean>() {
+			public Boolean execute(Connection connection) {
+				return isConceptIdValidForUuid(conceptId, uuid, connection);
+			}
+		});
+	}
+		
+	private boolean isConceptIdValidForUuid(Integer conceptId, String uuid, Connection connection) {
 		
 		if (uuid == null || conceptId == null) {
 			return true;
@@ -1513,7 +1544,6 @@ public class HibernateSyncDAO implements SyncDAO {
 		
 		boolean ret = true; //assume all is well until proven otherwise
 		PreparedStatement ps = null;
-		Connection connection = sessionFactory.getCurrentSession().connection();
 		int foundId = 0;
 		String foundUuid = null;
 		

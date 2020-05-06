@@ -21,7 +21,8 @@ import org.openmrs.Obs;
 import org.openmrs.api.ObsService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.api.SyncService;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Testing syncing of the {@link Obs} object
@@ -39,7 +40,7 @@ public class SyncObsTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSyncVoidedObs() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			

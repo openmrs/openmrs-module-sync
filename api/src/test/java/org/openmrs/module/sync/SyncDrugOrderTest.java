@@ -13,7 +13,11 @@
  */
 package org.openmrs.module.sync;
 
-import junit.framework.Assert;
+import static org.junit.Assert.assertNotNull;
+
+import java.util.Date;
+import java.util.List;
+
 import org.junit.Test;
 import org.openmrs.Concept;
 import org.openmrs.Drug;
@@ -23,12 +27,10 @@ import org.openmrs.OrderType;
 import org.openmrs.Patient;
 import org.openmrs.api.OrderService;
 import org.openmrs.api.context.Context;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
-
-import static org.junit.Assert.assertNotNull;
+import junit.framework.Assert;
 
 public class SyncDrugOrderTest extends SyncBaseTest {
 
@@ -43,7 +45,7 @@ public class SyncDrugOrderTest extends SyncBaseTest {
     }
 
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldCreateDrugOrder() throws Exception {
 
 		if (TestUtil.isOpenmrsVersionAtLeast("1.10")) {
@@ -60,7 +62,7 @@ public class SyncDrugOrderTest extends SyncBaseTest {
 				Patient patient = Context.getPatientService().getPatient(new Integer(2));
 				assertNotNull(patient);
 				
-				Drug drug = Context.getConceptService().getDrugByNameOrId("Advil");
+				Drug drug = Context.getConceptService().getDrug("Advil");
 				assertNotNull(drug);
 								
 				Concept concept = drug.getConcept();
@@ -72,7 +74,6 @@ public class SyncDrugOrderTest extends SyncBaseTest {
 				drugOrder.setPatient(patient);
 				drugOrder.setDose(1.0);
 				drugOrder.setInstructions("");				
-				drugOrder.setStartDate(new Date());	
 				drugOrder.setDateCreated(new Date());
 				drugOrder.setVoided(new Boolean(false));
 
@@ -96,7 +97,7 @@ public class SyncDrugOrderTest extends SyncBaseTest {
 	}	
 
 	@Test
-    @NotTransactional	
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldUpdateDrugOrder() throws Exception {
 
 		if (TestUtil.isOpenmrsVersionAtLeast("1.10")) {

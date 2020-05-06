@@ -43,8 +43,8 @@ import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.openmrs.util.OpenmrsConstants;
-import org.springframework.test.annotation.NotTransactional;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -79,7 +79,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	public String getParentDataset() {
 		return null;
 	}
-	
+
 	/**
 	 * The dataset to run after {@link SyncTestHelper#runOnParent()} is called, but before (the
 	 * optional) {@link SyncTestHelper#runOnChild2()}
@@ -88,11 +88,6 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	 */
 	public String getChild2Dataset() {
 		return null;
-	}
-	
-	@Override
-	public void baseSetupWithStandardDataAndAuthentication() throws Exception {
-		// Do nothing
 	}
 	
 	@Transactional
@@ -134,6 +129,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		Context.openSession();
 		deleteAllData();
         try {
+        	executeDataSet("org/openmrs/include/initialInMemoryTestDataSet.xml");
             executeDataSet("org/openmrs/module/sync/include/" + new TestUtil().getTestDatasetFilename("syncCreateTest"));
         }
         catch (Exception e) {
@@ -181,6 +177,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		log.info("\n************************************* Reload Database *************************************");
 		deleteAllData();
         try {
+        	executeDataSet("org/openmrs/include/initialInMemoryTestDataSet.xml");
             executeDataSet("org/openmrs/module/sync/include/" + new TestUtil().getTestDatasetFilename("syncCreateTest"));
         }
         catch (Exception e) {
@@ -245,7 +242,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	 * @param testMethods helper object holding methods for child and parent execution
 	 * @throws Exception
 	 */
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void runSyncTest(SyncTestHelper testMethods) throws Exception {
 
 		if (!TestUtil.isOpenmrsVersionAtLeast(minimumRequiredOpenmrsVersion())) {
@@ -298,34 +295,39 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	}
 
 	@Override
-	public void executeDataSet(String datasetFilename) throws Exception {
+	public void executeDataSet(String datasetFilename) {
 
-		String xml = null;
-		InputStream fileInInputStreamFormat = null;
 		try {
-			File file = new File(datasetFilename);
-			if (file.exists())
-				fileInInputStreamFormat = new FileInputStream(datasetFilename);
-			else {
-				fileInInputStreamFormat = getClass().getClassLoader().getResourceAsStream(datasetFilename);
-				if (fileInInputStreamFormat == null)
-					throw new FileNotFoundException("Unable to find '" + datasetFilename + "' in the classpath");
+			String xml = null;
+			InputStream fileInInputStreamFormat = null;
+			try {
+				File file = new File(datasetFilename);
+				if (file.exists())
+					fileInInputStreamFormat = new FileInputStream(datasetFilename);
+				else {
+					fileInInputStreamFormat = getClass().getClassLoader().getResourceAsStream(datasetFilename);
+					if (fileInInputStreamFormat == null)
+						throw new FileNotFoundException("Unable to find '" + datasetFilename + "' in the classpath");
+				}
+				xml = IOUtils.toString(fileInInputStreamFormat, "UTF-8");
 			}
-			xml = IOUtils.toString(fileInInputStreamFormat, "UTF-8");
+			finally {
+				IOUtils.closeQuietly(fileInInputStreamFormat);
+			}
+	
+			if (compareVersions(OpenmrsConstants.OPENMRS_VERSION_SHORT,"1.9.2") < 0) {
+				xml = xml.replace("urgency=\"STAT\" ", "");
+			}
+	
+			StringReader reader = new StringReader(xml);
+			ReplacementDataSet replacementDataSet = new ReplacementDataSet(new FlatXmlDataSet(reader, false, true, false));
+			replacementDataSet.addReplacementObject("[NULL]", null);
+	
+			executeDataSet(replacementDataSet);
 		}
-		finally {
-			IOUtils.closeQuietly(fileInInputStreamFormat);
+		catch (Exception ex) {
+			log.error("Failed to execute dataset file " + datasetFilename, ex);
 		}
-
-		if (compareVersions(OpenmrsConstants.OPENMRS_VERSION_SHORT,"1.9.2") < 0) {
-			xml = xml.replace("urgency=\"STAT\" ", "");
-		}
-
-		StringReader reader = new StringReader(xml);
-		ReplacementDataSet replacementDataSet = new ReplacementDataSet(new FlatXmlDataSet(reader, false, true, false));
-		replacementDataSet.addReplacementObject("[NULL]", null);
-
-		executeDataSet(replacementDataSet);
 	}
 
 	/**

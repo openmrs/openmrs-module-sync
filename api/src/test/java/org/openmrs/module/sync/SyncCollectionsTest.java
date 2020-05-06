@@ -13,24 +13,21 @@
  */
 package org.openmrs.module.sync;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.util.List;
-
-import junit.framework.Assert;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
-import org.openmrs.Cohort;
 import org.openmrs.Person;
 import org.openmrs.PersonName;
 import org.openmrs.User;
-import org.openmrs.api.CohortService;
 import org.openmrs.api.UserService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.util.OpenmrsConstants;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import junit.framework.Assert;
 
 /**
  *
@@ -46,119 +43,9 @@ public class SyncCollectionsTest extends SyncBaseTest {
             throw new RuntimeException(e);
         }
     }
-
-	@Test
-	@NotTransactional
-	public void shouldSyncASetOfNonOpenmrsObjectsWhenAnItemIsAdded() throws Exception {
-		
-		final Integer cohortId = 1;
-		final Integer memberIdToAdd1 = 5;
-		final Integer memberIdToAdd2 = 7;
-		runSyncTest(new SyncTestHelper() {
-			
-			CohortService cs = Context.getCohortService();
-			
-			public void runOnChild() throws Exception {
-				executeDataSet("org/openmrs/api/include/PatientServiceTest-findPatients.xml");
-				executeDataSet("org/openmrs/api/include/CohortServiceTest-cohort.xml");;
-				
-				Cohort c = cs.getCohort(cohortId);
-				Assert.assertFalse(c.isEmpty());
-				Assert.assertFalse(c.contains(memberIdToAdd1));
-				Assert.assertFalse(c.contains(memberIdToAdd2));
-				
-				c.addMember(memberIdToAdd1);
-				cs.saveCohort(c);
-				
-				c.addMember(memberIdToAdd2);
-				cs.saveCohort(c);
-			}
-			
-			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
-				Assert.assertEquals(1, syncRecords.get(0).getItems().size());
-				Assert.assertEquals(SyncItemState.UPDATED, syncRecords.get(0).getItems().iterator().next().getState());
-				
-				//Finally i can insert more test data into the parent and child2 before syncing
-				executeDataSet("org/openmrs/api/include/PatientServiceTest-findPatients.xml");
-				executeDataSet("org/openmrs/api/include/CohortServiceTest-cohort.xml");
-			}
-			
-			public void runOnParent() throws Exception {
-				Cohort c = cs.getCohort(cohortId);
-				Assert.assertTrue(c.contains(memberIdToAdd1));
-				Assert.assertTrue(c.contains(memberIdToAdd2));
-			}
-		});
-	}
 	
 	@Test
-	@NotTransactional
-	public void shouldSyncASetOfNonOpenmrsObjectsWhenAnItemIsRemoved() throws Exception {
-		
-		final Integer cohortId = 1;
-		final Integer memberIdToRemove = 2;
-		runSyncTest(new SyncTestHelper() {
-			
-			CohortService cs = Context.getCohortService();
-			
-			public void runOnChild() throws Exception {
-				executeDataSet("org/openmrs/api/include/CohortServiceTest-cohort.xml");
-				
-				Cohort c = cs.getCohort(cohortId);
-				Assert.assertTrue(c.contains(memberIdToRemove));
-				
-				c.removeMember(memberIdToRemove);
-				cs.saveCohort(c);
-			}
-			
-			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
-				Assert.assertEquals(1, syncRecords.get(0).getItems().size());
-				Assert.assertEquals(SyncItemState.UPDATED, syncRecords.get(0).getItems().iterator().next().getState());
-				
-				executeDataSet("org/openmrs/api/include/CohortServiceTest-cohort.xml");
-			}
-			
-			public void runOnParent() throws Exception {
-				Cohort c = cs.getCohort(cohortId);
-				Assert.assertFalse(c.contains(memberIdToRemove));
-			}
-		});
-	}
-	
-	@Test
-	@NotTransactional
-	public void shouldSyncASetOfNonOpenmrsObjectsWhenAllItemsAreRemoved() throws Exception {
-		
-		final Integer cohortId = 1;
-		runSyncTest(new SyncTestHelper() {
-			
-			CohortService cs = Context.getCohortService();
-			
-			public void runOnChild() throws Exception {
-				executeDataSet("org/openmrs/api/include/CohortServiceTest-cohort.xml");
-				
-				Cohort c = cs.getCohort(cohortId);
-				Assert.assertFalse(c.getMemberIds().isEmpty());
-				c.getMemberIds().clear();
-				
-				cs.saveCohort(c);
-			}
-			
-			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
-				Assert.assertEquals(1, syncRecords.get(0).getItems().size());
-				Assert.assertEquals(SyncItemState.UPDATED, syncRecords.get(0).getItems().iterator().next().getState());
-				
-				executeDataSet("org/openmrs/api/include/CohortServiceTest-cohort.xml");
-			}
-			
-			public void runOnParent() throws Exception {
-				Assert.assertEquals(0, cs.getCohort(cohortId).getMemberIds().size());
-			}
-		});
-	}
-	
-	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSyncAMapOfNonOpenmrsObjectsWhenAnEntryValueIsIsUpdated() throws Exception {
 		
 		final Integer userId = 1;
@@ -181,10 +68,10 @@ public class SyncCollectionsTest extends SyncBaseTest {
 				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_DEFAULT_LOCALE, newUserLocaleValue);
 				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_LOGIN_ATTEMPTS, "1");
 				
-				us.saveUser(u, null);
+				us.saveUser(u);
 				
 				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_LOGIN_ATTEMPTS, "2");
-				us.saveUser(u, null);
+				us.saveUser(u);
 			}
 			
 			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
@@ -213,7 +100,7 @@ public class SyncCollectionsTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSyncAMapOfNonOpenmrsObjectsWhenAnEntryIsAdded() throws Exception {
 		
 		final Integer userId = 1;
@@ -230,7 +117,7 @@ public class SyncCollectionsTest extends SyncBaseTest {
 				
 				u.setUserProperty(newPropertyName, newPropertyValue);
 				
-				us.saveUser(u, null);
+				us.saveUser(u);
 			}
 			
 			public void runOnParent() {
@@ -240,7 +127,7 @@ public class SyncCollectionsTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSyncAMapOfNonOpenmrsObjectsWhenAnEntryIsRemoved() throws Exception {
 		
 		final Integer userId = 5505;
@@ -257,7 +144,7 @@ public class SyncCollectionsTest extends SyncBaseTest {
 				
 				u.removeUserProperty(propertyNameToRemove);
 				
-				us.saveUser(u, null);
+				us.saveUser(u);
 			}
 			
 			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
@@ -271,7 +158,7 @@ public class SyncCollectionsTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSyncAnObjectWhenAMapOfNonOpenmrsKeysAndValuesIsCleared() throws Exception {
 		
 		final Integer userId = 5505;
@@ -287,7 +174,7 @@ public class SyncCollectionsTest extends SyncBaseTest {
 				
 				u.getUserProperties().clear();
 				
-				us.saveUser(u, null);
+				us.saveUser(u);
 			}
 			
 			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
@@ -301,7 +188,7 @@ public class SyncCollectionsTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSyncAnObjectThatIsCreatedAlongWithAMapOfElements() throws Exception {
 		
 		final String username = "random";
@@ -323,7 +210,7 @@ public class SyncCollectionsTest extends SyncBaseTest {
 				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_DEFAULT_LOCALE, defaultLocale);
 				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD, changePassword);
 				
-				us.saveUser(u, "Openmr5xy");
+				us.createUser(u, "Openmr5xy");
 			}
 			
 			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {

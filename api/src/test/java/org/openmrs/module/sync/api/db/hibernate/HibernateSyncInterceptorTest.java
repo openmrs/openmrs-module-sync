@@ -13,6 +13,10 @@
  */
 package org.openmrs.module.sync.api.db.hibernate;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -29,11 +33,8 @@ import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.test.ExampleTransactionalService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.NotTransactional;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Tests methods in HibernateSyncInterceptor
@@ -59,7 +60,7 @@ public class HibernateSyncInterceptorTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldNotSaveAnySyncRecordsForAReadOnlyTransaction() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild() throws Exception {
@@ -76,7 +77,7 @@ public class HibernateSyncInterceptorTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveOneSyncRecordForOneTransaction() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild() throws Exception {
@@ -100,7 +101,7 @@ public class HibernateSyncInterceptorTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveTwoSyncRecordsForTwoSeparateTransactions() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild() throws Exception {
@@ -122,7 +123,7 @@ public class HibernateSyncInterceptorTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveOneSyncRecordForTwoNestedDefaultTransactions() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild() throws Exception {
@@ -142,7 +143,6 @@ public class HibernateSyncInterceptorTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
 	@Ignore // This currently fails
 	public void shouldSaveTwoSyncRecordsForTwoNestedNewTransactions() throws Exception {
 		runSyncTest(new SyncTestHelper() {

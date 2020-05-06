@@ -1,25 +1,24 @@
 package org.openmrs.module.sync.scheduler;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.scheduler.TaskDefinition;
-import org.openmrs.web.test.BaseModuleWebContextSensitiveTest;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import org.openmrs.test.BaseModuleContextSensitiveTest;
 
 /**
  * Created by Willa aka Baba Imu on 6/4/18.
  */
-public class SyncTransmissionLogTableCleanUpTaskTest extends BaseModuleWebContextSensitiveTest {
+public class SyncTransmissionLogTableCleanUpTaskTest extends BaseModuleContextSensitiveTest {
     @Test
     public void shouldDeleteTransmissionLogsUpToAGivenDate() throws Exception {
 
+    	executeDataSet("org/openmrs/module/sync/include/SyncServerClasses.xml");
         executeDataSet("org/openmrs/module/sync/include/transmissionLogs.xml");
 
         SyncService syncService = Context.getService(SyncService.class);

@@ -13,6 +13,18 @@
  */
 package org.openmrs.module.sync.web.controller;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
@@ -23,7 +35,6 @@ import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
-import org.openmrs.module.sync.scheduler.SyncTransmissionLogTableCleanUpTask;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
@@ -31,8 +42,8 @@ import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.web.TasksDTO;
 import org.openmrs.scheduler.TaskDefinition;
 import org.openmrs.scheduler.web.controller.SchedulerFormController;
-import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
+import org.openmrs.util.PrivilegeConstants;
 import org.openmrs.web.WebConstants;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.beans.propertyeditors.CustomNumberEditor;
@@ -46,12 +57,6 @@ import org.springframework.web.servlet.mvc.SimpleFormController;
 import org.springframework.web.servlet.view.RedirectView;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 /**
  * 
@@ -74,7 +79,7 @@ public class MaintenanceController extends SimpleFormController {
 	protected void initBinder(HttpServletRequest request, ServletRequestDataBinder binder) throws Exception {
 		super.initBinder(request, binder);
 		binder.registerCustomEditor(java.lang.Long.class, new CustomNumberEditor(java.lang.Long.class, true));
-		binder.registerCustomEditor(java.util.Date.class, new CustomDateEditor(SchedulerFormController.DEFAULT_DATE_FORMAT,
+		binder.registerCustomEditor(java.util.Date.class, new CustomDateEditor(new SimpleDateFormat(SchedulerFormController.DEFAULT_DATE_PATTERN),
 		        true));
 	}
 	
@@ -373,7 +378,7 @@ public class MaintenanceController extends SimpleFormController {
 					task =  ((TasksDTO) command).getCleanupTransmissionLogsTask();
 				}
 
-				Context.addProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+				Context.addProxyPrivilege(PrivilegeConstants.MANAGE_SCHEDULER);
 
 				// set the repeat interval
 				String units = request.getParameter("repeatIntervalUnits");
@@ -388,7 +393,7 @@ public class MaintenanceController extends SimpleFormController {
 						&& (task.getTaskInstance() == null || !task.getTaskInstance().isExecuting()))
 					Context.getSchedulerService().rescheduleTask(task);
 				else
-					Context.getSchedulerService().saveTask(task);
+					Context.getSchedulerService().saveTaskDefinition(task);
 
 				request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.maintenance.manage.changesSaved");
 			}
@@ -397,7 +402,7 @@ public class MaintenanceController extends SimpleFormController {
 				return showForm(request, errors, getFormView());
 			}
 			finally {
-				Context.removeProxyPrivilege(OpenmrsConstants.PRIV_MANAGE_SCHEDULER);
+				Context.removeProxyPrivilege(PrivilegeConstants.MANAGE_SCHEDULER);
 			}
 		}
 		

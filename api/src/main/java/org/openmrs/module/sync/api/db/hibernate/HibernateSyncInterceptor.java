@@ -13,23 +13,35 @@
  */
 package org.openmrs.module.sync.api.db.hibernate;
 
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.CallbackException;
 import org.hibernate.EmptyInterceptor;
-import org.hibernate.EntityMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.action.BeforeTransactionCompletionProcess;
-import org.hibernate.collection.AbstractPersistentCollection;
-import org.hibernate.collection.PersistentList;
-import org.hibernate.collection.PersistentMap;
-import org.hibernate.collection.PersistentSet;
+import org.hibernate.action.spi.BeforeTransactionCompletionProcess;
+import org.hibernate.collection.internal.AbstractPersistentCollection;
+import org.hibernate.collection.internal.PersistentList;
+import org.hibernate.collection.internal.PersistentMap;
+import org.hibernate.collection.internal.PersistentSet;
 import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Projections;
-import org.hibernate.engine.ForeignKeys;
-import org.hibernate.engine.SessionImplementor;
-import org.hibernate.event.EventSource;
+import org.hibernate.engine.internal.ForeignKeys;
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.event.spi.EventSource;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.metadata.CollectionMetadata;
 import org.hibernate.proxy.HibernateProxy;
@@ -61,19 +73,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.StringUtils;
-
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Implements 'change interception' for data synchronization feature using Hibernate interceptor
@@ -1027,7 +1026,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			process = true;
 		} else {
 			if (collection.isDirty()) {
-				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) getSessionFactory())
+				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.spi.SessionFactoryImplementor) getSessionFactory())
 				        .getCollectionPersister(collection.getRole());
 				Object ss = null;
 				try { // code around hibernate bug:
@@ -1061,7 +1060,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		String ownerPropertyName = null;
 
 		for (String propName : propNames) {
-			Object propertyVal = data.getPropertyValue(owner, propName, org.hibernate.EntityMode.POJO);
+			Object propertyVal = data.getPropertyValue(owner, propName);
 			// note: test both with equals() and == because
 			// PersistentSet.equals()
 			// actually does not handle equality of two persistent sets well
@@ -1153,7 +1152,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 					ClassMetadata cmd = getSessionFactory().getClassMetadata(owner.getClass());
 					//create an UPDATE sync item for the owner so that the collection changes get recorded along
 					Serializable primaryKeyValue = cmd.getIdentifier(owner, (SessionImplementor)getSessionFactory().getCurrentSession());
-					packageObject(owner, cmd.getPropertyValues(owner, EntityMode.POJO), cmd.getPropertyNames(),
+					packageObject(owner, cmd.getPropertyValues(owner), cmd.getPropertyNames(),
 					    cmd.getPropertyTypes(), primaryKeyValue, SyncItemState.UPDATED);
 				} else {
 					//There is already an UPDATE OR NEW SyncItem for the owner containing the above updates
@@ -1196,7 +1195,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 
 			// add on deletes
 			if (!"recreate".equals(action) && collection.getRole() != null) {
-				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.SessionFactoryImplementor) getSessionFactory())
+				org.hibernate.persister.collection.CollectionPersister persister = ((org.hibernate.engine.spi.SessionFactoryImplementor) getSessionFactory())
 				        .getCollectionPersister(collection.getRole());
 				Iterator it = collection.getDeletes(persister, false);
 				if (it != null) {

@@ -13,9 +13,10 @@
  */
 package org.openmrs.module.sync;
 
-import ca.uhn.hl7v2.app.MessageTypeRouter;
-import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.parser.GenericParser;
+import static org.junit.Assert.assertEquals;
+
+import java.util.List;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openmrs.Concept;
@@ -23,11 +24,12 @@ import org.openmrs.Obs;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.hl7.handler.ORUR01Handler;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
+import ca.uhn.hl7v2.app.MessageTypeRouter;
+import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.parser.GenericParser;
 
 
 /**
@@ -57,7 +59,7 @@ public class SyncORUR01HandlerTest extends SyncBaseTest {
     }
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldFindUuidsOnConcepts() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			

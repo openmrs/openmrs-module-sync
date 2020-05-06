@@ -70,7 +70,7 @@ public class SaveConceptAdvice implements MethodBeforeAdvice {
 			stub = new SyncSubclassStub((Concept) args[0], "concept",
 					"concept_id", "concept_numeric", "concept_id", null, null,
 					null);
-			stub.addColumn("precise", 0);
+			stub.addColumn("allow_decimal", 0);
 		} else if (ConceptComplex.class.isAssignableFrom(args[0].getClass())) {
 			stub = new SyncSubclassStub((Concept) args[0], "concept",
 					"concept_id", "concept_complex", "concept_id", null, null,

@@ -13,15 +13,16 @@
  */
 package org.openmrs.module.sync;
 
-import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 import org.openmrs.Cohort;
 import org.openmrs.api.CohortService;
 import org.openmrs.api.context.Context;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Tests sending cohorts across the wire
@@ -49,7 +50,7 @@ public class SyncCohortTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveMemberIdsInCohorts() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -73,8 +74,8 @@ public class SyncCohortTest extends SyncBaseTest {
 				//TestUtil.printOutTableContents(getConnection(), "patient");
 				assertTrue("Failed to transfer cohort members", c.getMemberIds().size() == 2);
 				assertTrue("Failed to transfer cohort members with same patient id", c.getMemberIds().contains(3));
-				assertFalse("Failed to convert patient id from #2 to #5", c.getMemberIds().contains(2));
-				assertTrue("Failed to convert patient id from #2 to #5", c.getMemberIds().contains(5));
+				assertTrue("Failed to transfer cohort member #2", c.getMemberIds().contains(2));
+				assertTrue("Failed to transfer cohort member #3", c.getMemberIds().contains(3));
 			}
 		});
 	}

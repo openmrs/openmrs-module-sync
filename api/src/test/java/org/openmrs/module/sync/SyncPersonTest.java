@@ -23,7 +23,8 @@ import org.openmrs.PersonAttributeType;
 import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.api.SyncService;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Testing syncing of the {@link Person} object
@@ -41,7 +42,7 @@ public class SyncPersonTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSavePersonAttributeAndPersistForeignKeyPK() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -75,7 +76,7 @@ public class SyncPersonTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveSimpleStringPersonAttribute() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -102,7 +103,7 @@ public class SyncPersonTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveSimpleStringPersonAttributeWithNumericalValue() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -129,7 +130,7 @@ public class SyncPersonTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveSimpleIntegerPersonAttribute() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			

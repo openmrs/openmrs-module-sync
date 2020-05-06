@@ -27,8 +27,9 @@
 			column="retry_count" length="11" />
 		
 		<property name="state">
-			<type name="org.openmrs.module.sync.api.db.hibernate.usertype.GenericEnumUserType">
-				<param name="enumClassName">org.openmrs.module.sync.SyncRecordState</param>
+			<type name="org.hibernate.type.EnumType">
+				<param name="enumClass">org.openmrs.module.sync.SyncRecordState</param>
+				<param name="useNamed">true</param>
 			</type>
 		</property>
 

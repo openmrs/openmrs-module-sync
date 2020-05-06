@@ -13,16 +13,6 @@
  */
 package org.openmrs.module.sync.api.db.hibernate.usertype;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hibernate.HibernateException;
-import org.hibernate.usertype.UserType;
-import org.openmrs.module.sync.SyncItem;
-import org.openmrs.module.sync.SyncUtil;
-import org.openmrs.module.sync.serialization.Item;
-import org.openmrs.module.sync.serialization.Package;
-import org.openmrs.module.sync.serialization.Record;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
@@ -32,6 +22,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collection;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.usertype.UserType;
+import org.openmrs.module.sync.SyncItem;
+import org.openmrs.module.sync.SyncUtil;
+import org.openmrs.module.sync.serialization.Item;
+import org.openmrs.module.sync.serialization.Package;
+import org.openmrs.module.sync.serialization.Record;
 
 public class SyncItemListSerializingUserType implements UserType {
 
@@ -85,9 +86,9 @@ public class SyncItemListSerializingUserType implements UserType {
     }
 
     /**
-     * @see org.hibernate.usertype.UserType#nullSafeGet(java.sql.ResultSet, java.lang.String[], java.lang.Object)
+     * @see org.hibernate.usertype.UserType#nullSafeGet(java.sql.ResultSet, java.lang.String[], org.hibernate.engine.spi.SessionImplementor, java.lang.Object)
      */
-    public Object nullSafeGet(ResultSet rs, String[] names, Object owner)
+    public Object nullSafeGet(ResultSet rs, String[] names, SessionImplementor session, Object owner)
             throws HibernateException, SQLException {
         if (rs.wasNull()) {
             return null;
@@ -122,10 +123,10 @@ public class SyncItemListSerializingUserType implements UserType {
     }
 
     /**
-     * @see org.hibernate.usertype.UserType#nullSafeSet(java.sql.PreparedStatement, java.lang.Object, int)
+     * @see org.hibernate.usertype.UserType#nullSafeSet(java.sql.PreparedStatement, java.lang.Object, int, org.hibernate.engine.spi.SessionImplementor)
      */
     @SuppressWarnings("unchecked")
-    public void nullSafeSet(PreparedStatement ps, Object value, int index)
+    public void nullSafeSet(PreparedStatement ps, Object value, int index, SessionImplementor session)
             throws HibernateException, SQLException {
         if (value == null) {
             ps.setNull(index, Types.CLOB);

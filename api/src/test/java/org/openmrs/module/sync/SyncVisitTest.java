@@ -14,16 +14,24 @@
 
 package org.openmrs.module.sync;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.openmrs.*;
-import org.openmrs.api.context.Context;
-import org.springframework.test.annotation.NotTransactional;
-
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.openmrs.Encounter;
+import org.openmrs.EncounterRole;
+import org.openmrs.EncounterType;
+import org.openmrs.Location;
+import org.openmrs.Patient;
+import org.openmrs.Provider;
+import org.openmrs.Visit;
+import org.openmrs.VisitType;
+import org.openmrs.api.context.Context;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 public class SyncVisitTest extends SyncBaseTest {
 
@@ -38,7 +46,7 @@ public class SyncVisitTest extends SyncBaseTest {
     }
 
     @Test
-    @NotTransactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void shouldSyncNewVisitWithNewEncounter() throws Exception {
         runSyncTest(new SyncTestHelper() {
 
@@ -67,6 +75,7 @@ public class SyncVisitTest extends SyncBaseTest {
                 encounter.setPatient(patient);
                 encounter.setLocation(location);
                 encounter.setEncounterType(encounterType);
+                Context.getEncounterService().saveEncounter(encounter);
                 encounters.add(encounter);
 
                 // now create a visit for the encounter
@@ -74,6 +83,7 @@ public class SyncVisitTest extends SyncBaseTest {
                 visit.setVisitType(visitType);
                 visit.setPatient(patient);
                 visit.setStartDatetime(date);
+                encounter.setVisit(visit);
                 visit.setEncounters(encounters);
 
                 // save the visit (and the encounter should cascade)

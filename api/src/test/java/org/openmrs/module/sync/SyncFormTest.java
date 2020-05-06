@@ -28,7 +28,8 @@ import org.openmrs.FormField;
 import org.openmrs.api.FormService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.serialization.Record;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -49,7 +50,7 @@ public class SyncFormTest extends SyncBaseTest {
     }
 
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldEditFormMetadata() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			String newDescription = "Awesome new description";
@@ -66,7 +67,7 @@ public class SyncFormTest extends SyncBaseTest {
 	}
 	
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldDuplicateForm() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			String newName = "A new form";
@@ -98,7 +99,7 @@ public class SyncFormTest extends SyncBaseTest {
 	}
 
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldAddFieldToForm() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			FormService fs = Context.getFormService();
@@ -144,7 +145,7 @@ public class SyncFormTest extends SyncBaseTest {
 	}
 	
 	@Test
-    @NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveFieldWithoutSendingAllFormData() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			FormService fs = Context.getFormService();

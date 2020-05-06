@@ -57,9 +57,6 @@ public class CleanupSyncTablesTask extends AbstractTask {
 		Context.openSession();
 		log.debug("Starting sync table cleanup ... ");
 		try {
-			if (Context.isAuthenticated() == false)
-				authenticate();
-			
 			// get the possibly user-defined settings
 			Map<String, String> props = null;
 			if (taskDefinition != null)

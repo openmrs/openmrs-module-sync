@@ -22,9 +22,12 @@ import org.junit.Test;
 import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.SerializedObject;
+import org.openmrs.api.db.SerializedObjectDAO;
+import org.openmrs.api.db.hibernate.HibernateSerializedObjectDAO;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.serialization.OpenmrsSerializer;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * This class tests the {@link SerializedObjectDAO} linked to from the Context. Currently that file
@@ -43,7 +46,7 @@ public class SyncSerializedObjectTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSyncSerializedOBject() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			

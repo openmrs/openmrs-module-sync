@@ -44,11 +44,11 @@ import org.openmrs.api.db.DAOException;
 import org.openmrs.api.db.SerializedObjectDAO;
 import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncConstants;
-import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.SyncServerClass;
 import org.openmrs.module.sync.SyncStatistic;
+import org.openmrs.module.sync.SyncSubclassStub;
 import org.openmrs.module.sync.SyncTransmissionStatus;
 import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.TransmissionLog;
@@ -59,11 +59,13 @@ import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.SyncServerRecord;
-import org.openmrs.util.OpenmrsConstants;
+import org.openmrs.util.PrivilegeConstants;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Default implementation of the {@link SyncService}
  */
+@Transactional
 public class SyncServiceImpl implements SyncService {
 	
 	private SyncDAO dao;
@@ -172,6 +174,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#getNextSyncRecord()
 	 */
+	@Transactional(readOnly = true)
 	public SyncRecord getFirstSyncRecordInQueue() throws APIException {
 		return getSynchronizationDAO().getFirstSyncRecordInQueue();
 	}
@@ -179,6 +182,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#getSyncRecords(java.lang.String)
 	 */
+	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecords(String query) throws APIException {
 		return getSynchronizationDAO().getSyncRecords(query);
 	}
@@ -186,6 +190,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#getSyncRecord(java.lang.Integer)
 	 */
+	@Transactional(readOnly = true)
 	public SyncRecord getSyncRecord(Integer id) throws APIException {
 		return getSynchronizationDAO().getSyncRecord(id);
 	}
@@ -193,10 +198,12 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#getSyncRecord(java.lang.String)
 	 */
+	@Transactional(readOnly = true)
 	public SyncRecord getSyncRecord(String uuid) throws APIException {
 		return getSynchronizationDAO().getSyncRecord(uuid);
 	}
 	
+	@Transactional(readOnly = true)
 	public SyncRecord getSyncRecordByOriginalUuid(String originalUuid) throws APIException {
 		return getSynchronizationDAO().getSyncRecordByOriginalUuid(originalUuid);
 	}
@@ -204,6 +211,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#getLatestRecord()
 	 */
+	@Transactional(readOnly = true)
 	public SyncRecord getLatestRecord() throws APIException {
 		return getSynchronizationDAO().getLatestRecord();
 	}
@@ -211,6 +219,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#getEarliestRecord(Date)
 	 */
+	@Transactional(readOnly = true)
 	public SyncRecord getEarliestRecord(Date afterDate) throws APIException {
 		return getSynchronizationDAO().getEarliestRecord(afterDate);
 	}
@@ -218,6 +227,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see SyncService#getNextRecord(SyncRecord)
 	 */
+	@Transactional(readOnly = true)
 	public SyncRecord getNextRecord(SyncRecord record) {
 		return getSynchronizationDAO().getNextRecord(record);
 	}
@@ -225,6 +235,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see SyncService#getPreviousRecord(SyncRecord)
 	 */
+	@Transactional(readOnly = true)
 	public SyncRecord getPreviousRecord(SyncRecord record) {
 		return getSynchronizationDAO().getPreviousRecord(record);
 	}
@@ -232,6 +243,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#getSyncRecord(java.lang.String)
 	 */
+	@Transactional(readOnly = true)
 	public SyncImportRecord getSyncImportRecord(String uuid) throws APIException {
 		return getSynchronizationDAO().getSyncImportRecord(uuid);
 	}
@@ -240,6 +252,7 @@ public class SyncServiceImpl implements SyncService {
 	 * @see org.openmrs.module.sync.api.SyncService#getOlderSyncRecordInState(org.openmrs.module.sync.SyncRecord,
 	 *      java.util.EnumSet)
 	 */
+	@Transactional(readOnly = true)
 	public SyncRecord getOlderSyncRecordInState(SyncRecord syncRecord, EnumSet<SyncRecordState> states) throws APIException {
 		return getSynchronizationDAO().getOlderSyncRecordInState(syncRecord, states);
 	}
@@ -247,6 +260,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#getSyncImportRecords(org.openmrs.module.sync.engine.SyncRecordState)
 	 */
+	@Transactional(readOnly = true)
 	public List<SyncImportRecord> getSyncImportRecords(SyncRecordState... state) throws APIException {
 		return getSynchronizationDAO().getSyncImportRecords(state);
 	}
@@ -254,6 +268,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#getSyncRecords()
 	 */
+	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecords() throws APIException {
 		return getSynchronizationDAO().getSyncRecords();
 	}
@@ -261,6 +276,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#getSyncRecords(org.openmrs.module.sync.engine.SyncRecordState)
 	 */
+	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecords(SyncRecordState state) throws APIException {
 		return getSynchronizationDAO().getSyncRecords(state);
 	}
@@ -268,6 +284,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#getSyncRecords(org.openmrs.module.sync.engine.SyncRecordState, Integer maxSyncRecords, Integer)
 	 */
+	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, Integer maxSyncRecords, Integer firstRecordId) throws APIException {
 		return this.getSyncRecords(states, false, maxSyncRecords, firstRecordId);
 	}
@@ -276,6 +293,7 @@ public class SyncServiceImpl implements SyncService {
 	 * @see org.openmrs.module.sync.api.SyncService#getSyncRecords(org.openmrs.module.sync.SyncRecordState[],
 	 *      org.openmrs.module.sync.server.RemoteServer, java.lang.Integer, java.lang.Integer)
 	 */
+	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, RemoteServer server, Integer maxSyncRecords, Integer firstRecordId)
 	                                                                                                             throws APIException {
 		List<SyncRecord> temp = null;
@@ -326,6 +344,7 @@ public class SyncServiceImpl implements SyncService {
 	 * @see org.openmrs.module.sync.api.SyncService#getSyncRecords(org.openmrs.module.sync.SyncRecordState[],
 	 *      boolean, java.lang.Integer)
 	 */
+	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords, Integer firstRecordId)
 	                                                                                                         throws APIException {
 		return getSynchronizationDAO().getSyncRecords(states, inverse, maxSyncRecords, null, firstRecordId);
@@ -369,6 +388,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#getSyncRecordsSince(java.util.Date)
 	 */
+	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecordsSince(Date from) throws APIException {
 		return getSynchronizationDAO().getSyncRecords(from, null, null, null, true);
 	}
@@ -376,6 +396,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#getSyncRecordsBetween(java.util.Date, java.util.Date)
 	 */
+	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecordsBetween(Date from, Date to) throws APIException {
 		return getSynchronizationDAO().getSyncRecords(from, to, null, null, true);
 	}
@@ -384,6 +405,7 @@ public class SyncServiceImpl implements SyncService {
 	 * @see org.openmrs.module.sync.api.SyncService#getSyncRecords(java.lang.Integer,
 	 *      java.lang.Integer)
 	 */
+	@Transactional(readOnly = true)
 	public List<SyncRecord> getSyncRecords(Integer firstRecordId, Integer numberToReturn) throws APIException {
 		return getSynchronizationDAO().getSyncRecords(null, null, firstRecordId, numberToReturn, false);
 	}
@@ -414,6 +436,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.api.SyncService#getGlobalProperty(java.lang.String)
 	 */
+	@Transactional(readOnly = true)
 	public String getGlobalProperty(String propertyName) throws APIException {
 		return getSynchronizationDAO().getGlobalProperty(propertyName);
 	}
@@ -459,22 +482,27 @@ public class SyncServiceImpl implements SyncService {
 		getSynchronizationDAO().deleteRemoteServer(server);
 	}
 	
+	@Transactional(readOnly = true)
 	public RemoteServer getRemoteServer(Integer serverId) throws APIException {
 		return getSynchronizationDAO().getRemoteServer(serverId);
 	}
 	
+	@Transactional(readOnly = true)
 	public RemoteServer getRemoteServer(String uuid) throws APIException {
 		return getSynchronizationDAO().getRemoteServer(uuid);
 	}
 	
+	@Transactional(readOnly = true)
 	public RemoteServer getRemoteServerByUsername(String username) throws APIException {
 		return getSynchronizationDAO().getRemoteServerByUsername(username);
 	}
 	
+	@Transactional(readOnly = true)
 	public List<RemoteServer> getRemoteServers() throws APIException {
 		return getSynchronizationDAO().getRemoteServers();
 	}
 	
+	@Transactional(readOnly = true)
 	public RemoteServer getParentServer() throws APIException {
 		return getSynchronizationDAO().getParentServer();
 	}
@@ -483,6 +511,7 @@ public class SyncServiceImpl implements SyncService {
 	 * Returns globally unique identifier of the local server. This value uniquely indentifies
 	 * server in all data exchanges with other servers.
 	 */
+	@Transactional(readOnly = true)
 	public String getServerUuid() throws APIException {
 		return Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_SERVER_UUID);
 	}
@@ -499,6 +528,7 @@ public class SyncServiceImpl implements SyncService {
 	 * unique in the synchronization network of servers. This value can be used to scope values that
 	 * are otherwise unique only locally (such as integer primary keys).
 	 */
+	@Transactional(readOnly = true)
 	public String getServerName() throws APIException {
 		return Context.getAdministrationService().getGlobalProperty(SyncConstants.PROPERTY_SERVER_NAME);
 	}
@@ -510,6 +540,7 @@ public class SyncServiceImpl implements SyncService {
 		Context.getService(SyncService.class).setGlobalProperty(SyncConstants.PROPERTY_SERVER_NAME, name);
 	}
 	
+	@Transactional(readOnly = true)
 	public String getAdminEmail() {
 		return Context.getService(SyncService.class).getGlobalProperty(SyncConstants.PROPERTY_SYNC_ADMIN_EMAIL);
 	}
@@ -534,14 +565,17 @@ public class SyncServiceImpl implements SyncService {
 		refreshServerClassesCollection();
 	}
 	
+	@Transactional(readOnly = true)
 	public SyncClass getSyncClass(Integer syncClassId) throws APIException {
 		return getSynchronizationDAO().getSyncClass(syncClassId);
 	}
 	
+	@Transactional(readOnly = true)
 	public List<SyncClass> getSyncClasses() throws APIException {
 		return getSynchronizationDAO().getSyncClasses();
 	}
 	
+	@Transactional(readOnly = true)
 	public SyncClass getSyncClassByName(String className) throws APIException {
 		return getSynchronizationDAO().getSyncClassByName(className);
 	}
@@ -559,6 +593,7 @@ public class SyncServiceImpl implements SyncService {
 	 * @see org.openmrs.api.SyncService#setFlushModeManual()
 	 * @see org.openmrs.api.db.hibernate.HibernateSyncDAO#setFlushModeManual()
 	 */
+	@Transactional(readOnly = true)
 	public void setFlushModeManual() throws APIException {
 		getSynchronizationDAO().setFlushModeManual();
 	}
@@ -569,6 +604,7 @@ public class SyncServiceImpl implements SyncService {
 	 * @see org.openmrs.api.SyncService#setFlushModeAutomatic()
 	 * @see org.openmrs.api.db.hibernate.HibernateSyncDAO#setFlushModeAutomatic()
 	 */
+	@Transactional(readOnly = true)
 	public void setFlushModeAutomatic() throws APIException {
 		getSynchronizationDAO().setFlushModeAutomatic();
 	}
@@ -606,6 +642,7 @@ public class SyncServiceImpl implements SyncService {
 	 * @return
 	 * @throws DAOException
 	 */
+	@Transactional(readOnly = true)
 	public Map<RemoteServer, LinkedHashSet<SyncStatistic>> getSyncStatistics(Date fromDate, Date toDate) throws DAOException {
 		
 		Map<RemoteServer, LinkedHashSet<SyncStatistic>> stats = getSynchronizationDAO().getSyncStatistics(fromDate, toDate);
@@ -655,6 +692,7 @@ public class SyncServiceImpl implements SyncService {
 		return stats;
 	}
 	
+	@Transactional(readOnly = true)
 	public <T extends OpenmrsObject> T getOpenmrsObjectByUuid(Class<T> clazz, String uuid) {
 		T ret = dao.getOpenmrsObjectByUuid(clazz, uuid);
 		if (ret == null) {
@@ -826,6 +864,7 @@ public class SyncServiceImpl implements SyncService {
 		serverClassesCollection = serverClasses;
 	}
 	
+	@Transactional(readOnly = true)
 	public String getPrimaryKey(OpenmrsObject obj) {
 		if (obj instanceof Privilege) {
 			return ((Privilege) obj).getPrivilege();
@@ -905,6 +944,7 @@ public class SyncServiceImpl implements SyncService {
 		return;
 	}
 	
+	@Transactional(readOnly = true)
 	public Long getCountOfSyncRecords(RemoteServer server, Date from, Date to, SyncRecordState... states)
 	                                                                                                        throws APIException {
 		return dao.getCountOfSyncRecords(server, from, to, states);
@@ -918,7 +958,7 @@ public class SyncServiceImpl implements SyncService {
 	 * @return
 	 */
 	private List<List<Object>> executeSQLPrivilegeSafe(String sql, boolean selectOnly) {
-		String privilege = OpenmrsConstants.PRIV_SQL_LEVEL_ACCESS;
+		String privilege = PrivilegeConstants.SQL_LEVEL_ACCESS;
 		
 		if (!Context.isAuthenticated() || !Context.hasPrivilege(privilege)) {
 			try {
@@ -986,6 +1026,7 @@ public class SyncServiceImpl implements SyncService {
     /**
      * @see SyncService#getMostRecentFullyCommittedRecordId()
      */
+	@Transactional(readOnly = true)
      public int getMostRecentFullyCommittedRecordId() {
         return getSynchronizationDAO().getMostRecentFullyCommittedRecordId();
      }
@@ -993,6 +1034,7 @@ public class SyncServiceImpl implements SyncService {
 	/**
 	 * @see org.openmrs.module.sync.api.SyncService#getSyncServerRecord(java.lang.Integer)
 	 */
+	@Transactional(readOnly = true)
 	public SyncServerRecord getSyncServerRecord(Integer syncServerRecordId) throws APIException {
 		return getSynchronizationDAO().getSyncServerRecord(syncServerRecordId);
 	}
@@ -1019,46 +1061,55 @@ public class SyncServiceImpl implements SyncService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<TransmissionLog> getTransmissionLogs(Integer startIndex, Integer limit, RemoteServer server, SyncTransmissionStatus status) throws APIException {
 		return dao.getTransmissionLogs(startIndex, limit, server, status);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<TransmissionLog> getTransmissionLogsForServerWithStatus(RemoteServer server, SyncTransmissionStatus status) throws APIException {
 		return this.getTransmissionLogs(null, null, server, status);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<TransmissionLog> getAllTransmissionLogsWithStatus(SyncTransmissionStatus status) throws APIException {
 		return this.getTransmissionLogs(null, null, null, status);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<TransmissionLog> getAllTransmissionLogsForSever(RemoteServer server) throws APIException {
 		return this.getTransmissionLogs(null, null, server, null);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<TransmissionLog> getAllTransmissionLogs() throws APIException {
 		return this.getTransmissionLogs(null, null, null, null);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public int getCountOfTransmissionLogsForServerWithStatus(RemoteServer server, SyncTransmissionStatus status) throws APIException {
 		return dao.getCountOfTransmissionLogs(server, status);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public int getCountOfAllTransmissionLogsForServer(RemoteServer server) throws APIException {
 		return this.getCountOfTransmissionLogsForServerWithStatus(server, null);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public int getCountOfAllTransmissionLogsWithStatus(SyncTransmissionStatus status) throws APIException {
 		return this.getCountOfTransmissionLogsForServerWithStatus(null, status);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public int getCountOfAllTransmissionLogs() throws APIException {
 		return getCountOfTransmissionLogsForServerWithStatus(null, null);
 	}

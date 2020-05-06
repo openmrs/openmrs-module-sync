@@ -13,6 +13,9 @@
  */
 package org.openmrs.module.sync;
 
+import java.util.Iterator;
+import java.util.Set;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openmrs.Patient;
@@ -21,12 +24,9 @@ import org.openmrs.PersonAttribute;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.PersonService;
-import org.openmrs.api.context.Context;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.NotTransactional;
-
-import java.util.Iterator;
-import java.util.Set;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Testing syncing of PersonAttributes via the Person object
@@ -50,7 +50,7 @@ public class SyncPersonAttributeTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSavePersonAttributeTypeAndPersistForeignKeyPK() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 
@@ -72,7 +72,7 @@ public class SyncPersonAttributeTest extends SyncBaseTest {
 	}
 
     @Test
-    @NotTransactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void shouldUpdatePersonAttribute()throws Exception {
 
         runSyncTest(new SyncTestHelper() {
@@ -147,7 +147,7 @@ public class SyncPersonAttributeTest extends SyncBaseTest {
     }
 
     @Test
-    @NotTransactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void shouldSyncBooleanPersonAttribute() throws Exception {
         runSyncTest(new SyncTestHelper() {
 

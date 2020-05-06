@@ -14,14 +14,13 @@
 package org.openmrs.module.sync;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 
-import junit.framework.Assert;
 import org.junit.Test;
 import org.openmrs.GlobalProperty;
 import org.openmrs.Person;
@@ -34,7 +33,8 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.advice.GenerateSystemIdAdvisor;
 import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -52,7 +52,7 @@ public class SyncUserTest extends SyncBaseTest {
     }
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldCreateUser() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			UserService us = Context.getUserService();
@@ -64,7 +64,7 @@ public class SyncUserTest extends SyncBaseTest {
 				u.getPerson().setGender("M");
 				u.addRole(us.getRole("Administrator"));
 				u.addRole(us.getRole("Provider"));
-				us.saveUser(u, "Test1234");
+				us.createUser(u, "Test1234");
 			}
 			public void runOnParent() {
 				User u = us.getUserByUsername("djazayeri");
@@ -76,7 +76,7 @@ public class SyncUserTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldChangePwd() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			UserService us = Context.getUserService();
@@ -95,7 +95,7 @@ public class SyncUserTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldEditUser() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			UserService us = Context.getUserService();
@@ -107,7 +107,7 @@ public class SyncUserTest extends SyncBaseTest {
 				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
 				numRolesBefore = u.getRoles().size();
 				u.addRole(us.getRole("Provider"));
-				us.saveUser(u, null);
+				us.saveUser(u);
 			}
 			public void runOnParent() {
 				User u = us.getUser(1);
@@ -119,7 +119,7 @@ public class SyncUserTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldCreateRoleAndPrivilege() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild() {
@@ -141,7 +141,7 @@ public class SyncUserTest extends SyncBaseTest {
 	}
 	
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldAddPrivilegeToRole() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			int numAtStart = 0;
@@ -170,7 +170,7 @@ public class SyncUserTest extends SyncBaseTest {
 	 * @throws Exception
 	 */
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldPrependServerIdToNewUsersGeneratedSystemId() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			String EXPECTED_SYSTEM_ID = "parent_3-9";
@@ -182,7 +182,7 @@ public class SyncUserTest extends SyncBaseTest {
 				u.setUsername("djazayeri");
 				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
 				u.getPerson().setGender("M");
-				us.saveUser(u, "Test1234");
+				us.createUser(u, "Test1234");
 				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
 			}
 			public void runOnParent() {
@@ -199,7 +199,7 @@ public class SyncUserTest extends SyncBaseTest {
 	 * @throws Exception
 	 */
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldNotGenerateSystemIdIfGPNotDefined() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			String EXPECTED_SYSTEM_ID = "3-4";
@@ -214,7 +214,7 @@ public class SyncUserTest extends SyncBaseTest {
 				u.setUsername("djazayeri");
 				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
 				u.getPerson().setGender("M");
-				us.saveUser(u, "Test1234");
+				us.createUser(u, "Test1234");
 				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
 			}
 			public void runOnParent() {
@@ -230,7 +230,7 @@ public class SyncUserTest extends SyncBaseTest {
 	 * @throws Exception
 	 */
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldAddServerUuidToGeneratedSystemId() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			String EXPECTED_SYSTEM_ID = "46b16ac6144e102b8d9ce44ed545d86c_3-3";
@@ -245,7 +245,7 @@ public class SyncUserTest extends SyncBaseTest {
 				u.setUsername("djazayeri");
 				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
 				u.getPerson().setGender("M");
-				us.saveUser(u, "Test1234");
+				us.createUser(u, "Test1234");
 				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
 			}
 			public void runOnParent() {
@@ -261,7 +261,7 @@ public class SyncUserTest extends SyncBaseTest {
 	 * @throws Exception
 	 */
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldGenerateCheckDigitInGeneratedSystemId() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			String EXPECTED_SYSTEM_ID = "parent-2";
@@ -276,7 +276,7 @@ public class SyncUserTest extends SyncBaseTest {
 				u.setUsername("djazayeri");
 				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
 				u.getPerson().setGender("M");
-				us.saveUser(u, "Test1234");
+				us.createUser(u, "Test1234");
 				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
 			}
 			public void runOnParent() {
@@ -292,7 +292,7 @@ public class SyncUserTest extends SyncBaseTest {
 	 * @throws Exception
 	 */
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldGenerateCheckDigitWithNextUserIdInGeneratedSystemId() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			String EXPECTED_SYSTEM_ID = "3-4";
@@ -307,7 +307,7 @@ public class SyncUserTest extends SyncBaseTest {
 				u.setUsername("djazayeri");
 				u.addName(new PersonName("Darius", "Graham", "Jazayeri"));
 				u.getPerson().setGender("M");
-				us.saveUser(u, "Test1234");
+				us.createUser(u, "Test1234");
 				assertEquals(EXPECTED_SYSTEM_ID, u.getSystemId());
 			}
 			public void runOnParent() {
@@ -318,7 +318,7 @@ public class SyncUserTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSyncUserPropertyUpdate() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -329,7 +329,7 @@ public class SyncUserTest extends SyncBaseTest {
 				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_DEFAULT_LOCALE, "fr");
 				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD, "false");
 				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_LOGIN_ATTEMPTS, "5");
-				us.saveUser(u, null);
+				us.saveUser(u);
 			}
 			
 			public void runOnParent() {
@@ -342,7 +342,7 @@ public class SyncUserTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSyncUserPropertyRemove() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			
@@ -351,9 +351,9 @@ public class SyncUserTest extends SyncBaseTest {
 				
 				User u = us.getUser(1);
 				u.setUserProperty(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD, "true");
-				us.saveUser(u, null);
+				us.saveUser(u);
 				u.removeUserProperty(OpenmrsConstants.USER_PROPERTY_CHANGE_PASSWORD);
-				us.saveUser(u, null);
+				us.saveUser(u);
 			}
 			public void runOnParent() {
 				User u = us.getUser(1);
@@ -363,7 +363,7 @@ public class SyncUserTest extends SyncBaseTest {
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldDeleteUserAccount() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 
@@ -371,13 +371,13 @@ public class SyncUserTest extends SyncBaseTest {
 
 			public void runOnChild() {
 				User u = us.getUserByUsername("bwayne");
-				Assert.assertNotNull(u);
+				assertNotNull(u);
 				us.purgeUser(u);
 			}
 
 			public void runOnParent() {
 				User u = us.getUserByUsername("bwayne");
-				Assert.assertNull(u);
+				assertNull(u);
 			}
 		});
 	}

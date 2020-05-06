@@ -174,7 +174,7 @@ public class SettingsController extends SimpleFormController {
 								serverSchedule.setStartTime(new Date());
 							}
 							Context.getSchedulerService()
-							       .saveTask(serverSchedule);
+							       .saveTaskDefinition(serverSchedule);
 							if (started) {
 								Context.getSchedulerService()
 								       .scheduleTask(serverSchedule);
@@ -198,7 +198,7 @@ public class SettingsController extends SimpleFormController {
 								serverSchedule.setStartOnStartup(started);
 								serverSchedule.setProperties(props);
 								Context.getSchedulerService()
-								       .saveTask(serverSchedule);
+								       .saveTaskDefinition(serverSchedule);
 								Context.getSchedulerService()
 								       .scheduleTask(serverSchedule);
 							}

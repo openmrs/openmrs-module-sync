@@ -34,7 +34,8 @@ import org.openmrs.module.sync.ingest.SyncImportRecord;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.test.Verifies;
 import org.openmrs.util.OpenmrsConstants;
-import org.springframework.test.annotation.NotTransactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Tests methods in the SyncIngestService
@@ -63,7 +64,6 @@ public class SyncIngestServiceTest extends SyncBaseTest {
 	 */
 	@Test
 	@Verifies(value = "should create sync import record if successful", method = "processSyncRecord(SyncRecord,RemoteServer)")
-	@NotTransactional
 	public void processSyncRecord_shouldCreateSyncImportRecordIfSuccessful() throws Exception {
 
 		RemoteServer parent = Context.getService(SyncService.class).getParentServer();
@@ -84,7 +84,7 @@ public class SyncIngestServiceTest extends SyncBaseTest {
 	@Ignore("This test is written to demonstrate the issue reported in SYNC-310, and should be activated as that ticket is addressed")
 	@Test
 	@Verifies(value = "should create sync inmport records if error occurs", method = "processSyncRecord(SyncRecord,RemoteServer)")
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void processSyncRecord_shouldCreateSyncImportRecordIfErrorOccurs() throws Exception {
 
 		RemoteServer parent = Context.getService(SyncService.class).getParentServer();

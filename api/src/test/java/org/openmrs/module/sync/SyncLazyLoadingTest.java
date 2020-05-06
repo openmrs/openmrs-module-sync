@@ -13,7 +13,8 @@
  */
 package org.openmrs.module.sync;
 
-import junit.framework.Assert;
+import java.util.Date;
+
 import org.junit.Test;
 import org.openmrs.PersonName;
 import org.openmrs.User;
@@ -22,7 +23,7 @@ import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.openmrs.test.SkipBaseSetup;
 import org.openmrs.util.PrivilegeConstants;
 
-import java.util.Date;
+import junit.framework.Assert;
 
 @SkipBaseSetup
 public class SyncLazyLoadingTest extends BaseModuleContextSensitiveTest {
@@ -45,7 +46,7 @@ public class SyncLazyLoadingTest extends BaseModuleContextSensitiveTest {
 		{
 			startSession("bwayne");
 			Context.addProxyPrivilege(PrivilegeConstants.EDIT_USERS);
-			Context.addProxyPrivilege(PrivilegeConstants.VIEW_USERS);
+			Context.addProxyPrivilege(PrivilegeConstants.GET_USERS);
 
 			User u = Context.getAuthenticatedUser();
 
@@ -62,7 +63,7 @@ public class SyncLazyLoadingTest extends BaseModuleContextSensitiveTest {
 			pn.setPreferred(true);
 			u.addName(pn);
 
-			Context.getUserService().saveUser(u, null);
+			Context.getUserService().saveUser(u);
 
 			Assert.assertEquals(u.getCreator(), Context.getUserService().getUser(1));
 

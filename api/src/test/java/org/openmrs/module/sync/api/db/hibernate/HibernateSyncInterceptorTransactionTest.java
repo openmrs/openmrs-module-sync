@@ -13,6 +13,8 @@
  */
 package org.openmrs.module.sync.api.db.hibernate;
 
+import java.io.StringWriter;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbunit.database.DatabaseConfig;
@@ -23,7 +25,6 @@ import org.dbunit.dataset.xml.FlatXmlDataSet;
 import org.dbunit.ext.hsqldb.HsqldbDataTypeFactory;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openmrs.EncounterType;
 import org.openmrs.VisitType;
@@ -32,13 +33,11 @@ import org.openmrs.module.sync.TestUtil;
 import org.openmrs.module.sync.test.ExampleTransactionalService;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.NotTransactional;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.transaction.AfterTransaction;
 import org.springframework.test.context.transaction.BeforeTransaction;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.StringWriter;
 
 /**
  * Tests transaction handling of the HibernateSyncInterceptor
@@ -54,14 +53,9 @@ public class HibernateSyncInterceptorTransactionTest extends BaseModuleContextSe
 	@Autowired
 	ExampleTransactionalService testService;
 
-	@Before
-	@Override
-	public void baseSetupWithStandardDataAndAuthentication() throws Exception {
-	}
-
 	@After
 	@Override
-	public void deleteAllData() throws Exception {
+	public void deleteAllData() {
 	}
 
 	@BeforeTransaction
@@ -189,7 +183,7 @@ public class HibernateSyncInterceptorTransactionTest extends BaseModuleContextSe
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldTestFirstThrowsException() throws Exception {
 		beforeTx();
 		{
@@ -215,7 +209,7 @@ public class HibernateSyncInterceptorTransactionTest extends BaseModuleContextSe
 	}
 
 	@Test
-	@NotTransactional
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldTestSecondThrowsException() throws Exception {
 		beforeTx();
 		{
