@@ -40,4 +40,43 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>liquibase</id>
+			<properties>
+				<db_host>localhost</db_host>
+				<db_port>3308</db_port>
+				<db_name>openmrs</db_name>
+				<db_user>root</db_user>
+				<db_password>password</db_password>
+			</properties>
+			<dependencies>
+				<dependency>
+					<groupId>mysql</groupId>
+					<artifactId>mysql-connector-java</artifactId>
+					<version>5.1.8</version>
+					<scope>compile</scope>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.liquibase</groupId>
+						<artifactId>liquibase-maven-plugin</artifactId>
+						<version>3.8.8</version>
+						<configuration>
+							<changeLogFile>src/main/resources/liquibase.xml</changeLogFile>
+							<driver>com.mysql.jdbc.Driver</driver>
+							<url>jdbc:mysql://${db_host}:${db_port}/${db_name}?autoReconnect=true&amp;sessionVariables=default_storage_engine%3DInnoDB&amp;useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull</url>
+							<username>${db_user}</username>
+							<password>${db_password}</password>
+							<databaseChangeLogTableName>liquibasechangelog</databaseChangeLogTableName>
+							<databaseChangeLogLockTableName>liquibasechangeloglock</databaseChangeLogLockTableName>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
