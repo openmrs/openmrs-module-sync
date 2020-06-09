@@ -4,11 +4,471 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
- 
-    <!--
-        See http://www.liquibase.org/manual/home#available_database_refactorings
-        for a list of supported elements and attributes
-    -->
+
+	<!-- The below changesets were migrated over from sqldiff.xml in June 2020.  Original author bwolfe -->
+
+	<changeSet id="sync_sqldiff_0.1_1" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<not><tableExists tableName="sync_record" /></not>
+		</preConditions>
+		<comment>Create sync tables - sync_record</comment>
+		<createTable tableName="sync_record">
+			<column name="record_id" autoIncrement="true" type="int(11)">
+				<constraints primaryKey="true"/>
+			</column>
+			<column name="uuid" type="char(36)">
+				<constraints nullable="false" />
+			</column>
+			<column name="creator" type="char(36)" />
+			<column name="database_version" type="char(8)" />
+			<column name="timestamp" type="datetime" />
+			<column name="retry_count" type="int(11)" />
+			<column name="state" type="varchar(20)" />
+			<column name="payload" type="longtext" />
+			<column name="contained_classes" type="varchar(1000)" defaultValue="" />
+			<column name="original_uuid" type="varchar(36)" />
+		</createTable>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.1_2" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<not><tableExists tableName="sync_import" /></not>
+		</preConditions>
+		<comment>Create sync tables - sync_import</comment>
+		<createTable tableName="sync_import">
+			<column name="record_id" autoIncrement="true" type="int(11)">
+				<constraints primaryKey="true"/>
+			</column>
+			<column name="uuid" type="char(36)">
+				<constraints nullable="false" />
+			</column>
+			<column name="creator" type="char(36)" />
+			<column name="database_version" type="char(8)" />
+			<column name="timestamp" type="datetime" />
+			<column name="retry_count" type="int(11)" />
+			<column name="state" type="varchar(20)" />
+			<column name="payload" type="longtext" />
+			<column name="error_message" type="varchar(255)" />
+		</createTable>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.1_3" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<not><tableExists tableName="sync_server" /></not>
+		</preConditions>
+		<comment>Create sync tables - sync_server</comment>
+		<createTable tableName="sync_server">
+			<column name="server_id" autoIncrement="true" type="int(11)">
+				<constraints primaryKey="true"/>
+			</column>
+			<column name="uuid" type="char(36)" />
+			<column name="nickname" type="varchar(255)" />
+			<column name="address" type="varchar(255)" />
+			<column name="server_type" type="varchar(20)" />
+			<column name="username" type="varchar(255)" />
+			<column name="password" type="varchar(255)" />
+			<column name="last_sync" type="datetime" />
+			<column name="last_sync_state" type="varchar(50)" />
+			<column name="disabled" type="tinyint(1)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="child_username" type="varchar(50)" defaultValue="" />
+		</createTable>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.1_4" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<not><tableExists tableName="sync_class" /></not>
+		</preConditions>
+		<comment>Create sync tables - sync_class</comment>
+		<createTable tableName="sync_class">
+			<column name="class_id" autoIncrement="true" type="int(11)">
+				<constraints primaryKey="true"/>
+			</column>
+			<column name="name" type="varchar(255)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="type" type="varchar(255)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="default_to" type="tinyint(1)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="default_from" type="tinyint(1)">
+				<constraints nullable="false"/>
+			</column>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.1_5" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<not><tableExists tableName="sync_server_class" /></not>
+		</preConditions>
+		<comment>Create sync tables - sync_server_class</comment>
+		<createTable tableName="sync_server_class">
+			<column name="server_class_id" autoIncrement="true" type="int(11)">
+				<constraints primaryKey="true"/>
+			</column>
+			<column name="class_id" type="int(11)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="server_id" type="int(11)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="send_to" type="tinyint(1)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="receive_from" type="tinyint(1)">
+				<constraints nullable="false"/>
+			</column>
+		</createTable>
+		<addForeignKeyConstraint baseTableName="sync_server_class" baseColumnNames="class_id" constraintName="server_class_class" referencedTableName="sync_class" referencedColumnNames="class_id" deferrable="false" initiallyDeferred="false" />
+		<addForeignKeyConstraint baseTableName="sync_server_class" baseColumnNames="server_id" constraintName="server_class_server" referencedTableName="sync_server" referencedColumnNames="server_id" deferrable="false" initiallyDeferred="false" />
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.1_6" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<not><tableExists tableName="sync_server_record" /></not>
+		</preConditions>
+		<comment>Create sync tables - sync_server_record</comment>
+		<createTable tableName="sync_server_record">
+			<column name="server_record_id" autoIncrement="true" type="int(11)">
+				<constraints primaryKey="true"/>
+			</column>
+			<column name="server_id" type="int(11)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="record_id" type="int(11)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="state" type="varchar(20)"/>
+			<column name="retry_count" type="int(11)"/>
+		</createTable>
+		<addForeignKeyConstraint baseTableName="sync_server_record" baseColumnNames="server_id" constraintName="server_record_server" referencedTableName="sync_server" referencedColumnNames="server_id" deferrable="false" initiallyDeferred="false" />
+		<addForeignKeyConstraint baseTableName="sync_server_record" baseColumnNames="record_id" constraintName="server_record_record" referencedTableName="sync_record" referencedColumnNames="record_id" deferrable="false" initiallyDeferred="false" />
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.2" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="0">
+				select count(*) from sync_class where name = 'GlobalProperty'
+			</sqlCheck>
+		</preConditions>
+		<comment>Add rows to the sync class table</comment>
+		<sql>
+			INSERT INTO sync_class (name, type, default_to, default_from) values ('GlobalProperty', 'MISC', 0, 0);
+		</sql>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.3" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="0">
+				select count(*) from global_property
+				WHERE property = 'sync.server_uuid' and property_value is not null and property_value != '' );
+			</sqlCheck>
+		</preConditions>
+		<comment>Create/fill-in server uuid global property</comment>
+		<sql>
+			DELETE FROM global_property
+			WHERE property = 'sync.server_uuid' and ( property_value is null or property_value = '' );
+
+			INSERT INTO global_property (property, property_value, description, uuid)
+			VALUES (
+				'sync.server_uuid',
+				uuid(),
+				'Universally unique server id used to identify a given data source in synchronization.',
+				uuid()
+			);
+		</sql>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.4_1" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<columnExists tableName="sync_class" columnName="type"/>
+		</preConditions>
+		<comment>Remove type column from sync_class</comment>
+		<dropColumn tableName="sync_class" columnName="type" />
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.4_2" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<columnExists tableName="sync_class" columnName="default_from"/>
+		</preConditions>
+		<comment>Change default_from to default_receive_from</comment>
+		<renameColumn tableName="sync_class" oldColumnName="default_from" newColumnName="default_receive_from" />
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.4_3" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<columnExists tableName="sync_class" columnName="default_to"/>
+		</preConditions>
+		<comment>Change default_to to default_send_to</comment>
+		<renameColumn tableName="sync_class" oldColumnName="default_to" newColumnName="default_send_to" />
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.4.1" author="PIH">
+		<comment>Clean up sync_class and sync_server_class tables to have only the one opted-out classes</comment>
+		<sql>
+			DELETE FROM sync_server_class WHERE receive_from = 1 AND send_to = 1;
+
+			DELETE FROM sync_class WHERE default_receive_from = 1 AND default_send_to = 1 AND class_id not in (
+				select class_id from sync_server_class
+			);
+
+			UPDATE sync_class set name = concat('org.openmrs.', name) where name not like 'org.openmrs.%;
+		</sql>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.4.2" author="PIH">
+		<comment>Increase size of database_version column to hold the more complicated openmrs code version now</comment>
+		<modifyDataType tableName="sync_record" columnName="database_version" newDataType="char(20)" />
+		<modifyDataType tableName="sync_import" columnName="database_version" newDataType="char(20)" />
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.5" author="PIH">
+		<comment>Increase size of state columns to hold longer state names</comment>
+		<modifyDataType tableName="sync_record" columnName="state" newDataType="char(32)" />
+		<modifyDataType tableName="sync_import" columnName="state" newDataType="char(32)" />
+		<modifyDataType tableName="sync_server_record" columnName="state" newDataType="char(32)" />
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.6" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<columnExists tableName="sync_import" columnName="record_id"/>
+		</preConditions>
+		<comment>Renaming the sync_import.record_id column for clarity. (Must be done this way to prevent primary key errors in mysql)</comment>
+		<sql>
+			ALTER TABLE sync_import CHANGE COLUMN record_id record_id int(11) NOT NULL;
+			ALTER TABLE sync_import DROP PRIMARY KEY;
+			ALTER TABLE sync_import CHANGE COLUMN record_id sync_import_id int(11) NOT NULL auto_increment, ADD PRIMARY KEY (sync_import_id);
+		</sql>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.7" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="0">
+				select 	count(*) from scheduler_task_config
+				where 	name = 'Cleanup Old Sync Records'
+			</sqlCheck>
+		</preConditions>
+		<comment>Adding a scheduled task for the sync record cleanup</comment>
+		<sql>
+			INSERT INTO scheduler_task_config (
+				name,
+				description,
+				schedulable_class,
+				start_time,
+				start_time_pattern,
+				repeat_interval,
+				start_on_startup,
+				started,
+				created_by,
+				date_created,
+				changed_by,
+				date_changed,
+				uuid
+			)
+			VALUES (
+				'Cleanup Old Sync Records',
+				'This task deletes old rows in the sync_record and sync_server_record tables.  The default settings work on all servers, but for advanced users, you can change the properties to suit your needs.',
+				'org.openmrs.module.sync.scheduler.CleanupSyncTablesTask',
+				'2009-12-18 17:26:31',
+				'MM/dd/yyyy HH:mm:ss',
+				'604800',
+				'1',
+				'0',
+				'1',
+				'2009-12-18 17:28:39',
+				null,
+				null,
+				'd3122955-00d7-454c-b17f-e3f87206c74b'
+			);
+
+			INSERT INTO scheduler_task_config_property (name, value, task_config_id) VALUES (
+				'delete_entries_files_older_than_x_days',
+				'90',
+				(select max(task_config_id) from scheduler_task_config where name = 'Cleanup Old Sync Records')
+			);
+
+			INSERT INTO scheduler_task_config_property (name, value, task_config_id) VALUES (
+				'sync_record_states_to_delete',
+				'',
+				(select max(task_config_id) from scheduler_task_config where name = 'Cleanup Old Sync Records')
+			);
+
+		</sql>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.71_1" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="0">
+				select count(*) from sync_class where name = 'org.openmrs.scheduler'
+			</sqlCheck>
+		</preConditions>
+		<comment>Additional classes to be excluded from sync by default: Scheduler</comment>
+		<sql>
+			INSERT INTO sync_class (name, default_send_to, default_receive_from) values ('org.openmrs.scheduler', 0, 0);
+		</sql>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.71_2" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="0">
+				select count(*) from sync_class where name = 'org.openmrs.hl7'
+			</sqlCheck>
+		</preConditions>
+		<comment>Additional classes to be excluded from sync by default: HL7</comment>
+		<sql>
+			INSERT INTO sync_class (name, default_send_to, default_receive_from) values ('org.openmrs.hl7', 0, 0);
+		</sql>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.71_3" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="0">
+				select count(*) from sync_class where name = 'org.openmrs.ConceptWord'
+			</sqlCheck>
+		</preConditions>
+		<comment>Additional classes to be excluded from sync by default: ConceptWord</comment>
+		<sql>
+			INSERT INTO sync_class (name, default_send_to, default_receive_from) values ('org.openmrs.ConceptWord', 0, 0);
+		</sql>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.72" author="PIH">
+		<comment>Removed concept_word from the additional classes; it doesn't implement OpenmrsObject</comment>
+		<sql>
+			DELETE  sync_server_class
+			FROM    sync_server_class, sync_class
+			WHERE   sync_class.class_id = sync_server_class.class_id
+			AND   	sync_class.name = 'org.openmrs.ConceptWord';
+
+			DELETE FROM sync_class where name = 'org.openmrs.ConceptWord';
+		</sql>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.80" author="PIH">
+		<comment>Remove synchronization.original_uuid from global properties: it is no longer in use.</comment>
+		<sql>
+			DELETE FROM global_property WHERE property = 'synchronization.original_uuid';
+		</sql>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.81" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<not><columnExists tableName="sync_server_record" columnName="error_message"/></not>
+		</preConditions>
+		<comment>Add error message to sync_server_record</comment>
+		<addColumn tableName="sync_server_record">
+			<column name="error_message" type="varchar(255)" />
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.97" author="PIH">
+		<comment>Add unique constraint to sync_record.uuid column</comment>
+		<addUniqueConstraint tableName="sync_record" columnNames="uuid" />
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.975" author="PIH">
+		<preConditions>
+			<not><columnExists tableName="sync_import" columnName="source_server_id"/></not>
+		</preConditions>
+		<comment>Add source_server_id to sync_import</comment>
+		<addColumn tableName="sync_import">
+			<column name="source_server_id" type="int(11)"></column>
+		</addColumn>
+		<addForeignKeyConstraint baseTableName="sync_import" baseColumnNames="source_server_id" constraintName="sync_import_source_server" referencedTableName="sync_server" referencedColumnNames="server_id" />
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.976" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="0">
+				select count(*) from sync_class where name = 'org.openmrs.notification.Alert'
+			</sqlCheck>
+		</preConditions>
+		<comment>Adding the org.openmrs.notification.Alert class to the list to be ignored by sync.</comment>
+		<sql>
+			INSERT INTO sync_class (name, default_send_to, default_receive_from) values ('org.openmrs.notification.Alert', 0, 0);
+		</sql>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.978" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="0">
+				select 	count(*) from sync_server_class
+				where 	class_id in (SELECT class_id FROM sync_class WHERE name = 'org.openmrs.notification.Alert')
+			</sqlCheck>
+		</preConditions>
+		<comment>Adding the org.openmrs.notification.Alert class to the sync_server_class table.</comment>
+		<sql>
+			INSERT INTO sync_server_class (class_id, server_id, send_to, receive_from)
+			SELECT 	(SELECT min(class_id) FROM sync_class WHERE name = 'org.openmrs.notification.Alert'), server_id, 0, 0
+			FROM 	sync_server
+			WHERE 	server_id not in (
+				SELECT 	server_id
+				FROM 	sync_server_class
+				WHERE 	class_id = ( SELECT min(class_id) FROM sync_class WHERE name = 'org.openmrs.notification.Alert' )
+			);
+		</sql>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_1.1" author="PIH">
+		<comment>Add unique constraint to sync_import.uuid column</comment>
+		<addUniqueConstraint tableName="sync_import" columnNames="uuid" />
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_1.1.1" author="PIH">
+		<preConditions>
+			<indexExists />
+		</preConditions>
+		<comment>SYNC-278 - Add unique key to sync_record.original_uuid column</comment>
+		<createIndex tableName="sync_record" indexName="original_uuid" unique="true">
+			<column name="original_uuid" />
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_1.1.2_1" author="PIH">
+		<preConditions>
+			<not><indexExists tableName="sync_record" columnNames="timestamp" indexName="timestamp" /></not>
+		</preConditions>
+		<comment>SYNC-279 - Add index to sync_record.timestamp column</comment>
+		<createIndex tableName="sync_record" indexName="timestamp">
+			<column name="timestamp" />
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_1.1.2_2" author="PIH">
+		<preConditions>
+			<not><indexExists tableName="sync_record" columnNames="state" indexName="state" /></not>
+		</preConditions>
+		<comment>SYNC-279 - Add index to sync_record.state column</comment>
+		<createIndex tableName="sync_record" indexName="state">
+			<column name="state" />
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_1.1.3_1" author="PIH">
+		<preConditions>
+			<not><indexExists tableName="sync_server_record" columnNames="server_id" indexName="server_id" /></not>
+		</preConditions>
+		<comment>SYNC-279 - Add index to sync_server_record.server_id column</comment>
+		<createIndex tableName="sync_server_record" indexName="server_id">
+			<column name="server_id" />
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_1.1.3_2" author="PIH">
+		<preConditions>
+			<not><indexExists tableName="sync_server_record" columnNames="state" indexName="state" /></not>
+		</preConditions>
+		<comment>SYNC-279 - Add index to sync_server_record.state column</comment>
+		<createIndex tableName="sync_server_record" indexName="state">
+			<column name="state" />
+		</createIndex>
+	</changeSet>
+
+	<!-- End sqldiff migration -->
+
 	<changeSet id="sync-20120327-1406" author="wyclif">
  		<preConditions onFail="MARK_RAN">
 			<columnExists tableName="sync_import" columnName="error_message" />
@@ -18,7 +478,7 @@
 			<column name="error_message" type="text" />
 		</ext:modifyColumn>
  	</changeSet>
-    
+
  	<changeSet id="sync-20120327-1407" author="wyclif">
  		<preConditions onFail="MARK_RAN">
 			<columnExists tableName="sync_server_record" columnName="error_message" />
@@ -28,7 +488,7 @@
 			<column name="error_message" type="text" />
 		</ext:modifyColumn>
  	</changeSet>
-	
+
 	<changeSet id="sync_2018-05-24:15:17EAT" author="Willa Mhawila">
 		<comment>Adding a table to track transmission</comment>
 		<createTable tableName="sync_transmission_log">
