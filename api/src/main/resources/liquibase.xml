@@ -365,6 +365,9 @@
 	</changeSet>
 
 	<changeSet id="sync_sqldiff_0.97" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<not><indexExists tableName="sync_record" columnNames="uuid" /></not>
+		</preConditions>
 		<comment>Add unique constraint to sync_record.uuid column</comment>
 		<addUniqueConstraint tableName="sync_record" columnNames="uuid" />
 	</changeSet>
@@ -375,7 +378,7 @@
 		</preConditions>
 		<comment>Add source_server_id to sync_import</comment>
 		<addColumn tableName="sync_import">
-			<column name="source_server_id" type="int(11)"></column>
+			<column name="source_server_id" type="int(11)" />
 		</addColumn>
 		<addForeignKeyConstraint baseTableName="sync_import" baseColumnNames="source_server_id" constraintName="sync_import_source_server" referencedTableName="sync_server" referencedColumnNames="server_id" />
 	</changeSet>
@@ -413,6 +416,9 @@
 	</changeSet>
 
 	<changeSet id="sync_sqldiff_1.1" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<not><indexExists tableName="sync_import" columnNames="uuid" /></not>
+		</preConditions>
 		<comment>Add unique constraint to sync_import.uuid column</comment>
 		<addUniqueConstraint tableName="sync_import" columnNames="uuid" />
 	</changeSet>
