@@ -136,7 +136,7 @@ public class ServerConnection {
 		String username = server.getUsername();
 		String password = server.getPassword();
 		try {
-			syncResponse = httpPostTransmit(url, username, password, transmission.getFileName(), false);
+			syncResponse = httpPostTransmit(url, username, password, transmission.getFileOutput(), false);
 
 		} catch (MalformedURLException mue) {
 			log.error("Malformed URL " + url, mue);
