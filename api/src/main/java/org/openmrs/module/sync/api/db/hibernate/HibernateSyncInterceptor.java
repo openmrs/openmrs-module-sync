@@ -41,6 +41,7 @@ import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Projections;
 import org.hibernate.engine.internal.ForeignKeys;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.transaction.spi.TransactionImplementor;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.metadata.CollectionMetadata;
@@ -87,6 +88,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	private static HibernateSyncInterceptor instance;
 	private ApplicationContext context;
 	private static ThreadLocal<SyncRecord> syncRecordHolder = new ThreadLocal<SyncRecord>();
+	private static ThreadLocal<Boolean> isProcessRegistered = new ThreadLocal<Boolean>();
 
 	private HibernateSyncInterceptor() {
 		log.info("Initializing the synchronization interceptor");
@@ -184,8 +186,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 * implementation to understand how collection updates are hooked up in hibernate, specifically
 	 * see Collections.prepareCollectionForUpdate().
 	 *
-	 * @see org.hibernate.engine.Collections
-	 * @see org.hibernate.event.def.AbstractFlushingEventListener
+	 * @see AbstractPersistentCollection
 	 */
 	@Override
 	public void onCollectionRecreate(Object collection, Serializable key) throws CallbackException {
@@ -207,8 +208,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 * remarks: See hibernate AbstractFlushingEventListener implementation to understand how
 	 * collection updates are hooked up in hibernate.
 	 *
-	 * @see org.hibernate.engine.Collections
-	 * @see org.hibernate.event.def.AbstractFlushingEventListener
+	 * @see AbstractPersistentCollection
 	 */
 	@Override
 	public void onCollectionUpdate(Object collection, Serializable key) throws CallbackException {
@@ -275,7 +275,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 * user would have no idea that their saving operation failed to save sync records.  In contrast,
 	 * beforeTransactionCompletionProcesses are run outside of that try/catch block and result in exceptions
 	 * bubbling back up
-	 * @see org.hibernate.impl.SessionImpl#beforeTransactionCompletion(org.hibernate.Transaction)
+	 * @see org.hibernate.internal.SessionImpl#beforeTransactionCompletion(TransactionImplementor)
 	 * @see EmptyInterceptor#beforeTransactionCompletion(org.hibernate.Transaction)
 	 */
 	@Override
@@ -292,61 +292,68 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 */
 	private void registerBeforeTransactionCompletionProcess() {
 		log.debug("Registering SyncBeforeTransactionCompletionProcess with the current session");
+		if (isProcessRegistered()) {
+			log.debug("Process is already registered, not registering again...");
+		}
+		else {
+			log.debug("No process is yet registered, proceeding...");
+			EventSource eventSource = (EventSource) getSessionFactory().getCurrentSession();
+			eventSource.getActionQueue().registerProcess(new BeforeTransactionCompletionProcess() {
 
-		EventSource eventSource = (EventSource) getSessionFactory().getCurrentSession();
-		eventSource.getActionQueue().registerProcess(new BeforeTransactionCompletionProcess() {
-			 public void doBeforeTransactionCompletion(SessionImplementor sessionImpl) {
-				 log.trace("doBeforeTransactionCompletion process: checking for SyncRecord to save");
-				 try {
-					 SyncRecord record = getSyncRecord();
-					 syncRecordHolder.remove();
+				public void doBeforeTransactionCompletion(SessionImplementor sessionImpl) {
+					log.trace("doBeforeTransactionCompletion process: checking for SyncRecord to save");
+					try {
+						SyncRecord record = getSyncRecord();
+						syncRecordHolder.remove();
 
-					 // Does this transaction contain any serialized changes?
-					 if (record != null && record.hasItems()) {
+						// Does this transaction contain any serialized changes?
+						if (record != null && record.hasItems()) {
 
-						 // Grab user if we have one, and use the UUID of the user as creator of this SyncRecord
-						 User user = Context.getAuthenticatedUser();
-						 if (user != null) {
-							 record.setCreator(user.getUuid());
-						 }
+							// Grab user if we have one, and use the UUID of the user as creator of this SyncRecord
+							User user = Context.getAuthenticatedUser();
+							if (user != null) {
+								record.setCreator(user.getUuid());
+							}
 
-						 // Grab database version
-						 record.setDatabaseVersion(OpenmrsConstants.OPENMRS_VERSION_SHORT);
+							// Grab database version
+							record.setDatabaseVersion(OpenmrsConstants.OPENMRS_VERSION_SHORT);
 
-						 // Complete the record
-						 record.setUuid(SyncUtil.generateUuid());
+							// Complete the record
+							record.setUuid(SyncUtil.generateUuid());
 
-						 if (record.getOriginalUuid() == null) {
-							 log.debug("OriginalUuid is null, so assigning a new UUID: " + record.getUuid());
-							 record.setOriginalUuid(record.getUuid());
-						 }
-						 else {
-							 log.debug("OriginalUuid is: " + record.getOriginalUuid());
-						 }
+							if (record.getOriginalUuid() == null) {
+								log.debug("OriginalUuid is null, so assigning a new UUID: " + record.getUuid());
+								record.setOriginalUuid(record.getUuid());
+							} else {
+								log.debug("OriginalUuid is: " + record.getOriginalUuid());
+							}
 
-						 record.setState(SyncRecordState.NEW);
-						 record.setTimestamp(new Date());
-						 record.setRetryCount(0);
+							record.setState(SyncRecordState.NEW);
+							record.setTimestamp(new Date());
+							record.setRetryCount(0);
 
-						 log.info("Saving SyncRecord " + record.getOriginalUuid() + ": " + record.getItems().size() + " items");
+							log.info("Saving SyncRecord " + record.getOriginalUuid() + ": " + record.getItems().size()
+									+ " items");
 
-						 // Save SyncRecord
-						 getSyncService().createSyncRecord(record, record.getOriginalUuid());
-					 }
-					 else {
-						 // note: this will happen all the time with read-only transactions
-						 if (log.isTraceEnabled()) {
-							 log.trace("No SyncItems in SyncRecord, save discarded (note: maybe a read-only transaction)!");
-						 }
-					 }
-				 }
-				 catch (Exception e) {
-					 log.error("A error occurred while trying to save a sync record in the interceptor", e);
-					 throw new SyncException("Error in interceptor, see log messages and callstack.", e);
-				 }
-			 }
-		});
-		log.debug("Successfully registered SyncBeforeTransactionCompletionProcess with the current session");
+							// Save SyncRecord
+							getSyncService().createSyncRecord(record, record.getOriginalUuid());
+						} else {
+							// note: this will happen all the time with read-only transactions
+							if (log.isTraceEnabled()) {
+								log.trace(
+										"No SyncItems in SyncRecord, save discarded (note: maybe a read-only transaction)!");
+							}
+						}
+					}
+					catch (Exception e) {
+						log.error("A error occurred while trying to save a sync record in the interceptor", e);
+						throw new SyncException("Error in interceptor, see log messages and callstack.", e);
+					}
+				}
+			});
+			isProcessRegistered.set(true);
+			log.debug("Successfully registered SyncBeforeTransactionCompletionProcess with the current session");
+		}
 	}
 
 	/**
@@ -359,6 +366,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			log.debug("Transaction Completed: " + SyncUtil.formatTransactionStatus(tx));
 		}
 		// Because the beforeTransactionCompletion method is not called on rollback, we need to ensure any syncRecords still on the thread are removed after the tx is completed
+		isProcessRegistered.remove();
 		syncRecordHolder.remove();
 	}
 
@@ -1481,6 +1489,14 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			syncRecordHolder.set(syncRecord);
 		}
 		return syncRecord;
+	}
+
+	/**
+	 * @return true if a BeforeTransactionCompletionProcess is already registered with this thread
+	 */
+	private static boolean isProcessRegistered() {
+		Boolean val = isProcessRegistered.get();
+		return val != null && val.booleanValue();
 	}
 
 	/**
