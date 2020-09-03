@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -88,7 +89,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	private static HibernateSyncInterceptor instance;
 	private ApplicationContext context;
 	private static ThreadLocal<SyncRecord> syncRecordHolder = new ThreadLocal<SyncRecord>();
-	private static ThreadLocal<Boolean> isProcessRegistered = new ThreadLocal<Boolean>();
+	private static ThreadLocal<Stack<Boolean>> isTxnProcessRegistered = new ThreadLocal<Stack<Boolean>>();
 
 	private HibernateSyncInterceptor() {
 		log.info("Initializing the synchronization interceptor");
@@ -113,6 +114,12 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		if (log.isDebugEnabled()) {
 			log.debug("Transaction Started");
 		}
+		Stack<Boolean> stack = isTxnProcessRegistered.get();
+		if (stack == null) {
+			stack = new Stack<Boolean>();
+			isTxnProcessRegistered.set(stack);
+		}
+		stack.push(false);
 	}
 
 	/**
@@ -351,7 +358,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 					}
 				}
 			});
-			isProcessRegistered.set(true);
+			isTxnProcessRegistered.get().pop();
+			isTxnProcessRegistered.get().push(true);
 			log.debug("Successfully registered SyncBeforeTransactionCompletionProcess with the current session");
 		}
 	}
@@ -366,8 +374,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			log.debug("Transaction Completed: " + SyncUtil.formatTransactionStatus(tx));
 		}
 		// Because the beforeTransactionCompletion method is not called on rollback, we need to ensure any syncRecords still on the thread are removed after the tx is completed
-		isProcessRegistered.remove();
 		syncRecordHolder.remove();
+		isTxnProcessRegistered.get().pop();
 	}
 
 	/**
@@ -1495,7 +1503,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 * @return true if a BeforeTransactionCompletionProcess is already registered with this thread
 	 */
 	private static boolean isProcessRegistered() {
-		Boolean val = isProcessRegistered.get();
+		Stack<Boolean> stack = isTxnProcessRegistered.get();
+		Boolean val = stack.peek();
 		return val != null && val.booleanValue();
 	}
 
