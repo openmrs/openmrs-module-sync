@@ -13,24 +13,28 @@
  */
 package org.openmrs.module.sync;
 
-import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Date;
 import java.util.List;
 
 import org.junit.Test;
-import org.openmrs.Concept;
 import org.openmrs.Drug;
 import org.openmrs.DrugOrder;
+import org.openmrs.Encounter;
+import org.openmrs.FreeTextDosingInstructions;
 import org.openmrs.Order;
-import org.openmrs.OrderType;
 import org.openmrs.Patient;
+import org.openmrs.api.ConceptService;
+import org.openmrs.api.EncounterService;
 import org.openmrs.api.OrderService;
+import org.openmrs.api.PatientService;
+import org.openmrs.api.ProviderService;
 import org.openmrs.api.context.Context;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import junit.framework.Assert;
 
 public class SyncDrugOrderTest extends SyncBaseTest {
 
@@ -48,81 +52,54 @@ public class SyncDrugOrderTest extends SyncBaseTest {
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldCreateDrugOrder() throws Exception {
 
-		if (TestUtil.isOpenmrsVersionAtLeast("1.10")) {
-			log.warn("NOT RUNNING DRUG ORDER TESTS AGAINST 1.10.  TODO.");
-			return;
-		}
-
 		runSyncTest(new SyncTestHelper() {			
 
+			PatientService patientService = Context.getPatientService();
+			EncounterService encounterService = Context.getEncounterService();
 			OrderService orderService = Context.getOrderService();
+			ConceptService conceptService = Context.getConceptService();
+			ProviderService providerService = Context.getProviderService();
 
 			public void runOnChild() throws Exception {
 
-				Patient patient = Context.getPatientService().getPatient(new Integer(2));
-				assertNotNull(patient);
+				Patient patient = patientService.getPatient(2);
+				assertThat(patient, notNullValue());
+
+				Date encounterDate = new Date();
 				
-				Drug drug = Context.getConceptService().getDrug("Advil");
-				assertNotNull(drug);
-								
-				Concept concept = drug.getConcept();
-				assertNotNull(concept);
+				Drug drug = conceptService.getDrug("Advil");
+				assertThat(drug, notNullValue());
+
+				Encounter encounter = new Encounter();
+				encounter.setPatient(patient);
+				encounter.setEncounterDatetime(encounterDate);
+				encounter.setEncounterType(encounterService.getEncounterType("ADULTINITIAL"));
 
 				DrugOrder drugOrder = new DrugOrder();
-				drugOrder.setDrug(drug);
-				drugOrder.setConcept(concept);
 				drugOrder.setPatient(patient);
-				drugOrder.setDose(1.0);
-				drugOrder.setInstructions("");				
-				drugOrder.setDateCreated(new Date());
-				drugOrder.setVoided(new Boolean(false));
+				drugOrder.setEncounter(encounter);
+				drugOrder.setAction(Order.Action.NEW);
+				drugOrder.setDrug(drug);
+				drugOrder.setUrgency(Order.Urgency.ROUTINE);
+				drugOrder.setDateActivated(encounterDate);
+				drugOrder.setCareSetting(orderService.getCareSetting(2));
+				drugOrder.setOrderType(orderService.getOrderType(1));
+				drugOrder.setDosingType(FreeTextDosingInstructions.class);
+				drugOrder.setDosingInstructions("Test instructions");
+				drugOrder.setOrderer(providerService.getProvider(1));
 
-				Object orderType = OrderService.class.getMethod("getOrderType", Integer.class).invoke(orderService, 1);
-				DrugOrder.class.getMethod("setOrderType", OrderType.class).invoke(drugOrder, orderType);
-				DrugOrder.class.getMethod("setUnits", String.class).invoke(drugOrder, "tabs");
-				DrugOrder.class.getMethod("setFrequency", String.class).invoke(drugOrder, "4 times per day");
+				encounter.addOrder(drugOrder);
 
-				OrderService.class.getMethod("saveOrder", Order.class).invoke(orderService, drugOrder);
+				encounterService.saveEncounter(encounter);
 
-				List orders = (List)OrderService.class.getMethod("getDrugOrdersByPatient", Patient.class).invoke(orderService, patient);
-				Assert.assertEquals(2, orders.size());
+				List<Order> orders = orderService.getAllOrdersByPatient(patient);
+				assertThat(orders.size(), is(1));
 			}
 
 			public void runOnParent() throws Exception {
-				Patient patient = Context.getPatientService().getPatient(new Integer(2));
-				List orders = (List)OrderService.class.getMethod("getDrugOrdersByPatient", Patient.class).invoke(orderService, patient);
-				Assert.assertEquals(2, orders.size());
-			}
-		});
-	}	
-
-	@Test
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public void shouldUpdateDrugOrder() throws Exception {
-
-		if (TestUtil.isOpenmrsVersionAtLeast("1.10")) {
-			log.warn("NOT RUNNING DRUG ORDER TESTS AGAINST 1.10.  TODO.");
-			return;
-		}
-
-		runSyncTest(new SyncTestHelper() {
-
-			OrderService orderService = Context.getOrderService();
-
-			public void runOnChild() throws Exception {
-				DrugOrder order = (DrugOrder)OrderService.class.getMethod("getOrder", Integer.class, Class.class).invoke(orderService, 1, DrugOrder.class);
-				Double d = (Double) DrugOrder.class.getMethod("getDose").invoke(order);
-				Assert.assertFalse(d.doubleValue() == 10.0);
-				DrugOrder.class.getMethod("setDose", Double.class).invoke(order, 10.0);
-				OrderService.class.getMethod("saveOrder", Order.class).invoke(orderService, order);
-				d = (Double) DrugOrder.class.getMethod("getDose").invoke(order);
-				Assert.assertEquals(10.0, d.doubleValue());
-			}
-
-			public void runOnParent() throws Exception {
-				DrugOrder order = (DrugOrder)OrderService.class.getMethod("getOrder", Integer.class, Class.class).invoke(orderService, 1, DrugOrder.class);
-				Double d = (Double) DrugOrder.class.getMethod("getDose").invoke(order);
-				Assert.assertEquals(10.0, d.doubleValue());
+				Patient patient = patientService.getPatient(2);
+				List<Order> orders = orderService.getAllOrdersByPatient(patient);
+				assertThat(orders.size(), is(1));
 			}
 		});
 	}
