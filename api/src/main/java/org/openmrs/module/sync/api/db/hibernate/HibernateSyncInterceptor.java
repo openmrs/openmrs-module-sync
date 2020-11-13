@@ -106,7 +106,15 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	}
 
 	/**
-	 * No operation, logging only
+	 * On a given thread, there can be multiple transactions when updating the DB.  Most commonly there is only
+	 * one shared transaction, which would lead to a single sync record.  However, there are instances where new
+	 * transactions are started during the course of a save, and these need to be handled appropriately.  An example of
+	 * this is saving a new Order, when the default order number generator creates a new Transaction to generate and save
+	 * a new sequential order number during the save of the Order.  This method serves to set up support for this, where
+	 *  a ThreadLocal is used to contain the sync records for a given thread, and new sync records exist for each
+	 *  transaction and are only persisted when those transactions are completed.  This allows the nested order number
+	 *  transaction (and sync record) to get saved first and independently of the later order transaction.
+	 *
 	 * @see EmptyInterceptor#afterTransactionBegin(Transaction)
 	 */
 	@Override
@@ -294,9 +302,10 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	}
 
 	/**
-	 * Registers a {@link BeforeTransactionCompletionProcess} if none has been registered with the
-	 * current session, it uses ThreadLocal variable to check if it is already set since sessions
-	 * are thread bound
+	 * Registers a {@link BeforeTransactionCompletionProcess} if none has been registered for the current transaction.
+	 * We only want one process per transaction to execute, but since this is registered during the
+	 * pre-flush, and multiple flushes can occur within a transaction, we need to ensure that this has not already been
+	 * registered before we register it again.  We do this by tracking this on the ThreadLocal by transaction.
 	 */
 	private void registerBeforeTransactionCompletionProcess() {
 		log.debug("Registering SyncBeforeTransactionCompletionProcess with the current session");
@@ -1559,6 +1568,12 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 	}
 
+	/**
+	 * This inner class serves as a mechanism to store the sync records for a given thread.  It organizes the sync records
+	 * by transaction on the thread, ensuring that if multiple transactions exist that sync records are created and updated
+	 * for each transaction appropriately.  This also allows us to ensure that when a given transaction completes (or
+	 * rolls back) that the sync records that are saved reflect this.
+	 */
 	class SyncRecordHolder {
 
 		Stack<Transaction> transactions = new Stack<Transaction>();
