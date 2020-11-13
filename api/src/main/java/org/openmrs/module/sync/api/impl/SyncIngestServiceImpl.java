@@ -16,9 +16,14 @@ package org.openmrs.module.sync.api.impl;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.collection.internal.PersistentSet;
 import org.openmrs.Concept;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.PatientIdentifier;
 import org.openmrs.Person;
+import org.openmrs.PersonAddress;
+import org.openmrs.PersonAttribute;
+import org.openmrs.PersonName;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.SerializedObject;
@@ -204,17 +209,19 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     // for each sync item, process it and insert/update the database; 
                     //put deletes into deletedItems collection -- these will get processed last
                     for ( SyncItem item : record.getItems() ) {
-                    	//System.out.println("item: " + item.getContainedType() + " state: " + item.getState());
-                    	//System.out.println("content: " + item.getContent());
+
+                    	Class itemType = item.getContainedType();
+
                     	if (item.getState() == SyncItemState.DELETED) {
                     		deletedItems.add(item);
                     	}
-						else if (item.getState() == SyncItemState.UPDATED && item.getContainedType() != null && (
-                    			   "org.openmrs.PatientIdentifier".equals(item.getContainedType().getName())
-                    			|| "org.openmrs.PersonAttribute".equals(item.getContainedType().getName())
-                    			|| "org.openmrs.PersonAddress".equals(item.getContainedType().getName())
-                    			|| "org.openmrs.PersonName".equals(item.getContainedType().getName())
-                    			)) {
+						else if (item.getState() == SyncItemState.UPDATED && (
+								itemType == PatientIdentifier.class ||
+								itemType == PersonAttribute.class ||
+								itemType == PersonAddress.class ||
+								itemType == PersonName.class ||
+								itemType == PersistentSet.class  // This is to ensure new orders within an encounter are saved before the set is updated
+	                    )) {
                     		treeSetItems.add(item);
                     	}
 						else if (Person.class.isAssignableFrom(item.getContainedType()) || Concept.class.isAssignableFrom(item.getContainedType()) || SyncSubclassStub.class.isAssignableFrom(item.getContainedType())

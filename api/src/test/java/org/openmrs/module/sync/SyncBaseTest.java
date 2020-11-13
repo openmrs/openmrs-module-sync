@@ -337,14 +337,11 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	 * @return
 	 */
 	private int compareVersions(String v1, String v2) throws NumberFormatException {
-		System.out.println("v1: " + v1 + ", v2: " + v2);
 		String[] v1Parts = v1.split("\\.", 3);
 		String[] v2Parts = v2.split("\\.", 3);
-		System.out.println("v1 parts:" + v1Parts + ", v2Parts: " + v2Parts);
 
 		int[] v1Ints = new int[v1Parts.length];
 		for(int x=0; x < v1Parts.length; ++x ) {
-			System.out.println("part " + x + ": " + v1Parts[x]);
 			v1Ints[x] = Integer.parseInt(v1Parts[x]);
 		}
 

@@ -15,7 +15,12 @@
 	<user_role user_id="1" role="System Developer"/> <!-- uuid="35a05ac6-144e-102b-8d9c-e44ed545d86c" -->
 	<user_role user_id="2" role="Provider"/>
 
-    <concept_name_tag uuid="77397336-e90e-102b-968f-001e378eb67e" concept_name_tag_id="1" tag="default" description="name to use when nothing else is available" creator="1" date_created="2007-05-01 00:00:00.0" voided="false"/>
+	<care_setting care_setting_id="1" name="OUTPATIENT" description="OutPatient" care_setting_type="OUTPATIENT" creator="1" date_created="2008-08-19 12:35:30.0" retired="false" uuid="6f0c9a92-6f24-11e3-af88-005056821db0"/>
+	<care_setting care_setting_id="2" name="INPATIENT" description="InPatient" care_setting_type="INPATIENT" creator="1" date_created="2008-08-19 12:35:30.0" retired="false" uuid="c365e560-c3ec-11e3-9c1a-0800200c9a66"/>
+
+	<order_type order_type_id="1" name="Drug order" java_class_name="org.openmrs.DrugOrder" description="Categorises medication orders for the patient" date_created="2008-08-15 13:49:47.0" retired="false" uuid="131168f4-15f5-102d-96e4-000c29c2a5d7" creator="1" />
+
+	<concept_name_tag uuid="77397336-e90e-102b-968f-001e378eb67e" concept_name_tag_id="1" tag="default" description="name to use when nothing else is available" creator="1" date_created="2007-05-01 00:00:00.0" voided="false"/>
 
 	<concept_class retired="false" concept_class_id="1" name="Test" description="Acq. during patient encounter (vitals, labs, etc.)" creator="1" date_created="2004-02-02 00:00:00.0" uuid="27f7230a-144e-102b-8d9c-e44ed545d86c"/>
 	<concept_class retired="false" concept_class_id="2" name="Procedure" description="Describes a clinical procedure" creator="1" date_created="2004-03-02 00:00:00.0" uuid="27f72d33-144e-102b-8d9c-e44ed545d86c"/>
@@ -104,6 +109,8 @@
 	<concept_set concept_set_id="1" concept_id="13" concept_set="15" sort_weight="0.0" creator="1" date_created="2008-08-18 12:38:58.0" uuid="1a222827-639f-4cb4-961f-1e025bf88d90"/>
 
     <concept_synonym/>
+
+	<drug drug_id="1" concept_id="9" name="Advil" combination="false" strength="200.0mg" creator="1" date_created="2008-01-14 18:09:57.0" retired="false" uuid="29dde6a3-144e-102b-8d9c-e44ed545d86c"/>
 
 	<person_attribute_type retired="false" person_attribute_type_id="1" name="Race" description="Group of persons related by common descent or heredity" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322aa53b-144e-102b-8d9c-e44ed545d86c" sort_weight="1"/>
 	<person_attribute_type retired="false" person_attribute_type_id="2" name="Birthplace" description="Location of persons birth" format="java.lang.String" searchable="0" creator="1" date_created="2007-05-04 09:59:23.0" uuid="322aa923-144e-102b-8d9c-e44ed545d86c" sort_weight="7"/>
@@ -273,6 +280,7 @@
 	<form_field form_field_id="1023" form_id="1" field_id="23" field_part="" parent_form_field="1021" max_occurs="-1" required="false" changed_by="1" date_changed="2006-07-26 05:39:24.0" creator="1" date_created="2006-07-26 05:34:25.0" uuid="a6464f4c-fb9e-102a-b4cd-d5399a5cfee6"/>
 
 	<global_property property="sync.server_name" property_value="parent" uuid="cccc4f4c-fb9e-102a-b4cd-d5399a5cbbbb" />
+	<global_property property="order.nextOrderNumberSeed" property_value="1" uuid="7ed7aeb4-0663-11e1-8c99-2b4f0c4f671b" />
 
 	<visit_type retired="false" visit_type_id="1" name="Unknown" description="Unknown" creator="1" date_created="2005-02-24 00:00:00.0" uuid="2a5cd7ea-144e-102b-8d9c-554ed545d86d"/>
 
