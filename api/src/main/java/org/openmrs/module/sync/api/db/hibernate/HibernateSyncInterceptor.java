@@ -309,7 +309,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 */
 	private void registerBeforeTransactionCompletionProcess() {
 		log.debug("Registering SyncBeforeTransactionCompletionProcess with the current session");
-		Transaction tx = getSessionFactory().getCurrentSession().getTransaction();;
+		Transaction tx = getSessionFactory().getCurrentSession().getTransaction();
 		if (syncRecordThreadLocal.get().isProcessRegistered(tx)) {
 			if (log.isTraceEnabled()) {
 				log.trace("Process is already registered for current thread and txn, not registering again...");
