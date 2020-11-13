@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.CallbackException;
@@ -88,8 +89,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 
 	private static HibernateSyncInterceptor instance;
 	private ApplicationContext context;
-	private static ThreadLocal<SyncRecord> syncRecordHolder = new ThreadLocal<SyncRecord>();
-	private static ThreadLocal<Stack<Boolean>> isTxnProcessRegistered = new ThreadLocal<Stack<Boolean>>();
+	private static final ThreadLocal<SyncRecordHolder> syncRecordThreadLocal = new ThreadLocal<SyncRecordHolder>();
 
 	private HibernateSyncInterceptor() {
 		log.info("Initializing the synchronization interceptor");
@@ -111,15 +111,16 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 */
 	@Override
 	public void afterTransactionBegin(Transaction tx) {
-		if (log.isDebugEnabled()) {
-			log.debug("Transaction Started");
+		SyncRecordHolder holder = syncRecordThreadLocal.get();
+		if (holder == null) {
+			holder = new SyncRecordHolder();
+			syncRecordThreadLocal.set(holder);
 		}
-		Stack<Boolean> stack = isTxnProcessRegistered.get();
-		if (stack == null) {
-			stack = new Stack<Boolean>();
-			isTxnProcessRegistered.set(stack);
+		holder.startTransaction(tx);
+		if (log.isTraceEnabled()) {
+			log.trace("Transaction Started");
+			log.trace(holder);
 		}
-		stack.push(false);
 	}
 
 	/**
@@ -299,22 +300,30 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 */
 	private void registerBeforeTransactionCompletionProcess() {
 		log.debug("Registering SyncBeforeTransactionCompletionProcess with the current session");
-		if (isProcessRegistered()) {
-			log.debug("Process is already registered, not registering again...");
+		Transaction tx = getSessionFactory().getCurrentSession().getTransaction();;
+		if (syncRecordThreadLocal.get().isProcessRegistered(tx)) {
+			if (log.isTraceEnabled()) {
+				log.trace("Process is already registered for current thread and txn, not registering again...");
+			}
 		}
 		else {
-			log.debug("No process is yet registered, proceeding...");
+			if (log.isTraceEnabled()) {
+				log.trace("Registering new BeforeTransactionCompletionProcess");
+			}
 			EventSource eventSource = (EventSource) getSessionFactory().getCurrentSession();
 			eventSource.getActionQueue().registerProcess(new BeforeTransactionCompletionProcess() {
 
 				public void doBeforeTransactionCompletion(SessionImplementor sessionImpl) {
 					log.trace("doBeforeTransactionCompletion process: checking for SyncRecord to save");
 					try {
-						SyncRecord record = getSyncRecord();
-						syncRecordHolder.remove();
+						SyncRecord record = syncRecordThreadLocal.get().getSyncRecordForCurrentTx();
 
 						// Does this transaction contain any serialized changes?
 						if (record != null && record.hasItems()) {
+
+							if (log.isTraceEnabled()) {
+								log.trace("Adding Sync Record: " + record.getItems());
+							}
 
 							// Grab user if we have one, and use the UUID of the user as creator of this SyncRecord
 							User user = Context.getAuthenticatedUser();
@@ -339,8 +348,10 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 							record.setTimestamp(new Date());
 							record.setRetryCount(0);
 
-							log.info("Saving SyncRecord " + record.getOriginalUuid() + ": " + record.getItems().size()
-									+ " items");
+							if (log.isTraceEnabled()) {
+								log.trace("Saving SyncRecord " + record.getOriginalUuid() + ": " + record.getItems().size()
+										+ " items");
+							}
 
 							// Save SyncRecord
 							getSyncService().createSyncRecord(record, record.getOriginalUuid());
@@ -358,8 +369,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 					}
 				}
 			});
-			isTxnProcessRegistered.get().pop();
-			isTxnProcessRegistered.get().push(true);
+			syncRecordThreadLocal.get().setProcessRegistered(tx,true);
 			log.debug("Successfully registered SyncBeforeTransactionCompletionProcess with the current session");
 		}
 	}
@@ -373,9 +383,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		if (log.isDebugEnabled()) {
 			log.debug("Transaction Completed: " + SyncUtil.formatTransactionStatus(tx));
 		}
-		// Because the beforeTransactionCompletion method is not called on rollback, we need to ensure any syncRecords still on the thread are removed after the tx is completed
-		syncRecordHolder.remove();
-		isTxnProcessRegistered.get().pop();
+		syncRecordThreadLocal.get().endTransaction(tx);
 	}
 
 	/**
@@ -1488,24 +1496,11 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	}
 
 	/**
-	 * @return the existing sync record for the current thread, creating a new sync record for the thread if none yet exists,
+	 * @return the existing sync record for the current thread / transaction,
+	 * creating a new sync record if none yet exists,
 	 */
 	private static SyncRecord getSyncRecord() {
-		SyncRecord syncRecord = syncRecordHolder.get();
-		if (syncRecord == null) {
-			syncRecord = new SyncRecord();
-			syncRecordHolder.set(syncRecord);
-		}
-		return syncRecord;
-	}
-
-	/**
-	 * @return true if a BeforeTransactionCompletionProcess is already registered with this thread
-	 */
-	private static boolean isProcessRegistered() {
-		Stack<Boolean> stack = isTxnProcessRegistered.get();
-		Boolean val = stack.peek();
-		return val != null && val.booleanValue();
+		return syncRecordThreadLocal.get().getSyncRecordForCurrentTx();
 	}
 
 	/**
@@ -1561,6 +1556,73 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 
 		public String getValue() {
 			return value;
+		}
+	}
+
+	class SyncRecordHolder {
+
+		Stack<Transaction> transactions = new Stack<Transaction>();
+		Map<Transaction, Boolean> processRegistered = new HashMap<Transaction, Boolean>();
+		Map<Transaction, SyncRecord> syncRecords = new HashMap<Transaction, SyncRecord>();
+
+		public SyncRecordHolder() {}
+
+		@Override
+		public String toString() {
+			return "SyncRecords: " + syncRecords.values();
+		}
+
+		public boolean isProcessRegistered(Transaction tx) {
+			return BooleanUtils.isTrue(processRegistered.get(tx));
+		}
+
+		public void setProcessRegistered(Transaction tx, boolean val) {
+			processRegistered.put(tx, val);
+		}
+
+		public SyncRecord getSyncRecord(Transaction tx) {
+			return syncRecords.get(tx);
+		}
+
+		public int getNumberOfSyncRecords() {
+			return syncRecords.size();
+		}
+
+		public boolean hasSyncRecord(Transaction tx) {
+			return syncRecords.containsKey(tx);
+		}
+
+		public SyncRecord startTransaction(Transaction tx) {
+			SyncRecord record = syncRecords.get(tx);
+			if (record != null) {
+				throw new IllegalStateException("Transaction already started");
+			}
+			record = new SyncRecord();
+			syncRecords.put(tx, record);
+			transactions.push(tx);
+			return record;
+		}
+
+		public SyncRecord getSyncRecordForCurrentTx() {
+			Transaction currentTx = transactions.peek();
+			if (currentTx == null) {
+				throw new IllegalStateException("Getting sync record did not find a current tx");
+			}
+			SyncRecord record = syncRecords.get(currentTx);
+			if (record == null) {
+				throw new IllegalStateException("Expected to get the current sync record, but none found");
+			}
+			return record;
+		}
+
+		public SyncRecord endTransaction(Transaction tx) {
+			SyncRecord record = syncRecords.remove(tx);
+			Transaction expected = transactions.pop();
+			if (record == null || expected == null || !expected.equals(tx)) {
+				throw new IllegalStateException("Ending transaction did not find the expected transaction on the stack");
+			}
+			syncRecordThreadLocal.get().setProcessRegistered(tx, false);
+			return record;
 		}
 	}
 }
