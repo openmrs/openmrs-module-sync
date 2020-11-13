@@ -384,7 +384,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	}
 
 	/**
-	 * No operation, logging only
+	 * Records an end of the transaction on the thread local that is tracking the sync records
 	 * @see EmptyInterceptor#afterTransactionCompletion(Transaction)
 	 */
 	@Override
