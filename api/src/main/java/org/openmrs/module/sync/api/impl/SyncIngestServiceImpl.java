@@ -13,11 +13,18 @@
  */
 package org.openmrs.module.sync.api.impl;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.collection.internal.PersistentSet;
 import org.openmrs.Concept;
+import org.openmrs.Obs;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.Person;
@@ -28,6 +35,7 @@ import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.SerializedObject;
 import org.openmrs.module.ModuleUtil;
+import org.openmrs.module.sync.SyncComplexObsUtil;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemState;
@@ -49,13 +57,8 @@ import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.transaction.annotation.Transactional;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Transactional
 public class SyncIngestServiceImpl implements SyncIngestService {
@@ -535,14 +538,31 @@ public class SyncIngestServiceImpl implements SyncIngestService {
             //if we are doing insert/update:
             //1. set serialized props state
         	//2. force it down the hibernate's throat with help of openmrs api
+
+	        // If this node contains complexData, keep track of this separately to save rather than set on obs
+	        String complexData = null;
+
 	        for ( int i = 0; i < nodes.getLength(); i++ ) {
 	            try {
-	            	log.debug("trying to set property: " + nodes.item(i).getNodeName() + " in className " + className);
-	                SyncUtil.setProperty(o, nodes.item(i), allFields);
+	            	Node node = nodes.item(i);
+	            	String nodeName = node.getNodeName();
+	            	log.debug("trying to set property: " + nodeName + " in className " + className);
+		            if (o instanceof Obs && "complexData".equalsIgnoreCase(nodeName)) {
+			            complexData = node.getTextContent();
+		            }
+		            else {
+			            SyncUtil.setProperty(o, node, allFields);
+		            }
 	            } catch ( Exception e ) {
 	            	log.error("Error when trying to set " + nodes.item(i).getNodeName() + ", which is a " + className, e);
 	                throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_UNSET_PROPERTY, nodes.item(i).getNodeName() + "," + className + "," + e.getMessage(), itemContent,null);
 	            }
+	        }
+
+	        // If this is an Obs and complex data was found in the sync record, save this complex data
+	        if (o instanceof Obs && complexData != null) {
+	        	Obs obs = (Obs) o;
+		        SyncComplexObsUtil.setComplexDataForObs(obs.getValueComplex(), complexData);
 	        }
         	        
 	        // now try to commit this fully inflated object

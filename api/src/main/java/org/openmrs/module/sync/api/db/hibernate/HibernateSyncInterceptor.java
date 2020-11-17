@@ -58,6 +58,7 @@ import org.openmrs.PersonAttribute;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.User;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.SyncComplexObsUtil;
 import org.openmrs.module.sync.SyncException;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemKey;
@@ -618,9 +619,16 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		Normalizer n;
 		String propertyTypeName = propertyType.getName();
 		if ((n = SyncUtil.getNormalizer(propertyTypeName)) != null) {
-			// Handle safe types like
-			// boolean/String/integer/timestamp via Normalizers
-			values.put(propertyName, new PropertyClassValue(propertyTypeName, n.toString(propertyValue)));
+			// Handle safe types like boolean/String/integer/timestamp via Normalizers
+			String strValue = n.toString(propertyValue);
+			values.put(propertyName, new PropertyClassValue(propertyTypeName, strValue));
+			// If there is a valueComplex defined, ensure complexData is also added to the sync item
+			if (entity instanceof Obs && SyncComplexObsUtil.VALUE_COMPLEX.equalsIgnoreCase(propertyName)) {
+				String encoded = SyncComplexObsUtil.getComplexDataEncoded(strValue);
+				if (encoded != null) {
+					values.put(SyncComplexObsUtil.COMPLEX_DATA, new PropertyClassValue("byte[]", encoded));
+				}
+			}
 		} else if ((n = SyncUtil.getNormalizer(propertyValue.getClass())) != null) {
 			values.put(propertyName, new PropertyClassValue(propertyValue.getClass().getName(), n.toString(propertyValue)));
 		} else if (propertyType.isCollectionType() && (n = isCollectionOfSafeTypes(entity, propertyName)) != null) {
