@@ -37,8 +37,11 @@ import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.obs.ComplexData;
+import org.openmrs.obs.handler.BinaryDataHandler;
 import org.openmrs.obs.handler.ImageHandler;
 import org.openmrs.util.OpenmrsClassLoader;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +49,12 @@ import org.springframework.transaction.annotation.Transactional;
  * Testing syncing of the {@link Obs} object
  */
 public class SyncObsTest extends SyncBaseTest {
+
+	@Autowired @Qualifier("personService") PersonService ps;
+	@Autowired @Qualifier("obsService")  ObsService os;
+	@Autowired @Qualifier("conceptService")  ConceptService cs;
+	@Autowired @Qualifier("locationService") LocationService ls;
+	@Autowired @Qualifier("adminService")  AdministrationService as;
 	
 	@Override
 	public String getInitialDataset() {
@@ -98,13 +107,7 @@ public class SyncObsTest extends SyncBaseTest {
 
 	@Test
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public void shouldSyncComplexObs() throws Exception {
-
-		final PersonService ps = Context.getPersonService();
-		final ObsService os = Context.getObsService();
-		final ConceptService cs = Context.getConceptService();
-		final LocationService ls = Context.getLocationService();
-		final AdministrationService as = Context.getAdministrationService();
+	public void shouldSyncComplexObsImage() throws Exception {
 
 		final Date obsDate = new Date();
 
@@ -137,6 +140,66 @@ public class SyncObsTest extends SyncBaseTest {
 				File complexObsFile = null;
 				try {
 					complexObsFile = ImageHandler.getComplexDataFile(childObs);
+					assertThat(complexObsFile, notNullValue());
+					assertThat(complexObsFile.exists(), is(true));
+					childComplexData = FileUtils.readFileToByteArray(complexObsFile);
+					assertThat(childComplexData.length > 0, is(true));
+				}
+				finally {
+					FileUtils.deleteQuietly(complexObsFile);
+				}
+			}
+
+			public void runOnParent() throws Exception {
+				Obs parentObs = os.getObsByUuid(childObs.getUuid());
+				assertThat(parentObs, notNullValue());
+				assertThat(parentObs.getValueComplex(), is(childObs.getValueComplex()));
+				File complexObsFile = ImageHandler.getComplexDataFile(parentObs);
+				assertThat(complexObsFile, notNullValue());
+				assertThat(complexObsFile.exists(), is(true));
+				byte[] parentComplexData = FileUtils.readFileToByteArray(complexObsFile);
+				assertThat(parentComplexData.length > 0, is(true));
+				assertThat(parentComplexData, is(childComplexData));
+				FileUtils.deleteQuietly(complexObsFile);
+			}
+		});
+	}
+
+	@Test
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public void shouldSyncComplexObsBinaryData() throws Exception {
+
+		final Date obsDate = new Date();
+
+		runSyncTest(new SyncTestHelper() {
+
+			Obs childObs;
+			byte[] childComplexData;
+
+			public void runOnChild() throws Exception {
+				String imgFilePath = "org/openmrs/module/sync/include/large-binary-file.pdf";
+				byte[] data;
+				InputStream in = null;
+				try {
+					in = OpenmrsClassLoader.getInstance().getResourceAsStream(imgFilePath);
+					data = IOUtils.toByteArray(in);
+				}
+				finally {
+					IOUtils.closeQuietly(in);
+				}
+
+				Obs complexObs = new Obs();
+				complexObs.setPerson(ps.getPerson(2));
+				complexObs.setObsDatetime(obsDate);
+				complexObs.setLocation(ls.getLocation(1));
+				complexObs.setConcept(cs.getConcept(9473)); // Concept of type Complex with BinaryDataHandler
+				complexObs.setComplexData(new ComplexData("large-binary-file.pdf", data));
+
+				childObs = os.saveObs(complexObs, "Test sync of complex text obs");
+
+				File complexObsFile = null;
+				try {
+					complexObsFile = BinaryDataHandler.getComplexDataFile(childObs);
 					assertThat(complexObsFile, notNullValue());
 					assertThat(complexObsFile.exists(), is(true));
 					childComplexData = FileUtils.readFileToByteArray(complexObsFile);
