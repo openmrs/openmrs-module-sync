@@ -148,18 +148,6 @@
 		<addForeignKeyConstraint baseTableName="sync_server_record" baseColumnNames="record_id" constraintName="server_record_record" referencedTableName="sync_record" referencedColumnNames="record_id" deferrable="false" initiallyDeferred="false" />
 	</changeSet>
 
-	<changeSet id="sync_sqldiff_0.2" author="PIH">
-		<preConditions onFail="MARK_RAN">
-			<sqlCheck expectedResult="0">
-				select count(*) from sync_class where name = 'GlobalProperty' or name = 'org.openmrs.GlobalProperty'
-			</sqlCheck>
-		</preConditions>
-		<comment>Add rows to the sync class table</comment>
-		<sql>
-			INSERT INTO sync_class (name, type, default_to, default_from) values ('GlobalProperty', 'MISC', 0, 0);
-		</sql>
-	</changeSet>
-
 	<changeSet id="sync_sqldiff_0.3" author="PIH">
 		<preConditions onFail="MARK_RAN">
 			<sqlCheck expectedResult="0">
@@ -204,6 +192,18 @@
 		</preConditions>
 		<comment>Change default_to to default_send_to</comment>
 		<renameColumn tableName="sync_class" oldColumnName="default_to" newColumnName="default_send_to" columnDataType="tinyint(1)" />
+	</changeSet>
+
+	<changeSet id="sync_sqldiff_0.2_mod" author="PIH">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="0">
+				select count(*) from sync_class where name = 'GlobalProperty' or name = 'org.openmrs.GlobalProperty'
+			</sqlCheck>
+		</preConditions>
+		<comment>Add rows to the sync class table</comment>
+		<sql>
+			INSERT INTO sync_class (name, default_send_to, default_receive_from) values ('GlobalProperty', 0, 0);
+		</sql>
 	</changeSet>
 
 	<changeSet id="sync_sqldiff_0.4.1" author="PIH">
