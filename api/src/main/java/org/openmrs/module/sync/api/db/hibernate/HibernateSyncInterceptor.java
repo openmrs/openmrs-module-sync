@@ -13,20 +13,6 @@
  */
 package org.openmrs.module.sync.api.db.hibernate;
 
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -76,6 +62,20 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.StringUtils;
+
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 /**
  * Implements 'change interception' for data synchronization feature using Hibernate interceptor
@@ -1198,25 +1198,37 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 				if (entry instanceof OpenmrsObject) {
 					OpenmrsObject obj = (OpenmrsObject) entry;
 
-					// attempt to retrieve entry uuid
-					String entryUuid = obj.getUuid();
-					if (entryUuid == null) {
-						entryUuid = fetchUuid(obj);
-						if (log.isDebugEnabled()) {
-							log.debug("Entry uuid was null, attempted to fetch uuid with the following results");
-							log.debug("Entry type:" + obj.getClass().getName() + ",uuid:" + entryUuid);
-						}
-					}
-					// well, this is messed up: have an instance of
-					// OpenmrsObject but has no uuid
-					if (entryUuid == null) {
-						log.error("Cannot handle collection entries where uuid is null.");
-						throw new CallbackException("Cannot handle collection entries where uuid is null.");
-					}
+                    // make sure this element has been persisted and has a primary key
+                    Boolean hasPrimaryKey = false;
+                    try {
+                        hasPrimaryKey = obj.getId() != null;
+                    }
+                    catch(UnsupportedOperationException e) {
+                        // for elements that don't have ids, just assume primary key exist
+                        hasPrimaryKey = true;
+                    }
 
-					// add it to the holder to avoid possible duplicates: key =
-					// uuid + action
-					entriesHolder.put(entryUuid + "|update", obj);
+                    if (hasPrimaryKey) {
+                        // attempt to retrieve entry uuid
+                        String entryUuid = obj.getUuid();
+                        if (entryUuid == null) {
+                            entryUuid = fetchUuid(obj);
+                            if (log.isDebugEnabled()) {
+                                log.debug("Entry uuid was null, attempted to fetch uuid with the following results");
+                                log.debug("Entry type:" + obj.getClass().getName() + ",uuid:" + entryUuid);
+                            }
+                        }
+                        // well, this is messed up: have an instance of
+                        // OpenmrsObject but has no uuid
+                        if (entryUuid == null) {
+                            log.error("Cannot handle collection entries where uuid is null.");
+                            throw new CallbackException("Cannot handle collection entries where uuid is null.");
+                        }
+
+                        // add it to the holder to avoid possible duplicates: key =
+                        // uuid + action
+                        entriesHolder.put(entryUuid + "|update", obj);
+                    }
 				} else {
 					log.warn("Cannot handle collections where entries are not OpenmrsObject and have no Normalizers. Type was "
 					        + entry.getClass() + " in property " + ownerPropertyName + " in class " + owner.getClass());
@@ -1568,7 +1580,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 	}
 
-	/**
+	/**persistent
 	 * This inner class serves as a mechanism to store the sync records for a given thread.  It organizes the sync records
 	 * by transaction on the thread, ensuring that if multiple transactions exist that sync records are created and updated
 	 * for each transaction appropriately.  This also allows us to ensure that when a given transaction completes (or
