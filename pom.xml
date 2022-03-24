@@ -12,11 +12,11 @@
 	<url>http://openmrs.org</url>
 
 	<scm>
-		<connection>scm:git:https://github.com/openmrs/openmrs-module-sync/</connection>
-		<developerConnection>scm:git:https://github.com/openmrs/openmrs-module-sync/</developerConnection>
+		<connection>scm:git:git@github.com:openmrs/openmrs-module-sync.git</connection>
+		<developerConnection>scm:git:git@github.com:openmrs/openmrs-module-sync.git</developerConnection>
 		<url>https://github.com/openmrs/openmrs-module-sync/</url>
-	  <tag>HEAD</tag>
-  </scm>
+		<tag>HEAD</tag>
+	</scm>
 
 	<modules>
 		<module>api</module>
