@@ -13,19 +13,9 @@
  */
 package org.openmrs.module.sync;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-
 import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.openmrs.Concept;
 import org.openmrs.GlobalProperty;
 import org.openmrs.Location;
@@ -39,6 +29,16 @@ import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  *
@@ -179,7 +179,7 @@ public class SyncAdminTest extends SyncBaseTest {
 	 * 
 	 * @throws Exception
 	 */
-	@Ignore
+	@Disabled
 	@Test
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldEditSaveGlobalProperty() throws Exception {

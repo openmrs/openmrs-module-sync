@@ -18,7 +18,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.Date;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.SerializedObject;

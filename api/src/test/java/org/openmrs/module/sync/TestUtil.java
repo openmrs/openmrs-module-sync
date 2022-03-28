@@ -14,7 +14,7 @@
 
 package org.openmrs.module.sync;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.openmrs.module.ModuleUtil;
 import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
@@ -25,7 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Properties;
 
-@Ignore
+@Disabled
 public class TestUtil {
 
 

@@ -13,15 +13,15 @@
  */
 package org.openmrs.module.sync.scheduler;
 
-import java.util.List;
-
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.scheduler.TaskDefinition;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
+
+import java.util.List;
 
 /**
  * Tests the {@link CleanupSyncTablesTask} to make sure it deletes sync records

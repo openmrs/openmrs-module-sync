@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncRecord;
 import org.openmrs.module.sync.SyncServerClass;

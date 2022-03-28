@@ -13,13 +13,9 @@
  */
 package org.openmrs.module.sync.api.db.hibernate;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-
 import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.openmrs.Encounter;
 import org.openmrs.Patient;
 import org.openmrs.PersonName;
@@ -35,6 +31,10 @@ import org.openmrs.module.sync.test.ExampleTransactionalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Tests methods in HibernateSyncInterceptor
@@ -143,7 +143,7 @@ public class HibernateSyncInterceptorTest extends SyncBaseTest {
 	}
 
 	@Test
-	@Ignore // This currently fails
+	@Disabled // This currently fails
 	public void shouldSaveTwoSyncRecordsForTwoNestedNewTransactions() throws Exception {
 		runSyncTest(new SyncTestHelper() {
 			public void runOnChild() throws Exception {

@@ -14,8 +14,8 @@
 package org.openmrs.module.sync.api;
 
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.ConceptDatatype;
 import org.openmrs.GlobalProperty;
 import org.openmrs.PatientIdentifierType;
@@ -31,7 +31,7 @@ import org.openmrs.module.sync.TransmissionLog;
 import org.openmrs.module.sync.api.impl.SyncServiceImpl;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.module.sync.server.SyncServerRecord;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 import org.openmrs.test.Verifies;
 
 import java.util.Calendar;
@@ -49,7 +49,7 @@ public class SyncServiceTest extends BaseModuleContextSensitiveTest {
 	/**
 	 * @see {@link SyncService#getOpenmrsObjectByUuid(Class,String)}
 	 */
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		syncService = Context.getService(SyncService.class);
 		executeDataSet(SERVER_DATA_SET_FILE);

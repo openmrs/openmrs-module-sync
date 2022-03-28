@@ -13,9 +13,6 @@
  */
 package org.openmrs.module.sync.api.db.hibernate;
 
-import java.lang.reflect.Method;
-import java.util.Properties;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +21,9 @@ import org.openmrs.api.context.Context;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+
+import java.lang.reflect.Method;
+import java.util.Properties;
 
 /**
  * Tests methods in HibernateSyncDAO
@@ -62,7 +62,7 @@ public class HibernateSyncDAOTest {
 	private void parseConnectionProperties(String url) {
 		Properties properties = new Properties();
 		properties.put("connection.url", url);
-		
+
 		PowerMockito.mockStatic(Context.class);
 		Mockito.when(Context.getRuntimeProperties()).thenReturn(properties);
 		
@@ -82,7 +82,7 @@ public class HibernateSyncDAOTest {
 	private void parseConnectionPropertiesWithHostAndPort(String url, String[] expected){
 		Properties properties = new Properties();
 		properties.put("connection.url", url);
-		
+
 		PowerMockito.mockStatic(Context.class);
 		Mockito.when(Context.getRuntimeProperties()).thenReturn(properties);
 		

@@ -11,6 +11,12 @@
 
 	<url>http://openmrs.org</url>
 
+	<properties>
+		<openMRSVersion>2.5.4-SNAPSHOT</openMRSVersion>
+		<openMRSMinorVersion>2.5</openMRSMinorVersion>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
 	<scm>
 		<connection>scm:git:git@github.com:openmrs/openmrs-module-sync.git</connection>
 		<developerConnection>scm:git:git@github.com:openmrs/openmrs-module-sync.git</developerConnection>
@@ -26,12 +32,6 @@
 	<dependencies>
 
 		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-			<version>1.4</version>
-		</dependency>
-
-		<dependency>
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
 			<version>3.1</version>
@@ -40,9 +40,13 @@
 					<groupId>commons-logging</groupId>
 					<artifactId>commons-logging</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>commons-codec</groupId>
+					<artifactId>commons-codec</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>ca.juliusdavies</groupId>
 			<artifactId>not-yet-commons-ssl</artifactId>
@@ -84,12 +88,6 @@
 		</dependency>
 
 	</dependencies>
-
-	<properties>
-		<openMRSVersion>2.5.4-SNAPSHOT</openMRSVersion>
-        <openMRSMinorVersion>2.5</openMRSMinorVersion>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
 
 	<build>
 		<pluginManagement>
@@ -136,13 +134,13 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.13</version>
+					<version>3.0.0-M5</version>
 					<configuration>
 						<includes>
 							<include>**/*Test.java</include>
 						</includes>
 						<runOrder>alphabetical</runOrder> <!-- TODO: hack because we want the ViewRecordController Test to run last since it dirties context (?); figure out the right way and remove this  -->
-						<argLine>-Duser.language=en -Duser.region=US -Xmx512m -XX:MaxPermSize=512m</argLine>
+						<argLine>-Duser.language=en -Duser.region=US -Xmx512m</argLine>
 					</configuration>
 				</plugin>
                 <plugin>

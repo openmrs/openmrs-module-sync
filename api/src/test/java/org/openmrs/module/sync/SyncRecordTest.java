@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openmrs.module.sync.serialization.FilePackage;
 import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.serialization.Item;
