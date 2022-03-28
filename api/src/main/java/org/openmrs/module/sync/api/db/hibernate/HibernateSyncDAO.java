@@ -627,7 +627,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	 * @throws DAOException
 	 */
 	public boolean isFlushModeManual() throws DAOException {
-		return FlushMode.isManualFlushMode(sessionFactory.getCurrentSession().getFlushMode());
+		return FlushMode.isManualFlushMode(sessionFactory.getCurrentSession().getHibernateFlushMode());
 	}
 	
 	/**

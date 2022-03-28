@@ -13,20 +13,6 @@
  */
 package org.openmrs.module.sync.api.db.hibernate;
 
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,7 +29,6 @@ import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Projections;
 import org.hibernate.engine.internal.ForeignKeys;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.engine.transaction.spi.TransactionImplementor;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.metadata.CollectionMetadata;
@@ -76,6 +61,20 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.StringUtils;
+
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 /**
  * Implements 'change interception' for data synchronization feature using Hibernate interceptor
@@ -291,7 +290,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 * user would have no idea that their saving operation failed to save sync records.  In contrast,
 	 * beforeTransactionCompletionProcesses are run outside of that try/catch block and result in exceptions
 	 * bubbling back up
-	 * @see org.hibernate.internal.SessionImpl#beforeTransactionCompletion(TransactionImplementor)
 	 * @see EmptyInterceptor#beforeTransactionCompletion(org.hibernate.Transaction)
 	 */
 	@Override
@@ -859,7 +857,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 
 		// check if this object is to be sync-ed: compare against the configured classes
 		// for time being, suspend any flushing -- we are in the middle of hibernate stack
-		org.hibernate.FlushMode flushMode = getSessionFactory().getCurrentSession().getFlushMode();
+		org.hibernate.FlushMode flushMode = getSessionFactory().getCurrentSession().getHibernateFlushMode();
 		getSessionFactory().getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
 
 		try {
@@ -973,7 +971,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		String uuid = null;
 
 		// for time being, suspend any flushing
-		org.hibernate.FlushMode flushMode = getSessionFactory().getCurrentSession().getFlushMode();
+		org.hibernate.FlushMode flushMode = getSessionFactory().getCurrentSession().getHibernateFlushMode();
 		getSessionFactory().getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
 
 		try {

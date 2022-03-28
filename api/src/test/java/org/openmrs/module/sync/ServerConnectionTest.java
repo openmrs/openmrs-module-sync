@@ -13,8 +13,7 @@
  */
 package org.openmrs.module.sync;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.openmrs.module.sync.server.ServerConnection;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
@@ -24,8 +23,7 @@ import org.openmrs.test.BaseModuleContextSensitiveTest;
  * Tests methods on the ServerConnection class.
  */
 public class ServerConnectionTest extends BaseModuleContextSensitiveTest {
-	
-	
+
 	@Test
 	public void getTimeout_shouldNotThrowNPEWhenTimeoutGlobalPropertyIsNotSet() throws Exception {
 		ServerConnection.getTimeout();
