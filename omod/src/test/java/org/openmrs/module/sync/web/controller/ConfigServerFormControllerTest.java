@@ -13,17 +13,9 @@
  */
 package org.openmrs.module.sync.web.controller;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.servlet.http.HttpSession;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
@@ -31,11 +23,17 @@ import org.openmrs.module.sync.SyncServerClass;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.scheduler.TaskDefinition;
-import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
-import org.openmrs.web.test.BaseModuleWebContextSensitiveTest;
+import org.openmrs.web.test.jupiter.BaseModuleWebContextSensitiveTest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BeanPropertyBindingResult;
+
+import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Tests for the {@link ConfigServerFormController}
@@ -65,8 +63,8 @@ public class ConfigServerFormControllerTest  extends BaseModuleWebContextSensiti
             Set<String> classesNotSent = testServer.getClassesNotSent();
             Set<String> classesNotReceived = testServer.getClassesNotReceived();
             
-            Assert.assertEquals("org.openmrs.GlobalProperty", classesNotSent.iterator().next());
-            Assert.assertEquals("org.openmrs.GlobalProperty", classesNotReceived.iterator().next());
+            Assertions.assertEquals("org.openmrs.GlobalProperty", classesNotSent.iterator().next());
+            Assertions.assertEquals("org.openmrs.GlobalProperty", classesNotReceived.iterator().next());
         }
         
         /**
@@ -96,11 +94,11 @@ public class ConfigServerFormControllerTest  extends BaseModuleWebContextSensiti
             SyncService service = Context.getService(SyncService.class);
             RemoteServer parent = service.getParentServer();
             
-            Assert.assertNotNull(parent.getServerId());
-            Assert.assertEquals(nickname, parent.getNickname());
-            Assert.assertEquals(address, parent.getAddress());
-            Assert.assertEquals(username, parent.getUsername());
-            Assert.assertEquals(password, parent.getPassword());
+            Assertions.assertNotNull(parent.getServerId());
+            Assertions.assertEquals(nickname, parent.getNickname());
+            Assertions.assertEquals(address, parent.getAddress());
+            Assertions.assertEquals(username, parent.getUsername());
+            Assertions.assertEquals(password, parent.getPassword());
             
             boolean taskScheduled = false;
             for (TaskDefinition task : Context.getSchedulerService().getScheduledTasks()){
@@ -110,6 +108,6 @@ public class ConfigServerFormControllerTest  extends BaseModuleWebContextSensiti
             		break;
             	}
             }
-            Assert.assertTrue(taskScheduled);
+            Assertions.assertTrue(taskScheduled);
         }
 }

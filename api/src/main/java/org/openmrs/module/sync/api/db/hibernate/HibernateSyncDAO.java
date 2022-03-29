@@ -646,7 +646,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	 * @throws DAOException
 	 */
 	public void saveOrUpdate(Object object) throws DAOException {
-		sessionFactory.getCurrentSession().saveOrUpdate(object);
+		sessionFactory.getCurrentSession().save(object);
 	}
 	
 	/**
