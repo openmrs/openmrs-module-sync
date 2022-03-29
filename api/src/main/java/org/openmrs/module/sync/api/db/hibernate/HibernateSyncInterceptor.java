@@ -862,7 +862,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		// check if this object is to be sync-ed: compare against the configured classes
 		// for time being, suspend any flushing -- we are in the middle of hibernate stack
 		org.hibernate.FlushMode flushMode = getSessionFactory().getCurrentSession().getHibernateFlushMode();
-		getSessionFactory().getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
+		getSessionFactory().getCurrentSession().setHibernateFlushMode(org.hibernate.FlushMode.MANUAL);
 
 		try {
 			ret = getSyncService().shouldSynchronize(entity);
@@ -873,7 +873,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 		finally {
 			if (getSessionFactory() != null) {
-				getSessionFactory().getCurrentSession().setFlushMode(flushMode);
+				getSessionFactory().getCurrentSession().setHibernateFlushMode(flushMode);
 			}
 		}
 
@@ -976,7 +976,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 
 		// for time being, suspend any flushing
 		org.hibernate.FlushMode flushMode = getSessionFactory().getCurrentSession().getHibernateFlushMode();
-		getSessionFactory().getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
+		getSessionFactory().getCurrentSession().setHibernateFlushMode(org.hibernate.FlushMode.MANUAL);
 
 		try {
 			// try to fetch the instance and get its uuid
@@ -995,7 +995,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 		finally {
 			if (getSessionFactory() != null) {
-				getSessionFactory().getCurrentSession().setFlushMode(flushMode);
+				getSessionFactory().getCurrentSession().setHibernateFlushMode(flushMode);
 			}
 		}
 
