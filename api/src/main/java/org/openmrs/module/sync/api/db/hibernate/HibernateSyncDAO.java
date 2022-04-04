@@ -13,36 +13,6 @@
  */
 package org.openmrs.module.sync.api.db.hibernate;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.Reader;
-import java.lang.reflect.Method;
-import java.sql.Blob;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,6 +53,36 @@ import org.openmrs.util.OpenmrsUtil;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.Reader;
+import java.lang.reflect.Method;
+import java.sql.Blob;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class HibernateSyncDAO implements SyncDAO {
 	
@@ -586,7 +586,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	}
 	
 	/**
-	 * @see org.openmrs.module.sync.api.db.SyncDAO#deleteOpenmrsObject(org.openmrs.synchronization.OpenmrsObject)
+	 * @see org.openmrs.module.sync.api.db.SyncDAO#deleteOpenmrsObject(OpenmrsObject)
 	 */
 	public void deleteOpenmrsObject(OpenmrsObject o) throws DAOException {
 		sessionFactory.getCurrentSession().delete(o);
@@ -605,7 +605,7 @@ public class HibernateSyncDAO implements SyncDAO {
 		
 		// don't need to set it if its already manual
 		if (!isManualAlready)
-			sessionFactory.getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
+			sessionFactory.getCurrentSession().setHibernateFlushMode(org.hibernate.FlushMode.MANUAL);
 		
 		return isManualAlready;
 	}
@@ -617,7 +617,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	 * @see org.openmrs.module.sync.api.db.SyncDAO#setFlushModeAutomatic()
 	 */
 	public void setFlushModeAutomatic() throws DAOException {
-		sessionFactory.getCurrentSession().setFlushMode(org.hibernate.FlushMode.AUTO);
+		sessionFactory.getCurrentSession().setHibernateFlushMode(org.hibernate.FlushMode.AUTO);
 	}
 	
 	/**
@@ -627,7 +627,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	 * @throws DAOException
 	 */
 	public boolean isFlushModeManual() throws DAOException {
-		return FlushMode.isManualFlushMode(sessionFactory.getCurrentSession().getFlushMode());
+		return sessionFactory.getCurrentSession().getHibernateFlushMode() == FlushMode.MANUAL;
 	}
 	
 	/**
@@ -646,7 +646,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	 * @throws DAOException
 	 */
 	public void saveOrUpdate(Object object) throws DAOException {
-		sessionFactory.getCurrentSession().saveOrUpdate(object);
+		sessionFactory.getCurrentSession().save(object);
 	}
 	
 	/**
@@ -1043,14 +1043,12 @@ public class HibernateSyncDAO implements SyncDAO {
 		}
 		
 	}
-	
-	/**
-	 * Auto generated method comment
-	 * 
-	 * @return
-	 */
+
 	private String[] getConnectionProperties() {
-		Properties props = Context.getRuntimeProperties();
+		return getConnectionProperties(Context.getRuntimeProperties());
+	}
+
+	public String[] getConnectionProperties(Properties props) {
 		
 		// username, password, database, host, port
 		String[] connProps = { "test", "test", "openmrs", "localhost", "3306" };

@@ -55,6 +55,7 @@ import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.LocaleNormalizer;
 import org.openmrs.module.sync.serialization.MapNormalizer;
 import org.openmrs.module.sync.serialization.Normalizer;
+import org.openmrs.module.sync.serialization.Package;
 import org.openmrs.module.sync.serialization.PropertiesNormalizer;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
@@ -63,7 +64,6 @@ import org.openmrs.notification.Alert;
 import org.openmrs.notification.MessageException;
 import org.openmrs.util.OpenmrsUtil;
 import org.openmrs.util.PrivilegeConstants;
-import org.openmrs.module.sync.serialization.Package;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -1371,11 +1371,8 @@ public class SyncUtil {
 		if (tx.isActive()) {
 			return "TX ACTIVE";
 		}
-		if (tx.wasCommitted()) {
-			return "TX COMMITTED";
-		}
-		if (tx.wasRolledBack()) {
-			return "TX ROLLED BACK";
+		if (tx.getStatus() != null) {
+			return "TX " + tx.getStatus().name();
 		}
 		return "TX STATUS UNKNOWN";
 	}

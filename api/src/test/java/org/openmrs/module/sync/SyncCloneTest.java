@@ -13,7 +13,12 @@
  */
 package org.openmrs.module.sync;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.api.SyncService;
+import org.openmrs.test.jupiter.BaseContextSensitiveTest;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,17 +27,12 @@ import java.util.Date;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedInputStream;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.openmrs.api.context.Context;
-import org.openmrs.module.sync.api.SyncService;
-import org.openmrs.test.BaseContextSensitiveTest;
+import static org.junit.Assert.assertTrue;
 
 /**
  * 
  */
-@Ignore
+@Disabled
 public class SyncCloneTest extends BaseContextSensitiveTest {
 	
 	@Override
@@ -43,7 +43,7 @@ public class SyncCloneTest extends BaseContextSensitiveTest {
 	/**
 	 * @see org.openmrs.synchronization.engine.SyncBaseTest#getInitialDataset()
 	 */
-	@Before
+	@BeforeEach
 	public void setupInitialDataset() throws Exception {
         try {
             executeDataSet("org/openmrs/module/sync/include/" + new TestUtil().getTestDatasetFilename("syncCreateTest"));

@@ -13,14 +13,9 @@
  */
 package org.openmrs.module.sync;
 
-import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.lang.reflect.Method;
-
 import org.aopalliance.aop.Advice;
 import org.hibernate.AssertionFailure;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openmrs.ConceptClass;
 import org.openmrs.EncounterType;
 import org.openmrs.api.ConceptService;
@@ -28,10 +23,15 @@ import org.openmrs.api.EncounterService;
 import org.openmrs.api.ValidationException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.api.SyncService;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 import org.springframework.aop.MethodBeforeAdvice;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.lang.reflect.Method;
+
+import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SyncBehaviorTest extends BaseModuleContextSensitiveTest {
 	
@@ -39,9 +39,9 @@ public class SyncBehaviorTest extends BaseModuleContextSensitiveTest {
 	 * Hibernate's ActionQueue re-throws all exceptions that are not Subclasses of
 	 * HibernateException as {@link AssertionFailure} exceptions
 	 */
-	@Test(expected = AssertionFailure.class)
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldFailAnApiCallIfTheCreationOfASyncRecordFails() throws Exception {
+		Exception expectedException = null;
 		Advice advice = new FailSyncRecordAdvice();
 		try {
 			Context.addAdvice(SyncService.class, advice);
@@ -53,9 +53,13 @@ public class SyncBehaviorTest extends BaseModuleContextSensitiveTest {
 			encounterType.setDescription("description");
 			es.saveEncounterType(encounterType);
 		}
+		catch (Exception e) {
+			expectedException = e;
+		}
 		finally {
 			Context.removeAdvice(SyncService.class, advice);
 		}
+		assertEquals(AssertionFailure.class, expectedException.getClass());
 	}
 	
 	@Test

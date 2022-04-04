@@ -2,8 +2,8 @@ package org.openmrs.module.sync.web.controller;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.openmrs.Person;
 import org.openmrs.PersonAttribute;
 import org.openmrs.PersonAttributeType;
@@ -14,7 +14,7 @@ import org.openmrs.module.sync.SyncRecordState;
 import org.openmrs.module.sync.TestUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.server.SyncServerRecord;
-import org.openmrs.web.test.BaseModuleWebContextSensitiveTest;
+import org.openmrs.web.test.jupiter.BaseModuleWebContextSensitiveTest;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,9 +60,9 @@ public class ViewRecordControllerTest extends BaseModuleWebContextSensitiveTest 
 		viewRecordController.showThePage(new ModelMap(), null, syncRecord.getUuid(), "remove");
 		
 		// this record and it's server records should now be set not to sync
-		Assert.assertEquals(SyncRecordState.NOT_SUPPOSED_TO_SYNC, syncRecord.getState());
+		Assertions.assertEquals(SyncRecordState.NOT_SUPPOSED_TO_SYNC, syncRecord.getState());
 		for (SyncServerRecord syncServerRecord : syncRecord.getServerRecords()){
-			Assert.assertEquals(SyncRecordState.NOT_SUPPOSED_TO_SYNC, syncServerRecord.getState());
+			Assertions.assertEquals(SyncRecordState.NOT_SUPPOSED_TO_SYNC, syncServerRecord.getState());
 		}
 	}
 	
@@ -100,9 +100,9 @@ public class ViewRecordControllerTest extends BaseModuleWebContextSensitiveTest 
 		viewRecordController.showThePage(new ModelMap(), null, syncRecord.getUuid(), "reset");
 		
 		// this record and it's server records should now be set not to sync
-		Assert.assertEquals(SyncRecordState.NEW, syncRecord.getState());
+		Assertions.assertEquals(SyncRecordState.NEW, syncRecord.getState());
 		for (SyncServerRecord syncServerRecord : syncRecord.getServerRecords()){
-			Assert.assertEquals(SyncRecordState.NEW, syncServerRecord.getState());
+			Assertions.assertEquals(SyncRecordState.NEW, syncServerRecord.getState());
 		}
 	}
 }

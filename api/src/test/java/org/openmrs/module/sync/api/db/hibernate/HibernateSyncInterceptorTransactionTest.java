@@ -13,8 +13,6 @@
  */
 package org.openmrs.module.sync.api.db.hibernate;
 
-import java.io.StringWriter;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbunit.database.DatabaseConfig;
@@ -23,21 +21,23 @@ import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.database.QueryDataSet;
 import org.dbunit.dataset.xml.FlatXmlDataSet;
 import org.dbunit.ext.hsqldb.HsqldbDataTypeFactory;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.EncounterType;
 import org.openmrs.VisitType;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.TestUtil;
 import org.openmrs.module.sync.test.ExampleTransactionalService;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.transaction.AfterTransaction;
 import org.springframework.test.context.transaction.BeforeTransaction;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.StringWriter;
 
 /**
  * Tests transaction handling of the HibernateSyncInterceptor
@@ -53,7 +53,7 @@ public class HibernateSyncInterceptorTransactionTest extends BaseModuleContextSe
 	@Autowired
 	ExampleTransactionalService testService;
 
-	@After
+	@AfterEach
 	@Override
 	public void deleteAllData() {
 	}

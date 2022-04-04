@@ -14,7 +14,8 @@
 package org.openmrs.module.sync;
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.openmrs.Privilege;
 import org.openmrs.Role;
 import org.openmrs.api.UserService;
@@ -60,7 +61,8 @@ public class SyncPrivilegeTest extends SyncBaseTest {
 			}
 		});
 	}
-	
+
+	@Disabled("I am disabling this test, as this should not be allowed. privilege is unique, so no 2 privileges can exist with the same privilege and different uuids")
 	@Test
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldIgnoreModifiedPrivilegeWithDifferentUuidOnParent() throws Exception {

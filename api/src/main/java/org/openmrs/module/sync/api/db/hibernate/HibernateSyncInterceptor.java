@@ -13,20 +13,6 @@
  */
 package org.openmrs.module.sync.api.db.hibernate;
 
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,10 +29,8 @@ import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Projections;
 import org.hibernate.engine.internal.ForeignKeys;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.engine.transaction.spi.TransactionImplementor;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.metadata.ClassMetadata;
-import org.hibernate.metadata.CollectionMetadata;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.EmbeddedComponentType;
 import org.hibernate.type.Type;
@@ -76,6 +60,25 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.StringUtils;
+
+import javax.persistence.metamodel.CollectionAttribute;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.ListAttribute;
+import javax.persistence.metamodel.MapAttribute;
+import javax.persistence.metamodel.SetAttribute;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 /**
  * Implements 'change interception' for data synchronization feature using Hibernate interceptor
@@ -291,7 +294,6 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 * user would have no idea that their saving operation failed to save sync records.  In contrast,
 	 * beforeTransactionCompletionProcesses are run outside of that try/catch block and result in exceptions
 	 * bubbling back up
-	 * @see org.hibernate.internal.SessionImpl#beforeTransactionCompletion(TransactionImplementor)
 	 * @see EmptyInterceptor#beforeTransactionCompletion(org.hibernate.Transaction)
 	 */
 	@Override
@@ -859,8 +861,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 
 		// check if this object is to be sync-ed: compare against the configured classes
 		// for time being, suspend any flushing -- we are in the middle of hibernate stack
-		org.hibernate.FlushMode flushMode = getSessionFactory().getCurrentSession().getFlushMode();
-		getSessionFactory().getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
+		org.hibernate.FlushMode flushMode = getSessionFactory().getCurrentSession().getHibernateFlushMode();
+		getSessionFactory().getCurrentSession().setHibernateFlushMode(org.hibernate.FlushMode.MANUAL);
 
 		try {
 			ret = getSyncService().shouldSynchronize(entity);
@@ -871,7 +873,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 		finally {
 			if (getSessionFactory() != null) {
-				getSessionFactory().getCurrentSession().setFlushMode(flushMode);
+				getSessionFactory().getCurrentSession().setHibernateFlushMode(flushMode);
 			}
 		}
 
@@ -973,8 +975,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		String uuid = null;
 
 		// for time being, suspend any flushing
-		org.hibernate.FlushMode flushMode = getSessionFactory().getCurrentSession().getFlushMode();
-		getSessionFactory().getCurrentSession().setFlushMode(org.hibernate.FlushMode.MANUAL);
+		org.hibernate.FlushMode flushMode = getSessionFactory().getCurrentSession().getHibernateFlushMode();
+		getSessionFactory().getCurrentSession().setHibernateFlushMode(org.hibernate.FlushMode.MANUAL);
 
 		try {
 			// try to fetch the instance and get its uuid
@@ -993,7 +995,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		}
 		finally {
 			if (getSessionFactory() != null) {
-				getSessionFactory().getCurrentSession().setFlushMode(flushMode);
+				getSessionFactory().getCurrentSession().setHibernateFlushMode(flushMode);
 			}
 		}
 
@@ -1155,14 +1157,12 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		Package pkg = new Package();
 		entriesHolder = new LinkedHashMap<String, OpenmrsObject>();
 		try {
-
-			CollectionMetadata collMD = getCollectionMetadata(owner.getClass(), ownerPropertyName, getSessionFactory());
-			if (collMD == null) {
-				throw new SyncException("Can't find a collection with " + ownerPropertyName + " in class "
-				        + owner.getClass());
+			Class elementClass = getCollectionAttributeType(owner.getClass(), ownerPropertyName, getSessionFactory());
+			if (elementClass == null) {
+				throw new SyncException(
+						"Can't find a collection with " + ownerPropertyName + " in class " + owner.getClass()
+				);
 			}
-
-			Class<?> elementClass = collMD.getElementType().getReturnedClass();
 			//If this is a simple type like Integer, serialization of the collection will be as below:
 			//<org.openmrs.Cohort>
 			//	<memberIds type="java.util.Set(org.openmrs.Cohort)">[2, 3]</memberIds>
@@ -1487,21 +1487,37 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	}
 
 	/**
-	 * Utility method that recursively fetches the CollectionMetadata for the specified collection
+	 * Utility method that recursively fetches the CollectionAttribute for the specified collection
 	 * property and class from given SessionFactory object
 	 *
 	 * @param clazz the class in which the collection is defined
 	 * @param collPropertyName the collection's property name
 	 * @param sf SessionFactory object
-	 * @return the CollectionMetadata if any
+	 * @return the CollectionAttribute if any
 	 */
-	private CollectionMetadata getCollectionMetadata(Class<?> clazz, String collPropertyName, SessionFactory sf) {
-		CollectionMetadata cmd = sf.getCollectionMetadata(clazz.getName() + "." + collPropertyName);
-		//Recursively check if there is collection metadata for the superclass
-		if (cmd == null && clazz.getSuperclass() != null && !Object.class.equals(clazz.getSuperclass())) {
-			return getCollectionMetadata(clazz.getSuperclass(), collPropertyName, sf);
+	private Class getCollectionAttributeType(Class<?> clazz, String collPropertyName, SessionFactory sf) {
+		EntityType entityType = sf.getMetamodel().entity(clazz);
+		try {
+			CollectionAttribute collectionAttribute = entityType.getCollection(collPropertyName);
+			return collectionAttribute.getJavaType();
 		}
-		return cmd;
+		catch (Exception e) {}
+		try {
+			ListAttribute listAttribute = entityType.getList(collPropertyName);
+			return listAttribute.getJavaType();
+		}
+		catch (Exception e) {}
+		try {
+			SetAttribute setAttribute = entityType.getSet(collPropertyName);
+			return setAttribute.getJavaType();
+		}
+		catch (Exception e) {}
+		try {
+			MapAttribute mapAttribute = entityType.getMap(collPropertyName);
+			return mapAttribute.getJavaType();
+		}
+		catch (Exception e) {}
+		return null;
 	}
 
 	/**

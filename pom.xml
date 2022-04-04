@@ -4,12 +4,18 @@
 
 	<groupId>org.openmrs.module</groupId>
 	<artifactId>sync</artifactId>
-	<version>2.1.0-SNAPSHOT</version>
+	<version>3.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Synchronization Module</name>
 	<description>Parent project for Synchronization Module</description>
 
 	<url>http://openmrs.org</url>
+
+	<properties>
+		<openMRSVersion>2.5.4-SNAPSHOT</openMRSVersion>
+		<openMRSMinorVersion>2.5</openMRSMinorVersion>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
 	<scm>
 		<connection>scm:git:git@github.com:openmrs/openmrs-module-sync.git</connection>
@@ -26,12 +32,6 @@
 	<dependencies>
 
 		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-			<version>1.4</version>
-		</dependency>
-
-		<dependency>
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
 			<version>3.1</version>
@@ -40,9 +40,13 @@
 					<groupId>commons-logging</groupId>
 					<artifactId>commons-logging</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>commons-codec</groupId>
+					<artifactId>commons-codec</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>ca.juliusdavies</groupId>
 			<artifactId>not-yet-commons-ssl</artifactId>
@@ -76,20 +80,6 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.openmrs.web</groupId>
-			<artifactId>openmrs-web</artifactId>
-			<version>${openMRSVersion}</version>
-			<type>jar</type>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.openmrs.web</groupId>
-			<artifactId>openmrs-web</artifactId>
-			<version>${openMRSVersion}</version>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.openmrs.test</groupId>
 			<artifactId>openmrs-test</artifactId>
 			<version>${openMRSVersion}</version>
@@ -99,12 +89,6 @@
 
 	</dependencies>
 
-	<properties>
-		<openMRSVersion>2.3.0</openMRSVersion>
-        <openMRSMinorVersion>2.3</openMRSMinorVersion>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
-
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -112,8 +96,8 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<configuration>
-						<target>1.6</target>
-						<source>1.6</source>
+						<target>8</target>
+						<source>8</source>
 						<encoding>UTF-8</encoding>
 					</configuration>
 				</plugin>
@@ -150,13 +134,13 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.13</version>
+					<version>3.0.0-M5</version>
 					<configuration>
 						<includes>
 							<include>**/*Test.java</include>
 						</includes>
 						<runOrder>alphabetical</runOrder> <!-- TODO: hack because we want the ViewRecordController Test to run last since it dirties context (?); figure out the right way and remove this  -->
-						<argLine>-Duser.language=en -Duser.region=US -Xmx512m -XX:MaxPermSize=512m</argLine>
+						<argLine>-Duser.language=en -Duser.region=US -Xmx512m</argLine>
 					</configuration>
 				</plugin>
                 <plugin>

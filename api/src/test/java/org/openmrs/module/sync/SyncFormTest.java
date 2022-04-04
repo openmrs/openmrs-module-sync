@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNotSame;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openmrs.Concept;
 import org.openmrs.Field;
 import org.openmrs.Form;

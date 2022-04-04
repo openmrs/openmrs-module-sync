@@ -14,12 +14,12 @@
 package org.openmrs.module.sync;
 
 import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncUtilTransmission.ReceivingSize;
 import org.openmrs.module.sync.ingest.SyncTransmissionResponse;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 
 /**
  * Tests methods on the SyncUtilTransmission class.
@@ -27,7 +27,7 @@ import org.openmrs.test.BaseModuleContextSensitiveTest;
 public class SyncUtilTransmissionTest extends BaseModuleContextSensitiveTest implements Runnable {
 	
 	//Ignoring this test up to when a correct one will be implemented.
-	@Ignore
+	@Disabled
 	@Test
 	public void doFullSynchronize_shouldRunOneSyncTaskAtATime() throws Exception {
 		executeDataSet("org/openmrs/module/sync/include/SyncRemoteChildServer.xml");

@@ -13,20 +13,10 @@
  */
 package org.openmrs.module.sync;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
-
-import java.io.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.List;
-
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbunit.dataset.ReplacementDataSet;
-import org.dbunit.dataset.xml.FlatXmlDataSet;
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.UserService;
@@ -41,11 +31,16 @@ import org.openmrs.module.sync.serialization.IItem;
 import org.openmrs.module.sync.serialization.Item;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.module.sync.server.RemoteServer;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
-import org.openmrs.util.OpenmrsConstants;
+import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Sets up common routines and initialization for all sync tests. Note for all sync tests: MUST MARK
@@ -58,7 +53,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	protected final Log log = LogFactory.getLog(getClass());
 	
 	public DateFormat ymd = new SimpleDateFormat("yyyy-MM-dd");
-	
+
 	public abstract String getInitialDataset();
 
 	/**
@@ -161,7 +156,7 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 		//get sync records created
 		List<SyncRecord> syncRecords = Context.getService(SyncService.class).getSyncRecords();
 		if (syncRecords == null || syncRecords.size() == 0) {
-			assertFalse("No changes found (i.e. sync records size is 0)", true);
+			Assertions.fail("No changes found (i.e. sync records size is 0)");
 		}
 
 		return syncRecords;
@@ -289,75 +284,8 @@ public abstract class SyncBaseTest extends BaseModuleContextSensitiveTest {
 	 * 
 	 * @throws Exception
 	 */
-	@After
+	@AfterEach
 	public void cleanupDatabase() throws Exception {
 		deleteAllData();
-	}
-
-	@Override
-	public void executeDataSet(String datasetFilename) {
-
-		try {
-			String xml = null;
-			InputStream fileInInputStreamFormat = null;
-			try {
-				File file = new File(datasetFilename);
-				if (file.exists())
-					fileInInputStreamFormat = new FileInputStream(datasetFilename);
-				else {
-					fileInInputStreamFormat = getClass().getClassLoader().getResourceAsStream(datasetFilename);
-					if (fileInInputStreamFormat == null)
-						throw new FileNotFoundException("Unable to find '" + datasetFilename + "' in the classpath");
-				}
-				xml = IOUtils.toString(fileInInputStreamFormat, "UTF-8");
-			}
-			finally {
-				IOUtils.closeQuietly(fileInInputStreamFormat);
-			}
-	
-			if (compareVersions(OpenmrsConstants.OPENMRS_VERSION_SHORT,"1.9.2") < 0) {
-				xml = xml.replace("urgency=\"STAT\" ", "");
-			}
-	
-			StringReader reader = new StringReader(xml);
-			ReplacementDataSet replacementDataSet = new ReplacementDataSet(new FlatXmlDataSet(reader, false, true, false));
-			replacementDataSet.addReplacementObject("[NULL]", null);
-	
-			executeDataSet(replacementDataSet);
-		}
-		catch (Exception ex) {
-			log.error("Failed to execute dataset file " + datasetFilename, ex);
-		}
-	}
-
-	/**
-	 * Assumption versions are of the form x.y.z with 0.0.0 being less than 0.1.1
-	 * @param v1
-	 * @param v2
-	 * @return
-	 */
-	private int compareVersions(String v1, String v2) throws NumberFormatException {
-		String[] v1Parts = v1.split("\\.", 3);
-		String[] v2Parts = v2.split("\\.", 3);
-
-		int[] v1Ints = new int[v1Parts.length];
-		for(int x=0; x < v1Parts.length; ++x ) {
-			v1Ints[x] = Integer.parseInt(v1Parts[x]);
-		}
-
-		int[] v2Ints = new int[v2Parts.length];
-		for(int x=0; x < v2Parts.length; ++x ) {
-			v2Ints[x] = Integer.parseInt(v2Parts[x]);
-		}
-
-		for(int x=0; x < v1Parts.length; ++x ) {
-			if(v1Ints[x] < v2Ints[x]) {
-				return -1;
-			}
-			else if(v1Ints[x] > v2Ints[x]){
-				return 1;
-			}
-		}
-		return 0;
 	}
 }

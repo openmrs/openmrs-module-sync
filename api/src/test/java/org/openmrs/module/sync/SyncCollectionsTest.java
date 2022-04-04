@@ -13,10 +13,9 @@
  */
 package org.openmrs.module.sync;
 
-import java.util.List;
-
+import junit.framework.Assert;
 import org.apache.commons.lang.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openmrs.Person;
 import org.openmrs.PersonName;
 import org.openmrs.User;
@@ -27,7 +26,7 @@ import org.openmrs.util.OpenmrsConstants;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import junit.framework.Assert;
+import java.util.List;
 
 /**
  *

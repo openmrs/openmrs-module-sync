@@ -14,7 +14,7 @@
 package org.openmrs.module.sync;
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openmrs.Role;
 import org.openmrs.User;
 import org.openmrs.api.UserService;

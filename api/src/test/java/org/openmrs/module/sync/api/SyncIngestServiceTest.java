@@ -13,14 +13,11 @@
  */
 package org.openmrs.module.sync.api;
 
-import java.util.Date;
-import java.util.UUID;
-
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.openmrs.EncounterType;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncBaseTest;
@@ -37,6 +34,9 @@ import org.openmrs.util.OpenmrsConstants;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
+import java.util.UUID;
+
 /**
  * Tests methods in the SyncIngestService
  */
@@ -47,7 +47,7 @@ public class SyncIngestServiceTest extends SyncBaseTest {
 		return null;
 	}
 
-	@Before
+	@BeforeEach
 	public void before() throws Exception {
 		if (!Context.isSessionOpen()) {
 			Context.openSession();
@@ -81,7 +81,7 @@ public class SyncIngestServiceTest extends SyncBaseTest {
 	/**
 	 * @see {@link SyncService#getOpenmrsObjectByUuid(Class,String)}
 	 */
-	@Ignore("This test is written to demonstrate the issue reported in SYNC-310, and should be activated as that ticket is addressed")
+	@Disabled("This test is written to demonstrate the issue reported in SYNC-310, and should be activated as that ticket is addressed")
 	@Test
 	@Verifies(value = "should create sync inmport records if error occurs", method = "processSyncRecord(SyncRecord,RemoteServer)")
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)

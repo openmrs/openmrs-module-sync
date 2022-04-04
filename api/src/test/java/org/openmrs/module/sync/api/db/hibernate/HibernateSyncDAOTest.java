@@ -13,23 +13,18 @@
  */
 package org.openmrs.module.sync.api.db.hibernate;
 
-import java.lang.reflect.Method;
-import java.util.Properties;
-
 import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.openmrs.api.context.Context;
 import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+
+import java.util.Properties;
 
 /**
  * Tests methods in HibernateSyncDAO
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Context.class)
 public class HibernateSyncDAOTest {
 	
 	@Test
@@ -62,36 +57,22 @@ public class HibernateSyncDAOTest {
 	private void parseConnectionProperties(String url) {
 		Properties properties = new Properties();
 		properties.put("connection.url", url);
-		
-		PowerMockito.mockStatic(Context.class);
-		Mockito.when(Context.getRuntimeProperties()).thenReturn(properties);
-		
 		try {
 			HibernateSyncDAO dao = new HibernateSyncDAO();
-			Method method = dao.getClass().getDeclaredMethod("getConnectionProperties", null);
-			method.setAccessible(true);
-			String[] connProps = (String[])method.invoke(dao, null);
-			
-			Assert.assertEquals("openmrs", connProps[2]);
+			String[] connProps = dao.getConnectionProperties(properties);
+			Assertions.assertEquals("openmrs", connProps[2]);
 		}
 		catch (Exception ex) {
-			Assert.assertFalse("Should correctly handle database connection url", true);
+			Assertions.fail("Should correctly handle database connection url");
 		}
 	}
 	
-	private void parseConnectionPropertiesWithHostAndPort(String url, String[] expected){
+	private void parseConnectionPropertiesWithHostAndPort(String url, String[] expected) {
 		Properties properties = new Properties();
 		properties.put("connection.url", url);
-		
-		PowerMockito.mockStatic(Context.class);
-		Mockito.when(Context.getRuntimeProperties()).thenReturn(properties);
-		
 		try {
 			HibernateSyncDAO dao = new HibernateSyncDAO();
-			Method method = dao.getClass().getDeclaredMethod("getConnectionProperties", null);
-			method.setAccessible(true);
-			String[] connProps = (String[])method.invoke(dao, null);
-			
+			String[] connProps = dao.getConnectionProperties(properties);
 			for (int i = 2; i < expected.length; i++){
 				Assert.assertEquals(expected[i], connProps[i]);				
 			}
