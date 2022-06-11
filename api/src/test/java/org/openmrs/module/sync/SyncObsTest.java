@@ -15,7 +15,9 @@ package org.openmrs.module.sync;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
+import org.openmrs.Encounter;
 import org.openmrs.Obs;
+import org.openmrs.api.EncounterService;
 import org.openmrs.api.ObsService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.api.SyncService;
@@ -23,6 +25,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Testing syncing of the {@link Obs} object
@@ -74,6 +78,60 @@ public class SyncObsTest extends SyncBaseTest {
 				
 				// voidReason should be ".... (new obsId: 5)"
 				Assert.assertTrue(voidedObs.getVoidReason().equals("testing the voiding process"));
+			}
+		});
+	}
+
+	@Test
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public void shouldSyncObsGroup() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+
+			String uuid = null;
+
+			public void runOnChild() throws Exception {
+				EncounterService es = Context.getEncounterService();
+
+				Encounter e = es.getEncounter(1);
+				Obs group = new Obs();
+				group.setEncounter(e);
+				group.setPerson(e.getPatient());
+				group.setObsDatetime(e.getEncounterDatetime());
+				group.setConcept(Context.getConceptService().getConcept(15));
+
+				Obs civilStatus = new Obs();
+				civilStatus.setEncounter(e);
+				civilStatus.setPerson(e.getPatient());
+				civilStatus.setObsDatetime(e.getEncounterDatetime());
+				civilStatus.setConcept(Context.getConceptService().getConcept(12));  // Civil Status
+				civilStatus.setValueCoded(Context.getConceptService().getConcept(13));  // Married
+				group.addGroupMember(civilStatus);
+
+				Obs weight = new Obs();
+				weight.setEncounter(e);
+				weight.setPerson(e.getPatient());
+				weight.setObsDatetime(e.getEncounterDatetime());
+				weight.setConcept(Context.getConceptService().getConcept(10));  // Weight
+				weight.setValueNumeric(50.0);
+				group.addGroupMember(weight);
+
+				e.addObs(group);
+
+				e = es.saveEncounter(e);
+
+				// make sure the "new obsId:" in the voidReason gets changed to a uuid
+				SyncService ss = Context.getService(SyncService.class);
+				List<SyncRecord> records = ss.getSyncRecords();
+
+				uuid = e.getUuid(); // we'll check the new obs on the other side for this uuid
+			}
+
+			public void runOnParent() throws Exception {
+				EncounterService es = Context.getEncounterService();
+				SyncService ss = Context.getService(SyncService.class);
+
+				Encounter encounter = es.getEncounterByUuid(uuid);
+				assertEquals(encounter.getObs().size(), 3);
 			}
 		});
 	}
