@@ -330,7 +330,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         	
         	//reset the flush mode back to automatic, no matter what
         	syncService.setFlushModeAutomatic();
-            obsInterceptor.removeMutablePropertyForThread();
+            obsInterceptor.removeMutablePropertiesForThread();
         }
         //for hibernate SYNC-175
         server = null;
