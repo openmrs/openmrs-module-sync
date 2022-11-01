@@ -28,6 +28,7 @@ import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.SerializedObject;
 import org.openmrs.api.db.hibernate.ImmutableObsInterceptor;
+import org.openmrs.api.db.hibernate.ImmutableOrderInterceptor;
 import org.openmrs.module.ModuleUtil;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
@@ -149,8 +150,10 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         SyncService syncService = Context.getService(SyncService.class);
         SyncIngestService syncIngestService = Context.getService(SyncIngestService.class);
         ImmutableObsInterceptor obsInterceptor = Context.getRegisteredComponents(ImmutableObsInterceptor.class).get(0);
+        ImmutableOrderInterceptor orderInterceptor = Context.getRegisteredComponents(ImmutableOrderInterceptor.class).get(0);
 		try {
             obsInterceptor.addMutablePropertiesForThread("groupMembers");
+            orderInterceptor.addMutablePropertiesForThread("dateCreated");
             // first, let's see if this server even accepts this kind of syncRecord
             if ( !server.shouldReceiveSyncRecordFrom(record)) {
                 importRecord.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
@@ -331,6 +334,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         	//reset the flush mode back to automatic, no matter what
         	syncService.setFlushModeAutomatic();
             obsInterceptor.removeMutablePropertiesForThread();
+            orderInterceptor.removeMutablePropertiesForThread();
         }
         //for hibernate SYNC-175
         server = null;
