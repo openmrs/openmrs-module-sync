@@ -360,23 +360,25 @@ public class SyncUtil {
 		}
 
 		// Determine the type of field this is
-		Class<?> classType = getFieldType(field);
-		if (classType != null) {
-			log.debug("type for " + field.getName() + " retrieved from field reflection: " + classType);
+		Class<?> classType = null;
+		if (field != null) {
+			classType = getFieldType(field);
+			if (classType == null) {
+				log.debug("type for " + field.getName() + " unable to be determined from field reflection");
+			}
 		}
 		else {
-			log.debug("type for " + field.getName() + " unable to be determined from field reflection");
+			log.debug("field is null, trying to get class from xmlFieldType: " + xmlFieldType);
+		}
+		if (classType == null) {
 			try {
 				log.debug("attempting to determine type based on xmlFieldType: " + xmlFieldType);
 				classType = Context.loadClass(xmlFieldType);
-				log.debug("type for " + field.getName() + " retrieved loading xmlFieldType: " + classType);
+				log.debug(classType + " loaded successfully");
 			}
 			catch (Exception e) {
-				log.debug("type for " + field.getName() + " unable to be determined from xmlFieldType: " + xmlFieldType);
+				throw new IllegalArgumentException("Unable to load class: " + xmlFieldType, e);
 			}
-		}
-		if (classType == null) {
-			throw new IllegalArgumentException("Unable to determine the type of class for field " + field.getName() + " in " + field.getDeclaringClass());
 		}
 
 		List<String> intTypes = Arrays.asList("integer", "java.lang.Integer");

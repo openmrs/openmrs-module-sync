@@ -13,7 +13,7 @@
  */
 package org.openmrs.module.sync;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.openmrs.PatientProgram;
 import org.openmrs.PatientProgramAttribute;
@@ -75,7 +75,12 @@ public class SyncProgramAttributeTest extends SyncBaseTest {
 			public void runOnParent() throws Exception {
                 PatientProgram pp = programService.getPatientProgram(1);
 				Set<PatientProgramAttribute> attributes = pp.getAttributes();
-				Assert.assertEquals(1, attributes.size());
+				Assertions.assertEquals(1, attributes.size());
+				PatientProgramAttribute attribute = attributes.iterator().next();
+				Assertions.assertEquals(1, attribute.getAttributeType().getId());
+				Assertions.assertEquals(1, attribute.getPatientProgram().getId());
+				Assertions.assertEquals("PENDING", attribute.getValueReference());
+				Assertions.assertEquals("PENDING", attribute.getValue());
 			}
 		});
 	}
