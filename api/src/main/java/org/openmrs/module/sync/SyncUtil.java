@@ -65,7 +65,6 @@ import org.openmrs.notification.MessageException;
 import org.openmrs.util.OpenmrsUtil;
 import org.openmrs.util.PrivilegeConstants;
 import org.springframework.util.StringUtils;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXParseException;
 
@@ -84,7 +83,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -214,19 +213,33 @@ public class SyncUtil {
 		return nodes;
 	}
 	
-	public static void setProperty(Object o, Node n, ArrayList<Field> allFields) throws IllegalArgumentException,
-	                                                                            IllegalAccessException,
-	                                                                            InvocationTargetException {
-		String propName = n.getNodeName();
-		Object propVal = SyncUtil.valForField(propName, n.getTextContent(), allFields, n);
-		
-		log.debug("Trying to set value to " + propVal + " when propName is " + propName + " and context is "
-		        + n.getTextContent());
-		
-		if (propVal != null) {
-			SyncUtil.setProperty(o, propName, propVal);
-			log.debug("Successfully called set" + SyncUtil.propCase(propName) + "(" + propVal + ")");
+	public static void setProperty(Object o, Field field, String xmlFieldName, String xmlFieldValue, String xmlFieldType) throws Exception {
+		Object propVal = null;
+		if (xmlFieldValue != null) {
+			propVal = SyncUtil.valForField(field, xmlFieldValue, xmlFieldType);
 		}
+		log.debug("Trying to set value to " + propVal + " when propName is " + xmlFieldName + " and content is " + xmlFieldValue);
+		if (propVal != null) {
+			SyncUtil.setProperty(o, xmlFieldName, propVal);
+			log.debug("Successfully called set" + SyncUtil.propCase(xmlFieldName) + "(" + propVal + ")");
+		}
+	}
+
+	/**
+	 * @param field the Field to inspect
+	 * @return the actual type of the given field.  If this cannot be determined, returns null
+	 */
+	public static Class<?> getFieldType(Field field) {
+		Type genericType = field.getGenericType();
+		// if its a collection, set, list, etc
+		if (ParameterizedType.class.isAssignableFrom(genericType.getClass())) {
+			ParameterizedType pType = (ParameterizedType) genericType;
+			return (Class<?>) pType.getRawType(); // can this be anything but Class at this point?!
+		}
+		if (genericType.toString().startsWith("class ")) {
+			return (Class<?>) field.getGenericType();
+		}
+		return null;
 	}
 	
 	public static void setProperty(Object o, String propName, Object propVal) throws IllegalArgumentException,
@@ -239,7 +252,12 @@ public class SyncUtil {
 		if (m == null) {
 			// We couldn't find a setter method. Let's try setting the field directly instead.
 			log.debug("couldn't find setter method, setting field '" + propName + "' directly.");
-			FieldUtils.writeField(o, propName, propVal, true);
+			if (shouldSkipSettingField(o, propName)) {
+				log.debug("skipping setting " + propName + " on " + o.getClass() + "; it is defined as one to skip");
+			}
+			else {
+				FieldUtils.writeField(o, propName, propVal, true);
+			}
 			return;
 		}
 		
@@ -253,22 +271,17 @@ public class SyncUtil {
 			m.setAccessible(acc);
 		}
 	}
-	
-	public static String getAttribute(NodeList nodes, String attName, ArrayList<Field> allFields) {
-		String ret = null;
-		if (nodes != null && attName != null) {
-			for (int i = 0; i < nodes.getLength(); i++) {
-				Node n = nodes.item(i);
-				String propName = n.getNodeName();
-				if (attName.equals(propName)) {
-					Object obj = SyncUtil.valForField(propName, n.getTextContent(), allFields, n);
-					if (obj != null)
-						ret = obj.toString();
-				}
+
+	/**
+	 * @return true if this is a field on an object that is not intended to be set directly
+	 */
+	public static boolean shouldSkipSettingField(Object o, String propertyName) {
+		if (o instanceof Person) {
+			if (propertyName.equalsIgnoreCase("patient")) {
+				return true;
 			}
 		}
-		
-		return ret;
+		return false;
 	}
 	
 	public static String propCase(String text) {
@@ -289,212 +302,200 @@ public class SyncUtil {
 		return o;
 	}
 	
-	public static ArrayList<Field> getAllFields(Object o) {
-		Class clazz = o.getClass();
-		ArrayList<Field> allFields = new ArrayList<Field>();
+	public static Map<String, Field> getAllFields(Object o) {
+		Class<?> clazz = o.getClass();
+		Map<String, Field> allFields = new HashMap<>();
 		if (clazz != null) {
-			Field[] nativeFields = clazz.getDeclaredFields();
-			Field[] superFields = null;
-			Class superClazz = clazz.getSuperclass();
+			Class<?> superClazz = clazz.getSuperclass();
 			while (superClazz != null && !(superClazz.equals(Object.class))) {
 				// loop through to make sure we get ALL relevant superclasses and their fields
-				if (log.isDebugEnabled())
+				if (log.isDebugEnabled()) {
 					log.debug("Now inspecting superclass: " + superClazz.getName());
-				
-				superFields = superClazz.getDeclaredFields();
-				if (superFields != null) {
-					for (Field f : superFields) {
-						allFields.add(f);
-					}
+				}
+				for (Field f : superClazz.getDeclaredFields()) {
+					allFields.put(f.getName(), f);
 				}
 				superClazz = superClazz.getSuperclass();
 			}
-			if (nativeFields != null) {
-				// add native fields
-				for (Field f : nativeFields) {
-					allFields.add(f);
-				}
+			// add native fields
+			for (Field f :  clazz.getDeclaredFields()) {
+				allFields.put(f.getName(), f);
 			}
 		}
-		
 		return allFields;
 	}
 	
 	public static OpenmrsObject getOpenmrsObj(String className, String uuid) {
 		try {
-			OpenmrsObject o = Context.getService(SyncService.class).getOpenmrsObjectByUuid(
-			    (Class<OpenmrsObject>) Context.loadClass(className), uuid);
-			
-			if (log.isDebugEnabled()) {
-				if (o == null) {
-					log.debug("Unable to get an object of type " + className + " with Uuid " + uuid + ";");
-				}
-			}
-			return o;
+			Class<? extends OpenmrsObject> clazz = (Class<? extends OpenmrsObject>) Context.loadClass(className);
+			return getOpenmrsObj(clazz, uuid);
 		}
 		catch (ClassNotFoundException ex) {
 			log.warn("getOpenmrsObj couldn't find class: " + className, ex);
 			return null;
 		}
 	}
-	
-	public static Object valForField(String fieldName, String fieldVal, ArrayList<Field> allFields, Node n) {
-		Object o = null;
-		
-		// the String value on the node specifying the "type"
-		String nodeDefinedClassName = null;
-		if (n != null) {
-			Node tmpNode = n.getAttributes().getNamedItem("type");
-			if (tmpNode != null)
-				nodeDefinedClassName = tmpNode.getTextContent();
+
+	public static OpenmrsObject getOpenmrsObj(Class<? extends OpenmrsObject> clazz, String uuid) {
+		OpenmrsObject o = Context.getService(SyncService.class).getOpenmrsObjectByUuid(clazz, uuid);
+		if (log.isDebugEnabled()) {
+			if (o == null) {
+				log.debug("Unable to get an object of type " + clazz.getName() + " with Uuid " + uuid + ";");
+			}
 		}
-		
-		// TODO: Speed up sync by passing in a Map of String fieldNames instead of list of Fields ? 
-		// TODO: Speed up sync by returning after "o" is first set?  Or are we doing "last field wins" ?
-		for (Field f : allFields) {
-			//log.debug("field is " + f.getName());
-			if (f.getName().equals(fieldName)) {
-				Class classType = null;
-				String className = f.getGenericType().toString(); // the string class name for the actual field
-				
-				// if its a collection, set, list, etc
-				if (ParameterizedType.class.isAssignableFrom(f.getGenericType().getClass())) {
-					ParameterizedType pType = (ParameterizedType) f.getGenericType();
-					classType = (Class) pType.getRawType(); // can this be anything but Class at this point?!
-				}
-				
-				if (className.startsWith("class ")) {
-					className = className.substring("class ".length());
-					classType = (Class) f.getGenericType();
-				} else {
-					log.trace("Abnormal className for " + f.getGenericType());
-				}
-				
-				if (classType == null) {
-					if ("int".equals(className)) {
-						return new Integer(fieldVal);
-					} else if ("long".equals(className)) {
-						return new Long(fieldVal);
-					} else if ("double".equals(className)) {
-						return new Double(fieldVal);
-					} else if ("float".equals(className)) {
-						return new Float(fieldVal);
-					} else if ("boolean".equals(className)) {
-						return new Boolean(fieldVal);
-					} else if ("byte".equals(className)) {
-						return new Byte(fieldVal);
-					} else if ("short".equals(className)) {
-						return new Short(fieldVal);
+		return o;
+	}
+	
+	public static Object valForField(Field field, String xmlFieldValue, String xmlFieldType) {
+
+		// If the given fieldType is a primitive or a String, handle these directly
+		switch (xmlFieldType) {
+			case "int": { return Integer.valueOf(xmlFieldValue); }
+			case "long": { return Long.valueOf(xmlFieldValue); }
+			case "double": { return Double.valueOf(xmlFieldValue); }
+			case "float": { return Float.valueOf(xmlFieldValue); }
+			case "boolean": { return Boolean.valueOf(xmlFieldValue); }
+			case "byte": { return Byte.valueOf(xmlFieldValue); }
+			case "short": { return Short.valueOf(xmlFieldValue); }
+		}
+
+		// Determine the type of field this is
+		Class<?> classType = getFieldType(field);
+		if (classType != null) {
+			log.debug("type for " + field.getName() + " retrieved from field reflection: " + classType);
+		}
+		else {
+			log.debug("type for " + field.getName() + " unable to be determined from field reflection");
+			try {
+				log.debug("attempting to determine type based on xmlFieldType: " + xmlFieldType);
+				classType = Context.loadClass(xmlFieldType);
+				log.debug("type for " + field.getName() + " retrieved loading xmlFieldType: " + classType);
+			}
+			catch (Exception e) {
+				log.debug("type for " + field.getName() + " unable to be determined from xmlFieldType: " + xmlFieldType);
+			}
+		}
+		if (classType == null) {
+			throw new IllegalArgumentException("Unable to determine the type of class for field " + field.getName() + " in " + field.getDeclaringClass());
+		}
+
+		List<String> intTypes = Arrays.asList("integer", "java.lang.Integer");
+		List<String> stringTypes = Arrays.asList("java.lang.String", "text", "string");
+
+		Object o = null;
+
+		// If we are dealing with an OpenMRS object, get and return it based on uuid
+		if (OpenmrsObject.class.isAssignableFrom(classType)) {
+			o = getOpenmrsObj((Class<? extends OpenmrsObject>) classType, xmlFieldValue);
+		}
+
+		/*
+			if we're dealing with a field like PersonAttributeType.foreignKey, the actual value was changed from
+			an integer to a uuid by the HibernateSyncInterceptor.  The xmlFieldType is the node.type which is the
+			actual classname as defined by the PersonAttributeType.format.  However, the classType from the field is
+			still an integer because that's what the db stores.  we need to convert the uuid to the pk integer and return it
+		 */
+		else if (Integer.class.isAssignableFrom(classType) && !intTypes.contains(xmlFieldType)) {
+			OpenmrsObject obj = getOpenmrsObj(xmlFieldType, xmlFieldValue);
+			if (obj == null) {
+				throw new IllegalArgumentException("Unable to find matching openmrs object of type " + xmlFieldType + " with uuid " + xmlFieldValue);
+			}
+			o = obj.getId();
+		}
+
+		/*
+			if we're dealing with a field like PersonAttribute.value, the actual value was changed from
+			a string to a uuid by the HibernateSyncInterceptor.  The nodeDefinedClassName is the node.type which is the
+			actual classname as defined by the PersonAttributeType.format.  However, the field.getClassName is
+			still String because that's what the db stores.  we need to convert the uuid to the pk integer/string and return it
+		 */
+		else if (String.class.isAssignableFrom(classType) && !stringTypes.contains(xmlFieldType) && !intTypes.contains(xmlFieldType)) {
+			OpenmrsObject obj = getOpenmrsObj(xmlFieldType, xmlFieldValue);
+			if (obj != null) {
+				o = obj.getId().toString(); // call toString so the class types match when looking up the setter
+			}
+			else {
+				if (StringUtils.hasText(xmlFieldValue)) {
+					// If we make it here, and we are dealing with person attribute values, then just return the string value as-is
+					if (PersonAttribute.class.isAssignableFrom(field.getDeclaringClass()) && "value".equals(field.getName())) {
+						o = xmlFieldValue;
+					}
+					else {
+						// throw a warning if we're having trouble converting what should be a valid value
+						log.error("Unable to convert value '" + xmlFieldValue + "' into a " + xmlFieldType);
+						throw new SyncException("Unable to convert value '" + xmlFieldValue + "' into a " + xmlFieldType);
 					}
 				}
-				
-				// we have to explicitly create a new value object here because all we have is a string - won't know how to convert
-				if (OpenmrsObject.class.isAssignableFrom(classType)) {
-					o = getOpenmrsObj(className, fieldVal);
-				}
-                else if ("java.lang.Integer".equals(className)
-				        && !("integer".equals(nodeDefinedClassName) || "java.lang.Integer".equals(nodeDefinedClassName))) {
-					// if we're dealing with a field like PersonAttributeType.foreignKey, the actual value was changed from
-					// an integer to a uuid by the HibernateSyncInterceptor.  The nodeDefinedClassName is the node.type which is the 
-					// actual classname as defined by the PersonAttributeType.format.  However, the field.getClassName is 
-					// still an integer because thats what the db stores.  we need to convert the uuid to the pk integer and return it
-					OpenmrsObject obj = getOpenmrsObj(nodeDefinedClassName, fieldVal);
-					o = obj.getId();
-				}
-                else if ("java.lang.String".equals(className)
-				        && !("text".equals(nodeDefinedClassName) || "string".equals(nodeDefinedClassName)
-				                || "java.lang.String".equals(nodeDefinedClassName) || "integer".equals(nodeDefinedClassName)
-				                || "java.lang.Integer".equals(nodeDefinedClassName) || fieldVal.isEmpty())) {
-					// if we're dealing with a field like PersonAttribute.value, the actual value was changed from
-					// a string to a uuid by the HibernateSyncInterceptor.  The nodeDefinedClassName is the node.type which is the 
-					// actual classname as defined by the PersonAttributeType.format.  However, the field.getClassName is 
-					// still String because thats what the db stores.  we need to convert the uuid to the pk integer/string and return it
-					OpenmrsObject obj = getOpenmrsObj(nodeDefinedClassName, fieldVal);
-					if (obj == null) {
-						if (StringUtils.hasText(fieldVal)) {
-                            // If we make it here, and we are dealing with person attribute values, then just return the string value as-is
-                            if (PersonAttribute.class.isAssignableFrom(f.getDeclaringClass()) && "value".equals(f.getName())) {
-                                o = fieldVal;
-                            }
-                            else {
-                                // throw a warning if we're having trouble converting what should be a valid value
-                                log.error("Unable to convert value '" + fieldVal + "' into a " + nodeDefinedClassName);
-                                throw new SyncException("Unable to convert value '" + fieldVal + "' into a " + nodeDefinedClassName);
-                            }
-						}
-                        else {
-							// if fieldVal is empty, just save an empty string here too
-							o = "";
-						}
-					}
-                    else {
-						o = obj.getId().toString(); // call toString so the class types match when looking up the setter
-					}
-				}
-                else if (Collection.class.isAssignableFrom(classType)) {
-					// this is a collection of items. this is intentionally not in the convertStringToObject method
-					
-					Collection tmpCollection = null;
-					if (Set.class.isAssignableFrom(classType))
-						tmpCollection = new LinkedHashSet();
-					else
-						tmpCollection = new Vector();
-					
-					// get the type of class held in the collection
-					String collectionTypeClassName = null;
-					java.lang.reflect.Type collectionType = ((java.lang.reflect.ParameterizedType) f.getGenericType())
-					        .getActualTypeArguments()[0];
-					if (collectionType.toString().startsWith("class "))
-						collectionTypeClassName = collectionType.toString().substring("class ".length());
-					
-					// get the type of class defined in the text node
-					// if it is different, we could be dealing with something like Cohort.memberIds
-					// node type comes through as java.util.Set<classname>
-					String nodeDefinedCollectionType = null;
-					int indexOfLT = nodeDefinedClassName.indexOf("<");
-					if (indexOfLT > 0)
-						nodeDefinedCollectionType = nodeDefinedClassName.substring(indexOfLT + 1,
-						    nodeDefinedClassName.length() - 1);
-					
-					// change the string to just a comma delimited list
-					fieldVal = fieldVal.replaceFirst("\\[", "").replaceFirst("\\]", "");
-					
-					for (String eachFieldVal : fieldVal.split(",")) {
-						eachFieldVal = eachFieldVal.trim(); // take out whitespace
-						if(!StringUtils.hasText(eachFieldVal))
-							continue;
-						// try to convert to a simple object
-						Object tmpObject = convertStringToObject(eachFieldVal, (Class) collectionType);
-						
-						// convert to an openmrs object
-						if (tmpObject == null && nodeDefinedCollectionType != null)
-							tmpObject = getOpenmrsObj(nodeDefinedCollectionType, eachFieldVal).getId();
-						
-						if (tmpObject == null)
-							log.error("Unable to convert: " + eachFieldVal + " to a " + collectionTypeClassName);
-						else
-							tmpCollection.add(tmpObject);
-					}
-					
-					o = tmpCollection;
-				} else if (Map.class.isAssignableFrom(classType) || Properties.class.isAssignableFrom(classType)) {
-					Object tmpMap = SyncUtil.getNormalizer(classType).fromString(classType, fieldVal);
-					
-					//if we were able to convert and got anything at all back, assign it
-					if (tmpMap != null) {
-						o = tmpMap;
-					}
-				} else if ((o = convertStringToObject(fieldVal, classType)) != null) {
-					log.trace("Converted " + fieldVal + " into " + classType.getName());
-				} else {
-					log.debug("Don't know how to deserialize class: " + className);
+				else {
+					// if fieldVal is empty, just save an empty string here too
+					o = "";
 				}
 			}
 		}
-		
-		if (o == null)
-			log.debug("Never found a property named: " + fieldName + " for this class");
-		
+
+		// Handle Collections, this is intentionally not in the convertStringToObject method
+		else if (Collection.class.isAssignableFrom(classType)) {
+
+			Collection tmpCollection = Set.class.isAssignableFrom(classType) ? new LinkedHashSet() : new Vector();
+
+			// get the type of class held in the collection
+			String collectionTypeClassName = null;
+			Type collectionType = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+			if (collectionType.toString().startsWith("class ")) {
+				collectionTypeClassName = collectionType.toString().substring("class ".length());
+			}
+			// get the type of class defined in the text node
+			// if it is different, we could be dealing with something like Cohort.memberIds
+			// node type comes through as java.util.Set<classname>
+			String nodeDefinedCollectionType = null;
+			int indexOfLT = xmlFieldType.indexOf("<");
+			if (indexOfLT > 0) {
+				nodeDefinedCollectionType = xmlFieldType.substring(indexOfLT + 1, xmlFieldType.length() - 1);
+			}
+
+			// change the string to just a comma delimited list
+			xmlFieldValue = xmlFieldValue.replaceFirst("\\[", "").replaceFirst("\\]", "");
+
+			for (String eachFieldVal : xmlFieldValue.split(",")) {
+				eachFieldVal = eachFieldVal.trim(); // take out whitespace
+				if (StringUtils.hasText(eachFieldVal)) {
+					// try to convert to a simple object
+					Object tmpObject = convertStringToObject(eachFieldVal, (Class) collectionType);
+					// convert to an openmrs object
+					if (tmpObject == null && nodeDefinedCollectionType != null) {
+						tmpObject = getOpenmrsObj(nodeDefinedCollectionType, eachFieldVal).getId();
+					}
+					if (tmpObject == null) {
+						log.error("Unable to convert: " + eachFieldVal + " to a " + collectionTypeClassName);
+					}
+					else {
+						tmpCollection.add(tmpObject);
+					}
+				}
+			}
+
+			o = tmpCollection;
+		}
+
+		// Handle Maps and Properties
+		else if (Map.class.isAssignableFrom(classType) || Properties.class.isAssignableFrom(classType)) {
+			Object tmpMap = SyncUtil.getNormalizer(classType).fromString(classType, xmlFieldValue);
+					
+			//if we were able to convert and got anything at all back, assign it
+			if (tmpMap != null) {
+				o = tmpMap;
+			}
+		}
+
+		// If none of the special cases handled above apply, convert the string value to an object of the field type
+		else {
+			o = convertStringToObject(xmlFieldValue, classType);
+		}
+
+		if (o == null) {
+			throw new IllegalArgumentException("Unable to convert " + xmlFieldValue + " into " + classType.getName());
+		}
+		log.trace("Converted " + xmlFieldValue + " into " + classType.getName() + ": " + o);
 		return o;
 	}
 	

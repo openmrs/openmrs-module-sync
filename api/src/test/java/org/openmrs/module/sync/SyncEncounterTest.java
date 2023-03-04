@@ -191,7 +191,7 @@ public class SyncEncounterTest extends SyncBaseTest {
                 Location loc = Context.getLocationService().getLocation(1);
 
 				Obs o = new Obs(person, concept, new Date(), loc);
-				o.setValueCoded(new Concept(2));
+				o.setValueCoded(Context.getConceptService().getConcept(2));
 				e.addObs(o);
 				
 				Context.getEncounterService().saveEncounter(e);
