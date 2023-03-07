@@ -291,6 +291,8 @@
 	<program_workflow_state program_workflow_state_id="1" program_workflow_id="1" concept_id="7" initial="true" terminal="false" creator="1" date_created="2008-01-14 18:06:27.0" retired="false" uuid="33807f36-144e-102b-8d9c-e44ed545d86c"/>
 	<program_workflow_state program_workflow_state_id="2" program_workflow_id="1" concept_id="8" initial="false" terminal="true" creator="1" date_created="2008-01-14 18:06:27.0" retired="false" uuid="33808343-144e-102b-8d9c-e44ed545d86c"/>
 
+	<program_attribute_type program_attribute_type_id="1" name="Transfer Status" description="Transfer Status Description" datatype="org.openmrs.customdatatype.datatype.FreeTextDatatype" min_occurs="0" max_occurs="1" creator="1" date_created="2005-01-01 00:00:00.0" retired="false" uuid="42ec23bf-b9f9-11ed-9873-0242ac120002"/>
+
 	<person person_id="2" gender="F" dead="0" birthdate="2001-01-01 00:00:00.0" birthdate_estimated="1" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="577d58db-15a5-102b-8d9c-e44ed545d86c"/>
 	<person person_id="3" gender="F" dead="0" birthdate="1995-01-01 00:00:00.0" birthdate_estimated="1" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="196bef28-168c-102b-8d9c-e44ed545d86c"/>
 	<person person_id="4" gender="F" dead="0" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="426bef28-168c-102b-8d9c-e44ed545d863"/>
