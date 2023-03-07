@@ -20,6 +20,7 @@ import java.util.Date;
 
 import org.junit.Test;
 import org.openmrs.User;
+import org.openmrs.api.UserService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.SerializedObject;
 import org.openmrs.api.db.SerializedObjectDAO;
@@ -47,18 +48,23 @@ public class SyncSerializedObjectTest extends SyncBaseTest {
 	
 	@Test
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public void shouldSyncSerializedOBject() throws Exception {
+	public void shouldSyncSerializedObject() throws Exception {
 		runSyncTest(new SyncTestHelper() {
-			
+
+			String uuid = null;
+
 			public void runOnChild() throws Exception {
-				
+
+				UserService userService = Context.getUserService();
+
 				//just random data
 				SerializedObject serializedObject = new SerializedObject();
+				serializedObject.setUuid(uuid);
 				serializedObject.setName("blah");
 				serializedObject.setDescription("This is to test saving a report");
-				serializedObject.setCreator(new User(1));
+				serializedObject.setCreator(userService.getUser(1));
 				serializedObject.setDateCreated(new Date());
-				serializedObject.setUuid("d4b94c0a-03cb-11e0-a36c-a923b2165773");
+				serializedObject.setUuid(userService.getUser(2).getUuid());
 				serializedObject.setType(User.class.getName());
 				serializedObject.setSubtype(User.class.getName());
 				serializedObject.setSerializationClass(OpenmrsSerializer.class);
@@ -66,12 +72,13 @@ public class SyncSerializedObjectTest extends SyncBaseTest {
 				
 				SyncService ss = Context.getService(SyncService.class);
 				ss.saveOrUpdate(serializedObject);
+
+				uuid = serializedObject.getUuid();
 			}
 			
 			public void runOnParent() throws Exception {
-				SerializedObject o = null;
 				SyncService ss = Context.getService(SyncService.class);
-				o = ss.getOpenmrsObjectByUuid(SerializedObject.class, "d4b94c0a-03cb-11e0-a36c-a923b2165773");
+				SerializedObject o = ss.getOpenmrsObjectByUuid(SerializedObject.class, uuid);
 
 				assertNotNull(o);
 				assertEquals("blah",o.getName());

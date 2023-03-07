@@ -155,8 +155,8 @@ public class SyncIngestServiceTest extends SyncBaseTest {
 
 		SyncItem item = new SyncItem();
 		item.setContainedType(EncounterType.class);
-		item.setKey(new SyncItemKey<String>(UUID.randomUUID().toString(), String.class));
-		item.setContent("<org.openmrs.EncounterType><description type=\"string\">Test Encounter Type</description><name type=\"string\">Test Encounter Type</name><retired type=\"boolean\">false</retired><dateCreated type=\"timestamp\">2013-03-22T18:29:26.249-0400</dateCreated><uuid type=\"string\">e5b4b20b-da7f-4e07-9201-5be196c13585</uuid><creator type=\"org.openmrs.User\">873786be-17b8-4284-8a1e-66c479dd119f</creator></org.openmrs.EncounterType>");
+		item.setKey(new SyncItemKey<String>("e5b4b20b-da7f-4e07-9201-5be196c13585", String.class));
+		item.setContent("<org.openmrs.EncounterType><description type=\"string\">Test Encounter Type</description><name type=\"string\">Test Encounter Type</name><retired type=\"boolean\">false</retired><dateCreated type=\"timestamp\">2013-03-22T18:29:26.249-0400</dateCreated><uuid type=\"string\">e5b4b20b-da7f-4e07-9201-5be196c13585</uuid><creator type=\"org.openmrs.User\">22a06ac6-144e-102b-8d9c-e44ed545d86c</creator></org.openmrs.EncounterType>");
 		item.setState(SyncItemState.NEW);
 		record.addItem(item);
 

@@ -30,6 +30,7 @@ import org.openmrs.api.db.SerializedObject;
 import org.openmrs.module.ModuleUtil;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncItem;
+import org.openmrs.module.sync.SyncItemFields;
 import org.openmrs.module.sync.SyncItemState;
 import org.openmrs.module.sync.SyncProcessedObject;
 import org.openmrs.module.sync.SyncRecord;
@@ -397,7 +398,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
      */
     public SyncImportItem processSyncItem(SyncItem item, String originalRecordUuid, Map<String, List<SyncProcessedObject>> processedObjects)  throws APIException {
     	String itemContent = null;
-        SyncImportItem ret = null; 
+        SyncImportItem ret = null;
 
         try {
         	ret = new SyncImportItem();
@@ -440,7 +441,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
         }
         catch (Exception e) {
             throw new SyncIngestException(e,SyncConstants.ERROR_ITEM_UNEXPECTED, null, itemContent, null);  //MUST RETHROW to abort transaction
-        }       
+        }
         
         return ret;        
     }
@@ -489,25 +490,19 @@ public class SyncIngestServiceImpl implements SyncIngestService {
      */
     private OpenmrsObject processOpenmrsObject(OpenmrsObject o, SyncItem item, String originalRecordUuid) throws Exception {
 
-    	String itemContent = null;
-        String className = null;
+    	String itemContent = item.getContent();
+        String className = o.getClass().getName();
         boolean alreadyExists = false;
-        boolean isDelete = false;
-        ArrayList<Field> allFields = null;
-        NodeList nodes = null;
+        boolean isDelete = item.getState() == SyncItemState.DELETED;
+        Map<String, Field> allFields = SyncUtil.getAllFields(o);  // get fields, both in class and superclass - we'll need to know what type each field is
+        NodeList nodes = SyncUtil.getChildNodes(itemContent);  // get all child nodes (xml) of the root object
 
-        isDelete = (item.getState() == SyncItemState.DELETED) ? true : false; 
-        itemContent = item.getContent();
-    	className = o.getClass().getName();
-        allFields = SyncUtil.getAllFields(o);  // get fields, both in class and superclass - we'll need to know what type each field is
-        nodes = SyncUtil.getChildNodes(itemContent);  // get all child nodes (xml) of the root object
+        SyncItemFields syncItemFields = new SyncItemFields(nodes);
+        if (log.isDebugEnabled()) {
+            log.debug("Sync Item Fields: " + syncItemFields);
+        }
 
-	    if ( o == null || className == null || allFields == null || nodes == null ) {
-	    	log.warn("Item is missing a className or all fields or nodes");
-	    	throw new SyncIngestException(SyncConstants.ERROR_ITEM_NOCLASS, className, itemContent,null);
-	    }
-
-	    String uuid = SyncUtil.getAttribute(nodes, "uuid", allFields);
+	    String uuid = syncItemFields.getValue("uuid");
         OpenmrsObject objOld = SyncUtil.getOpenmrsObj(className, uuid);
         if ( objOld != null ) {
             o = objOld;
@@ -518,8 +513,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 	        log.debug("isUpdate: " + alreadyExists);
 	        log.debug("isDelete: " + isDelete);
         }
-                
-        
+
 		//Pass the original uuid to interceptor: this will prevent the change
 		//from being sent back to originating server. 
         HibernateSyncInterceptor.setOriginalRecordUuid(originalRecordUuid);
@@ -527,21 +521,33 @@ public class SyncIngestServiceImpl implements SyncIngestService {
     	//execute delete if instance was found and operation is delete
         if (alreadyExists && isDelete) {
         	SyncUtil.deleteOpenmrsObject(o);
-        }else if (!alreadyExists && isDelete) { 
+        }
+        else if (!alreadyExists && isDelete) {
         	log.warn("Object to be deleted was not found in the database. skipping delete operation:");
         	log.warn("-object type: " + o.getClass().toString());
         	log.warn("-object uuid: " + uuid);
-        } else {
+        }
+        else {
             //if we are doing insert/update:
             //1. set serialized props state
         	//2. force it down the hibernate's throat with help of openmrs api
-	        for ( int i = 0; i < nodes.getLength(); i++ ) {
+            for (String xmlFieldName : syncItemFields.getFields()) {
+                String xmlFieldValue = syncItemFields.getValue(xmlFieldName);
+                String xmlFieldType = syncItemFields.getType(xmlFieldName);
+                Field field = allFields.get(xmlFieldName);
 	            try {
-	            	log.debug("trying to set property: " + nodes.item(i).getNodeName() + " in className " + className);
-	                SyncUtil.setProperty(o, nodes.item(i), allFields);
-	            } catch ( Exception e ) {
-	            	log.error("Error when trying to set " + nodes.item(i).getNodeName() + ", which is a " + className, e);
-	                throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_UNSET_PROPERTY, nodes.item(i).getNodeName() + "," + className + "," + e.getMessage(), itemContent,null);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Trying to set property:");
+                        log.debug("Field = " + field);
+                        log.debug("xmlFieldName = " + xmlFieldName);
+                        log.debug("xmlFieldValue = " + xmlFieldValue);
+                        log.debug("xmlFieldType = " + xmlFieldType);
+                    }
+	                SyncUtil.setProperty(o, field, xmlFieldName, xmlFieldValue, xmlFieldType);
+	            }
+                catch ( Exception e ) {
+	            	log.error("Error when trying to set " + xmlFieldName + " in className " + className, e);
+	                throw new SyncIngestException(e, SyncConstants.ERROR_ITEM_UNSET_PROPERTY, xmlFieldName + "," + className + "," + e.getMessage(), itemContent,null);
 	            }
 	        }
         	        
