@@ -285,6 +285,7 @@
 	<visit_type retired="false" visit_type_id="1" name="Unknown" description="Unknown" creator="1" date_created="2005-02-24 00:00:00.0" uuid="2a5cd7ea-144e-102b-8d9c-554ed545d86d"/>
 
 	<program program_id="1" retired="false" name="test program" description="test program" concept_id="5" creator="1" date_created="2008-01-14 18:06:04.0" uuid="32eb8899-144e-102b-8d9c-e44ed545d86c"/>
+	<program program_id="2" retired="false" name="ART program" description="ART program" concept_id="5" creator="1" date_created="2008-01-14 18:06:04.0" uuid="68D7F2A0-7BB9-476B-AB8D-8C2212561C6B"/>
 
 	<program_workflow program_workflow_id="1" program_id="1" concept_id="6" creator="1" date_created="2008-01-14 18:06:04.0" retired="false" uuid="3342178b-144e-102b-8d9c-e44ed545d86c"/>
 
@@ -292,11 +293,13 @@
 	<program_workflow_state program_workflow_state_id="2" program_workflow_id="1" concept_id="8" initial="false" terminal="true" creator="1" date_created="2008-01-14 18:06:27.0" retired="false" uuid="33808343-144e-102b-8d9c-e44ed545d86c"/>
 
 	<program_attribute_type program_attribute_type_id="1" name="Transfer Status" description="Transfer Status Description" datatype="org.openmrs.customdatatype.datatype.FreeTextDatatype" min_occurs="0" max_occurs="1" creator="1" date_created="2005-01-01 00:00:00.0" retired="false" uuid="42ec23bf-b9f9-11ed-9873-0242ac120002"/>
+	<program_attribute_type program_attribute_type_id="2"  name="Health Center" description="Health Center location" datatype="org.openmrs.Location" min_occurs="0" max_occurs="1" creator="1" date_created="2007-05-04 09:59:23.0" uuid="660E6673-758B-40FC-8CA8-0CBFF26FB710" retired="false"/>
 
 	<person person_id="2" gender="F" dead="0" birthdate="2001-01-01 00:00:00.0" birthdate_estimated="1" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="577d58db-15a5-102b-8d9c-e44ed545d86c"/>
 	<person person_id="3" gender="F" dead="0" birthdate="1995-01-01 00:00:00.0" birthdate_estimated="1" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="196bef28-168c-102b-8d9c-e44ed545d86c"/>
 	<person person_id="4" gender="F" dead="0" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="426bef28-168c-102b-8d9c-e44ed545d863"/>
 	<person person_id="5" gender="F" dead="0" creator="1" date_created="2009-01-01 00:00:00.0" voided="false" uuid="8aed9e50-887c-4de5-8364-8929d2f33d60"/>
+	<person person_id="6" gender="M" dead="0" creator="1" date_created="2009-01-01 00:00:00.0" voided="false" uuid="97632B4D-42A7-4AA0-99E1-15FE09896864"/>
 
 	<person_address person_address_id="2" person_id="2" preferred="true" address1="1050 Wishard Blvd." address2="RG5" city_village="Indianapolis" state_province="IN" postal_code="46202" country="USA" latitude="" longitude="" creator="1" date_created="2005-09-22 00:00:00.0" voided="false" void_reason="" uuid="196bef28-168c-102b-8d9c-e44ed545d111"/>
 	<person_address person_address_id="7" person_id="3" preferred="false" address1="" address2="" city_village="Kapina" state_province="" postal_code="" country="" latitude="" longitude="" creator="1" date_created="2006-01-18 00:00:00.0" voided="false" void_reason="" uuid="196bef28-168c-102b-8d9c-e44ed545d222"/>
@@ -310,6 +313,7 @@
 	<person_name person_name_id="3" preferred="true" person_id="3" given_name="Lois" middle_name="" family_name="Lane" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="2e1ada24-168c-102b-8d9c-e44ed545d86c"/>
 	<person_name person_name_id="5" preferred="true" person_id="4" given_name="Jimmy" middle_name="" family_name="Olsen" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="2e1eda24-168c-102b-8d9c-e44ed545d86c"/>
 	<person_name person_name_id="4" preferred="true" person_id="5" given_name="Stub" middle_name="" family_name="Patient" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="442a77e3-57ea-4a2b-8989-7440a4efd8c2"/>
+	<person_name person_name_id="6" preferred="true" person_id="6" given_name="John" middle_name="" family_name="Daniel" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" uuid="FE2996B0-091C-4B9E-BAC7-BDDF4767B42B"/>
 
 	<relationship/>
 
@@ -318,6 +322,7 @@
 	<patient patient_id="2" creator="1" date_created="2008-01-14 17:56:26.0" voided="0"/>
     <patient patient_id="3" creator="1" date_created="2008-01-14 17:56:26.0" voided="0"/>
     <patient patient_id="4" creator="1" date_created="2008-01-14 17:56:26.0" voided="0"/>
+	<patient patient_id="6" creator="1" date_created="2008-01-14 17:56:26.0" voided="0"/>
 
 	<patient_identifier patient_identifier_id = "2" patient_id="2" identifier="ID1234" identifier_type="2" preferred="1" location_id="1" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="6b920848-1b90-102b-8082-d8cf852a43d2"/>
 	<patient_identifier patient_identifier_id = "20" patient_id="2" identifier="ID1234-2" identifier_type="2" preferred="0" location_id="1" creator="1" date_created="2008-01-15 17:56:26.0" voided="0" uuid="e333cc28-6fef-11df-83c8-3679bc4524e5"/>
@@ -333,6 +338,9 @@
 	<obs obs_id="3" person_id="2" concept_id="10" status="FINAL" encounter_id="1" obs_datetime="1978-06-11 00:00:00.0" location_id="2" value_numeric="34.5" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="1a9c0d7b-19c2-102b-8d9c-e44ed545d86c"/>
 
     <patient_program patient_program_id="1" patient_id="3" program_id="1" date_enrolled="2006-04-11 00:00:00.0" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="0bb5846a-168d-102b-8d9c-e44ed545d86c"/>
+	<patient_program patient_program_id="2" patient_id="6" program_id="2" date_enrolled="2016-06-11 00:00:00.0" creator="1" date_created="2016-06-11 00:00:00.0" voided="0" uuid="998BA0D8-C63D-4F6E-920F-4F9F6A28A868"/>
+
+	<patient_program_attribute patient_program_attribute_id="1" patient_program_id="2" attribute_type_id="1" value_reference="transfer-in" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="68abcc0f-b244-4625-b7c2-3beeb1899f87"/>
 
     <patient_state patient_state_id="1" patient_program_id="1" state="1" start_date="2006-04-11 00:00:00.0" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="11d71368-168d-102b-8d9c-e44ed545d86c"/>
 

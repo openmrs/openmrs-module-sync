@@ -15,11 +15,13 @@ package org.openmrs.module.sync;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.openmrs.Location;
 import org.openmrs.PatientProgram;
 import org.openmrs.PatientProgramAttribute;
 import org.openmrs.ProgramAttributeType;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.ProgramWorkflowService;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.serialization.Record;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -49,6 +51,81 @@ public class SyncProgramAttributeTest extends SyncBaseTest {
         catch (Exception e) {
             throw new RuntimeException(e);
         }
+	}
+
+	@Test
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public void shouldSyncProgramAttributeOfTypeLocation() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+
+			public void runOnChild() throws Exception {
+
+				ProgramAttributeType programAttributeType = programService.getProgramAttributeType(2); // Health Center Location
+				Assertions.assertNotNull(programAttributeType);
+				PatientProgram pp = programService.getPatientProgram(1);
+				Assertions.assertNotNull(pp);
+				Location healthCenterLocation = Context.getLocationService().getLocation("Someplace");
+				Assertions.assertNotNull(healthCenterLocation);
+				PatientProgramAttribute attr = new PatientProgramAttribute();
+				attr.setAttributeType(programAttributeType);
+				attr.setValueReferenceInternal(healthCenterLocation.getUuid());
+				attr.setPatientProgram(pp);
+				pp.addAttribute(attr);
+				programService.savePatientProgram(pp);
+				List<PatientProgramAttribute> activeAttributes = pp.getActiveAttributes(programAttributeType);
+				Assertions.assertEquals(1, activeAttributes.size());
+			}
+
+			@Override
+			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
+				super.changedBeingApplied(syncRecords, record);
+			}
+
+			public void runOnParent() throws Exception {
+				PatientProgram pp = programService.getPatientProgram(1);
+				Set<PatientProgramAttribute> attributes = pp.getAttributes();
+				Assertions.assertEquals(1, attributes.size());
+				Location location = Context.getLocationService().getLocationByUuid(attributes.iterator().next().getValueReference());
+				Assertions.assertNotNull(location);
+				Assertions.assertEquals(location.getName(), "Someplace");
+			}
+		});
+	}
+
+	@Test
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public void shouldSyncProgramAttributeWithUpdatedValue() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+
+			public void runOnChild() throws Exception {
+				ProgramAttributeType programAttributeType = programService.getProgramAttributeTypeByUuid("42ec23bf-b9f9-11ed-9873-0242ac120002");
+				Assertions.assertNotNull(programAttributeType);
+				Assertions.assertEquals(programAttributeType.getName(), "Transfer Status");
+				PatientProgram pp = programService.getPatientProgram(2);
+				List<PatientProgramAttribute> activeAttributes = pp.getActiveAttributes(programAttributeType);
+				Assertions.assertEquals(1, activeAttributes.size());
+				PatientProgramAttribute attr = activeAttributes.get(0);
+				Assertions.assertEquals(attr.getValueReference(), "transfer-in");
+				attr.setValue("transfer-out");
+				programService.savePatientProgram(pp);
+			}
+
+			@Override
+			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
+				super.changedBeingApplied(syncRecords, record);
+			}
+
+			public void runOnParent() throws Exception {
+				PatientProgram pp = programService.getPatientProgram(2);
+				Set<PatientProgramAttribute> attributes = pp.getAttributes();
+				Assertions.assertEquals(1, attributes.size());
+				PatientProgramAttribute attribute = attributes.iterator().next();
+				Assertions.assertEquals(1, attribute.getAttributeType().getId());
+				Assertions.assertEquals(2, attribute.getPatientProgram().getId());
+				Assertions.assertEquals("transfer-out", attribute.getValueReference());
+				Assertions.assertEquals("transfer-out", attribute.getValue());
+			}
+		});
 	}
 	
 	@Test
