@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -143,13 +144,7 @@ public class SyncProgramAttributeTest extends SyncBaseTest {
 				Assertions.assertEquals(1, activeAttributes.size());
 				PatientProgramAttribute attr = activeAttributes.get(0);
 				Assertions.assertEquals(attr.getValue(), "transfer-in");
-				//activeAttributes.remove(0); -- it does not remove the attribute
-				//pp.getAttributes().remove(0);
-				Set<PatientProgramAttribute> ppAttributes = pp.getAttributes();
-				Iterator<PatientProgramAttribute> iterator = ppAttributes.iterator();
-				while(iterator.hasNext()){
-					iterator.remove();
-				}
+				pp.getAttributes().remove(attr);
 				Assertions.assertEquals(0, pp.getAttributes().size());
 				programService.savePatientProgram(pp);
 				Assertions.assertEquals(0, pp.getAttributes().size()); // the attribute has been removed
