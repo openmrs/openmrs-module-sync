@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -127,7 +128,46 @@ public class SyncProgramAttributeTest extends SyncBaseTest {
 			}
 		});
 	}
-	
+
+	@Test
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public void shouldSyncProgramAttributeWhichWasDeleted() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+
+			public void runOnChild() throws Exception {
+				ProgramAttributeType programAttributeType = programService.getProgramAttributeTypeByUuid("42ec23bf-b9f9-11ed-9873-0242ac120002");
+				Assertions.assertNotNull(programAttributeType);
+				Assertions.assertEquals(programAttributeType.getName(), "Transfer Status");
+				PatientProgram pp = programService.getPatientProgram(2);
+				List<PatientProgramAttribute> activeAttributes = pp.getActiveAttributes(programAttributeType);
+				Assertions.assertEquals(1, activeAttributes.size());
+				PatientProgramAttribute attr = activeAttributes.get(0);
+				Assertions.assertEquals(attr.getValue(), "transfer-in");
+				//activeAttributes.remove(0); -- it does not remove the attribute
+				//pp.getAttributes().remove(0);
+				Set<PatientProgramAttribute> ppAttributes = pp.getAttributes();
+				Iterator<PatientProgramAttribute> iterator = ppAttributes.iterator();
+				while(iterator.hasNext()){
+					iterator.remove();
+				}
+				Assertions.assertEquals(0, pp.getAttributes().size());
+				programService.savePatientProgram(pp);
+				Assertions.assertEquals(0, pp.getAttributes().size()); // the attribute has been removed
+			}
+
+			@Override
+			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
+				super.changedBeingApplied(syncRecords, record);
+			}
+
+			public void runOnParent() throws Exception {
+				PatientProgram pp = programService.getPatientProgram(2);
+				Set<PatientProgramAttribute> attributes = pp.getAttributes();
+				Assertions.assertEquals(0, attributes.size());
+			}
+		});
+	}
+
 	@Test
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSyncProgramAttribute() throws Exception {
