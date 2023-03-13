@@ -68,7 +68,7 @@ public class SyncProgramAttributeTest extends SyncBaseTest {
 				Assertions.assertNotNull(healthCenterLocation);
 				PatientProgramAttribute attr = new PatientProgramAttribute();
 				attr.setAttributeType(programAttributeType);
-				attr.setValueReferenceInternal(healthCenterLocation.getUuid());
+				attr.setValue(healthCenterLocation);
 				attr.setPatientProgram(pp);
 				pp.addAttribute(attr);
 				programService.savePatientProgram(pp);
@@ -85,7 +85,7 @@ public class SyncProgramAttributeTest extends SyncBaseTest {
 				PatientProgram pp = programService.getPatientProgram(1);
 				Set<PatientProgramAttribute> attributes = pp.getAttributes();
 				Assertions.assertEquals(1, attributes.size());
-				Location location = Context.getLocationService().getLocationByUuid(attributes.iterator().next().getValueReference());
+				Location location = (Location) attributes.iterator().next().getValue();
 				Assertions.assertNotNull(location);
 				Assertions.assertEquals(location.getName(), "Someplace");
 			}
