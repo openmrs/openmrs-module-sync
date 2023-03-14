@@ -75,7 +75,7 @@ public class SyncPersonTest extends SyncBaseTest {
 			}
 		});
 	}
-	
+
 	@Test
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveSimpleStringPersonAttribute() throws Exception {
