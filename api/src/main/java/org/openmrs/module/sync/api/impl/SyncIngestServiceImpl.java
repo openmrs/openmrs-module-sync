@@ -551,7 +551,12 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                         log.debug("xmlFieldValue = " + xmlFieldValue);
                         log.debug("xmlFieldType = " + xmlFieldType);
                     }
-	                SyncUtil.setProperty(o, field, xmlFieldName, xmlFieldValue, xmlFieldType);
+                    if ("[null]".equals(xmlFieldValue)) {
+                        SyncUtil.setProperty(o, xmlFieldName, null);
+                    }
+                    else {
+                        SyncUtil.setProperty(o, field, xmlFieldName, xmlFieldValue, xmlFieldType);
+                    }
 	            }
                 catch ( Exception e ) {
 	            	log.error("Error when trying to set " + xmlFieldName + " in className " + className, e);

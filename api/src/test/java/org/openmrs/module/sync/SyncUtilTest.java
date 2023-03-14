@@ -32,43 +32,43 @@ public class SyncUtilTest {
 
 	@Test
 	public void getSetterMethod_shouldReturnMethodForPrimitiveInt(){
-		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "intField", new Integer(1).getClass());
+		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "intField");
 		assertNotNull(m);
 	}
 	
 	@Test
 	public void getSetterMethod_shouldReturnMethodForPrimitiveLong(){
-		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "longField", new Long(1).getClass());
+		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "longField");
 		assertNotNull(m);
 	}
 	
 	@Test
 	public void getSetterMethod_shouldReturnMethodForPrimitiveDouble(){
-		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "doubleField", new Double(1).getClass());
+		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "doubleField");
 		assertNotNull(m);
 	}
 	
 	@Test
 	public void getSetterMethod_shouldReturnMethodForPrimitiveFloat(){
-		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "floatField", new Float(1).getClass());
+		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "floatField");
 		assertNotNull(m);
 	}
 	
 	@Test
 	public void getSetterMethod_shouldReturnMethodForPrimitiveBoolean(){
-		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "booleanField", new Boolean(true).getClass());
+		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "booleanField");
 		assertNotNull(m);
 	}
 	
 	@Test
 	public void getSetterMethod_shouldReturnMethodForPrimitiveShort(){
-		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "shortField", new Short((short)1).getClass());
+		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "shortField");
 		assertNotNull(m);
 	}
 	
 	@Test
 	public void getSetterMethod_shouldReturnMethodForPrimitiveByte(){
-		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "byteField", new Byte((byte)1).getClass());
+		Method m = SyncUtil.getSetterMethod(new Xform().getClass(), "byteField");
 		assertNotNull(m);
 	}
 
