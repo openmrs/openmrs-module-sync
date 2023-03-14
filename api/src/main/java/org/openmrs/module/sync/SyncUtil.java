@@ -222,8 +222,8 @@ public class SyncUtil {
 		}
 		log.debug("Trying to set value to " + propVal + " when propName is " + xmlFieldName + " and content is " + xmlFieldValue);
 		if (propVal != null) {
-		SyncUtil.setProperty(o, xmlFieldName, propVal);
-		log.debug("Successfully called set" + SyncUtil.propCase(xmlFieldName) + "(" + propVal + ")");
+			SyncUtil.setProperty(o, xmlFieldName, propVal);
+			log.debug("Successfully called set" + SyncUtil.propCase(xmlFieldName) + "(" + propVal + ")");
 		}
 	}
 
