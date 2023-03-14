@@ -43,6 +43,10 @@
 		<!-- Hide the useless MissingResourceException -->
 		<Logger name="org.springframework.context.support.ResourceBundleMessageSource" level="ERROR" />
 		<Logger name="org.springframework.beans.factory.support.DefaultListableBeanFactory" level="ERROR" />
+
+		<Logger name="org.openmrs.module.sync.SyncUtil" level="TRACE" />
+		<Logger name="org.openmrs.module.sync.api.impl.SyncIngestServiceImpl" level="TRACE" />
+
 		<Root level="WARN">
 			<AppenderRef ref="CONSOLE" />
 		</Root>
