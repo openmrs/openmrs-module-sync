@@ -16,6 +16,7 @@ package org.openmrs.module.sync;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.openmrs.Person;
 import org.openmrs.PersonAttribute;
@@ -155,6 +156,28 @@ public class SyncPersonTest extends SyncBaseTest {
 			}
 		});
 	}
-	
-	
+
+	@Test
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public void shouldSyncPersonWithNullDOB() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+
+			public void runOnChild() throws Exception {
+				PersonService ps = Context.getPersonService();
+
+				Person person = ps.getPerson(3);
+				Assertions.assertNotNull(person.getBirthdate());
+				person.setBirthdate(null);
+				ps.savePerson(person);
+				Assertions.assertNull(person.getBirthdate());
+			}
+
+			public void runOnParent() throws Exception {
+				PersonService ps = Context.getPersonService();
+				// test to make sure that the null birthdate value has been synced
+				Person person = ps.getPerson(3);
+				Assertions.assertNull(person.getBirthdate());
+			}
+		});
+	}
 }
