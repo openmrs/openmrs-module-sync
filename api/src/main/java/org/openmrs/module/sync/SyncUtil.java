@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.sync;
 
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.logging.Log;
@@ -68,6 +69,7 @@ import org.springframework.util.StringUtils;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXParseException;
 
+import java.beans.PropertyDescriptor;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -248,7 +250,7 @@ public class SyncUtil {
 		Object[] setterParams = new Object[] { propVal };
 		
 		log.debug("getting setter method");
-		Method m = SyncUtil.getSetterMethod(o.getClass(), propName, propVal.getClass());
+		Method m = SyncUtil.getSetterMethod(o.getClass(), propName);
 		if (m == null) {
 			// We couldn't find a setter method. Let's try setting the field directly instead.
 			log.debug("couldn't find setter method, setting field '" + propName + "' directly.");
@@ -538,9 +540,14 @@ public class SyncUtil {
 	 * 
 	 * @return Method object matching name and param, else null
 	 */
-	public static Method getSetterMethod(Class objType, String propName, Class propValType) {
-		String methodName = "set" + propCase(propName);
-		return SyncUtil.getPropertyAccessor(objType, methodName, propValType);
+	public static Method getSetterMethod(Class objType, String propName) {
+		try {
+			return PropertyUtils.getWriteMethod(new PropertyDescriptor(propName, objType));
+		}
+		catch (Exception e) {
+			log.trace("Unable to get setting method " + propName + " for " + objType, e);
+		}
+		return null;
 	}
 	
 	/**

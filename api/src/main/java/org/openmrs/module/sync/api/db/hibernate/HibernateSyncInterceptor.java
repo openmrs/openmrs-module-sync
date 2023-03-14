@@ -511,28 +511,26 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 				if (log.isDebugEnabled())
 					log.debug("Processing, type: " + typeName + " Field: " + propertyNames[i]);
 
-				if (propertyNames[i].equals(idPropertyName) && log.isInfoEnabled())
+				if (propertyNames[i].equals(idPropertyName) && log.isInfoEnabled()) {
 					log.debug(infoMsg + ", Id for this class: " + idPropertyName + " , value:" + currentState[i]);
+				}
 
-				if (currentState[i] != null) {
-					// is this the primary key or transient? if so, we don't
-					// want to serialize
-					if (propertyNames[i].equals(idPropertyName)
-					        || ("personId".equals(idPropertyName) && "patientId".equals(propertyNames[i]))
-					        //|| ("personId".equals(idPropertyName) && "userId".equals(propertyNames[i]))
-					        || transientProps.contains(propertyNames[i])) {
-						// if (log.isInfoEnabled())
-						log.debug("Skipping property (" + propertyNames[i]
-						        + ") because it's either the primary key or it's transient.");
+				// is this the primary key or transient? if so, we don't
+				// want to serialize
+				if (propertyNames[i].equals(idPropertyName)
+						|| ("personId".equals(idPropertyName) && "patientId".equals(propertyNames[i]))
+						|| transientProps.contains(propertyNames[i])) {
 
-					} else {
+					log.debug("Skipping property (" + propertyNames[i]
+							+ ") because it's either the primary key or it's transient.");
 
-						addProperty(values, entity, types[i], propertyNames[i], currentState[i], infoMsg);
+				}
+				else {
+					Object val = currentState[i];
+					if (val == null) {
+						val = "[null]";
 					}
-				} else {
-					// current state null -- skip
-					if (log.isDebugEnabled())
-						log.debug("Field Type: " + typeName + " Field Name: " + propertyNames[i] + " is null, skipped");
+					addProperty(values, entity, types[i], propertyNames[i], val, infoMsg);
 				}
 			}
 
@@ -619,19 +617,23 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	                         String propertyName, Object propertyValue, String infoMsg) throws Exception {
 		Normalizer n;
 		String propertyTypeName = propertyType.getName();
-		if ((n = SyncUtil.getNormalizer(propertyTypeName)) != null) {
+		if ("[null]".equals(propertyValue)) {
+			values.put(propertyName, new PropertyClassValue(propertyTypeName, "[null]"));
+		}
+		else if ((n = SyncUtil.getNormalizer(propertyTypeName)) != null) {
 			// Handle safe types like
 			// boolean/String/integer/timestamp via Normalizers
 			values.put(propertyName, new PropertyClassValue(propertyTypeName, n.toString(propertyValue)));
-		} else if ((n = SyncUtil.getNormalizer(propertyValue.getClass())) != null) {
+		}
+		else if ((n = SyncUtil.getNormalizer(propertyValue.getClass())) != null) {
 			values.put(propertyName, new PropertyClassValue(propertyValue.getClass().getName(), n.toString(propertyValue)));
-		} else if (propertyType.isCollectionType() && (n = isCollectionOfSafeTypes(entity, propertyName)) != null) {
+		}
+		else if (propertyType.isCollectionType() && (n = isCollectionOfSafeTypes(entity, propertyName)) != null) {
 			// if the property is a list/set/collection AND the members of that
 			// collection are a "safe type",
 			// then we put the values into the xml
 			values.put(propertyName, new PropertyClassValue(propertyTypeName, n.toString(propertyValue)));
 		}
-
 		/*
 		 * Not a safe type, check if the object implements the OpenmrsObject interface
 		 */
