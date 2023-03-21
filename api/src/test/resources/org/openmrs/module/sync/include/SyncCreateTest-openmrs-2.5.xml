@@ -292,6 +292,14 @@
 	<program_workflow_state program_workflow_state_id="1" program_workflow_id="1" concept_id="7" initial="true" terminal="false" creator="1" date_created="2008-01-14 18:06:27.0" retired="false" uuid="33807f36-144e-102b-8d9c-e44ed545d86c"/>
 	<program_workflow_state program_workflow_state_id="2" program_workflow_id="1" concept_id="8" initial="false" terminal="true" creator="1" date_created="2008-01-14 18:06:27.0" retired="false" uuid="33808343-144e-102b-8d9c-e44ed545d86c"/>
 
+	<concept_attribute_type concept_attribute_type_id="1" name="Audit Date" datatype="org.openmrs.customdatatype.datatype.DateDatatype" uuid="9516cc50-6f9f-11e0-8414-001e378eb67e" creator="1" date_created="2005-01-01 00:00:00.0" min_occurs="0" retired="false" />
+	<concept_attribute_type concept_attribute_type_id="2" name="A Date We Don't Care About" datatype="org.openmrs.customdatatype.datatype.DateDatatype" uuid="9516cc50-6f9f-11e0-8414-001e378eb67f" creator="1" date_created="2005-01-01 00:00:00.0" min_occurs="0" retired="true" retired_by="1" date_retired="2005-01-01 02:00:00.0" retire_reason="for fun and profit" />
+	<concept_attribute_type concept_attribute_type_id="3" name="Audit free text" datatype="org.openmrs.customdatatype.datatype.FreeTextDatatype" uuid="58E2424B-ADCA-4CF5-B234-0168EB42AD2A" creator="1" date_created="2023-01-01 00:00:00.0" min_occurs="0" retired="false" />
+
+	<concept_attribute concept_attribute_id="1" concept_id="3" attribute_type_id="1" value_reference="2011-04-25" uuid="3a2bdb18-6faa-11e0-8414-001e378eb67e" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" />
+	<concept_attribute concept_attribute_id="2" concept_id="3" attribute_type_id="3" value_reference="text value" uuid="F0339AED-45F8-4E77-BEA5-E44A17576E80" creator="1" date_created="2023-01-01 00:00:00.0" voided="false" />
+	<concept_attribute concept_attribute_id="3" concept_id="7" attribute_type_id="3" value_reference="following text value" uuid="0D99F40A-C118-4D6D-85AC-923F9F8486F7" creator="1" date_created="2023-01-01 00:00:00.0" voided="false" />
+
 	<program_attribute_type program_attribute_type_id="1" name="Transfer Status" description="Transfer Status Description" datatype="org.openmrs.customdatatype.datatype.FreeTextDatatype" min_occurs="0" max_occurs="1" creator="1" date_created="2005-01-01 00:00:00.0" retired="false" uuid="42ec23bf-b9f9-11ed-9873-0242ac120002"/>
 	<program_attribute_type program_attribute_type_id="2"  name="Health Center" description="Health Center location" datatype="org.openmrs.customdatatype.datatype.LocationDatatype" min_occurs="0" max_occurs="1" creator="1" date_created="2007-05-04 09:59:23.0" uuid="660E6673-758B-40FC-8CA8-0CBFF26FB710" retired="false"/>
 
