@@ -338,6 +338,7 @@
 	<patient_identifier patient_identifier_id = "4" patient_id="4" identifier="ID4381925" identifier_type="2" preferred="1" location_id="1" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="121a462a-1b90-102b-8082-d8cf852a43d3"/>
 
 	<encounter encounter_id="1" patient_id="2" location_id="2" encounter_type="1" encounter_datetime="1978-06-11 00:00:00.0" creator="1" date_created="2008-01-14 17:56:26.0" voided="0" uuid="5afa93e5-19c2-102b-8d9c-e44ed545d86c"/>
+	<encounter encounter_id="2" patient_id="6" location_id="2" encounter_type="1" encounter_datetime="2023-03-11 00:00:00.0" creator="1" date_created="2023-03-11 00:00:00.0" voided="0" uuid="8C1596AB-64B3-4F06-832A-50439890BF56"/>
 
 	<encounter_role encounter_role_id="1" name="Unknown" description="Unknown encounter role for legacy providers with no encounter role set" creator="1" retired="false" date_created="2011-08-18 14:00:00.0" uuid="a0b03050-c99b-11e0-9572-0800200c9a66" />
 
@@ -356,4 +357,11 @@
     <serialized_object serialized_object_id="2" name="TestReport2" description="Test Report 2 For Serialization" type="org.openmrs.report.ReportSchema" subtype="org.openmrs.report.ReportSchema" serialization_class="org.openmrs.module.serialization.xstream.XStreamSerializer" serialized_data="&lt;org.openmrs.report.ReportSchema&gt;&lt;name&gt;TestReport2&lt;/name&gt;&lt;description&gt;Test Report 2 For Serialization&lt;/description&gt;&lt;/org.openmrs.report.ReportSchema&gt;" date_created="2005-01-01 00:00:00.0" creator="1" retired="false"  uuid="83b452ca-a4c8-4bf2-9e0b-8bbddf2f9901"/>
     <serialized_object serialized_object_id="3" name="TestReport3" description="Test Report 3 For Serialization" type="org.openmrs.report.ReportSchema" subtype="org.openmrs.report.ReportSchema" serialization_class="org.openmrs.module.serialization.xstream.XStreamSerializer" serialized_data="&lt;org.openmrs.report.ReportSchema&gt;&lt;name&gt;TestReport3&lt;/name&gt;&lt;description&gt;Test Report 3 For Serialization&lt;/description&gt;&lt;/org.openmrs.report.ReportSchema&gt;" date_created="2005-01-01 00:00:00.0" creator="1" retired="true" date_retired="2007-01-01 00:00:00.0" retired_by="1" retire_reason="A reason"  uuid="6d983876-6d5e-40b4-988b-4b144fefd360"/>
 
+	<encounter_diagnosis diagnosis_id="1" encounter_id="2" patient_id="6" creator="1" date_created="2017-01-12 00:00:00"
+						 voided="false" dx_rank="1" certainty="CONFIRMED" uuid="68802cce-6880-17e4-6880-a68804d22fb7"/>
+
+	<diagnosis_attribute_type diagnosis_attribute_type_id="1" name="Differential Diagnosis" uuid="949daf5b-a83e-4b65-b914-502a553243d3" creator="1" date_created="2005-01-01 00:00:00.0" min_occurs="0" retired="false" />
+	<diagnosis_attribute_type diagnosis_attribute_type_id="2" name="Pattern Recognition" uuid="96fc46dc-edd3-4f27-83b6-4a9f7b1f0a48" creator="1" date_created="2005-01-01 00:00:00.0" min_occurs="0" retired="true" retired_by="1" date_retired="2005-01-01 02:00:00.0" retire_reason="Test Unretire" />
+	<diagnosis_attribute_type diagnosis_attribute_type_id="3" name="Diagnostic Criteria" uuid="9f41142f-a605-4247-9fa2-30ec8adcf7fb" creator="1" date_created="2005-01-01 00:00:00.0" min_occurs="0" retired="false" />
+	<diagnosis_attribute diagnosis_attribute_id="1" diagnosis_id="1" attribute_type_id="1" value_reference="Testing Reference" uuid="31f7c3cd-699b-4ed3-af10-563e024cae76" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" />
 </dataset>

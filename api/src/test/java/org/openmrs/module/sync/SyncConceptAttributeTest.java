@@ -2,7 +2,6 @@ package org.openmrs.module.sync;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.util.StringUtils;
 import org.openmrs.Concept;
 import org.openmrs.ConceptAttribute;
 import org.openmrs.ConceptAttributeType;
@@ -15,8 +14,6 @@ import org.openmrs.module.sync.serialization.Record;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -83,7 +80,7 @@ public class SyncConceptAttributeTest extends SyncBaseTest{
                 ConceptAttribute conceptAttribute = new ConceptAttribute();
                 conceptAttribute.setAttributeType(conceptAttributeType);
                 conceptAttribute.setValue(healthCenterLocation);
-                //conceptAttribute.setValueReferenceInternal(healthCenterLocation.getUuid());
+                conceptAttribute.setValueReferenceInternal(healthCenterLocation.getUuid());
                 concept.addAttribute(conceptAttribute);
                 conceptService.saveConcept(concept);
                 //A new ConceptAttribute has been added
