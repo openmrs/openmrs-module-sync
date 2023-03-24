@@ -130,6 +130,7 @@
 
 	<location retired="false" location_id="1" name="Unknown Location" address1="" address2="" city_village="" state_province="" postal_code="" country="" creator="1" date_created="2005-09-22 00:00:00.0" uuid="2d865af4-144e-102b-8d9c-e44ed545d86c"/>
 	<location retired="false" location_id="2" name="Someplace" description="Some random location" address1="" address2="" city_village="" state_province="" postal_code="" country="" latitude="" longitude="" creator="1" date_created="2008-01-14 17:54:35.0" uuid="2d865f38-144e-102b-8d9c-e44ed545d86c"/>
+	<location retired="false" location_id="3" name="Other place" description="Non disclosed location" address1="" address2="" city_village="" state_province="" postal_code="" country="" latitude="" longitude="" creator="1" date_created="2023-01-14 17:54:35.0" uuid="16593730-7D00-4BE4-BBAD-241E882A8387"/>
 
 	<patient_identifier_type retired="false" patient_identifier_type_id="1" name="OpenMRS Identification Number" description="Unique number used in OpenMRS" format="" creator="1" date_created="2005-09-22 00:00:00.0" required="false" uuid="3010e3ee-144e-102b-8d9c-e44ed545d86c"/>
 	<patient_identifier_type retired="false" patient_identifier_type_id="2" name="Old Identification Number" description="Number given out prior to the OpenMRS system (No check digit)" format="" creator="1" date_created="2005-09-22 00:00:00.0" required="false" uuid="3010e86a-144e-102b-8d9c-e44ed545d86c"/>
@@ -364,4 +365,9 @@
 	<diagnosis_attribute_type diagnosis_attribute_type_id="2" name="Pattern Recognition" uuid="96fc46dc-edd3-4f27-83b6-4a9f7b1f0a48" creator="1" date_created="2005-01-01 00:00:00.0" min_occurs="0" retired="true" retired_by="1" date_retired="2005-01-01 02:00:00.0" retire_reason="Test Unretire" />
 	<diagnosis_attribute_type diagnosis_attribute_type_id="3" name="Diagnostic Criteria" uuid="9f41142f-a605-4247-9fa2-30ec8adcf7fb" creator="1" date_created="2005-01-01 00:00:00.0" min_occurs="0" retired="false" />
 	<diagnosis_attribute diagnosis_attribute_id="1" diagnosis_id="1" attribute_type_id="1" value_reference="Testing Reference" uuid="31f7c3cd-699b-4ed3-af10-563e024cae76" creator="1" date_created="2005-01-01 00:00:00.0" voided="false" />
+
+	<location_attribute_type location_attribute_type_id="1" name="Audit Date" datatype="org.openmrs.customdatatype.datatype.DateDatatype" uuid="9516cc50-6f9f-11e0-8414-001e378eb67e" creator="1" date_created="2005-01-01 00:00:00.0" min_occurs="0" retired="false" />
+	<location_attribute_type location_attribute_type_id="2" name="A Date We Don't Care About" datatype="org.openmrs.customdatatype.datatype.DateDatatype" uuid="9516cc50-6f9f-11e0-8414-001e378eb67f" creator="1" date_created="2005-01-01 00:00:00.0" min_occurs="0" retired="true" retired_by="1" date_retired="2005-01-01 02:00:00.0" retire_reason="for fun and profit" />
+	<location_attribute_type location_attribute_type_id="3" name="Text info" datatype="org.openmrs.customdatatype.datatype.FreeTextDatatype" uuid="6427D0B3-8063-4DC1-9381-017D875EC4F4" creator="1" date_created="2023-03-01 00:00:00.0" min_occurs="0" retired="false" />
+	<location_attribute location_attribute_id="1" location_id="3" attribute_type_id="3" value_reference="Safe location" uuid="F60FC2A7-49A0-40CD-B0B9-D1ECCC0EC4EA" creator="1" date_created="2023-03-01 00:00:00.0" voided="false" />
 </dataset>
