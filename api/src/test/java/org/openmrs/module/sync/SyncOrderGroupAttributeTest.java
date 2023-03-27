@@ -35,7 +35,7 @@ public class SyncOrderGroupAttributeTest extends SyncBaseTest{
 
     @Test
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void shouldSyncNewOrderAttributeType() throws Exception {
+    public void shouldSyncNewOrderGroupAttributeType() throws Exception {
         runSyncTest(new SyncTestHelper() {
             int ORIGINAL_COUNT = 0;
             public void runOnChild() throws Exception {

@@ -389,4 +389,7 @@
 	<order_group_attribute_type order_group_attribute_type_id="3" name="Bacteriology" min_occurs="5" creator="1" date_created="2020-07-29 14:33:10.0" retired="false" uuid="9cf1bce0-d18e-11ea-87d0-0242ac130003"/>
 	<order_group_attribute_type order_group_attribute_type_id="4" name="ECG" min_occurs="5" creator="1" date_created="2020-07-29 14:33:10.0" retired="1" retired_by="1" retire_reason="Testing unretire" date_retired="2020-08-03 10:33:10.0" uuid="9cf1bdb2-d18e-11ea-87d0-0242ac130003"/>
 
+	<order_set_attribute_type order_set_attribute_type_id="1" name="Audit Date" datatype="org.openmrs.customdatatype.datatype.DateDatatype" uuid="8516cc50-6f9f-33e0-8414-001e648eb67e" creator="1" date_created="2005-01-01 00:00:00.0" min_occurs="0" retired="false" />
+	<order_set_attribute_type order_set_attribute_type_id="2" name="A Date We Don't Care About" datatype="org.openmrs.customdatatype.datatype.DateDatatype" uuid="9545cc50-6f9f-55e0-8414-001e378eb69f" creator="1" date_created="2005-01-01 00:00:00.0" min_occurs="0" retired="true" retired_by="1" date_retired="2005-01-01 02:00:00.0" retire_reason="for fun and profit" />
+	<order_set_attribute_type order_set_attribute_type_id="3" name="Special order" datatype="org.openmrs.customdatatype.datatype.FreeTextDatatype" uuid="CF18D9AA-EF74-4632-A41E-CDB7505F7587" creator="1" date_created="2005-01-01 00:00:00.0" min_occurs="0" retired="false" />
 </dataset>
