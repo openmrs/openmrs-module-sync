@@ -383,4 +383,10 @@
 	<order_attribute_type order_attribute_type_id="4" name="Drug" min_occurs="5" creator="1" date_created="2021-09-28 16:45:15.0" retired="1" retired_by="1" retire_reason="Validating Unretire" date_retired="2021-09-28 16:45:15.0" uuid="99e79ed6-392c-4e73-8737-f5e586916ee9"/>
 
 	<order_attribute order_attribute_id="1" order_id="1" attribute_type_id="1" value_reference="Testing Reference" uuid="8c3c27e4-030f-410e-86de-a5743b0b3361" creator="1" date_created="2021-09-28 16:45:15.0" voided="false"/>
+
+	<order_group_attribute_type order_group_attribute_type_id="1" name="Stool" min_occurs="5" creator="1" date_created="2020-07-29 14:33:10.0" retired="false" uuid="9cf1b9de-d18e-11ea-87d0-0242ac130003"/>
+	<order_group_attribute_type order_group_attribute_type_id="2" name="Virology" min_occurs="5" creator="1" date_created="2020-07-29 14:33:10.0" retired="false" uuid="9cf1bbe6-d18e-11ea-87d0-0242ac130003"/>
+	<order_group_attribute_type order_group_attribute_type_id="3" name="Bacteriology" min_occurs="5" creator="1" date_created="2020-07-29 14:33:10.0" retired="false" uuid="9cf1bce0-d18e-11ea-87d0-0242ac130003"/>
+	<order_group_attribute_type order_group_attribute_type_id="4" name="ECG" min_occurs="5" creator="1" date_created="2020-07-29 14:33:10.0" retired="1" retired_by="1" retire_reason="Testing unretire" date_retired="2020-08-03 10:33:10.0" uuid="9cf1bdb2-d18e-11ea-87d0-0242ac130003"/>
+
 </dataset>
