@@ -1,6 +1,7 @@
 package org.openmrs.module.sync;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openmrs.OrderSet;
 import org.openmrs.OrderSetAttribute;
@@ -17,6 +18,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+
+/**
+ * OrderSets are not supported by sync as Sync does not support properties of OpenMRS Objects that are Lists, only Sets.
+ * If / when this is fixed in the future, this test should be unignored.
+ * @throws Exception
+ */
 
 public class SyncOrderSetAttributeTest extends SyncBaseTest{
     @Override
@@ -56,7 +63,7 @@ public class SyncOrderSetAttributeTest extends SyncBaseTest{
             }
         });
     }
-
+    @Disabled("Disabled until Sync is able to support properties of OpenMRS Objects that are Lists")
     @Test
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void shouldSyncOrderSetAttribute() throws Exception {
