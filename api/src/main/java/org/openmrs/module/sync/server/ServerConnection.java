@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.sync.server;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
@@ -41,6 +42,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.List;
 
@@ -50,51 +52,51 @@ import java.util.List;
 public class ServerConnection {
 
 	private static final Log log = LogFactory.getLog(ServerConnection.class);
-	
+
 	public static ConnectionResponse cloneParentDB(String address, String username,
-			String password) {
+												   String password) {
 		return sendExportedData(address,
-		                        username,
-		                        password,
-		                        SyncConstants.CLONE_MESSAGE);
+				username,
+				password,
+				SyncConstants.CLONE_MESSAGE);
 	}
 
 	public static ConnectionResponse test(String address, String username,
-			String password) {
+										  String password) {
 		return sendExportedData(address,
-		                        username,
-		                        password,
-		                        SyncConstants.TEST_MESSAGE);
+				username,
+				password,
+				SyncConstants.TEST_MESSAGE);
 	}
 
 	public static ConnectionResponse sendExportedData(RemoteServer server,
-			String message) {
+													  String message) {
 		return sendExportedData(server.getAddress(),
-		                        server.getUsername(),
-		                        server.getPassword(),
-		                        message,
-		                        false);
+				server.getUsername(),
+				server.getPassword(),
+				message,
+				false);
 	}
 
 	public static ConnectionResponse sendExportedData(RemoteServer server,
-			String message, boolean isResponse) {
+													  String message, boolean isResponse) {
 		return sendExportedData(server.getAddress(),
-		                        server.getUsername(),
-		                        server.getPassword(),
-		                        message,
-		                        isResponse);
+				server.getUsername(),
+				server.getPassword(),
+				message,
+				isResponse);
 	}
 
 	public static ConnectionResponse sendExportedData(String address,
-			String username, String password, String message) {
+													  String username, String password, String message) {
 		return sendExportedData(address, username, password, message, false);
 	}
 
 	public static ConnectionResponse sendExportedData(String url, String username, String password, String content, boolean isResponse) {
 
-		// Default response - default constructor instantiates contains error codes 
+		// Default response - default constructor instantiates contains error codes
 		ConnectionResponse syncResponse = new ConnectionResponse();
-		
+
 		try {
 			syncResponse = httpPostTransmit(url, username, password, content, isResponse);
 		} catch (MalformedURLException mue) {
@@ -150,12 +152,12 @@ public class ServerConnection {
 
 		return syncResponse;
 	}
-	
+
 	/**
 	 * Gets the sync server connection timeout.
-	 * 
+	 *
 	 * @return the connection timeout in milliseconds.
-	 * 
+	 *
 	 * @should not throw NPE when timeout global property is not set
 	 */
 	public static Double getTimeout() {
@@ -164,23 +166,23 @@ public class ServerConnection {
 		try {
 			if (StringUtils.hasText(timeoutGP))
 				return Double.valueOf(timeoutGP.trim());
-			
+
 		} catch (Exception ex){
 			log.error("Could not convert " + timeoutGP + " to Double.  Please enter a valid number of miliseconds, or leave " + SyncConstants.PROPERTY_CONNECTION_TIMEOUT + " blank to use the default.");
 		}
 		Double timeout = 300000.0; // let's just default at 5 min for now
 		try {
 			Integer maxRecords = new Integer(Context.getAdministrationService()
-			                                       .getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB,
-			                                                           SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT));
-			timeout = (3 + (maxRecords * 0.1)) * 6000;	// formula we cooked
-														// up after running
-														// several tests:
-														// latency + 0.1N
+					.getGlobalProperty(SyncConstants.PROPERTY_NAME_MAX_RECORDS_WEB,
+							SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT));
+			timeout = (3 + (maxRecords * 0.1)) * 6000;    // formula we cooked
+			// up after running
+			// several tests:
+			// latency + 0.1N
 		} catch (NumberFormatException nfe) {
 			// it's ok if this fails (not sure how it could) = we'll just do 5 min timeout
 		}
-		
+
 		return timeout;
 	}
 
@@ -249,6 +251,11 @@ public class ServerConnection {
 			};
 
 			method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
+
+			// Support authentication header
+			String authString = username + ":" + password;
+			String authHeader = "Basic " + Base64.encodeBase64String(authString.getBytes(StandardCharsets.UTF_8));
+			method.setRequestHeader("Authorization", authHeader);
 
 			// Open a connection to the server and post the data
 			client.getHttpConnectionManager().getParams().setSoTimeout(ServerConnection.getTimeout().intValue());
