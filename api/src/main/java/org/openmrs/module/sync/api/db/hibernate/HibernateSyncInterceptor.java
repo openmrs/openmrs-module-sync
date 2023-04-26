@@ -747,7 +747,9 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	 */
 	public String transformItemForSyncRecord(Item item, OpenmrsObject entity, String property, String data) {
 		// data will not be null here, so NPE checks are not needed
-
+		if ("[null]".equals(data)) {
+			return data;
+		}
 		if (entity instanceof PersonAttribute && "value".equals(property)) {
 			PersonAttribute attr = (PersonAttribute) entity;
 			// use PersonAttributeType.format to get the uuid

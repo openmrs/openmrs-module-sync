@@ -38,6 +38,26 @@ public class SyncPersonAttributeTypeTest extends SyncBaseTest {
             throw new RuntimeException(e);
         }
 	}
+
+	@Test
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public void shouldSavePersonAttributeTypeWithNullForeignKey() throws Exception {
+		runSyncTest(new SyncTestHelper() {
+
+			public void runOnChild() throws Exception {
+				PersonService ps = Context.getPersonService();
+				PersonAttributeType type = ps.getPersonAttributeType(8); // Favorite number
+				type.setName("Lucky number"); // change some arbitrary property so the obj gets saved
+				ps.savePersonAttributeType(type);
+			}
+
+			public void runOnParent() throws Exception {
+				PersonService ps = Context.getPersonService();
+				PersonAttributeType type = ps.getPersonAttributeType(8);
+				Assert.assertEquals("Lucky number", type.getName());
+			}
+		});
+	}
 	
 	@Test
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
