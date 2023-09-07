@@ -12,7 +12,7 @@
 	<url>http://openmrs.org</url>
 
 	<properties>
-		<openMRSVersion>2.5.6-SNAPSHOT</openMRSVersion>
+		<openMRSVersion>2.5.6</openMRSVersion>
 		<openMRSMinorVersion>2.5</openMRSMinorVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
