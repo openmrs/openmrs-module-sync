@@ -132,6 +132,11 @@
 	<location retired="false" location_id="2" name="Someplace" description="Some random location" address1="" address2="" city_village="" state_province="" postal_code="" country="" latitude="" longitude="" creator="1" date_created="2008-01-14 17:54:35.0" uuid="2d865f38-144e-102b-8d9c-e44ed545d86c"/>
 	<location retired="false" location_id="3" name="Other place" description="Non disclosed location" address1="" address2="" city_village="" state_province="" postal_code="" country="" latitude="" longitude="" creator="1" date_created="2023-01-14 17:54:35.0" uuid="16593730-7D00-4BE4-BBAD-241E882A8387"/>
 
+	<location_tag location_tag_id="1" name="Visit Location" uuid="b4b54203-9089-11ef-af91-0242ac120002" description="Location where visits are created" creator="1" date_created="2005-02-24 00:00:00.0" retired="0" />
+	<location_tag location_tag_id="2" name="Login Location" uuid="81767274-908f-11ef-af91-0242ac120002" description="Location where users can login" creator="1" date_created="2005-02-24 00:00:00.0" retired="0" />
+
+	<location_tag_map location_id="2" location_tag_id="2"/>
+
 	<patient_identifier_type retired="false" patient_identifier_type_id="1" name="OpenMRS Identification Number" description="Unique number used in OpenMRS" format="" creator="1" date_created="2005-09-22 00:00:00.0" required="false" uuid="3010e3ee-144e-102b-8d9c-e44ed545d86c"/>
 	<patient_identifier_type retired="false" patient_identifier_type_id="2" name="Old Identification Number" description="Number given out prior to the OpenMRS system (No check digit)" format="" creator="1" date_created="2005-09-22 00:00:00.0" required="false" uuid="3010e86a-144e-102b-8d9c-e44ed545d86c"/>
 

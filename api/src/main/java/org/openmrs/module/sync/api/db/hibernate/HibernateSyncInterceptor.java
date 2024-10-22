@@ -18,6 +18,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.CallbackException;
 import org.hibernate.EmptyInterceptor;
+import org.hibernate.FlushMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.action.spi.BeforeTransactionCompletionProcess;
@@ -35,13 +36,16 @@ import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.EmbeddedComponentType;
 import org.hibernate.type.Type;
 import org.openmrs.Cohort;
+import org.openmrs.Location;
 import org.openmrs.Obs;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.Patient;
 import org.openmrs.PersonAttribute;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.User;
+import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncException;
 import org.openmrs.module.sync.SyncItem;
 import org.openmrs.module.sync.SyncItemKey;
@@ -94,6 +98,8 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 	private ApplicationContext context;
 	private static final ThreadLocal<SyncRecordHolder> syncRecordThreadLocal = new ThreadLocal<SyncRecordHolder>();
 
+	private Boolean ignoreLocationTags = null;
+
 	private HibernateSyncInterceptor() {
 		log.info("Initializing the synchronization interceptor");
 	}
@@ -106,6 +112,10 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			instance = new HibernateSyncInterceptor();
 		}
 		return instance;
+	}
+
+	public void setIgnoreLocationTags(Boolean ignoreLocationTags) {
+		this.ignoreLocationTags = ignoreLocationTags;
 	}
 
 	/**
@@ -1114,6 +1124,28 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			        + ",\n property name for collection: " + ownerPropertyName);
 			throw new CallbackException(
 			        "Could not find the property on owner object that corresponds to the collection being processed.");
+		}
+
+		if (ignoreLocationTags == null) {
+			FlushMode flushMode = getSessionFactory().getCurrentSession().getHibernateFlushMode();
+			try {
+				getSessionFactory().getCurrentSession().setHibernateFlushMode(FlushMode.MANUAL);
+				AdministrationService as = Context.getAdministrationService();
+				String gpVal = as.getGlobalProperty(SyncConstants.PROPERTY_IGNORE_LOCATION_TAGS, "false");
+				setIgnoreLocationTags(Boolean.parseBoolean(gpVal));
+			}
+			catch (Exception e) {
+				String error = "Error setting ignoreLocationTags from global property";
+				throw new CallbackException(error, e);
+			}
+			finally {
+				getSessionFactory().getCurrentSession().setHibernateFlushMode(flushMode);
+			}
+		}
+
+		if (ignoreLocationTags && Location.class.isAssignableFrom(owner.getClass()) && "tags".equals(ownerPropertyName)) {
+			log.debug("Location Tags are configured to ignore, not adding to sync record");
+			return;
 		}
 
 		//now we know this needs to be processed. Proceed accordingly:
