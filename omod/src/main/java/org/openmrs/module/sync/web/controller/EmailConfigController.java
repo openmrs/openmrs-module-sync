@@ -48,7 +48,7 @@ public class EmailConfigController {
 	@Qualifier(value="adminService")
 	AdministrationService administrationService;
 
-	@RequestMapping("/module/sync/emailConfig")
+	@RequestMapping("/module/sync/emailConfig.form")
 	public void view(ModelMap model) {
 		if (Context.isAuthenticated()) {
 			Map<String, String> settings = SyncMailUtil.getCurrentlyConfiguredSettings();
@@ -56,7 +56,7 @@ public class EmailConfigController {
 		}
 	}
 
-	@RequestMapping("/module/sync/saveEmailConfiguration")
+	@RequestMapping("/module/sync/saveEmailConfiguration.form")
 	public String saveSettings(HttpServletRequest request) {
 		if (Context.isAuthenticated()) {
 			for (String s : SyncMailUtil.getMailGlobalProperties()) {
@@ -69,7 +69,7 @@ public class EmailConfigController {
 		return "redirect:/module/sync/emailConfig.form";
 	}
 
-	@RequestMapping("/module/sync/validateEmailSettings")
+	@RequestMapping("/module/sync/validateEmailSettings.form")
 	public void validateSettings(ModelMap model, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		Map<String, String> settings = new HashMap<String, String>();
 		for (String s : SyncMailUtil.getMailGlobalProperties()) {
@@ -82,7 +82,7 @@ public class EmailConfigController {
 	}
 
 
-	@RequestMapping("/module/sync/sendTestEmail")
+	@RequestMapping("/module/sync/sendTestEmail.form")
 	public void sendTestEmail(@RequestParam("recipients") String recipients,
 							  @RequestParam("subject") String subject,
 							  @RequestParam("emailBody") String emailBody,

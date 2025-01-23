@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/import.list" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/import.form" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -61,7 +61,7 @@
 	
 	<b class="boxHeader"><spring:message code="sync.import.paste.data"/></b>
 	<div class="box">
-		<form method="post" action="import.list">
+		<form method="post" action="import.form">
 			<table>
 				<tr>
 					<td align="right" valign="top">

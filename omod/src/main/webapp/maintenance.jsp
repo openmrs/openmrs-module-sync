@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/maintenance.list" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/maintenance.form" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -152,7 +152,7 @@
 				onclick="location='viewrecord.form?uuid=${syncRecord.uuid}'"
 				height="25">
 				<td align="left" valign="middle" style="padding: 8px;"><b><a
-					href="viewrecord.list?uuid=${syncRecord.uuid}">${recordTypes[syncRecord.uuid]}</a></b></td>
+					href="viewrecord.form?uuid=${syncRecord.uuid}">${recordTypes[syncRecord.uuid]}</a></b></td>
 				<td align="left" valign="middle" style="padding: 8px;"><c:if
 					test="${not empty recordText[syncRecord.uuid]}">${recordText[syncRecord.uuid]}</c:if>
 				</td>

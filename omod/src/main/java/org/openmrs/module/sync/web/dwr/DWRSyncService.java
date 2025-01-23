@@ -130,7 +130,7 @@ public class DWRSyncService {
 	}
 	
 	/**
-	 * Used by the status.list page to send data to the parent and show the results. <br/>
+	 * Used by the status.form page to send data to the parent and show the results. <br/>
 	 * Use #getNumberOfObjectsBeingReceived() before this method is done to know how many objects
 	 * the parent is sending to our server.
 	 * 

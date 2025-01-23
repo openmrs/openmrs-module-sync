@@ -67,7 +67,7 @@ public class ConfigServerFormController {
 	/** Logger for this class and subclasses */
 	protected static transient final Log log = LogFactory.getLog(ConfigServerFormController.class);
 	
-	@RequestMapping(value = "/module/sync/configServer", method = RequestMethod.POST, params = "action=saveNewChild")
+	@RequestMapping(value = "/module/sync/configServer.form", method = RequestMethod.POST, params = "action=saveNewChild")
 	protected String onSaveNewChild(@RequestParam String nickname, @RequestParam String uuid,
 	                                @RequestParam(required = false) String username,
 	                                @RequestParam(required = false) String password, @RequestParam String passwordRetype,
@@ -176,10 +176,10 @@ public class ConfigServerFormController {
 		if (server.getServerId() != null)
 			return "redirect:/module/sync/configServer.form?serverId=" + server.getServerId();
 		else
-			return "redirect:/module/sync/config.list";
+			return "redirect:/module/sync/config.form";
 	}
 	
-	@RequestMapping(value = "/module/sync/configServer", method = RequestMethod.POST, params = "action=editChild")
+	@RequestMapping(value = "/module/sync/configServer.form", method = RequestMethod.POST, params = "action=editChild")
 	protected String onSaveCurrentChild(@RequestParam String nickname, @RequestParam String uuid, HttpSession httpSession,
 	                                    @ModelAttribute("server") RemoteServer server, Errors errors,
 	                                    @RequestParam(required = false) List<String> notSendTo,
@@ -206,11 +206,11 @@ public class ConfigServerFormController {
 		if (server.getServerId() != null)
 			return "redirect:/module/sync/configServer.form?serverId=" + server.getServerId();
 		else
-			return "redirect:/module/sync/config.list";
+			return "redirect:/module/sync/config.form";
 		
 	}
 	
-	@RequestMapping(value = "/module/sync/configServer", method = RequestMethod.POST, params = "action=saveParent")
+	@RequestMapping(value = "/module/sync/configServer.form", method = RequestMethod.POST, params = "action=saveParent")
 	protected String onSaveParent(@RequestParam String nickname, @RequestParam String address,
 	                              @RequestParam String username, @RequestParam String password,
 	                              @RequestParam(required = false) Boolean started,
@@ -270,7 +270,7 @@ public class ConfigServerFormController {
 		if (server.getServerId() != null)
 			return "redirect:/module/sync/configServer.form?serverId=" + server.getServerId();
 		else
-			return "redirect:/module/sync/config.list";
+			return "redirect:/module/sync/config.form";
 	}
 	
 	/**
@@ -489,7 +489,7 @@ public class ConfigServerFormController {
 	}
 	
 	@SuppressWarnings("unchecked")
-	@RequestMapping(value = "/module/sync/configServer", method = RequestMethod.GET)
+	@RequestMapping(value = "/module/sync/configServer.form", method = RequestMethod.GET)
 	protected String showPage(ModelMap modelMap, @ModelAttribute("server") RemoteServer server,
 	                          @RequestParam(value = "type", required = false) String serverType) throws Exception {
 		

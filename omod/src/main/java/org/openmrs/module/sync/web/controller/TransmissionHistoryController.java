@@ -26,7 +26,7 @@ public class TransmissionHistoryController {
     private Log log = LogFactory.getLog(this.getClass());
 
     @SuppressWarnings("unchecked")
-    @RequestMapping(value = "module/sync/transmissionHistory", method = RequestMethod.GET)
+    @RequestMapping(value = "module/sync/transmissionHistory.form", method = RequestMethod.GET)
     public void showThePage(ModelMap modelMap,
                             @RequestParam(required = false) Integer size,
                             @RequestParam(required = false) Integer startIndex,

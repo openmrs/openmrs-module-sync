@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/config.list" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/config.form" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -97,16 +97,16 @@
 									<td style="background-color: #${bgStyleFile}; padding-bottom: 0px;">
 										<c:choose>
 											<c:when test="${server.serverType == 'CHILD'}">
-												<a href="import.list?serverId=${server.serverId}">
+												<a href="import.form?serverId=${server.serverId}">
 													<spring:message code="sync.config.server.uploadAndReply" />
 												</a>
 											</c:when>
 											<c:otherwise>
-												<a href="status.list?mode=SEND_FILE">
+												<a href="status.form?mode=SEND_FILE">
 													<spring:message code="sync.config.server.sendFile" />
 												</a>
 												&nbsp;
-												<a href="status.list?mode=UPLOAD_REPLY">
+												<a href="status.form?mode=UPLOAD_REPLY">
 													<spring:message code="sync.config.server.uploadResponse" />
 												</a>
 											</c:otherwise>
@@ -118,7 +118,7 @@
 												<span title="<spring:message code='sync.config.server.na.childWebSyncNotApplicable'/>"><spring:message code="sync.config.server.na"/></span>
 											</c:when>
 											<c:otherwise>
-												<a href="status.list?mode=SEND_WEB">
+												<a href="status.form?mode=SEND_WEB">
 													<spring:message code="sync.config.server.synchronizeNow" />
 												</a>
 											</c:otherwise>
@@ -148,7 +148,7 @@
 										</c:choose>
 									</td>
 									<td style="padding-bottom: 0px;">
-												<form id="deleteServer${server.serverId}" action="config.list" method="post">
+												<form id="deleteServer${server.serverId}" action="config.form" method="post">
 													<input type="hidden" name="action" value="deleteServer" />
 													<input type="hidden" id="serverId" name="serverId" value="${server.serverId}" />
 													

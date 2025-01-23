@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/history.list" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/history.form" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -115,7 +115,7 @@
 			if(serverRecordIds != null)
 				recordUuidsAndIds+=("&serverRecordIds="+serverRecordIds);
 			
-			document.location = "historyResetRemoveRecords.list?recordId=" + ${firstRecordId} + "&size=" + ${size} + recordUuidsAndIds + "&action=" + action;
+			document.location = "historyResetRemoveRecords.form?recordId=" + ${firstRecordId} + "&size=" + ${size} + recordUuidsAndIds + "&action=" + action;
 		}
 	}
 	
@@ -149,9 +149,9 @@
 	<a href="javascript: getOlderItemsList(${firstRecordId})"><spring:message code="sync.general.older"/> &rarr;</a>
 	</c:if>
     &#124;
-    <a href="historyRecentAllCommitted.list?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.mostRecentAllCommitted"/></a>
+    <a href="historyRecentAllCommitted.form?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.mostRecentAllCommitted"/></a>
 	&#124;
-	<a href="historyNextError.list?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.nextError"/> &rarr;</a>
+	<a href="historyNextError.form?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.nextError"/> &rarr;</a>
 	</c:if>
 	<table id="syncChangesTable" cellpadding="7" cellspacing="0">
 		<thead>
@@ -291,9 +291,9 @@
 	<a href="javascript: getOlderItemsList(${firstRecordId})"><spring:message code="sync.general.older"/> &rarr;</a>
 	</c:if>
 	&#124;
-    <a href="historyRecentAllCommitted.list?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.mostRecentAllCommitted"/></a>
+    <a href="historyRecentAllCommitted.form?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.mostRecentAllCommitted"/></a>
     &#124;
-	<a href="historyNextError.list?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.nextError"/> &rarr;</a> |
+	<a href="historyNextError.form?recordId=${firstRecordId}&size=${size}"><spring:message code="sync.general.nextError"/> &rarr;</a> |
 	<b><spring:message code="sync.records.action"/>:</b>
 	<b><a href="#" onclick="resetRecords();"><spring:message code="sync.record.details.reset" /></a></b> |
 	<b><a href="#" onclick="removeRecords();"><spring:message code="sync.record.details.remove" /></a></b>

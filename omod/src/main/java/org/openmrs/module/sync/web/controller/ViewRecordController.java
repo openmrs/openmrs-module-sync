@@ -49,7 +49,7 @@ public class ViewRecordController {
     protected final Log log = LogFactory.getLog(getClass());
 
     @SuppressWarnings("unchecked")
-	@RequestMapping(value = "/module/sync/viewrecord", method = RequestMethod.GET)
+	@RequestMapping(value = "/module/sync/viewrecord.form", method = RequestMethod.GET)
 	public void showThePage(ModelMap modelMap, HttpServletRequest request, 
 							@RequestParam String uuid,
 							@RequestParam(value="action", required=false) String action) throws Exception {

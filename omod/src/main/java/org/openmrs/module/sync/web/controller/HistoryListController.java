@@ -58,11 +58,11 @@ public class HistoryListController {
 	
 	public static abstract class Views {
 		
-		public static final String HISTORY = "/module/sync/history";
+		public static final String HISTORY = "/module/sync/history.form";
 		
-		public static final String HISTORY_ERROR = "/module/sync/historyNextError";
+		public static final String HISTORY_ERROR = "/module/sync/historyNextError.form";
 
-        public static final String RECENT_ALL_COMMITTED = "/module/sync/historyRecentAllCommitted";
+        public static final String RECENT_ALL_COMMITTED = "/module/sync/historyRecentAllCommitted.form";
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -203,10 +203,10 @@ public class HistoryListController {
 			session.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.general.noNextError");
 		}
 		
-		return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + recordId + "&size=" + size;
+		return "redirect:" + Views.HISTORY + "?firstRecordId=" + recordId + "&size=" + size;
 	}
 
-	@RequestMapping(value = "/module/sync/historyResetRemoveRecords", method = RequestMethod.GET)
+	@RequestMapping(value = "/module/sync/historyResetRemoveRecords.form", method = RequestMethod.GET)
 	public String historyResetRemoveRecords(ModelMap modelMap,
 											HttpServletRequest request,
 											@RequestParam(value = "syncRecordUuids", required = false) String syncRecordUuids,
@@ -261,7 +261,7 @@ public class HistoryListController {
 			}
 		}
 
-		return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + recordId + "&size=" + size;
+		return "redirect:" + Views.HISTORY + "?firstRecordId=" + recordId + "&size=" + size;
 	}
 
 	@RequestMapping(value = Views.RECENT_ALL_COMMITTED, method = RequestMethod.GET)
@@ -278,6 +278,6 @@ public class HistoryListController {
 				session.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "sync.general.onRecentAllCommitted");
 			}
 		}
-		return "redirect:" + Views.HISTORY + ".list?firstRecordId=" + rId + "&size=" + size;
+		return "redirect:" + Views.HISTORY + "?firstRecordId=" + rId + "&size=" + size;
 	}
 }
