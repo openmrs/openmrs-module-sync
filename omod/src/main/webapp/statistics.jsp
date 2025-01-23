@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 
-<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/statistics.list" />
+<openmrs:require privilege="View Synchronization Status" otherwise="/login.htm" redirect="/module/sync/statistics.form" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
@@ -107,7 +107,7 @@
 		</tr>
 		<c:set var="bgs" value="EDEED2" />
 		<c:if test="${synchronizedRecords!=0}">
-          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.list?state=COMMITTED'">
+          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.form?state=COMMITTED'">
             <td width="3%">&nbsp;</td>
             <td width="10%" height="25" align="right">${synchronizedRecords}</td>
             <td width="2%" height="25">&nbsp;</td>
@@ -124,7 +124,7 @@
           </tr>
 		  </c:if>
   		  <c:if test="${newRecords!=0}">
-          <tr class="syncTr" onclick="location='history.list?state=NEW'" bgcolor="#${bgs}">
+          <tr class="syncTr" onclick="location='history.form?state=NEW'" bgcolor="#${bgs}">
             <td width="3%">&nbsp;</td>
             <td width="10%" height="25" align="right">${newRecords}</td>
             <td width="2%" height="25">&nbsp;</td>
@@ -142,7 +142,7 @@
           </tr>
 		  </c:if>
   		  <c:if test="${pendingRecords!=0}">
-          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.list?state=PENDING_SEND'">
+          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.form?state=PENDING_SEND'">
             <td width="3%">&nbsp;</td>
             <td width="10%" height="25" align="right">${pendingRecords}</td>
             <td width="2%" height="25">&nbsp;</td>
@@ -159,7 +159,7 @@
           </tr>
 		  </c:if>
   		  <c:if test="${sentRecords!=0}">
-          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.list?state=SENT'">
+          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.form?state=SENT'">
             <td width="3%">&nbsp;</td>
             <td width="10%" height="25" align="right">${sentRecords}</td>
             <td width="2%" height="25">&nbsp;</td>
@@ -175,7 +175,7 @@
           </tr>
 		  </c:if>
   		  <c:if test="${sendFailedRecords!=0}">
-          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.list?state=SEND_FAILED'">
+          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.form?state=SEND_FAILED'">
             <td width="3%">&nbsp;</td>
             <td width="10%" height="25" align="right">${sendFailedRecords}</td>
             <td width="2%" height="25">&nbsp;</td>
@@ -192,7 +192,7 @@
           </tr>
 		  </c:if>
   		  <c:if test="${ingestFailedRecords!=0}">
-          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.list?state=FAILED'">
+          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.form?state=FAILED'">
             <td width="3%">&nbsp;</td>
             <td width="10%" height="25" align="right">${ingestFailedRecords}</td>
             <td width="2%" height="25">&nbsp;</td>
@@ -208,7 +208,7 @@
           </tr>
 		  </c:if>
   		  <c:if test="${retriedRecords!=0}">
-          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.list?state=SENT_AGAIN'">
+          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.form?state=SENT_AGAIN'">
             <td width="3%">&nbsp;</td>
             <td width="10%" height="25" align="right">${retriedRecords}</td>
             <td width="2%" height="25">&nbsp;</td>
@@ -225,7 +225,7 @@
           </tr>
 		  </c:if>
   		  <c:if test="${failedStoppedRecords!=0}">
-          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.list?state=FAILED_AND_STOPPED'">
+          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.form?state=FAILED_AND_STOPPED'">
             <td width="3%">&nbsp;</td>
             <td width="10%" height="25" align="right">${failedStoppedRecords}</td>
             <td width="2%" height="25">&nbsp;</td>
@@ -241,7 +241,7 @@
           </tr>
 		  </c:if>
   		  <c:if test="${notSyncRecords!=0}">
-          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.list?state=NOT_SUPPOSED_TO_SYNC'">
+          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.form?state=NOT_SUPPOSED_TO_SYNC'">
             <td width="3%">&nbsp;</td>
             <td width="10%" height="25" align="right">${notSyncRecords}</td>
             <td width="2%" height="25">&nbsp;</td>
@@ -258,7 +258,7 @@
           </tr>
 		  </c:if>
   		  <c:if test="${rejectedRecords!=0}">
-          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.list?state=REJECTED'">
+          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.form?state=REJECTED'">
             <td width="3%">&nbsp;</td>
             <td width="10%" height="25" align="right">${rejectedRecords}</td>
             <td width="2%" height="25">&nbsp;</td>
@@ -290,7 +290,7 @@
 			</c:choose>
           </tr>
 		  </c:if>
-          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.list'">
+          <tr class="syncTr" bgcolor="#${bgs}" onclick="location='history.form'">
             <td width="3%">&nbsp;</td>
             <td width="10%" height="25" align="right"><span style="font-weight: bold; font-size: 18">${totalRecords}</span></td>
             <td width="2%" height="25"><span style="font-size: 18"></span></td>

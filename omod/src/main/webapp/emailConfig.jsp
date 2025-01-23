@@ -1,5 +1,5 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
-<openmrs:require privilege="Manage Global Properties" otherwise="/login.htm" redirect="/module/sync/emailConfig.list" />
+<openmrs:require privilege="Manage Global Properties" otherwise="/login.htm" redirect="/module/sync/emailConfig.form" />
 <%@ include file="/WEB-INF/template/header.jsp" %>
 <%@ include file="localHeader.jsp"%>
 

@@ -9,22 +9,22 @@
 			</a>
 		</li>
 		<li <c:if test='<%= request.getRequestURI().contains("config") %>'>class="active"</c:if>>
-			<a href="${pageContext.request.contextPath}/module/sync/config.list">
+			<a href="${pageContext.request.contextPath}/module/sync/config.form">
 				<spring:message code="sync.config.title"/>
 			</a>
 		</li>
 		<li <c:if test='<%= request.getRequestURI().contains("history") %>'>class="active"</c:if>>
-			<a href="${pageContext.request.contextPath}/module/sync/history.list">
+			<a href="${pageContext.request.contextPath}/module/sync/history.form">
 				<spring:message code="sync.history.title"/>
 			</a>
 		</li>
 		<li <c:if test='<%= request.getRequestURI().contains("transmissionHistory") %>'>class="active"</c:if>>
-			<a href="${pageContext.request.contextPath}/module/sync/transmissionHistory.list">
+			<a href="${pageContext.request.contextPath}/module/sync/transmissionHistory.form">
 				<spring:message code="sync.transmissionHistory.title"/>
 			</a>
 		</li>
 		<li <c:if test='<%= request.getRequestURI().contains("statistics") %>'>class="active"</c:if>>
-			<a href="${pageContext.request.contextPath}/module/sync/statistics.list">
+			<a href="${pageContext.request.contextPath}/module/sync/statistics.form">
 				<spring:message code="sync.statistics.title"/>
 			</a>
 		</li>

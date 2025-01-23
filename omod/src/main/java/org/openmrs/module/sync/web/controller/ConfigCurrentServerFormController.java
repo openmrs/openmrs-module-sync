@@ -51,7 +51,7 @@ public class ConfigCurrentServerFormController {
 	 * @return
 	 * @throws Exception
 	 */
-	@RequestMapping(value = "/module/sync/configCurrentServer", method = RequestMethod.POST, params = "action=save")
+	@RequestMapping(value = "/module/sync/configCurrentServer.form", method = RequestMethod.POST, params = "action=save")
 	protected String onSaveSettings(@RequestParam("serverName") String serverName,
 	                                @RequestParam("serverUuid") String serverUuid,
 	                                @RequestParam(value = "serverAdminEmail", required = false) String serverAdminEmail,
@@ -126,7 +126,7 @@ public class ConfigCurrentServerFormController {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	@RequestMapping(value = "/module/sync/configCurrentServer", method = RequestMethod.GET)
+	@RequestMapping(value = "/module/sync/configCurrentServer.form", method = RequestMethod.GET)
 	protected String showPage(ModelMap modelMap) throws Exception {
 		
 		if (Context.isAuthenticated()) {

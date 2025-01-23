@@ -43,7 +43,7 @@ public class UpgradeFormController {
 	protected final Log log = LogFactory.getLog(getClass());
 	
 	@SuppressWarnings("unchecked")
-	@RequestMapping(value = "/module/sync/upgrade", method = RequestMethod.GET)
+	@RequestMapping(value = "/module/sync/upgrade.form", method = RequestMethod.GET)
 	public void showThePage(ModelMap modelMap) throws Exception {
 		
 		List<String> fromOptions = new Vector<String>();
@@ -66,7 +66,7 @@ public class UpgradeFormController {
 	 *         printWriter
 	 * @throws Exception
 	 */
-	@RequestMapping(value = "/module/sync/upgrade", method = RequestMethod.POST)
+	@RequestMapping(value = "/module/sync/upgrade.form", method = RequestMethod.POST)
 	public String printUpgradeScript(HttpServletResponse response, HttpSession session, @RequestParam String fromVersion) throws Exception {
 		
 		// used to know if we need to redirect the user to the jsp again with a message

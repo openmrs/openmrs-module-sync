@@ -18,12 +18,12 @@
     	<property name="order"><value>1</value></property>
     	<property name="mappings">
             <props>
-            	<prop key="module/sync/status.list">statusListController</prop>
-				<prop key="module/sync/import.list">importListController</prop>
-				<prop key="module/sync/config.list">configListController</prop>
+            	<prop key="module/sync/status.form">statusListController</prop>
+				<prop key="module/sync/import.form">importListController</prop>
+				<prop key="module/sync/config.form">configListController</prop>
 				<prop key="module/sync/overview.htm">overviewController</prop>
 				<prop key="module/sync/help.htm">helpController</prop>
-				<prop key="module/sync/statistics.list">synchronizationStatisticsListController</prop>
+				<prop key="module/sync/statistics.form">synchronizationStatisticsListController</prop>
 				<prop key="module/sync/maintenance.form">synchronizationMaintenanceListController</prop>
 				
 	    	</props>
@@ -33,19 +33,19 @@
     <bean id="statusListController" class="org.openmrs.module.sync.web.controller.StatusListController">
 		<property name="commandName"><value>statusCommandObject</value></property>
 		<property name="formView"><value>/module/sync/statusList</value></property>
-		<property name="successView"><value>status.list</value></property>
+		<property name="successView"><value>status.form</value></property>
 	</bean>
 	
 	<bean id="importListController" class="org.openmrs.module.sync.web.controller.ImportListController">
 		<property name="commandName"><value>importCommandObject</value></property>
 		<property name="formView"><value>/module/sync/importList</value></property>
-		<property name="successView"><value>import.list</value></property>
+		<property name="successView"><value>import.form</value></property>
 	</bean>
 
 	<bean id="configListController" class="org.openmrs.module.sync.web.controller.ConfigListController">
 		<property name="commandName"><value>configListBackingObject</value></property>
 		<property name="formView"><value>/module/sync/configList</value></property>
-		<property name="successView"><value>config.list</value></property>
+		<property name="successView"><value>config.form</value></property>
 	</bean>
 
 	<bean id="overviewController" class="org.openmrs.module.sync.web.controller.OverviewController">
@@ -63,7 +63,7 @@
 	<bean id="synchronizationStatisticsListController"  class="org.openmrs.module.sync.web.controller.StatisticsController">
 		<property name="commandName"><value>syncStat</value></property>
 		<property name="formView"><value>/module/sync/statistics</value></property>
-		<property name="successView"><value>statistics.list</value></property>
+		<property name="successView"><value>statistics.form</value></property>
 	</bean>
 	
 	<bean id="synchronizationMaintenanceListController"  class="org.openmrs.module.sync.web.controller.MaintenanceController">

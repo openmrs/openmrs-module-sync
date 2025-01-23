@@ -32,10 +32,10 @@ public class AdminList extends AdministrationSectionExt {
 		
 		if (Context.hasPrivilege("View Synchronization Records")) {
 			links.put("module/sync/overview.htm", "sync.overview.title");
-			links.put("module/sync/config.list", "sync.config.title");
-			links.put("module/sync/statistics.list", "sync.statistics.title");
-			links.put("module/sync/history.list", "sync.history.title");
-			links.put("module/sync/transmissionHistory.list", "sync.transmissionHistory.title");
+			links.put("module/sync/config.form", "sync.config.title");
+			links.put("module/sync/statistics.form", "sync.statistics.title");
+			links.put("module/sync/history.form", "sync.history.title");
+			links.put("module/sync/transmissionHistory.form", "sync.transmissionHistory.title");
 			links.put("module/sync/maintenance.form", "sync.maintenance.title");
 		}
 

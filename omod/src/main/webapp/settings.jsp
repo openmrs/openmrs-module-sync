@@ -2,7 +2,7 @@
 
 <openmrs:require privilege="View Synchronization Status"
 	otherwise="/login.htm"
-	redirect="/module/sync/settings.list" />
+	redirect="/module/sync/settings.form" />
 
 <%@ include file="/WEB-INF/template/header.jsp"%>
 
@@ -70,7 +70,7 @@
 	code="sync.settings.general" /></b>
 <div class="box">
 <form id="settingsForm" name="settingsForm" method="post"
-	action="synchronizationSettings.list"><input type="hidden"
+	action="synchronizationSettings.form"><input type="hidden"
 	name="action" value="saveGeneral" />
 <table id="general" width="99%" border="0" cellpadding="0"
 	cellspacing="0">
@@ -145,7 +145,7 @@
               <c:choose>
 					<c:when test="${server.serverType != 'PARENT'}"> 
 			  
-			            <form id="deleteServer${server.serverId}" action="synchronizationSettings.list" method="post">
+			            <form id="deleteServer${server.serverId}" action="synchronizationSettings.form" method="post">
 							
 						  <input type="hidden" name="action" value="deleteServer" />
 						  <input type="hidden" id="serverId" name="serverId" value="${server.serverId}" />
@@ -182,7 +182,7 @@
 		&nbsp;&nbsp;<a href="javascript:showHideDiv('advanced');"><spring:message code="sync.settings.adv.set"/></a></br>
 <div id="advanced" style="display:none;">
 
-	<form action="synchronizationSettings.list" method="post">
+	<form action="synchronizationSettings.form" method="post">
 	<input type="hidden" name="action" value="saveClasses" />
 	
 		<b class="boxHeader"><spring:message code="SynchronizationConfig.advanced.objects"/></b>
