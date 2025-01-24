@@ -335,6 +335,9 @@ public class HibernateSyncDAO implements SyncDAO {
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords,
 										   RemoteServer server, Integer firstRecordId) throws DAOException {
 		List<Integer> recordIds = getSyncRecordIds(states, inverse, maxSyncRecords, server, firstRecordId);
+		if (recordIds.isEmpty()) {
+			return new ArrayList<>();
+		}
 		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(SyncRecord.class, "s");
 		criteria.add(Restrictions.in("s.recordId", recordIds));
 		criteria.addOrder(Order.asc("s.timestamp"));
