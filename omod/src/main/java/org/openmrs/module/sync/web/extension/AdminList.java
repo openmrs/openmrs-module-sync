@@ -43,10 +43,6 @@ public class AdminList extends AdministrationSectionExt {
 			links.put("module/sync/emailConfig.form", "sync.emailConfig.title");
 		}
 		
-		if (Context.hasPrivilege("Manage Synchronization")) {
-			links.put("module/sync/upgrade.form", "sync.upgrade.title");
-		}
-		
 		links.put("module/sync/help.htm", "sync.help.title");
 		
 		return links;
