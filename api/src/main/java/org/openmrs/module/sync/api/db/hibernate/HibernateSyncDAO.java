@@ -326,13 +326,27 @@ public class HibernateSyncDAO implements SyncDAO {
 		return sessionFactory.getCurrentSession().createCriteria(SyncRecord.class).add(Restrictions.eq("state", state))
 		        .addOrder(Order.asc("timestamp")).addOrder(Order.asc("recordId")).list();
 	}
-	
+
 	/**
 	 * @see org.openmrs.module.sync.api.db.SyncDAO#getSyncRecords(org.openmrs.module.sync.SyncRecordState[],
 	 *      boolean, java.lang.Integer, org.openmrs.module.sync.server.RemoteServer, java.lang.Integer)
 	 */
 	@SuppressWarnings("unchecked")
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords,
+										   RemoteServer server, Integer firstRecordId) throws DAOException {
+		List<Integer> recordIds = getSyncRecordIds(states, inverse, maxSyncRecords, server, firstRecordId);
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(SyncRecord.class, "s");
+		criteria.add(Restrictions.in("s.recordId", recordIds));
+		criteria.addOrder(Order.asc("s.timestamp"));
+		criteria.addOrder(Order.asc("s.recordId"));
+		return criteria.list();
+	}
+	
+	/**
+	 * @return the sync record ids for the given criteria
+	 */
+	@SuppressWarnings("unchecked")
+	protected List<Integer> getSyncRecordIds(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords,
 	                                       RemoteServer server, Integer firstRecordId) throws DAOException {
 		if (maxSyncRecords == null) {
 			maxSyncRecords = Integer.parseInt(SyncConstants.PROPERTY_NAME_MAX_RECORDS_DEFAULT);
@@ -348,21 +362,27 @@ public class HibernateSyncDAO implements SyncDAO {
 			column = "sr.state";
 		}
 		
-		if (inverse)
+		if (inverse) {
 			criteria.add(Restrictions.not(Restrictions.in(column, states)));
-		else
+		}
+		else {
 			criteria.add(Restrictions.in(column, states));
-		
-		if (firstRecordId != null)
+		}
+
+		if (firstRecordId != null) {
 			criteria.add(Restrictions.ge("s.recordId", firstRecordId));
-		
+		}
+
 		criteria.addOrder(Order.asc("s.timestamp"));
 		criteria.addOrder(Order.asc("s.recordId"));
 		
 		// if the user sets -1 as the max records, don't restrict the number of records downloaded/transferred
-		if (maxSyncRecords > 0)
+		if (maxSyncRecords > 0) {
 			criteria.setMaxResults(maxSyncRecords);
-		
+		}
+
+		criteria.setProjection(Projections.property("s.recordId"));
+
 		return criteria.list();
 	}
 	
