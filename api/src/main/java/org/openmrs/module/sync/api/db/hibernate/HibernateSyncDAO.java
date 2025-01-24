@@ -334,6 +334,7 @@ public class HibernateSyncDAO implements SyncDAO {
 	@SuppressWarnings("unchecked")
 	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, boolean inverse, Integer maxSyncRecords,
 										   RemoteServer server, Integer firstRecordId) throws DAOException {
+		// See https://openmrs.atlassian.net/browse/SYNC-363 for why this is implemented in 2 stages like this
 		List<Integer> recordIds = getSyncRecordIds(states, inverse, maxSyncRecords, server, firstRecordId);
 		if (recordIds.isEmpty()) {
 			return new ArrayList<>();
