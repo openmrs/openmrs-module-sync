@@ -30,7 +30,7 @@ public class SyncConstants {
 	
 	public static final String LAST_SYNC_REMOTE = "sync.last_sync_remote";
 	
-	public static final String DATA_IMPORT_SERVLET = "/module/sync/import.list";
+	public static final String DATA_IMPORT_SERVLET = "/module/sync/import.form";
 	
 	public static final String TEST_MESSAGE = "test";
 	
