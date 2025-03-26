@@ -188,10 +188,20 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                 	if (log.isWarnEnabled()) {
                 		log.warn("ImportRecord already exists and has retry count: " + importRecord.getRetryCount() + ", state: " + importRecord.getState());
                 	}
+
+                    // SYNC-365:  If there is an existing import record, and it is final,
+                    // OR if there is an existing sync record, and it is final,
+                    // update the existing import record to reflect that this record has already been committed,
+                    // something didn't get updated correctly in a previous operation.  Mark this import record with
+                    // already_committed and send this back to the remote server
+
                     SyncRecordState state = importRecord.getState();
-                    if ( state.isFinal() ) {
-                        // apparently, the remote/child server exporting to this server doesn't realize it's
-                        // committed, so let's remind by sending back this import record with already_committed
+                    boolean alreadyCommitted = state.isFinal();
+                    if (!alreadyCommitted) {
+                        SyncRecord existingSyncRecord = syncService.getSyncRecordByOriginalUuid(record.getOriginalUuid());
+                        alreadyCommitted = existingSyncRecord != null && existingSyncRecord.getState() != null && existingSyncRecord.getState().isFinal();
+                    }
+                    if (alreadyCommitted) {
                         importRecord.setState(SyncRecordState.ALREADY_COMMITTED);
                     }
 					else if (state.equals(SyncRecordState.FAILED)) {
