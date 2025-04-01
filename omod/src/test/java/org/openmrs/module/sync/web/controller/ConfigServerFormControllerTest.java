@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncServerClass;
+import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.server.RemoteServer;
 import org.openmrs.scheduler.TaskDefinition;
@@ -59,7 +60,7 @@ public class ConfigServerFormControllerTest  extends BaseModuleWebContextSensiti
             classNamesNotReceiveFrom.add("  org.openmrs.GlobalProperty ");
             
             ConfigServerFormController instance = new ConfigServerFormController();
-            instance.saveOrUpdateServerClasses(testServer, classNamesNotToSend, classNamesNotReceiveFrom);
+            SyncUtil.saveOrUpdateServerClasses(testServer, classNamesNotToSend, classNamesNotReceiveFrom);
             Set<String> classesNotSent = testServer.getClassesNotSent();
             Set<String> classesNotReceived = testServer.getClassesNotReceived();
             

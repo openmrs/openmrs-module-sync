@@ -795,4 +795,5 @@ public interface SyncService {
 	 */
 	int deleteOldTransmissionLogRecords(int numberOfDaysOld) throws APIException;
 
+	RemoteServer registerChildServer(String nickname, String uuid, String username, String password, List<String> notSendTo, List<String> notReceiveFrom);
 }

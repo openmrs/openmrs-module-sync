@@ -85,19 +85,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
-import java.util.Vector;
+import java.util.*;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
@@ -1393,5 +1381,93 @@ public class SyncUtil {
 		final int minutes_in_hour = 60;
 		final int hours_in_a_day = 24;
 		return (int)( (later.getTime() - old.getTime()) / (milliseconds_in_second * seconds_in_minute * minutes_in_hour * hours_in_a_day));
+	}
+
+	public static void saveOrUpdateServerClasses(RemoteServer server, List<String> notSendTo, List<String> notReceiveFrom) {
+		if (notSendTo == null)
+			notSendTo = Collections.emptyList();
+
+		if (notReceiveFrom == null)
+			notReceiveFrom = Collections.emptyList();
+
+		log.debug("sendto: " + notSendTo.size());
+		log.debug("receiveFrom: " + notReceiveFrom.size());
+
+		SyncService syncService = Context.getService(SyncService.class);
+
+		Set<SyncServerClass> currentServerClasses = server.getServerClasses();
+		if ( currentServerClasses == null ) {
+			currentServerClasses = new HashSet<>();
+		}
+			// mark all current serverClasses that are not in the lists
+		for (SyncServerClass syncClass : currentServerClasses) {
+			if (!notSendTo.contains(syncClass.getSyncClass().getName()) && !syncClass.getSendTo()) {
+				syncClass.setSendTo(true);
+			}
+
+			if (!notReceiveFrom.contains(syncClass.getSyncClass().getName()) && !syncClass.getReceiveFrom()) {
+				syncClass.setReceiveFrom(true);
+			}
+		}
+
+
+		// unmark all currentSyncClasses that are in the sendTo list
+		for (String className : notSendTo) {
+			boolean foundClass = false;
+			className = className.trim();
+			for (SyncServerClass currentClass : currentServerClasses) {
+				if (currentClass.getSyncClass().getName().equals(className)) {
+					foundClass = true;
+					currentClass.setSendTo(false);
+				}
+			}
+
+			// we need to add a new item to the list
+			if (!foundClass) {
+				SyncClass defaultSyncClass = syncService.getSyncClassByName(className);
+				if (defaultSyncClass == null) {
+					defaultSyncClass = new SyncClass();
+					defaultSyncClass.setName(className);
+					syncService.saveSyncClass(defaultSyncClass);
+				}
+
+				SyncServerClass newSyncClass = new SyncServerClass();
+				newSyncClass.setSyncClass(defaultSyncClass);
+				newSyncClass.setSendTo(false);
+				newSyncClass.setSyncServer(server);
+				// we must add this to the list of current classes so that the receiveFrom list picks it up instead of creating a new one
+				currentServerClasses.add(newSyncClass);
+			}
+		}
+
+		// unmark all currentSyncClasses that are in the sendTo list
+		for (String className : notReceiveFrom) {
+			boolean foundClass = false;
+			className = className.trim();
+			for (SyncServerClass currentClass : currentServerClasses) {
+				if (currentClass.getSyncClass().getName().equals(className)) {
+					foundClass = true;
+					currentClass.setReceiveFrom(false);
+				}
+			}
+
+
+			// we need to add a new item to the list
+			if (!foundClass) {
+				SyncClass defaultSyncClass = syncService.getSyncClassByName(className);
+				if (defaultSyncClass == null) {
+					defaultSyncClass = new SyncClass();
+					defaultSyncClass.setName(className);
+					syncService.saveSyncClass(defaultSyncClass);
+				}
+
+				SyncServerClass newSyncServerClass = new SyncServerClass();
+				newSyncServerClass.setSyncClass(defaultSyncClass);
+				newSyncServerClass.setReceiveFrom(false);
+				newSyncServerClass.setSyncServer(server);
+				// must put this on the currentServerClasses so it gets saved
+				currentServerClasses.add(newSyncServerClass);
+			}
+		}
 	}
 }

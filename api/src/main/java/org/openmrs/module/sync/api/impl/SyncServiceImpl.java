@@ -27,12 +27,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.Patient;
+import org.openmrs.Person;
+import org.openmrs.PersonName;
 import org.openmrs.Privilege;
 import org.openmrs.Role;
 import org.openmrs.User;
@@ -1123,5 +1126,60 @@ public class SyncServiceImpl implements SyncService {
 	public int deleteOldTransmissionLogRecords(int numberOfDaysOld) throws APIException {
 		Date upTo = DateUtils.addDays(new Date(), -numberOfDaysOld);
 		return this.deleteOldTransmissionLogRecords(upTo);
+	}
+
+	/**
+	 * @param nickname
+	 * @param uuid
+	 * @param username
+	 * @param password
+	 * @param notSendTo
+	 * @param notReceiveFrom
+	 * @return
+	 */
+	@Override
+	public RemoteServer registerChildServer(String nickname, String uuid, String username, String password, List<String> notSendTo, List<String> notReceiveFrom) {
+		RemoteServer server = new RemoteServer();
+		server.setServerType(RemoteServerType.CHILD);
+		server.setNickname(nickname);
+		server.setUuid(uuid);
+		Set<SyncServerClass> serverClasses = new HashSet<>();
+		List<SyncClass> syncClasses = getSyncClasses();
+		if (syncClasses != null) {
+			for (SyncClass syncClass : syncClasses) {
+				serverClasses.add(new SyncServerClass(server, syncClass));
+			}
+		}
+		server.setServerClasses(serverClasses);
+		if (StringUtils.isNotBlank(username)) {
+			Person person = new Person();
+			person.setGender(SyncConstants.DEFAULT_CHILD_SERVER_USER_GENDER);
+			person.setBirthdate(new Date());
+			PersonName name = new PersonName();
+			name.setGivenName(Context.getMessageSourceService().getMessage(SyncConstants.DEFAULT_CHILD_SERVER_USER_NAME));
+			name.setFamilyName(nickname);
+			person.addName(name);
+			Context.getPersonService().savePerson(person);
+			User user = new User(person);
+			user.setUsername(username);
+			String defaultRole = Context.getAdministrationService().getGlobalProperty("sync.default_role");
+			if (defaultRole != null) {
+				String[] roles = defaultRole.split(",");
+				for (String role : roles) {
+					Role r = Context.getUserService().getRole(role.trim());
+					if (r != null)
+						user.addRole(r);
+				}
+			}
+			Context.getUserService().createUser(user, password);
+			server.setChildUsername(user.getUsername());
+		}
+		server.setAddress("N/A");
+		server.setPassword("N/A");
+		server.setUsername("N/A");
+		SyncUtil.saveOrUpdateServerClasses(server, notSendTo, notReceiveFrom);
+		server = saveRemoteServer(server);
+
+		return server;
 	}
 }
