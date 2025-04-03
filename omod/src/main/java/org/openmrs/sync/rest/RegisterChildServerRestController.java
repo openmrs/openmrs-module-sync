@@ -60,7 +60,7 @@ public class RegisterChildServerRestController {
                     }
                     server = Context.getService(SyncService.class).registerChildServer(nickname, uuid, username, password, notSendTo, notReceiveFrom);
                 }
-                return ResponseEntity.status(HttpStatus.CREATED).body(server);
+                return ResponseEntity.status(HttpStatus.CREATED).body(convertServerObject(server));
             } catch (Exception e) {
                 log.error(e);
                 return errorResponse(e);
@@ -71,6 +71,21 @@ public class RegisterChildServerRestController {
         }
     }
 
+    protected HashMap<String, Object> convertServerObject(RemoteServer server) {
+        HashMap<String, Object> objectMap = new HashMap<>();
+        if (server != null) {
+            objectMap.put("serverId", server.getServerId());
+            objectMap.put("uuid", server.getUuid());
+            objectMap.put("serverType", server.getServerType());
+            objectMap.put("childUsername", server.getChildUsername());
+            objectMap.put("classesNotSent", server.getClassesNotSent());
+            objectMap.put("classesNotReceived", server.getClassesNotReceived());
+            objectMap.put("nickname", server.getNickname());
+            objectMap.put("username", server.getUsername());
+            objectMap.put("password", server.getPassword());
+        }
+        return objectMap;
+    }
     protected ResponseEntity<Map<String, Object>> errorResponse(Throwable t) {
         Map<String, Object> data = new LinkedHashMap<>();
         List<String> errorMessages = new ArrayList<>();
