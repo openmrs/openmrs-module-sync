@@ -39,6 +39,7 @@ import org.openmrs.messagesource.MessageSourceService;
 import org.openmrs.module.sync.SyncClass;
 import org.openmrs.module.sync.SyncConstants;
 import org.openmrs.module.sync.SyncServerClass;
+import org.openmrs.module.sync.SyncUtil;
 import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.TimestampNormalizer;
 import org.openmrs.module.sync.server.RemoteServer;
@@ -167,7 +168,7 @@ public class ConfigServerFormController {
 		server.setPassword("N/A");
 		server.setUsername("N/A");
 		
-		saveOrUpdateServerClasses(server, notSendTo, notReceiveFrom);
+		SyncUtil.saveOrUpdateServerClasses(server, notSendTo, notReceiveFrom);
 		
 		server = syncService.saveRemoteServer(server);
 		
@@ -197,7 +198,7 @@ public class ConfigServerFormController {
 		server.setNickname(nickname);
 		server.setUuid(uuid);
 		
-		saveOrUpdateServerClasses(server, notSendTo, notReceiveFrom);
+		SyncUtil.saveOrUpdateServerClasses(server, notSendTo, notReceiveFrom);
 		
 		server = Context.getService(SyncService.class).saveRemoteServer(server);
 		
@@ -259,7 +260,7 @@ public class ConfigServerFormController {
 		server.setPassword(password);
 		server.setUsername(username);
 		
-		saveOrUpdateServerClasses(server, notSendTo, notReceiveFrom);
+		SyncUtil.saveOrUpdateServerClasses(server, notSendTo, notReceiveFrom);
 		
 		server = Context.getService(SyncService.class).saveRemoteServer(server);
 		
@@ -271,96 +272,6 @@ public class ConfigServerFormController {
 			return "redirect:/module/sync/configServer.form?serverId=" + server.getServerId();
 		else
 			return "redirect:/module/sync/config.form";
-	}
-	
-	/**
-	 * @param server
-	 * @param notSendTo
-	 * @param notReceiveFrom
-	 */
-	protected void saveOrUpdateServerClasses(RemoteServer server, List<String> notSendTo, List<String> notReceiveFrom) {
-		if (notSendTo == null)
-			notSendTo = Collections.emptyList();
-		
-		if (notReceiveFrom == null)
-			notReceiveFrom = Collections.emptyList();
-		
-		log.debug("sendto: " + notSendTo.size());
-		log.debug("receiveFrom: " + notReceiveFrom.size());
-		
-		SyncService syncService = Context.getService(SyncService.class);
-		
-		Set<SyncServerClass> currentServerClasses = server.getServerClasses();
-		
-		// mark all current serverClasses that are not in the lists
-		for (SyncServerClass syncClass : currentServerClasses) {
-			if (!notSendTo.contains(syncClass.getSyncClass().getName()) && !syncClass.getSendTo()) {
-				syncClass.setSendTo(true);
-			}
-			
-			if (!notReceiveFrom.contains(syncClass.getSyncClass().getName()) && !syncClass.getReceiveFrom()) {
-				syncClass.setReceiveFrom(true);
-			}
-		}
-		
-		// unmark all currentSyncClasses that are in the sendTo list
-		for (String className : notSendTo) {
-			boolean foundClass = false;
-			className = className.trim();
-			for (SyncServerClass currentClass : currentServerClasses) {
-				if (currentClass.getSyncClass().getName().equals(className)) {
-					foundClass = true;
-					currentClass.setSendTo(false);
-				}
-			}
-			
-			// we need to add a new item to the list
-			if (!foundClass) {
-				SyncClass defaultSyncClass = syncService.getSyncClassByName(className);
-				if (defaultSyncClass == null) {
-					defaultSyncClass = new SyncClass();
-					defaultSyncClass.setName(className);
-					syncService.saveSyncClass(defaultSyncClass);
-				}
-				
-				SyncServerClass newSyncClass = new SyncServerClass();
-				newSyncClass.setSyncClass(defaultSyncClass);
-				newSyncClass.setSendTo(false);
-				newSyncClass.setSyncServer(server);
-				// we must add this to the list of current classes so that the receiveFrom list picks it up instead of creating a new one
-				currentServerClasses.add(newSyncClass);
-			}
-		}
-		
-		// unmark all currentSyncClasses that are in the sendTo list
-		for (String className : notReceiveFrom) {
-			boolean foundClass = false;
-			className = className.trim();
-			for (SyncServerClass currentClass : currentServerClasses) {
-				if (currentClass.getSyncClass().getName().equals(className)) {
-					foundClass = true;
-					currentClass.setReceiveFrom(false);
-				}
-			}
-			
-			// we need to add a new item to the list
-			if (!foundClass) {
-				SyncClass defaultSyncClass = syncService.getSyncClassByName(className);
-				if (defaultSyncClass == null) {
-					defaultSyncClass = new SyncClass();
-					defaultSyncClass.setName(className);
-					syncService.saveSyncClass(defaultSyncClass);
-				}
-				
-				SyncServerClass newSyncServerClass = new SyncServerClass();
-				newSyncServerClass.setSyncClass(defaultSyncClass);
-				newSyncServerClass.setReceiveFrom(false);
-				newSyncServerClass.setSyncServer(server);
-				// must put this on the currentServerClasses so it gets saved
-				currentServerClasses.add(newSyncServerClass);
-			}
-		}
-		
 	}
 	
 	/**
