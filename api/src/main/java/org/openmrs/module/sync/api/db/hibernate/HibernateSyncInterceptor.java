@@ -60,6 +60,7 @@ import org.openmrs.module.sync.serialization.Normalizer;
 import org.openmrs.module.sync.serialization.Package;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.util.OpenmrsConstants;
+import org.openmrs.util.PrivilegeConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -1129,6 +1130,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		if (ignoreLocationTags == null) {
 			FlushMode flushMode = getSessionFactory().getCurrentSession().getHibernateFlushMode();
 			try {
+				Context.addProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
 				getSessionFactory().getCurrentSession().setHibernateFlushMode(FlushMode.MANUAL);
 				AdministrationService as = Context.getAdministrationService();
 				String gpVal = as.getGlobalProperty(SyncConstants.PROPERTY_IGNORE_LOCATION_TAGS, "false");
@@ -1140,6 +1142,7 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			}
 			finally {
 				getSessionFactory().getCurrentSession().setHibernateFlushMode(flushMode);
+				Context.removeProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
 			}
 		}
 
