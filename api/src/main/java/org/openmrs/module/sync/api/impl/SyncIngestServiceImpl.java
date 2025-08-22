@@ -571,6 +571,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                     }
                     else {
                         if (o instanceof Obs && xmlFieldName.equals("referenceRange")) {
+                            // If an obs comes through with a reference range, and that reference range is not found, ignore that error.
                             try {
                                 SyncUtil.setProperty(o, field, xmlFieldName, xmlFieldValue, xmlFieldType);
                             }
@@ -579,6 +580,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                             }
                         }
                         else {
+                            // If reference range comes through, keep track of what obs that is associated with so that obs can be updated
                             if (className.equals("org.openmrs.ObsReferenceRange") && xmlFieldName.equals("obs")) {
                                 obsToUpdateWithReferenceRange = xmlFieldValue;
                             }
@@ -596,6 +598,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 	        try {
 	        	log.debug("About to update or create a " + className + " object, uuid: '" + uuid + "'");
 	            SyncUtil.updateOpenmrsObject(o, className, uuid);
+                // If we need to update the obs following the saving of a reference range do that here
                 if (obsToUpdateWithReferenceRange != null) {
                     Obs obs = (Obs) SyncUtil.getOpenmrsObj(Obs.class, obsToUpdateWithReferenceRange);
                     SyncUtil.setProperty(obs, "referenceRange", o);
