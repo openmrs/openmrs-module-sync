@@ -18,6 +18,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.collection.internal.PersistentSet;
 import org.openmrs.Concept;
+import org.openmrs.Obs;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.Person;
@@ -177,7 +178,7 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                 boolean isUpdateNeeded = false;
                 
                 if ( importRecord == null ) {
-                	log.info("ImportRecord does not exist, so creating new one");
+                	log.debug("ImportRecord does not exist, so creating new one");
                     isUpdateNeeded = true;
                     importRecord = new SyncImportRecord(record);
                     importRecord.setState(SyncRecordState.FAILED);
@@ -549,6 +550,10 @@ public class SyncIngestServiceImpl implements SyncIngestService {
             //if we are doing insert/update:
             //1. set serialized props state
         	//2. force it down the hibernate's throat with help of openmrs api
+
+            // We cannot save the reference range property on an obs before the reference range itself is created, so we process it with the reference range
+            String obsToUpdateWithReferenceRange = null;
+
             for (String xmlFieldName : syncItemFields.getFields()) {
                 String xmlFieldValue = syncItemFields.getValue(xmlFieldName);
                 String xmlFieldType = syncItemFields.getType(xmlFieldName);
@@ -565,7 +570,20 @@ public class SyncIngestServiceImpl implements SyncIngestService {
                         SyncUtil.setProperty(o, xmlFieldName, null);
                     }
                     else {
-                        SyncUtil.setProperty(o, field, xmlFieldName, xmlFieldValue, xmlFieldType);
+                        if (o instanceof Obs && xmlFieldName.equals("referenceRange")) {
+                            try {
+                                SyncUtil.setProperty(o, field, xmlFieldName, xmlFieldValue, xmlFieldType);
+                            }
+                            catch (Exception e) {
+                                log.warn("Not yet able to set reference range of " + xmlFieldValue + " on obs");
+                            }
+                        }
+                        else {
+                            if (className.equals("org.openmrs.ObsReferenceRange") && xmlFieldName.equals("obs")) {
+                                obsToUpdateWithReferenceRange = xmlFieldValue;
+                            }
+                            SyncUtil.setProperty(o, field, xmlFieldName, xmlFieldValue, xmlFieldType);
+                        }
                     }
 	            }
                 catch ( Exception e ) {
@@ -578,6 +596,11 @@ public class SyncIngestServiceImpl implements SyncIngestService {
 	        try {
 	        	log.debug("About to update or create a " + className + " object, uuid: '" + uuid + "'");
 	            SyncUtil.updateOpenmrsObject(o, className, uuid);
+                if (obsToUpdateWithReferenceRange != null) {
+                    Obs obs = (Obs) SyncUtil.getOpenmrsObj(Obs.class, obsToUpdateWithReferenceRange);
+                    SyncUtil.setProperty(obs, "referenceRange", o);
+                    Context.getService(SyncService.class).saveOrUpdate(obs);
+                }
 	            Context.getService(SyncService.class).flushSession();
 	        } catch ( Exception e ) {
 	        	// don't include stacktrace here because the parent classes log it sufficiently

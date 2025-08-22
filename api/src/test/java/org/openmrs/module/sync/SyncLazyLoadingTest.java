@@ -47,6 +47,7 @@ public class SyncLazyLoadingTest extends BaseModuleContextSensitiveTest {
 			startSession("bwayne");
 			Context.addProxyPrivilege(PrivilegeConstants.EDIT_USERS);
 			Context.addProxyPrivilege(PrivilegeConstants.GET_USERS);
+			Context.addProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
 
 			User u = Context.getAuthenticatedUser();
 
