@@ -13,20 +13,6 @@
  */
 package org.openmrs.module.sync.api.impl;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.logging.Log;
@@ -64,6 +50,20 @@ import org.openmrs.module.sync.server.RemoteServerType;
 import org.openmrs.module.sync.server.SyncServerRecord;
 import org.openmrs.util.PrivilegeConstants;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Default implementation of the {@link SyncService}
@@ -296,50 +296,59 @@ public class SyncServiceImpl implements SyncService {
 	 * @see org.openmrs.module.sync.api.SyncService#getSyncRecords(org.openmrs.module.sync.SyncRecordState[],
 	 *      org.openmrs.module.sync.server.RemoteServer, java.lang.Integer, java.lang.Integer)
 	 */
-	@Transactional(readOnly = true)
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, RemoteServer server, Integer maxSyncRecords, Integer firstRecordId)
-	                                                                                                             throws APIException {
-		List<SyncRecord> temp = null;
-		List<SyncRecord> ret = null;
-		
-		if (server != null) {
-			if (server.getServerType().equals(RemoteServerType.PARENT)) {
-				ret = this.getSyncRecords(states, maxSyncRecords, firstRecordId);
-			} else {
-				ret = getSynchronizationDAO().getSyncRecords(states, false, maxSyncRecords, server, firstRecordId);
-			}
+	public List<SyncRecord> getSyncRecordsAndUpdateAsNotSupposedToSync(SyncRecordState[] states,
+																	   RemoteServer server,
+																	   Integer maxSyncRecords,
+																	   Integer firstRecordId) throws APIException {
+		List<SyncRecord> ret = new ArrayList<>();
+		List<SyncRecord> nextRecords = new ArrayList<>();
+
+		if (server == null) {
+			return ret;
 		}
-		
-		// filter out classes that are not supposed to be sent to the specified server
-		// and update their status
-		if (ret != null) {
-			temp = new ArrayList<SyncRecord>();
-			for (SyncRecord record : ret) {
-				if (server.shouldBeSentSyncRecord(record)) {
-					record.setForServer(server);
-					temp.add(record);
-					
-				} else {
-					log.warn("Omitting record with " + record.getContainedClasses() + " for server: " + server.getNickname()
-					        + " with server type: " + server.getServerType());
-					if (server.getServerType().equals(RemoteServerType.PARENT)) {
-						record.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
-					} else {
-						// if not the parent, we have to update the record for this specific server
-						Set<SyncServerRecord> records = record.getServerRecords();
-						for (SyncServerRecord serverRecord : records) {
-							if (serverRecord.getSyncServer().equals(server)) {
-								serverRecord.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
-							}
+
+		while (ret.size() < maxSyncRecords && nextRecords != null) {
+			if (server.getServerType().equals(RemoteServerType.PARENT)) {
+				nextRecords = this.getSyncRecords(states, maxSyncRecords, firstRecordId);
+			}
+			else {
+				nextRecords = getSynchronizationDAO().getSyncRecords(states, false, maxSyncRecords, server, firstRecordId);
+			}
+			if (nextRecords != null) {
+				if (nextRecords.isEmpty()) {
+					nextRecords = null;
+				}
+				else {
+					for (int i=0; i<(maxSyncRecords - ret.size()) && i < nextRecords.size(); i++) {
+						SyncRecord record = nextRecords.get(i);
+						// If the record should be sent to the remote server, add it to the returned records
+						if (server.shouldBeSentSyncRecord(record)) {
+							record.setForServer(server);
+							ret.add(record);
 						}
-						record.setServerRecords(records);
+						// Otherwise, filter it out and update status as not supposed to sync
+						else {
+							log.debug("Omitting record with " + record.getContainedClasses() + " for server: " + server.getNickname() + " with server type: " + server.getServerType());
+							if (server.getServerType().equals(RemoteServerType.PARENT)) {
+								record.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
+							}
+							else {
+								// if not the parent, we have to update the record for this specific server
+								Set<SyncServerRecord> records = record.getServerRecords();
+								for (SyncServerRecord serverRecord : records) {
+									if (serverRecord.getSyncServer().equals(server)) {
+										serverRecord.setState(SyncRecordState.NOT_SUPPOSED_TO_SYNC);
+									}
+								}
+								record.setServerRecords(records);
+							}
+							this.updateSyncRecord(record);
+						}
+						firstRecordId = record.getRecordId() + 1;
 					}
-					this.updateSyncRecord(record);
 				}
 			}
-			ret = temp;
 		}
-		
 		return ret;
 	}
 	

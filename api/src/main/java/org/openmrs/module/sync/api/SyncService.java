@@ -254,7 +254,7 @@ public interface SyncService {
 	 * @throws APIException
 	 */
 	//@Authorized({"View Synchronization Records"})
-	public List<SyncRecord> getSyncRecords(SyncRecordState[] states, RemoteServer server, Integer maxSyncRecords, Integer firstRecordId)
+	public List<SyncRecord> getSyncRecordsAndUpdateAsNotSupposedToSync(SyncRecordState[] states, RemoteServer server, Integer maxSyncRecords, Integer firstRecordId)
 	                                                                                                             throws APIException;
 	
 	/**
