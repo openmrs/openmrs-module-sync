@@ -59,16 +59,22 @@ public class HibernateSyncInterceptorTest extends SyncBaseTest {
 		return Context.getService(SyncService.class).getSyncRecords();
 	}
 
+	private int getNumSyncRecords() {
+		return Context.getService(SyncService.class).getSyncRecords().size();
+	}
+
 	@Test
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldNotSaveAnySyncRecordsForAReadOnlyTransaction() throws Exception {
 		runSyncTest(new SyncTestHelper() {
+			int recordsAtStart = 0;
 			public void runOnChild() throws Exception {
+				recordsAtStart = getNumSyncRecords();
 				Patient p = testService.getObject(Patient.class, 2);
 				Assert.assertEquals(2, p.getPatientId().intValue());
 			}
 			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
-				Assert.assertEquals(0, syncRecords.size());
+				Assert.assertEquals(recordsAtStart, syncRecords.size());
 			}
 			public void runOnParent() throws Exception {
 
@@ -80,13 +86,15 @@ public class HibernateSyncInterceptorTest extends SyncBaseTest {
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveOneSyncRecordForOneTransaction() throws Exception {
 		runSyncTest(new SyncTestHelper() {
+			int recordsAtStart = 0;
 			public void runOnChild() throws Exception {
+				recordsAtStart = getNumSyncRecords();
 				Patient p = testService.getObject(Patient.class, 2);
 				p.getPersonName().setFamilyName("Smith");
 				testService.saveObjectInTransaction(p);
 			}
 			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
-				Assert.assertEquals(1, syncRecords.size());
+				Assert.assertEquals(recordsAtStart + 1, syncRecords.size());
 				SyncRecord r = syncRecords.get(0);
 				for (SyncItem item : r.getItems()) {
 					if (PersonName.class.isAssignableFrom(item.getContainedType())) {
@@ -104,7 +112,9 @@ public class HibernateSyncInterceptorTest extends SyncBaseTest {
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveTwoSyncRecordsForTwoSeparateTransactions() throws Exception {
 		runSyncTest(new SyncTestHelper() {
+			int recordsAtStart = 0;
 			public void runOnChild() throws Exception {
+				recordsAtStart = getNumSyncRecords();
 				Patient p = testService.getObject(Patient.class, 2);
 				p.setBirthdate(getDate("1978-08-29"));
 				testService.saveObjectInTransaction(p);
@@ -114,7 +124,7 @@ public class HibernateSyncInterceptorTest extends SyncBaseTest {
 				testService.saveObjectInTransaction(e);
 			}
 			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
-				Assert.assertEquals(2, syncRecords.size());
+				Assert.assertEquals(recordsAtStart + 2, syncRecords.size());
 			}
 			public void runOnParent() throws Exception {
 
@@ -126,7 +136,9 @@ public class HibernateSyncInterceptorTest extends SyncBaseTest {
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveOneSyncRecordForTwoNestedDefaultTransactions() throws Exception {
 		runSyncTest(new SyncTestHelper() {
+			int recordsAtStart = 0;
 			public void runOnChild() throws Exception {
+				recordsAtStart = getNumSyncRecords();
 				Patient p = testService.getObject(Patient.class, 2);
 				p.setGender("F");
 				Encounter e = testService.getObject(Encounter.class, 1);
@@ -134,7 +146,7 @@ public class HibernateSyncInterceptorTest extends SyncBaseTest {
 				testService.saveAllObjectsInSingleTransaction(p, e);
 			}
 			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
-				Assert.assertEquals(1, syncRecords.size());
+				Assert.assertEquals(recordsAtStart + 1, syncRecords.size());
 			}
 			public void runOnParent() throws Exception {
 

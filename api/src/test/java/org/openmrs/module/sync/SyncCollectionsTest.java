@@ -21,6 +21,7 @@ import org.openmrs.PersonName;
 import org.openmrs.User;
 import org.openmrs.api.UserService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.sync.api.SyncService;
 import org.openmrs.module.sync.serialization.Record;
 import org.openmrs.util.OpenmrsConstants;
 import org.springframework.transaction.annotation.Propagation;
@@ -51,10 +52,12 @@ public class SyncCollectionsTest extends SyncBaseTest {
 		final String newUserLocaleValue = "en";
 		final String newChangePasswordValue = "true";
 		runSyncTest(new SyncTestHelper() {
-			
+
+			int syncRecordsAtStart = 0;
 			UserService us = Context.getUserService();
 			
 			public void runOnChild() throws Exception {
+				syncRecordsAtStart = Context.getService(SyncService.class).getSyncRecords().size();
 				executeDataSet("org/openmrs/api/include/UserServiceTest.xml");
 				User u = us.getUser(userId);
 				Assert.assertFalse(newChangePasswordValue.equals(u
@@ -74,7 +77,8 @@ public class SyncCollectionsTest extends SyncBaseTest {
 			}
 			
 			public void changedBeingApplied(List<SyncRecord> syncRecords, Record record) throws Exception {
-				Assert.assertEquals(2, syncRecords.size());
+				int expectedRecords = syncRecordsAtStart + 2;
+				Assert.assertEquals(expectedRecords, syncRecords.size());
 				SyncItemState userSyncItemState = null;
 				for (SyncRecord syncRecord : syncRecords) {
 					for (SyncItem si : syncRecord.getItems()) {

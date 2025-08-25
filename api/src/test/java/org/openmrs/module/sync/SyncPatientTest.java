@@ -13,21 +13,8 @@
  */
 package org.openmrs.module.sync;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
+import junit.framework.Assert;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.jupiter.api.Test;
 import org.openmrs.Concept;
@@ -48,11 +35,26 @@ import org.openmrs.Provider;
 import org.openmrs.User;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.ModuleUtil;
+import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import junit.framework.Assert;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests creating various pieces of data via synchronization
@@ -376,6 +378,22 @@ public class SyncPatientTest extends SyncBaseTest {
 					}
 				assertNotNull(obs);
 				assertEquals( (Double)99.9, obs.getValueNumeric());
+
+				if (ModuleUtil.compareVersion(OpenmrsConstants.OPENMRS_VERSION, "2.7") >= 0) {
+					log.warn("Running 2.7-specific Obs tests");
+					try {
+						Object referenceRange = PropertyUtils.getProperty(obs, "referenceRange");
+						assertNotNull(referenceRange);
+						Object hiAbsolute = PropertyUtils.getProperty(referenceRange, "hiAbsolute");
+						Object lowAbsolute = PropertyUtils.getProperty(referenceRange, "lowAbsolute");
+						assertEquals(250.0, hiAbsolute);
+						assertEquals(0.0, lowAbsolute);
+					}
+					catch (Exception e) {
+						Assert.fail(e.getMessage());
+					}
+				}
+
 				encId = obs.getEncounter().getEncounterId();				
 				Context.evictFromSession(obs.getEncounter());
 				assertEquals(obsCount,Context.getEncounterService().getEncounter(encId).getObs().size());

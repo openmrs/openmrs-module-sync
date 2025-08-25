@@ -1127,28 +1127,30 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 			        "Could not find the property on owner object that corresponds to the collection being processed.");
 		}
 
-		if (ignoreLocationTags == null) {
-			FlushMode flushMode = getSessionFactory().getCurrentSession().getHibernateFlushMode();
-			try {
-				Context.addProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
-				getSessionFactory().getCurrentSession().setHibernateFlushMode(FlushMode.MANUAL);
-				AdministrationService as = Context.getAdministrationService();
-				String gpVal = as.getGlobalProperty(SyncConstants.PROPERTY_IGNORE_LOCATION_TAGS, "false");
-				setIgnoreLocationTags(Boolean.parseBoolean(gpVal));
+		boolean isLocationTag = Location.class.isAssignableFrom(owner.getClass()) && "tags".equals(ownerPropertyName);
+		if (isLocationTag) {
+			if (ignoreLocationTags == null) {
+				FlushMode flushMode = getSessionFactory().getCurrentSession().getHibernateFlushMode();
+				try {
+					Context.addProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
+					getSessionFactory().getCurrentSession().setHibernateFlushMode(FlushMode.MANUAL);
+					AdministrationService as = Context.getAdministrationService();
+					String gpVal = as.getGlobalProperty(SyncConstants.PROPERTY_IGNORE_LOCATION_TAGS, "false");
+					setIgnoreLocationTags(Boolean.parseBoolean(gpVal));
+				}
+				catch (Exception e) {
+					String error = "Error setting ignoreLocationTags from global property";
+					throw new CallbackException(error, e);
+				}
+				finally {
+					getSessionFactory().getCurrentSession().setHibernateFlushMode(flushMode);
+					Context.removeProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
+				}
 			}
-			catch (Exception e) {
-				String error = "Error setting ignoreLocationTags from global property";
-				throw new CallbackException(error, e);
+			if (ignoreLocationTags) {
+				log.debug("Location Tags are configured to ignore, not adding to sync record");
+				return;
 			}
-			finally {
-				getSessionFactory().getCurrentSession().setHibernateFlushMode(flushMode);
-				Context.removeProxyPrivilege(PrivilegeConstants.GET_GLOBAL_PROPERTIES);
-			}
-		}
-
-		if (ignoreLocationTags && Location.class.isAssignableFrom(owner.getClass()) && "tags".equals(ownerPropertyName)) {
-			log.debug("Location Tags are configured to ignore, not adding to sync record");
-			return;
 		}
 
 		//now we know this needs to be processed. Proceed accordingly:

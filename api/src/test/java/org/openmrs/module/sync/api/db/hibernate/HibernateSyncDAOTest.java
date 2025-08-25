@@ -16,9 +16,6 @@ package org.openmrs.module.sync.api.db.hibernate;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.openmrs.api.context.Context;
-import org.powermock.api.mockito.PowerMockito;
 
 import java.util.Properties;
 

@@ -1,6 +1,7 @@
 package org.openmrs.module.sync;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openmrs.Concept;
 import org.openmrs.Location;
@@ -102,6 +103,7 @@ public class SyncLocationAttributeTest extends SyncBaseTest{
 
     @Test
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Disabled // This test is disabled for OpenMRS 2.7+ due to conflict between NOT_SUPPORTED operation and removing an attribute
     public void shouldSyncDeletedLocationAttribute() throws Exception {
         runSyncTest(new SyncTestHelper() {
             int ORIGINAL_COUNT = 0;
