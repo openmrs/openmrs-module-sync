@@ -4,7 +4,7 @@
 
 	<groupId>org.openmrs.module</groupId>
 	<artifactId>sync</artifactId>
-	<version>3.1.0</version>
+	<version>3.2.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Synchronization Module</name>
 	<description>Parent project for Synchronization Module</description>
@@ -21,7 +21,7 @@
 		<connection>scm:git:git@github.com:openmrs/openmrs-module-sync.git</connection>
 		<developerConnection>scm:git:git@github.com:openmrs/openmrs-module-sync.git</developerConnection>
 		<url>https://github.com/openmrs/openmrs-module-sync/</url>
-		<tag>3.1.0</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<modules>
