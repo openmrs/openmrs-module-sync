@@ -29,6 +29,7 @@ import org.openmrs.Form;
 import org.openmrs.Obs;
 import org.openmrs.OpenmrsMetadata;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.PatientIdentifier;
 import org.openmrs.PatientProgram;
 import org.openmrs.PatientState;
 import org.openmrs.Person;
@@ -256,7 +257,7 @@ public class SyncUtil {
 		if (m == null) {
 			// We couldn't find a setter method. Let's try setting the field directly instead.
 			log.debug("couldn't find setter method, setting field '" + propName + "' directly.");
-			if (shouldSkipSettingField(o, propName)) {
+			if (shouldSkipSettingField(o, propName, propVal)) {
 				log.debug("skipping setting " + propName + " on " + o.getClass() + "; it is defined as one to skip");
 			}
 			else {
@@ -279,11 +280,15 @@ public class SyncUtil {
 	/**
 	 * @return true if this is a field on an object that is not intended to be set directly
 	 */
-	public static boolean shouldSkipSettingField(Object o, String propertyName) {
+	private static boolean shouldSkipSettingField(Object o, String propertyName, Object value) {
 		if (o instanceof Person) {
 			if (propertyName.equalsIgnoreCase("patient")) {
 				return true;
 			}
+		}
+		// See SYNC-369.  Skip setting particular fields if they are not present and the incoming value is null
+		if (o instanceof PatientIdentifier && propertyName.equals("patientProgram")) {
+            return SyncUtil.getSetterMethod(o.getClass(), propertyName) == null && value == null;
 		}
 		return false;
 	}
