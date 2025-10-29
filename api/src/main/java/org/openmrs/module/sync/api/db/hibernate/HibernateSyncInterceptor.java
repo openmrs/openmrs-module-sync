@@ -1690,10 +1690,13 @@ public class HibernateSyncInterceptor extends EmptyInterceptor implements Applic
 		public SyncRecord endTransaction(Transaction tx) {
 			SyncRecord record = syncRecords.remove(tx);
 			Transaction expected = transactions.pop();
+			processRegistered.remove(tx);
+			if (transactions.isEmpty()) {
+				syncRecordThreadLocal.remove();
+			}
 			if (record == null || expected == null || !expected.equals(tx)) {
 				throw new IllegalStateException("Ending transaction did not find the expected transaction on the stack");
 			}
-			syncRecordThreadLocal.get().setProcessRegistered(tx, false);
 			return record;
 		}
 	}
